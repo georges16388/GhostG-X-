@@ -1,7 +1,7 @@
 import { Sticker, createSticker, StickerTypes } from 'wa-sticker-formatter' // ES6
 // const { Sticker, createSticker, StickerTypes } = require('wa-sticker-formatter') // CommonJS
 
-import { downloadMediaMessage } from "baileys";
+import { downloadMediaMessage } from "@whiskeysockets/baileys";
 import fs from "fs";
 import path from "path";
 import stylizedChar from '../utils/fancy.js';
