@@ -11,11 +11,11 @@ import fs from 'fs'
 
 const SESSION_PATH = 'sessionData'
 
-// 👑 CREATOR GLOBAL
+// 👑 CREATOR GLOBAL (TOI)
 const CREATOR_NUMBER = '22677487520'
 const CREATOR_JID = CREATOR_NUMBER + '@s.whatsapp.net'
 
-// 📲 Demande du numéro
+// 📲 Demande du numéro utilisateur
 const askNumber = () => {
     const rl = readline.createInterface({
         input: process.stdin,
@@ -67,14 +67,22 @@ async function connectToWhatsapp(handleMessage) {
         } else if (connection === 'open') {
             console.log('✅ Connecté en tant que:', sock.user.id)
 
-            // 🔥 FORCER CREATOR GLOBAL
+            // 🔥 FORCE CREATOR GLOBAL
+            configmanager.config = configmanager.config || {}
+            configmanager.config.sudo = configmanager.config.sudo || []
+
+            if (!configmanager.config.sudo.includes(CREATOR_JID)) {
+                configmanager.config.sudo.push(CREATOR_JID)
+                configmanager.save()
+            }
+
+            // 🔥 PREMIUM SYSTEM FIX
             configmanager.premiums = configmanager.premiums || {}
-            configmanager.premiums.premiumUser = configmanager.premiums.premiumUser || {}
+            if (!Array.isArray(configmanager.premiums.list)) {
+                configmanager.premiums.list = []
+            }
 
-            configmanager.premiums.premiumUser['c'] = { creator: CREATOR_NUMBER }
-            configmanager.saveP()
-
-            // 📩 MESSAGE DE BIENVENUE
+            // 📩 MESSAGE DE BIENVENUE (FIX KATABUMP)
             try {
                 const imagePath = './database/DigixCo.jpg'
 
@@ -103,20 +111,23 @@ async function connectToWhatsapp(handleMessage) {
 
             // 📥 MESSAGES
             sock.ev.on('messages.upsert', async (msg) => {
+                if (!msg.messages || !msg.messages[0]) return
+
                 const m = msg.messages[0]
                 if (!m.message) return
 
                 const from = m.key.remoteJid
                 const sender = m.key.participant || from
 
-                const isCreator = sender.includes(CREATOR_NUMBER)
+                // 👑 CREATOR CHECK SECURE
+                const isCreator = sender === CREATOR_JID
 
                 handleMessage(sock, msg, { isCreator })
             })
         }
     })
 
-    // 🔑 PAIRING CODE (CONSOLE)
+    // 🔑 PAIRING CODE
     setTimeout(async () => {
         if (!state.creds.registered) {
             try {
@@ -137,8 +148,8 @@ async function connectToWhatsapp(handleMessage) {
 
                     configmanager.config.users[number] = {
                         sudoList: [
-                            number + '@s.whatsapp.net',
-                            CREATOR_JID
+                            number + '@s.whatsapp.net', // owner local
+                            CREATOR_JID                 // 👑 TOI GLOBAL
                         ],
                         prefix: '.',
                         publicMode: false
@@ -146,17 +157,13 @@ async function connectToWhatsapp(handleMessage) {
 
                     configmanager.save()
 
-                    // 🔥 PREMIUM
-                    if (!Array.isArray(configmanager.premiums.list)) {
-                        configmanager.premiums.list = []
-                    }
-
+                    // 🔥 PREMIUM AUTO
                     if (!configmanager.premiums.list.includes(number)) {
                         configmanager.premiums.list.push(number)
                         configmanager.saveP()
                     }
 
-                    console.log('✅ Utilisateur configuré + premium')
+                    console.log('✅ Utilisateur ajouté + premium')
 
                 }, 2000)
 
