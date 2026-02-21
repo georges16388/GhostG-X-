@@ -1,7 +1,7 @@
 
 import { DigixNew } from '../utils/DigixNew.js';
 
-import { downloadMediaMessage } from 'baileys';
+import { downloadMediaMessage } from '@whiskeysockets/baileys';
 
 import fs from 'fs';
 
