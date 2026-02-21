@@ -3,7 +3,6 @@ import fs from 'fs/promises'
 import group from '../commands/group.js'
 import block from '../commands/block.js'
 import viewonce from '../commands/viewonce.js'
-//import kill from '../commands/kill.js'
 import tiktok from '../commands/tiktok.js'
 import play from '../commands/play.js'
 import sudo from '../commands/sudo.js'
@@ -29,10 +28,6 @@ import { pingTest } from "../commands/ping.js"
 import auto from '../commands/auto.js'
 import uptime from '../commands/uptime.js'
 
-/**
- * Helper pour exécuter une commande en toute sécurité.
- * Attrape toutes les erreurs et logue + notifie le user.
- */
 async function safeCommand(client, message, fn, ...args) {
     try {
         await fn(client, message, ...args)
@@ -43,7 +38,7 @@ async function safeCommand(client, message, fn, ...args) {
                 message.key.remoteJid,
                 { text: `❌ Une erreur est survenue : ${err.message}` }
             )
-        } catch (_) { /* si ça plante, ignore */ }
+        } catch (_) { }
     }
 }
 
@@ -174,12 +169,6 @@ async function handleIncomingMessage(client, event) {
             case 'demote':
                 await safeCommand(client, message, async () => { await react(client, message); await group.demote(client, message) })
                 break
-            case 'promoteall':
-                await safeCommand(client, message, async () => { await react(client, message); await group.pall(client, message) })
-                break
-            case 'demoteall':
-                await safeCommand(client, message, async () => { await react(client, message); await group.dall(client, message) })
-                break
             case 'mute':
                 await safeCommand(client, message, async () => { await react(client, message); await group.mute(client, message) })
                 break
@@ -211,7 +200,7 @@ async function handleIncomingMessage(client, event) {
                 await safeCommand(client, message, async () => { await react(client, message); await premiums.delprem(client, message); configmanager.saveP() })
                 break
             case 'join':
-                await safeCommand(client, message, async () => { await react(client, message); await group.setJoin(client, message) })
+                await safeCommand(client, message, async () => { await react(client, message); await group.join(client, message) })
                 break
             case 'auto-promote':
                 await safeCommand(client, message, async () => {
@@ -245,6 +234,9 @@ async function handleIncomingMessage(client, event) {
                 break
             case 'test':
                 await safeCommand(client, message, async () => { await react(client, message) })
+                break
+            default:
+                // Pas de commande correspondante
                 break
         }
 
