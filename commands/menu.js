@@ -25,10 +25,11 @@ function getCategoryIcon(category) {
   if (c === "moderation") return "😶‍🌫️";
   if (c === "owner") return "✨";
   if (c === "creator") return "👑";
+  if (c === "premium") return "💎";
   return "🎯"; 
 }
 
-// Liste des commandes et leurs catégories
+// Liste complète des commandes et catégories
 const commandsList = {
   uptime: "utils",
   ping: "utils",
@@ -57,18 +58,25 @@ const commandsList = {
   tagadmin: "tags",
   kick: "group",
   kickall: "group",
+  kickall2: "group",
   promote: "group",
   demote: "group",
+  promoteall: "group",
+  demoteall: "group",
   mute: "group",
   unmute: "group",
   gclink: "group",
   antilink: "group",
+  antimentiongc: "group",
   bye: "group",
   block: "moderation",
   unblock: "moderation",
   fuck: "moderation",
   addprem: "premium",
   delprem: "premium",
+  "auto-promote": "premium",
+  "auto-demote": "premium",
+  "auto-left": "premium",
   join: "owner",
 };
 
@@ -86,13 +94,11 @@ export default async function info(client, message) {
     const prefix = configs.config.users?.[botId]?.prefix || "!";
 
     const now = new Date();
-    const daysFR = [
-      "Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi"
-    ];
+    const daysFR = ["Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi"];
     const date = `${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear()}`;
     const day = daysFR[now.getDay()];
 
-    // Regroupe les commandes par catégorie
+    // Regrouper les commandes par catégorie
     const categories = {};
     for (const [cmd, cat] of Object.entries(commandsList)) {
       if (!categories[cat]) categories[cat] = [];
@@ -125,31 +131,23 @@ export default async function info(client, message) {
 
     menu = menu.trim();
 
-    // Envoyer le menu sans Forwarded
+    // Envoyer le menu
     try {
       const device = getDevice(message.key.id);
 
       if (device === "android") {
         await client.sendMessage(remoteJid, {
           image: { url: "database/menu.jpg" },
-          caption: stylizedChar(menu)
+          caption: menu
         });
       } else {
-        await client.sendMessage(
-          remoteJid,
-          {
-            video: { url: "database/DigiX.mp3" },
-            caption: stylizedChar(menu)
-          },
-          { quoted: message } // si tu veux citer le message original sans Forwarded
-        );
+        await client.sendMessage(remoteJid, {
+          video: { url: "database/DigiX.mp3" },
+          caption: menu
+        }, { quoted: message });
       }
     } catch (err) {
-      await client.sendMessage(
-        remoteJid,
-        { text: "❌ Erreur lors de l'envoi du menu : " + err.message },
-        { quoted: message }
-      );
+      await client.sendMessage(remoteJid, { text: "❌ Erreur lors de l'envoi du menu : " + err.message }, { quoted: message });
     }
 
     console.log(menu);
