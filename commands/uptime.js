@@ -13,7 +13,7 @@ export async function uptime(client, message) {
 │ 💾 RAM: ${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(1)}MB
 │
 │ "Beyond limits, we rise."
-│     - GHGX7 -
+│     - ᴊᴇ́sᴜs ᴛ’ᴀɪᴍᴇ -
 └────────────────────┘`
     
     await client.sendMessage(remoteJid, { text: text })
