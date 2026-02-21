@@ -1,6 +1,6 @@
 import pkg from 'wa-sticker-formatter';
 const { Sticker, StickerTypes } = pkg;
-import { downloadMediaMessage } from "baileys";
+import { downloadMediaMessage } from "@whiskeysockets/baileys";
 import fs from "fs";
 import path from "path";
 import { exec } from "child_process";
