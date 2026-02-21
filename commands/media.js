@@ -1,5 +1,5 @@
 import fs from 'fs'
-import { downloadMediaMessage } from 'baileys'
+import { downloadMediaMessage } from '@whiskeysockets/baileys'
 
 export async function photo(client, message) {
     try {
