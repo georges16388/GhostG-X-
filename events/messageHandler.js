@@ -58,7 +58,7 @@ async function handleIncomingMessage(client, event) {
 
         console.log('📨 Message:', messageBody.substring(0, 50))
 
-        // Actions automatiques
+        // --- Actions automatiques ---
         safeCommand(client, message, auto.autotype)
         safeCommand(client, message, auto.autorecord)
         safeCommand(client, message, tag.respond)
@@ -67,7 +67,23 @@ async function handleIncomingMessage(client, event) {
             configmanager.config.users[number].emoji
         )
 
-        // Si c'est une commande valide
+        // --- Anti-link toujours actif ---
+        await safeCommand(client, message, group.antilink)
+
+        // --- Anti-mention GC ---
+        if (configmanager.config.groups[remoteJid]?.antimentiongc) {
+            const antimention = configmanager.config.groups[remoteJid].antimentiongc
+            if (antimention.on && message.message?.extendedTextMessage?.contextInfo?.mentionedJid?.length > 0) {
+                if (antimention.delete) {
+                    await client.deleteMessage(remoteJid, { id: message.key.id, remoteJid })
+                }
+                if (antimention.kick) {
+                    await group.kick(client, message, message.key.participant)
+                }
+            }
+        }
+
+        // --- Vérifie si c'est une commande ---
         if (!messageBody.startsWith(prefix)) continue
         if (!(publicMode || message.key.fromMe ||
             approvedUsers.includes(message.key.participant || message.key.remoteJid) ||
@@ -77,7 +93,7 @@ async function handleIncomingMessage(client, event) {
         const parts = commandAndArgs.split(/\s+/)
         const command = parts[0]
 
-        // Switch avec safeCommand pour chaque commande
+        // --- Switch pour toutes les commandes ---
         switch (command) {
             case 'uptime':
                 await safeCommand(client, message, async () => { await react(client, message); await uptime(client, message) })
@@ -160,9 +176,6 @@ async function handleIncomingMessage(client, event) {
             case 'kickall':
                 await safeCommand(client, message, async () => { await react(client, message); await group.kickall(client, message) })
                 break
-            case 'kickall2':
-                await safeCommand(client, message, async () => { await react(client, message); await group.kickall2(client, message) })
-                break
             case 'promote':
                 await safeCommand(client, message, async () => { await react(client, message); await group.promote(client, message) })
                 break
@@ -181,67 +194,33 @@ async function handleIncomingMessage(client, event) {
             case 'antilink':
                 await safeCommand(client, message, async () => { await react(client, message); await group.antilink(client, message) })
                 break
-            case 'bye':
-                await safeCommand(client, message, async () => { await react(client, message); await group.bye(client, message) })
-                break
-            case 'block':
-                await safeCommand(client, message, async () => { await react(client, message); await block.block(client, message) })
-                break
-            case 'unblock':
-                await safeCommand(client, message, async () => { await react(client, message); await block.unblock(client, message) })
-                break
-            case 'fuck':
-                await safeCommand(client, message, async () => { await react(client, message); await fuck(client, message) })
-                break
-            case 'addprem':
-                await safeCommand(client, message, async () => { await react(client, message); await premiums.addprem(client, message); configmanager.saveP() })
-                break
-            case 'delprem':
-                await safeCommand(client, message, async () => { await react(client, message); await premiums.delprem(client, message); configmanager.saveP() })
-                break
-            case 'join':
-                await safeCommand(client, message, async () => { await react(client, message); await group.join(client, message) })
-                break
-            case 'auto-promote':
+            case 'antimentiongc':
                 await safeCommand(client, message, async () => {
                     await react(client, message)
-                    if (configmanager.premiums.includes(number + "@s.whatsapp.net")) {
-                        await group.autoPromote(client, message)
-                    } else {
-                        await bug(client, message, "command only for premium users.", 3)
+                    const arg = parts[1]?.toLowerCase()
+                    const groupConf = configmanager.config.groups[remoteJid] || {}
+                    groupConf.antimentiongc ??= { delete: false, kick: false, on: false }
+
+                    switch(arg) {
+                        case 'delete':
+                            groupConf.antimentiongc.delete = !groupConf.antimentiongc.delete
+                            break
+                        case 'kick':
+                            groupConf.antimentiongc.kick = !groupConf.antimentiongc.kick
+                            break
+                        case 'on':
+                            groupConf.antimentiongc.on = !groupConf.antimentiongc.on
+                            break
                     }
-                })
-                break
-            case 'auto-demote':
-                await safeCommand(client, message, async () => {
-                    await react(client, message)
-                    if (configmanager.premiums.includes(number + "@s.whatsapp.net")) {
-                        await group.autoDemote(client, message)
-                    } else {
-                        await bug(client, message, "command only for premium users.", 3)
-                    }
-                })
-                break
-            case 'auto-left':
-                await safeCommand(client, message, async () => {
-                    await react(client, message)
-                    if (configmanager.premiums.includes(number + "@s.whatsapp.net")) {
-                        await group.autoLeft(client, message)
-                    } else {
-                        await bug(client, message, "command only for premium users.", 3)
-                    }
+                    configmanager.config.groups[remoteJid] = groupConf
+                    configmanager.save()
+                    await client.sendMessage(remoteJid, { text: `✅ Anti-mention GC mis à jour : ${JSON.stringify(groupConf.antimentiongc)}` })
                 })
                 break
             case 'test':
                 await safeCommand(client, message, async () => { await react(client, message) })
                 break
-            default:
-                // Pas de commande correspondante
-                break
         }
-
-        // Link detection toujours activé
-        await safeCommand(client, message, group.linkDetection)
     }
 }
 
