@@ -28,7 +28,10 @@
     "wa-sticker-formatter": "^4.4.4",
     "pino": "^8.18.0",
     "file-type": "^19.0.0",
-    "form-data": "^4.0.1"
+    "form-data": "^4.0.1",
+    "fs-extra": "^11.1.1",
+    "chalk": "^5.3.0",
+    "dotenv": "^16.3.1"
   },
   "author": "⏤͟͟͞ＧＨＯＳＴＧ",
   "license": "ISC",
