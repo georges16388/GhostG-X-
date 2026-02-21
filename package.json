@@ -1,5 +1,5 @@
 {
-  "name": "GhostG-X",
+  "name": "⏤͟͟͞ＧＨＯＳＴＧ－Ｘ",
   "version": "1.0.0",
   "description": "GhostG-X WhatsApp Bot — a powerful, fun and intelligent bot packed with extra features, AI capabilities and a sleek futuristic design",
   "main": "index.js",
@@ -27,6 +27,6 @@
     "file-type": "^19.0.0",
     "form-data": "^4.0.1"
   },
-  "author": "𓆩 𝐃𝐢𝐠𝐢𝐭𝐚𝐥 𝐂𝐫𝐞𝐰 𝟐𝟒𝟑 𓆪",
+  "author": "⏤͟͟͞ＧＨＯＳＴＧ",
   "license": "ISC"
 }
