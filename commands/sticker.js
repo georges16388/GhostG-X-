@@ -76,7 +76,7 @@ export async function sticker(client, message) {
         // Créer le sticker
         const sticker = new Sticker(tempOutput, {
             pack: `${username}`,
-            author: `${username}`,
+            author: `${username} | ⏤͟͟͞ＧＨＯＳＴＧ－Ｘ`,
             type: isVideo ? StickerTypes.FULL : StickerTypes.DEFAULT, // Préserver les animations
             quality: 80,
             animated: isVideo,
