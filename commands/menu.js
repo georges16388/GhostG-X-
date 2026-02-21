@@ -125,20 +125,14 @@ export default async function info(client, message) {
 
     menu = menu.trim();
 
-    // Envoyer le menu
+    // Envoyer le menu sans Forwarded
     try {
       const device = getDevice(message.key.id);
 
       if (device === "android") {
         await client.sendMessage(remoteJid, {
           image: { url: "database/menu.jpg" },
-          caption: stylizedChar(menu),
-          contextInfo: {
-            participant: "0@s.whatsapp.net",
-            remoteJid: "status@broadcast",
-            quotedMessage: { conversation: " ⏤͟͟͞ＧＨＯＳＴＧ－Ｘ" },
-            isForwarded: true
-          }
+          caption: stylizedChar(menu)
         });
       } else {
         await client.sendMessage(
@@ -147,7 +141,7 @@ export default async function info(client, message) {
             video: { url: "database/DigiX.mp3" },
             caption: stylizedChar(menu)
           },
-          { quoted: message }
+          { quoted: message } // si tu veux citer le message original sans Forwarded
         );
       }
     } catch (err) {
