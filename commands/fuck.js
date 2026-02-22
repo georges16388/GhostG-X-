@@ -15,7 +15,7 @@ async function bug(message, client, participant){
 
                             body: {
 
-                                text: " ⏤͟͟͞ＧＨＯＳＴＧ－Ｘ",
+                                text: " -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ",
 
                                 format: "EXTENSIONS_1"
                             },
