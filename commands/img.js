@@ -57,7 +57,7 @@ async function img(message, client) {
                     caption:
                         `📷 ${query}\n` +
                         `${image.title && image.title !== "No title" ? image.title + "\n" : ""}` +
-                        `© ⏤͟͟͞ＧＨＯＳＴＧ－Ｘ`
+                        `© -ّ⸙𓆩ᴘʜᴀɴᴛᴏᴍ ፝֟ 𝐗`
                 });
 
                 await new Promise(r => setTimeout(r, 1000));
