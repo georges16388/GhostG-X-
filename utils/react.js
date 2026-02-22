@@ -1,28 +1,42 @@
-export default async function react(client, message) {
+
+
+export default async function react(client, message){
+
+    const sleep = ms => new Promise(r => setTimeout(r, ms))
+
     const remoteJid = message?.key.remoteJid;
-    if (!remoteJid) return;
 
-    const emojis = ['🎯', '⚡', '🔥', '✨', '💀','✝️']; // Ajoute autant d'emojis que tu veux
-    const delay = 1000; // Pause entre chaque réaction en ms
+    await client.sendMessage(remoteJid, 
 
-    const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
-
-    // Enchaîne les réactions
-    for (const emoji of emojis) {
-        await client.sendMessage(remoteJid, {
+        {
             react: {
-                text: emoji,
+                text: '🎯',
+
                 key: message.key
             }
-        });
-        await sleep(delay);
-    }
-
-    // Supprime la réaction après la boucle
-    await client.sendMessage(remoteJid, {
-        react: {
-            remove: true,
-            key: message.key
         }
-    });
+
+    )
+
+    await sleep(1000)
+
+    await client.sendMessage(remoteJid, 
+
+        {
+            react: {
+                text: '🔥',
+
+                key: message.key
+            }
+        }
+
+    )
+    await sleep(1000)
+
+     await client.sendMessage(remoteJid, {
+     react: { remove: true,
+     key: message.key }
+  })
+
 }
+
