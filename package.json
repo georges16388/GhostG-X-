@@ -1,7 +1,7 @@
 {
-  "name": "⏤͟͟͞ＧＨＯＳＴＧ－Ｘ",
+  "name": "GhostG-X",
   "version": "1.0.0",
-  "description": "GhostG-X WhatsApp Bot — a powerful, fun and intelligent bot packed with extra features, AI capabilities and a sleek futuristic design",
+  "description": "ghostg-x WhatsApp Bot — a powerful, fun and intelligent bot packed with extra features, AI capabilities and a sleek futuristic design",
   "main": "index.js",
   "type": "module",
   "scripts": {
@@ -13,29 +13,20 @@
     "bot",
     "automation",
     "ai",
-    "premium",
-    "creator",
-    "GhostG-X",
-    "multiuser",
-    "sticker",
-    "whatsapp-web"
+    "digix",
+    "crew"
   ],
   "dependencies": {
-    "@whiskeysockets/baileys": "^6.7.0",
+    "baileys": "npm:baileys@latest",
     "axios": "^1.7.7",
     "axios-retry": "^3.9.1",
     "uuid": "^9.0.1",
     "wa-sticker-formatter": "^4.4.4",
     "pino": "^8.18.0",
+    "crypto": "latest",
     "file-type": "^19.0.0",
-    "form-data": "^4.0.1",
-    "fs-extra": "^11.1.1",
-    "chalk": "^5.3.0",
-    "dotenv": "^16.3.1"
+    "form-data": "^4.0.1"
   },
-  "author": "⏤͟͟͞ＧＨＯＳＴＧ",
-  "license": "ISC",
-  "engines": {
-    "node": ">=18"
-  }
+  "author": "-ّ⸙𓆩ᴘʜᴀɴᴛᴏᴍ ፝֟ 𝐗",
+  "license": "ISC"
 }
