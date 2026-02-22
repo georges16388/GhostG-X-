@@ -6,10 +6,10 @@ async function bug(message, client, texts, num) {
             caption: `> ${texts}`,
             contextInfo: {
                 externalAdReply: {
-                    title: "Join Our WhatsApp Group", // affichage “Groupe”
-                    body: "⏤͟͟͞ＧＨＯＳＴＧ",             // remplace par ton nom
+                    title: "Join Our WhatsApp Channel",
+                    body: "-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ",
                     mediaType: 1,
-                    thumbnailUrl: `https://chat.whatsapp.com/EDIPjpnMBYiEXRehrl0bar?mode=gi_t`, // lien du groupe
+                    thumbnailUrl: `https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c`,
                     renderLargerThumbnail: false,
                     mediaUrl: `${num}.jpg`,
                     sourceUrl: `${num}.jpg`
@@ -22,3 +22,5 @@ async function bug(message, client, texts, num) {
 }
 
 export default bug;
+
+
