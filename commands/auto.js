@@ -39,3 +39,4 @@ export async function autotype(client, message) {
 }
 
 export default { autorecord, autotype }
+
