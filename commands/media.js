@@ -8,7 +8,7 @@ export async function photo(client, message) {
         
         if (!target) {
             return await client.sendMessage(message.key.remoteJid, {
-                text: '📸 *⏤͟͟͞ＧＨＯＳＴＧ－Ｘ*\n\nRépondez à un sticker pour le convertir en image.\n\nUsage: .photo (réponse à un sticker)'
+                text: '📸 *-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ*\n\nRépondez à un sticker pour le convertir en image.\n\nUsage: .photo (réponse à un sticker)'
             })
         }
 
@@ -20,15 +20,15 @@ export async function photo(client, message) {
 
         await client.sendMessage(message.key.remoteJid, {
             image: fs.readFileSync(filename),
-            caption: '✨ ⏤͟͟͞ＧＨＯＳＴＧ－Ｘ'
-        })
+            caption: '✨ -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ'
+       })
 
         fs.unlinkSync(filename)
 
     } catch (e) {
         console.log(e)
         await client.sendMessage(message.key.remoteJid, {
-            text: '❌ Erreur de conversion.'
+            text: '❌ Zut...erreur.'
         })
     }
 }
@@ -40,7 +40,7 @@ export async function tomp3(client, message) {
         
         if (!target) {
             return await client.sendMessage(message.key.remoteJid, {
-                text: '🎵 *⏤͟͟͞ＧＨＯＳＴＧ－Ｘ*\n\nRépondez à une vidéo pour extraire l\'audio.\n\nUsage: .toaudio (réponse à une vidéo)'
+                text: '🎵 *-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ*\n\nRépondez à une vidéo pour extraire l\'audio.\n\nUsage: .toaudio (réponse à une vidéo)'
             })
         }
 
@@ -71,7 +71,7 @@ export async function tomp3(client, message) {
     } catch (e) {
         console.log(e)
         await client.sendMessage(message.key.remoteJid, {
-            text: '❌ Erreur de conversion audio.'
+            text: '❌ Oh non ! Ça n'a pas marché.'
         })
     }
 }
