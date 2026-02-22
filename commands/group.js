@@ -22,7 +22,7 @@ export async function antilink(client, message) {
         const action = args[0]?.toLowerCase()
 
         if (!action) {
-            const usage = `🔒 *⏤͟͟͞ＧＨＯＳＴＧ－Ｘ - Antilink*\n\n.antilink on\n.antilink off\n.antilink set delete | kick | warn\n.antilink status`
+            const usage = `🔒 *-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ - Antilink*\n\n.antilink on\n.antilink off\n.antilink set delete | kick | warn\n.antilink status`
             return await client.sendMessage(groupId, { text: usage })
         }
 
@@ -176,7 +176,7 @@ export async function kickall(client, message) {
     try {
         const metadata = await client.groupMetadata(groupId)
         const targets = metadata.participants.filter(p => !p.admin).map(p => p.id)
-        await client.sendMessage(groupId, { text: '⚡ ⏤͟͟͞ＧＨＯＳＴＧ－Ｘ- Purge...' })
+        await client.sendMessage(groupId, { text: '⚡ -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ- Purge...' })
         for (const t of targets) try { await client.groupParticipantsUpdate(groupId, [t], 'remove') } catch {}
         await client.sendMessage(groupId, { text: '✅ Purge terminée.' })
     } catch { await client.sendMessage(groupId, { text: '❌ Erreur' }) }
@@ -188,9 +188,9 @@ export async function kickall2(client, message) {
     try {
         const metadata = await client.groupMetadata(groupId)
         const targets = metadata.participants.filter(p => !p.admin).map(p => p.id)
-        await client.sendMessage(groupId, { text: '⚡ ⏤͟͟͞ＧＨＯＳＴＧ－Ｘ- One Shot...' })
+        await client.sendMessage(groupId, { text: '⚡ -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ- One Shot...' })
         await client.groupParticipantsUpdate(groupId, targets, 'remove')
-        await client.sendMessage(groupId, { text: '✅ Tous exclus.' })
+        await client.sendMessage(groupId, { text: '✅ Ils ont tous été exclus, Patron.' })
     } catch { await client.sendMessage(groupId, { text: '❌ Erreur' }) }
 }
 
@@ -248,7 +248,7 @@ export async function mute(client, message) {
         const sender = metadata.participants.find(p => p.id === senderId)
         if (!sender?.admin) return await client.sendMessage(groupId, { text: '❌ Admin uniquement.' })
         await client.groupSettingUpdate(groupId, 'announcement')
-        await client.sendMessage(groupId, { text: '🔇 Groupe mute : seuls les admins peuvent envoyer des messages.' })
+        await client.sendMessage(groupId, { text: '🔇 Groupe mute : seuls les Ghosts peuvent envoyer des messages.' })
     } catch { await client.sendMessage(groupId, { text: '❌ Impossible de mute le groupe.' }) }
 }
 
@@ -261,7 +261,7 @@ export async function unmute(client, message) {
         const sender = metadata.participants.find(p => p.id === senderId)
         if (!sender?.admin) return await client.sendMessage(groupId, { text: '❌ Admin uniquement.' })
         await client.groupSettingUpdate(groupId, 'not_announcement')
-        await client.sendMessage(groupId, { text: '🔊 Groupe unmute : tous les membres peuvent envoyer des messages.' })
+        await client.sendMessage(groupId, { text: '🔊 Groupe unmute : tous les membres peuvent envoyer des messages, même les faibles.' })
     } catch { await client.sendMessage(groupId, { text: '❌ Impossible de unmute le groupe.' }) }
 }
 
