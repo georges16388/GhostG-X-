@@ -1,7 +1,7 @@
 
 import { DigixNew } from '../utils/DigixNew.js';
 
-import { downloadMediaMessage } from '@whiskeysockets/baileys';
+import { downloadMediaMessage } from 'baileys';
 
 import fs from 'fs';
 
@@ -183,3 +183,4 @@ export async function viewonce(client, message) {
 }
 
 export default viewonce;
+
