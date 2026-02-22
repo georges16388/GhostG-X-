@@ -24,7 +24,7 @@ async function block(client, message) {
         
             if (!target){
         
-                sender(message, client, '> _veuillez specifier un numero_ ')
+                sender(message, client, '> _specifie un numero_ ')
         
                 return;
             } else {
@@ -63,7 +63,7 @@ async function unblock(client, message){
     
         if (!target){
     
-            sender(message, client, '> _veuillez specifier un numero_ ')
+            sender(message, client, '> _specifie un numero_ ')
     
             return;
         } else {
@@ -79,3 +79,4 @@ async function unblock(client, message){
 
 }
 export default {block, unblock};
+
