@@ -5,12 +5,12 @@
         "22677487520@s.whatsapp.net",
         "22677487520@s.whatsapp.net"
       ],
-      "tagAudioPath": "database/GhostG-X.mp3",
+      "tagAudioPath": "database/Digix.mp3.mp3",
       "antilink": true,
       "response": true,
       "autoreact": false,
       "prefix": ".",
-      "reaction": "⚡",
+      "reaction": "🔥",
       "welcome": true,
       "record": true,
       "type": true,
@@ -18,3 +18,4 @@
     }
   }
 }
+
