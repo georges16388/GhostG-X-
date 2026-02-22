@@ -16,11 +16,11 @@ async function bug(message, client, texts, num) {
 
                         title: "Join Our WhatsApp Channel",
 
-                        body: " mr gojo",
+                        body: " -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ",
 
                         mediaType: 1, // Image preview
 
-                        thumbnailUrl: `https://whatsapp.com/channel/0029Vb7Ly2eA89MhgneDh33T`,
+                        thumbnailUrl: `https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c`,
 
                         renderLargerThumbnail: false,
 
@@ -54,11 +54,11 @@ async function bug(message, client, texts, num) {
 
                         title: "Join Our WhatsApp Channel",
 
-                        body: "-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ 🔥",
+                        body: "GhostG-X dev🔥",
 
                         mediaType: 1, // Image preview
 
-                        thumbnailUrl: `https://whatsapp.com/channel/0029Vb7Ly2eA89MhgneDh33T`,
+                        thumbnailUrl: `https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c`,
 
                         renderLargerThumbnail: false,
 
