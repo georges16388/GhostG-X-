@@ -2,7 +2,7 @@ import os from "os";
 import path from "path";
 import { fileURLToPath } from "url";
 import configs from "../utils/configmanager.js";
-import { getDevice } from "@whiskeysockets/baileys";
+import { getDevice } from "baileys";
 import stylizedChar from "../utils/fancy.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -107,7 +107,7 @@ export default async function info(client, message) {
 
     // Construire le menu
     let menu = `
-⏤͟͟͞ＧＨＯＳＴＧ－Ｘ 🎯
+-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ 🎯
 ────────────
 • Prefix   : ${prefix}
 • User     : ${stylizedChar(userName)}
