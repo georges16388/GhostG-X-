@@ -1,7 +1,7 @@
 import { Sticker, createSticker, StickerTypes } from 'wa-sticker-formatter' // ES6
 // const { Sticker, createSticker, StickerTypes } = require('wa-sticker-formatter') // CommonJS
 
-import { downloadMediaMessage } from "@whiskeysockets/baileys";
+import { downloadMediaMessage } from "baileys";
 import fs from "fs";
 import path from "path";
 import stylizedChar from '../utils/fancy.js';
@@ -84,3 +84,4 @@ export async function take(client, message) {
 }
 
 export default take;
+
