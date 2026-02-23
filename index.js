@@ -1,9 +1,8 @@
-import connectToWhatsapp from './Digix/crew.js'
-import handleIncomingMessage from './events/messageHandler.js'
+// index.js
+import connectToWhatsapp from './utils/connectToWhatsapp.js'; // ton nouveau fichier
+import handleIncomingMessage from './events/messageHandler.js';
 
-(async() => {
-    await connectToWhatsapp(handleIncomingMessage)
-        console.log('established !')
-})()
-
-
+(async () => {
+    const sock = await connectToWhatsapp(handleIncomingMessage);
+    console.log('✅ GhostG-X Bot established !');
+})();
