@@ -5,17 +5,23 @@ import configmanager from '../utils/configmanager.js';
 
 const SESSION_FOLDER = './sessionData';
 
+// ✅ Création auto du dossier session
+if (!fs.existsSync(SESSION_FOLDER)) {
+    fs.mkdirSync(SESSION_FOLDER, { recursive: true });
+    console.log('📁 sessionData créé automatiquement');
+}
+
 async function connectToWhatsapp(handleMessage) {
     const { version } = await fetchLatestBaileysVersion();
-    console.log('📦 Using Baileys version:', version.join('.'));
+    console.log('📦 Baileys version:', version.join('.'));
 
     const { state, saveCreds } = await useMultiFileAuthState(SESSION_FOLDER);
 
     const sock = makeWASocket({
         version,
         auth: state,
-        printQRInTerminal: false, // pas de QR ici
-        syncFullHistory: true,
+        printQRInTerminal: false,
+        syncFullHistory: false, // ⚠️ plus stable
         markOnlineOnConnect: true,
         logger: pino({ level: 'silent' }),
         keepAliveIntervalMs: 10000,
@@ -23,73 +29,92 @@ async function connectToWhatsapp(handleMessage) {
         generateHighQualityLinkPreview: true,
     });
 
+    // 🔐 sauvegarde session
     sock.ev.on('creds.update', saveCreds);
+
+    // ⚠️ IMPORTANT : éviter double listener
+    let isHandlerRegistered = false;
 
     sock.ev.on('connection.update', async (update) => {
         const { connection, lastDisconnect } = update;
 
         if (connection === 'close') {
             const statusCode = lastDisconnect?.error?.output?.statusCode;
-            const reason = lastDisconnect?.error?.toString() || 'unknown';
-            console.log('❌ Disconnected:', reason, 'StatusCode:', statusCode);
+            console.log('❌ Déconnecté:', statusCode);
 
-            const shouldReconnect = statusCode !== DisconnectReason.loggedOut && reason !== 'unknown';
+            const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
+
             if (shouldReconnect) {
-                console.log('🔄 Reconnecting in 5 seconds...');
+                console.log('🔄 Reconnexion...');
                 setTimeout(() => connectToWhatsapp(handleMessage), 5000);
             } else {
-                console.log('🚫 Logged out permanently. You need to pair again manually.');
+                console.log('🚫 Session supprimée. Reconnecte-toi.');
             }
 
         } else if (connection === 'connecting') {
-            console.log('⏳ Connecting...');
+            console.log('⏳ Connexion en cours...');
+
         } else if (connection === 'open') {
-            console.log('✅ WhatsApp connection established!');
+            console.log('✅ Connecté à WhatsApp !');
+
+            // ✅ éviter doublons
+            if (!isHandlerRegistered) {
+                sock.ev.on('messages.upsert', async (msg) => {
+                    try {
+                        await handleMessage(sock, msg);
+                    } catch (err) {
+                        console.error('❌ Handler error:', err);
+                    }
+                });
+                isHandlerRegistered = true;
+            }
 
             // --- WELCOME MESSAGE ---
             try {
-                const chatId = '22677487520@s.whatsapp.net'; // ton numéro ou le groupe cible
+                const chatId = '22677487520@s.whatsapp.net';
                 const imagePath = './database/menu(0).jpg';
 
-                let messageOptions = {
-                    text: `
-╔══════════════════╗
-      *-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ Bot Connected Successfully* 🚀
-╠══════════════════╣
-> "Always Forward. GhostG-X bot, one of the best."
-╚══════════════════╝
-*-ّ⸙𓆩ᴘʜᴀɴᴛᴏᴍ ፝֟ 𝐗*`,
-                };
+                let messageOptions;
 
                 if (fs.existsSync(imagePath)) {
                     messageOptions = {
                         image: { url: imagePath },
-                        caption: messageOptions.text,
-                        footer: '💻 Powered by -ّ⸙𓆩ᴘʜᴀɴᴛᴏᴍ ፝֟ 𝐗',
+                        caption: `
+╔══════════════════╗
+ *👻 GhostG-X Bot Connected Successfully* 🚀
+╠══════════════════╣
+> Always Forward.
+╚══════════════════╝
+
+⚡ Phantom X System`,
+                    };
+                } else {
+                    messageOptions = {
+                        text: `👻 GhostG-X Bot connecté avec succès ! 🚀`,
                     };
                 }
 
                 await sock.sendMessage(chatId, messageOptions);
-                console.log('📩 Welcome message sent!');
-            } catch (err) {
-                console.error('❌ Error sending welcome message:', err);
-            }
+                console.log('📩 Message envoyé');
 
-            sock.ev.on('messages.upsert', async (msg) => handleMessage(sock, msg));
+            } catch (err) {
+                console.error('❌ Erreur message:', err);
+            }
         }
     });
 
-    // --- PAIRING POUR PREMIÈRE CONNEXION ---
+    // --- PAIRING CODE ---
     setTimeout(async () => {
         if (!state.creds.registered) {
-            console.log('⚠️ Not paired. Requesting pairing code...');
-            try {
-                const number = 22677487520; // ton numéro WhatsApp
-                const pairingCode = await sock.requestPairingCode(number, 'GHOSTGX7');
-                console.log('📲 Pairing Code:', pairingCode);
-                console.log('👉 Enter this code in your WhatsApp app to pair.');
+            console.log('⚠️ Pas connecté. Pairing...');
 
-                // Configuration initiale après pairing
+            try {
+                const number = '22677487520'; // ⚠️ en string
+
+                const code = await sock.requestPairingCode(number);
+                console.log('📲 CODE:', code);
+
+                // config utilisateur
                 configmanager.config.users[number] = {
                     sudoList: [`${number}@s.whatsapp.net`],
                     tagAudioPath: 'tag.mp3',
@@ -101,14 +126,16 @@ async function connectToWhatsapp(handleMessage) {
                     welcome: false,
                     record: true,
                     type: false,
-                    publicMode: false,
+                    publicMode: true,
                 };
+
                 configmanager.save();
+
             } catch (e) {
-                console.error('❌ Error requesting pairing code:', e);
+                console.error('❌ Pairing error:', e);
             }
         }
-    }, 5000);
+    }, 4000);
 
     return sock;
 }
