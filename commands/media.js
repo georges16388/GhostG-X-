@@ -1,5 +1,5 @@
 import fs from 'fs'
-import { downloadMediaMessage } from '@whiskeysockets/baileys'
+import { downloadMediaMessage } from 'baileys'
 
 export async function photo(client, message) {
     try {
@@ -8,7 +8,7 @@ export async function photo(client, message) {
         
         if (!target) {
             return await client.sendMessage(message.key.remoteJid, {
-                text: '📸 *-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ*\n\nRépondez à un sticker pour le convertir en image.\n\nUsage: .photo (réponse à un sticker)'
+                text: '📸 *MR GOJO TECH 241*\n\nRépondez à un sticker pour le convertir en image.\n\nUsage: .photo (réponse à un sticker)'
             })
         }
 
@@ -20,15 +20,15 @@ export async function photo(client, message) {
 
         await client.sendMessage(message.key.remoteJid, {
             image: fs.readFileSync(filename),
-            caption: '✨ -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ'
-       })
+            caption: '🔥 -ّ⸙𓆩ᴘʜᴀɴᴛᴏᴍ ፝֟ 𝐗 226'
+        })
 
         fs.unlinkSync(filename)
 
     } catch (e) {
         console.log(e)
         await client.sendMessage(message.key.remoteJid, {
-            text: '❌ Zut...erreur.'
+            text: '❌ Erreur de conversion.'
         })
     }
 }
@@ -71,9 +71,10 @@ export async function tomp3(client, message) {
     } catch (e) {
         console.log(e)
         await client.sendMessage(message.key.remoteJid, {
-            text: '❌ Oh non ! Ça n'a pas marché.'
+            text: '❌ Erreur de conversion audio.'
         })
     }
 }
 
 export default { photo, tomp3 }
+
