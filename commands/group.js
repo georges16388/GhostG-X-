@@ -229,9 +229,28 @@ export async function approveall(client, message) {
         await client.sendMessage(groupId, { text: '❌ Impossible de traiter approveall.' })
     }
 }
+// ------------------- ADD -------------------
+export async function add(client, message) {
+    const groupId = message.key.remoteJid
+    if (!groupId.includes('@g.us')) return
+
+    const args = (message.message?.conversation || message.message?.extendedTextMessage?.text || '').split(/\s+/).slice(1)
+    if (args.length === 0) return await client.sendMessage(groupId, { text: '❌ Mentionne le ou les numéros à ajouter.' })
+
+    for (const num of args) {
+        const jid = num.includes('@s.whatsapp.net') ? num : `${num}@s.whatsapp.net`
+        try {
+            await client.groupParticipantsUpdate(groupId, [jid], 'add')
+            await client.sendMessage(groupId, { text: `✅ @${jid.split('@')[0]} ajouté au groupe.`, mentions: [jid] })
+        } catch (e) {
+            await client.sendMessage(groupId, { text: `❌ Impossible d’ajouter @${jid.split('@')[0]}.`, mentions: [jid] })
+            console.error('Add error:', e)
+        }
+    }
+}
 // ------------------- EXPORT -------------------
 export default {
     kick, kickall, promote, demote,
     gclink, join, antilink, linkDetection,
-    resetwarns, checkwarns, mute, unmute
+    resetwarns, checkwarns, mute, unmute, approveall, add
 }
