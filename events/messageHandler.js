@@ -1,3 +1,4 @@
+import connectToWhatsapp from './utils/connectToWhatsapp.js';
 import configmanager from "../utils/configmanager.js"
 import fs from 'fs/promises'
 import group from '../commands/group.js'
