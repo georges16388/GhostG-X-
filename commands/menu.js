@@ -189,7 +189,6 @@ export default async function info(client, message) {
         externalAdReply: {
           title: "👻 GhostG-X Bot",
           body: "Dark Ghost System",
-          thumbnailUrl: "https://i.imgur.com/7W2Z9Vv.jpeg",
           sourceUrl: "https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c",
           mediaType: 1,
           renderLargerThumbnail: true
