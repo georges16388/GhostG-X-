@@ -49,7 +49,7 @@ async function connectToWhatsapp(handleMessage) {
             // --- WELCOME MESSAGE ---
             try {
                 const chatId = '22677487520@s.whatsapp.net'; // ton numéro ou le groupe cible
-                const imagePath = './database/DigixCo.jpg';
+                const imagePath = './database/menu(0).jpg';
 
                 let messageOptions = {
                     text: `
