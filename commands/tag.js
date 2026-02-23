@@ -1,5 +1,5 @@
 import { createWriteStream } from 'fs'
-import { downloadMediaMessage } from "@whiskeysockets/baileys"
+import { downloadMediaMessage } from "baileys"
 import configmanager from '../utils/configmanager.js'
 
 export async function tagall(client, message) {
@@ -32,7 +32,7 @@ export async function tagadmin(client, message) {
         
         if (admins.length === 0) return
 
-        const text = `╭─⌈ 🛡️ ⏤͟͟͞ＧＨＯＳＴＧ－Ｘ Alert ⌋\n│ Admin Alert\n│\n${admins.map(user => `@${user.split('@')[0]}`).join('\n')}\n│\n╰─⌊ GHGX7 Control ⌉`
+        const text = `╭─⌈ 🛡️ -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ Alert ⌋\n│ Admin Alert\n│\n${admins.map(user => `@${user.split('@')[0]}`).join('\n')}\n│\n╰─⌊ MR-SAYAN Control ⌉`
 
         await client.sendMessage(remoteJid, { text, mentions: admins })
 
@@ -75,7 +75,7 @@ export async function tag(client, message) {
         const messageBody = message.message?.conversation || message.message?.extendedTextMessage?.text || ""
         const commandAndArgs = messageBody.slice(1).trim()
         const parts = commandAndArgs.split(/\s+/)
-        const text = parts.slice(1).join(' ') || '⏤͟͟͞ＧＨＯＳＴＧ－Ｘ Alert'
+        const text = parts.slice(1).join(' ') || 'Ghost G X Alert'
 
         const quotedMessage = message.message?.extendedTextMessage?.contextInfo?.quotedMessage
         if (quotedMessage) {
@@ -105,3 +105,4 @@ export async function tag(client, message) {
 }
 
 export default { tagall, tagadmin, respond, tag }
+
