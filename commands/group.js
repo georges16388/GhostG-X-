@@ -204,6 +204,7 @@ export async function unmute(client, message) {
         await client.sendMessage(groupId, { text: '🔊 Groupe unmute activé.' })
     } catch { await client.sendMessage(groupId, { text: '❌ Impossible de unmute le groupe.' }) }
 }
+
 // ------------------- APPROVE ALL -------------------
 export async function approveall(client, message) {
     const groupId = message.key.remoteJid
