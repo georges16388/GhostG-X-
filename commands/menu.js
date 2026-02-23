@@ -7,6 +7,22 @@ import stylizedChar from "../utils/fancy.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// 🔥 Rotation des images
+let currentImageIndex = 0;
+
+const images = [
+  "database/menu(0).jpg",
+  "database/GhostG-X(0).jpg",
+  "database/GhostG.jpg"
+];
+
+function getNextImage() {
+  const img = images[currentImageIndex];
+  currentImageIndex = (currentImageIndex + 1) % images.length;
+  return img;
+}
+
+// 🔥 Format uptime
 function formatUptime(seconds) {
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
@@ -14,6 +30,7 @@ function formatUptime(seconds) {
   return `${h}h ${m}m ${s}s`;
 }
 
+// 🔥 Icônes catégories
 function getCategoryIcon(category) {
   const c = category.toLowerCase();
   if (c === "utils") return "⚙️";
@@ -21,13 +38,15 @@ function getCategoryIcon(category) {
   if (c === "group") return "👥";
   if (c === "bug") return "🐞";
   if (c === "tags") return "🏷️";
-  if (c === "moderation") return "😶‍🌫️";
+  if (c === "moderation") return "🌪️";
   if (c === "owner") return "✨";
   if (c === "creator") return "👑";
   if (c === "premium") return "💎";
+  if (c === "settings") return "⚡";
   return "🎯";
 }
 
+// 🔥 Liste des commandes
 const commandsList = {
   uptime: "utils",
   ping: "utils",
@@ -37,11 +56,11 @@ const commandsList = {
   getpp: "owner",
   sudo: "owner",
   delsudo: "owner",
-  public: "owner",
-  setprefix: "owner",
-  autotype: "owner",
-  autorecord: "owner",
-  welcome: "owner",
+  public: "settings",
+  setprefix: "settings",
+  autotype: "settings",
+  autorecord: "settings",
+  welcome: "settings",
   photo: "media",
   toaudio: "media",
   sticker: "media",
@@ -51,9 +70,9 @@ const commandsList = {
   save: "media",
   tiktok: "media",
   url: "media",
-  tag: "tags",
-  tagall: "tags",
-  tagadmin: "tags",
+  tag: "group",
+  tagall: "group",
+  tagadmin: "group",
   kick: "group",
   kickall: "group",
   kickall2: "group",
@@ -65,17 +84,16 @@ const commandsList = {
   unmute: "group",
   gclink: "group",
   antilink: "group",
-  antimentiongc: "group",
   bye: "group",
+  join: "group",
   block: "moderation",
   unblock: "moderation",
-  fuck: "moderation",
-  addprem: "premium",
-  delprem: "premium",
+  fuck: "bug",
+  addprem: "creator",
+  delprem: "creator",
   "auto-promote": "premium",
   "auto-demote": "premium",
   "auto-left": "premium",
-  join: "owner",
 };
 
 export default async function info(client, message) {
@@ -86,80 +104,97 @@ export default async function info(client, message) {
     const usedRam = (process.memoryUsage().rss / 1024 / 1024).toFixed(1);
     const totalRam = (os.totalmem() / 1024 / 1024).toFixed(1);
     const uptime = formatUptime(process.uptime());
-    const platform = os.platform();
 
     const botId = client.user.id.split(":")[0];
     const prefix = configs.config.users?.[botId]?.prefix || "!";
 
-    const now = new Date();
-    const daysFR = ["Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi"];
-    const date = `${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear()}`;
-    const day = daysFR[now.getDay()];
-
-    // Regrouper les commandes
+    // 🔥 Regrouper les commandes
     const categories = {};
     for (const [cmd, cat] of Object.entries(commandsList)) {
       if (!categories[cat]) categories[cat] = [];
       categories[cat].push(cmd);
     }
 
-    // Construire le menu
+    // 🔥 MENU DARK 👻
     let menu = `
--ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ 🎯
-────────────
-• Prefix   : ${prefix}
-• User     : ${stylizedChar(userName)}
-• Version  : 1.0.0
-• Uptime   : ${uptime}
-• RAM      : ${usedRam}/${totalRam} MB
-• Platform : ${platform}
-• Date     : ${date} - ${stylizedChar(day)}
-────────────
+
+
+
+╔═══════『 👻 ɢʜᴏꜱᴛɢ-x 』═══════╗
+         -ّ⸙𓆩 ᴊᴇꜱᴜꜱ ᴛ'ᴀɪᴍᴇ 𓆪-ّ⸙
+▣───────────────▣
+  ⚙️ ʙᴏᴛ sᴛᴀᴛᴜs
+▣───────────────▣
+
+❖ ɴᴀᴍᴇ : -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
+❖ ᴜsᴇʀ : ${stylizedChar(userName)}
+❖ ᴘʀᴇғɪx : ${prefix}
+❖ ᴜᴘᴛɪᴍᴇ : ${uptime}
+❖ ʀᴀᴍ : ${usedRam}/${totalRam} MB
+❖ ᴍᴏᴅᴇ : 🌑 ɴɪɢʜᴛ
+
+▣───────────────▣
+  👻 ᴅᴇsᴄʀɪᴘᴛɪᴏɴ
+▣───────────────▣
+
+❖ sᴘᴇᴇᴅ : ʀᴀᴘɪᴅᴇ ⚡
+❖ sᴇᴄᴜʀɪᴛʏ : ᴇʟᴇᴠᴇᴇ 🔒
+❖ ᴇɴɢɪɴᴇ : ᴘʜᴀɴᴛᴏᴍ-x
 `;
 
-    for (const [category, commands] of Object.entries(categories)) {
+    // 🔥 Catégories
+    for (const [category, cmds] of Object.entries(categories)) {
       const icon = getCategoryIcon(category);
-      const catName = stylizedChar(category);
+      const name = stylizedChar(category);
 
-      menu += `┏━━━ ${icon} ${catName} ━━━\n`;
-      commands.forEach(cmd => {
-        menu += `┃   › ${stylizedChar(cmd)}\n`;
+      menu += `
+
+╭━━━〔 ${icon} ${name} 〕━━━⬣
+`;
+
+      cmds.forEach(cmd => {
+        menu += `┃ ✦ ${stylizedChar(cmd)}\n`;
       });
-      menu += `┗━━━━━━━━━━━━━━━\n`;
+
+      menu += `╰━━━━━━━━━━━━⬣\n`;
     }
 
-    menu = menu.trim();
+    // 🔥 Footer avec DEV
+    menu += `
 
-    // 🔥 ENVOI MULTI-MEDIA
-    try {
-      const images = [
-        "database/menu(0).jpg",
-        "database/GhostG-X(0).jpg",
-        "database/GhostG.jpg"
-      ];
+▣───────────────▣
+  🔗 ᴄʜᴀɴɴᴇʟ
+▣───────────────▣
 
-      // 1️⃣ Envoyer les images
-      for (let i = 0; i < images.length; i++) {
-        await client.sendMessage(remoteJid, {
-          image: { url: images[i] },
-          caption: i === 0 ? menu : ""
-        }, { quoted: message });
+❖ https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c
+
+▣───────────────▣
+
+      👤 ᴅᴇᴠ : ɢʜᴏꜱᴛɢ
+
+╚═══════════════════════╝
+`;
+
+    // 🔥 Image dynamique
+    const imagePath = getNextImage();
+
+    // 🔥 Envoi message
+    await client.sendMessage(remoteJid, {
+      image: { url: imagePath },
+      caption: menu,
+      contextInfo: {
+        forwardingScore: 999,
+        isForwarded: true,
+        externalAdReply: {
+          title: "👻 GhostG-X Bot",
+          body: "Dark Ghost System",
+          thumbnailUrl: "https://i.imgur.com/7W2Z9Vv.jpeg",
+          sourceUrl: "https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c",
+          mediaType: 1,
+          renderLargerThumbnail: true
+        }
       }
-
-      // 2️⃣ Envoyer l'audio
-      await client.sendMessage(remoteJid, {
-        audio: { url: "database/GhostG-X.mp3" },
-        mimetype: "audio/mpeg",
-        ptt: true
-      }, { quoted: message });
-
-    } catch (err) {
-      await client.sendMessage(remoteJid, {
-        text: "❌ Erreur lors de l'envoi du menu : " + err.message
-      }, { quoted: message });
-    }
-
-    console.log(menu);
+    }, { quoted: message });
 
   } catch (err) {
     console.log("error while displaying menu:", err);
