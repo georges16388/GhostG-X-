@@ -204,7 +204,30 @@ export async function unmute(client, message) {
         await client.sendMessage(groupId, { text: '🔊 Groupe unmute activé.' })
     } catch { await client.sendMessage(groupId, { text: '❌ Impossible de unmute le groupe.' }) }
 }
+// ------------------- APPROVE ALL -------------------
+export async function approveall(client, message) {
+    const groupId = message.key.remoteJid
+    if (!groupId.includes('@g.us')) return
 
+    try {
+        const metadata = await client.groupMetadata(groupId)
+        // Filtre uniquement les participants avec un statut "invite" en attente
+        const pending = metadata.participants.filter(p => p.admin === 'pending').map(p => p.id)
+
+        if (pending.length === 0) return await client.sendMessage(groupId, { text: 'ℹ️ Aucune invitation en attente.' })
+
+        for (const id of pending) {
+            try { 
+                await client.groupParticipantsUpdate(groupId, [id], 'add') 
+            } catch (e) { console.error('Erreur approveall:', e) }
+        }
+
+        await client.sendMessage(groupId, { text: `✅ Toutes les invitations en attente (${pending.length}) ont été acceptées.` })
+    } catch (error) {
+        console.error('approveall error:', error)
+        await client.sendMessage(groupId, { text: '❌ Impossible de traiter approveall.' })
+    }
+}
 // ------------------- EXPORT -------------------
 export default {
     kick, kickall, promote, demote,
