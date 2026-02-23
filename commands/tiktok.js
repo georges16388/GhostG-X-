@@ -25,7 +25,7 @@ async function tiktok(client, message){
         const {data} = await axios.get(apiUrl);
 
         if (!data.status || !data.data){
-            await client.sendMessage(remoteJid, {text: stylizedChar(' 🥺 Oh ça n'a pas marché ')})
+            await client.sendMessage(remoteJid, {text: stylizedChar('🥺 Oh ça n'a pas marché ')});
             return;
         }
 
