@@ -88,6 +88,7 @@ const commandsList = {
   approveall": "group",
   bye: "group",
   join: "group",
+  add: "group",
   block: "moderation",
   unblock: "moderation",
   fuck: "bug",
