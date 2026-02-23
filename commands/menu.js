@@ -137,7 +137,7 @@ export default async function info(client, message) {
 
       if (device === "android") {
         await client.sendMessage(remoteJid, {
-          image: { url: "database/menu.jpg" },
+          image: { url: "database/menu(0).jpg" },
           caption: menu
         });
       } else {
