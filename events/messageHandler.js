@@ -103,6 +103,12 @@ async function handleIncomingMessage(client, event) {
                     await sudo.sudo(client, message, approvedUsers)
                     configmanager.save()
                     break
+                case 'repo': // @cat: owner
+    await react(client, message)
+    await client.sendMessage(remoteJid, {
+        text: "🔗 Voici le repo du bot : https://github.com/georges16388/GhostG-X-.git"
+    }, { quoted: message });
+                    break
 
                 case 'delsudo': // @cat: owner
                     await react(client, message)
