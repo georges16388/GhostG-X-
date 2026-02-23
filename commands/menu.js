@@ -85,6 +85,7 @@ const commandsList = {
   unmute: "group",
   gclink: "group",
   antilink: "group",
+  approveall": "group",
   bye: "group",
   join: "group",
   block: "moderation",
