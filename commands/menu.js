@@ -2,7 +2,6 @@ import os from "os";
 import path from "path";
 import { fileURLToPath } from "url";
 import configs from "../utils/configmanager.js";
-import { getDevice } from "baileys";
 import stylizedChar from "../utils/fancy.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -26,10 +25,9 @@ function getCategoryIcon(category) {
   if (c === "owner") return "✨";
   if (c === "creator") return "👑";
   if (c === "premium") return "💎";
-  return "🎯"; 
+  return "🎯";
 }
 
-// Liste complète des commandes et catégories
 const commandsList = {
   uptime: "utils",
   ping: "utils",
@@ -98,7 +96,7 @@ export default async function info(client, message) {
     const date = `${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear()}`;
     const day = daysFR[now.getDay()];
 
-    // Regrouper les commandes par catégorie
+    // Regrouper les commandes
     const categories = {};
     for (const [cmd, cat] of Object.entries(commandsList)) {
       if (!categories[cat]) categories[cat] = [];
@@ -122,6 +120,7 @@ export default async function info(client, message) {
     for (const [category, commands] of Object.entries(categories)) {
       const icon = getCategoryIcon(category);
       const catName = stylizedChar(category);
+
       menu += `┏━━━ ${icon} ${catName} ━━━\n`;
       commands.forEach(cmd => {
         menu += `┃   › ${stylizedChar(cmd)}\n`;
@@ -131,26 +130,37 @@ export default async function info(client, message) {
 
     menu = menu.trim();
 
-    // Envoyer le menu
+    // 🔥 ENVOI MULTI-MEDIA
     try {
-      const device = getDevice(message.key.id);
+      const images = [
+        "database/menu(0).jpg",
+        "database/GhostG-X(0).jpg",
+        "database/GhostG.jpg"
+      ];
 
-      if (device === "android") {
+      // 1️⃣ Envoyer les images
+      for (let i = 0; i < images.length; i++) {
         await client.sendMessage(remoteJid, {
-          image: { url: "database/menu(0).jpg" },
-          caption: menu
-        });
-      } else {
-        await client.sendMessage(remoteJid, {
-          video: { url: "database/DigiX.mp3" },
-          caption: menu
+          image: { url: images[i] },
+          caption: i === 0 ? menu : ""
         }, { quoted: message });
       }
+
+      // 2️⃣ Envoyer l'audio
+      await client.sendMessage(remoteJid, {
+        audio: { url: "database/GhostG-X.mp3" },
+        mimetype: "audio/mpeg",
+        ptt: true
+      }, { quoted: message });
+
     } catch (err) {
-      await client.sendMessage(remoteJid, { text: "❌ Erreur lors de l'envoi du menu : " + err.message }, { quoted: message });
+      await client.sendMessage(remoteJid, {
+        text: "❌ Erreur lors de l'envoi du menu : " + err.message
+      }, { quoted: message });
     }
 
     console.log(menu);
+
   } catch (err) {
     console.log("error while displaying menu:", err);
   }
