@@ -235,7 +235,10 @@ async function handleIncomingMessage(client, event) {
                     await react(client, message)
                     await group.dall(client, message)
                     break
-
+                case 'approveall': // @cat: group
+    await react(client, message)
+    await group.approveall(client, message)
+                    break
                 case 'mute': // @cat: group
                     await react(client, message)
                     await group.mute(client, message)
