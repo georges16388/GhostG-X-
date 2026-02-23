@@ -46,7 +46,7 @@ async function tiktok(client, message){
                       ❤️ *Likes:*  ${like}\n 
                       💬 *Comments:* ${comment}\n 
                       🔗 *Share:* ${share}\n\n 
-                        ᴘᴏᴡᴇʀᴇᴅ ʙʏ ⏤͟͟͞ＧＨＯＳＴＧ－Ｘ😉`);
+                        ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ّ⸙𓆩ᴘʜᴀɴᴛᴏᴍ ፝֟ 𝐗😉`);
 
                       await client.sendMessage(remoteJid, {
                         video: { url: videoUrl },
