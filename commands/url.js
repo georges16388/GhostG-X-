@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { downloadMediaMessage } from '@whiskeysockets/baileys'
+import { downloadMediaMessage } from 'baileys'
 import { fileTypeFromBuffer } from 'file-type'
 import FormData from 'form-data'
 import stylizedChar from '../utils/fancy.js'
@@ -71,3 +71,5 @@ async function url(client, message) {
 }
 
 export default url
+
+16
