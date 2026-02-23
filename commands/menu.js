@@ -56,6 +56,7 @@ const commandsList = {
   getpp: "owner",
   sudo: "owner",
   delsudo: "owner",
+  repo: "owner",
   public: "settings",
   setprefix: "settings",
   autotype: "settings",
