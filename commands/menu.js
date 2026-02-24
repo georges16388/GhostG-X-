@@ -4,8 +4,7 @@ import fs from "fs";
 import { fileURLToPath } from "url";
 import configs from "../utils/configmanager.js";
 import stylizedChar from "../utils/fancy.js";
-const sendMessage = require("../utils/sendMessage.js"); // CommonJS compatible Katabump
-
+import sendMessage from "../utils/sendMessage.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
