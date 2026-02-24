@@ -157,7 +157,7 @@ export default async function info(sock, message) {
     // 🔥 Signature premium
     menu += `
 
- >©-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ 2026
+ > ©-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ 2026
 `;
 
     // 🔥 Image dynamique
