@@ -1,3 +1,4 @@
+import send from "../utils/sendMessage.js";
 import { makeWASocket, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion } from 'baileys';
 import fs from 'fs';
 import path from 'path';
