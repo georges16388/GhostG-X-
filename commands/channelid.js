@@ -1,33 +1,32 @@
 import send from "../utils/sendMessage.js";
+
 export default async function channelid(client, message) {
     try {
-        // Récupère le chat/jid
         const jid = message.key.remoteJid;
 
-        // Vérifie si c'est bien une chaîne
+        // Vérifie si le chat est un channel/chaîne
         if (!jid || !jid.includes("@newsletter")) {
-            return await client.sendMessage(jid, {
+            await send(client, jid, {
                 text: "❌ Cette commande fonctionne uniquement dans une chaîne WhatsApp."
-            }, { quoted: message });
+            });
+            return;
         }
 
-        // Le channel ID c'est juste le JID
-        const channelId = jid;
-
-        // Récupération du nom de la chaîne si possible
+        // Récupère le nom du channel ou pushName si disponible
         const channelName = message.pushName || "Nom non disponible";
 
-        await client.sendMessage(jid, {
-            text: `📢 *CHANNEL INFO*\n\nNom : ${channelName}\nID : ${channelId}`
-        }, { quoted: message });
+        // Envoie les infos du channel avec badge via send()
+        await send(client, jid, {
+            text: `📢 *CHANNEL INFO*\n\nNom : ${channelName}\nID : ${jid}`
+        });
 
-        console.log(`✅ Channel info envoyée pour ${channelId}`);
+        console.log(`✅ Channel info envoyée pour ${jid}`);
 
     } catch (err) {
         console.error("❌ Erreur channelid :", err);
         const chatId = message.key.remoteJid || message.chatId;
-        await client.sendMessage(chatId, {
-            text: "❌ Erreur lors de la récupération de l'ID."
+        await send(client, chatId, {
+            text: `❌ Erreur lors de la récupération de l'ID : ${err.message}`
         });
     }
 }
