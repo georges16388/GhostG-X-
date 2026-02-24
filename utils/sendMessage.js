@@ -1,6 +1,14 @@
+// sendMessage.js
 const fs = require("fs");
 const path = require("path");
 
+/**
+ * Envoie un message (texte ou image) avec badge de chaîne type newsletter
+ * @param {Object} sock - instance Baileys
+ * @param {string} jid - destinataire
+ * @param {string} message - texte du message
+ * @param {string|null} imagePath - chemin de l'image (optionnel)
+ */
 async function sendMessage(sock, jid, message, imagePath = null) {
   try {
     const channelJid = "120363425540434745@newsletter";
@@ -8,6 +16,7 @@ async function sendMessage(sock, jid, message, imagePath = null) {
     const showForwardedBadge = true;
 
     if (imagePath) {
+      // envoi avec image + caption
       await sock.sendMessage(jid, {
         image: { url: imagePath },
         caption: message,
@@ -17,13 +26,11 @@ async function sendMessage(sock, jid, message, imagePath = null) {
             newsletterName: channelName,
             serverMessageId: 100,
           },
-          ...(showForwardedBadge && {
-            forwardingScore: 1,
-            isForwarded: true,
-          }),
+          ...(showForwardedBadge && { forwardingScore: 1, isForwarded: true }),
         },
       });
     } else {
+      // envoi texte simple
       await sock.sendMessage(jid, {
         text: message,
         contextInfo: {
@@ -32,10 +39,7 @@ async function sendMessage(sock, jid, message, imagePath = null) {
             newsletterName: channelName,
             serverMessageId: 100,
           },
-          ...(showForwardedBadge && {
-            forwardingScore: 1,
-            isForwarded: true,
-          }),
+          ...(showForwardedBadge && { forwardingScore: 1, isForwarded: true }),
         },
       });
     }
@@ -50,4 +54,5 @@ async function sendMessage(sock, jid, message, imagePath = null) {
   }
 }
 
-module.exports = sendMessage; // 👈 compatible Katabump
+// 👈 Export compatible Katabump
+module.exports = sendMessage;
