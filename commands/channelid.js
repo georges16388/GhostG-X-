@@ -1,3 +1,4 @@
+import send from "../utils/sendMessage.js";
 export default async function channelid(client, message) {
     try {
         // Récupère le chat/jid
