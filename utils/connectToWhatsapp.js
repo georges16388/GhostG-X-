@@ -1,15 +1,23 @@
 import { makeWASocket, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion } from 'baileys';
 import fs from 'fs';
 import pino from 'pino';
+import path from 'path';
 import configmanager from '../utils/configmanager.js';
+import dotenv from 'dotenv';
+
+dotenv.config(); // 🔥 charge les variables du .env
 
 const SESSION_FOLDER = './sessionData';
 
-// ✅ Création auto du dossier session
+// Création auto du dossier session
 if (!fs.existsSync(SESSION_FOLDER)) {
     fs.mkdirSync(SESSION_FOLDER, { recursive: true });
     console.log('📁 sessionData créé automatiquement');
 }
+
+// Numéro et préfixe dynamiques
+const BOT_NUMBER = process.env.BOT_NUMBER || '22677487520';
+const PREFIX = process.env.PREFIX || '!';
 
 async function connectToWhatsapp(handleMessage) {
     const { version } = await fetchLatestBaileysVersion();
@@ -21,7 +29,7 @@ async function connectToWhatsapp(handleMessage) {
         version,
         auth: state,
         printQRInTerminal: false,
-        syncFullHistory: false, // ⚠️ plus stable
+        syncFullHistory: false,
         markOnlineOnConnect: true,
         logger: pino({ level: 'silent' }),
         keepAliveIntervalMs: 10000,
@@ -29,10 +37,8 @@ async function connectToWhatsapp(handleMessage) {
         generateHighQualityLinkPreview: true,
     });
 
-    // 🔐 sauvegarde session
     sock.ev.on('creds.update', saveCreds);
 
-    // ⚠️ IMPORTANT : éviter double listener
     let isHandlerRegistered = false;
 
     sock.ev.on('connection.update', async (update) => {
@@ -53,11 +59,9 @@ async function connectToWhatsapp(handleMessage) {
 
         } else if (connection === 'connecting') {
             console.log('⏳ Connexion en cours...');
-
         } else if (connection === 'open') {
             console.log('✅ Connecté à WhatsApp !');
 
-            // ✅ éviter doublons
             if (!isHandlerRegistered) {
                 sock.ev.on('messages.upsert', async (msg) => {
                     try {
@@ -71,9 +75,8 @@ async function connectToWhatsapp(handleMessage) {
 
             // --- WELCOME MESSAGE ---
             try {
-                const chatId = '22677487520@s.whatsapp.net';
+                const chatId = `${BOT_NUMBER}@s.whatsapp.net`;
                 const imagePath = './database/menu(0).jpg';
-
                 let messageOptions;
 
                 if (fs.existsSync(imagePath)) {
@@ -81,7 +84,7 @@ async function connectToWhatsapp(handleMessage) {
                         image: { url: imagePath },
                         caption: `
 ╔══════════════════╗
- *👻 GhostG-X Bot Connected Successfully* 🚀
+ *GhostG-X Bot Connected Successfully* 🚀
 ╠══════════════════╣
 > Always Forward.
 ╚══════════════════╝
@@ -90,7 +93,7 @@ async function connectToWhatsapp(handleMessage) {
                     };
                 } else {
                     messageOptions = {
-                        text: `👻 GhostG-X Bot connecté avec succès ! 🚀`,
+                        text: `GhostG-X Bot connecté avec succès ! 🚀`,
                     };
                 }
 
@@ -109,19 +112,16 @@ async function connectToWhatsapp(handleMessage) {
             console.log('⚠️ Pas connecté. Pairing...');
 
             try {
-                const number = '22677487520'; // ⚠️ en string
-
-                const code = await sock.requestPairingCode(number);
+                const code = await sock.requestPairingCode(BOT_NUMBER);
                 console.log('📲 CODE:', code);
 
-                // config utilisateur
-                configmanager.config.users[number] = {
-                    sudoList: [`${number}@s.whatsapp.net`],
+                configmanager.config.users[BOT_NUMBER] = {
+                    sudoList: [`${BOT_NUMBER}@s.whatsapp.net`],
                     tagAudioPath: 'tag.mp3',
                     antilink: true,
                     response: true,
                     autoreact: false,
-                    prefix: '.',
+                    prefix: PREFIX,
                     reaction: '🎯',
                     welcome: false,
                     record: true,
