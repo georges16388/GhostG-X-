@@ -1,3 +1,4 @@
+import send from "../utils/sendMessage.js";
 import stylizedChar from "../utils/fancy.js";
 async function sender(message, client, texts) {
 
