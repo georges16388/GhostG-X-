@@ -44,19 +44,11 @@ async function tiktok(client, message){
             return;
         }
 
-        const caption = stylizedChar(`🎬 TikTok Downloaded!\n\n👤 ${data.data.author?.nickname || "Unknown"}`);
-
-        await client.sendMessage(remoteJid, {
-            video: { url: videoUrl },
-            caption
-        }, { quoted: message });
-
-    } catch (e) {
-        console.error(e);
-        await client.sendMessage(remoteJid, {
-            text: stylizedChar("🚨 API Error or invalid link")
-        });
-    }
-}
-
-export default tiktok;
+        const caption = stylizedChar(`🎬 *TikTok Video Downloaded!* 🎬\n\n
+👤 *Creator:* ${data.data.author?.nickname || "Unknown"} (@${data.data.author?.username || "unknown"})\n
+📝 *Title:* ${data.data.title || 'No title available'}\n
+👁️ *Views:* ${data.data.views || 'N/A'}\n
+❤️ *Likes:* ${data.data.like || '0'}\n
+💬 *Comments:* ${data.data.comment || '0'}\n
+🔗 *Shares:* ${data.data.share || '0'}\n\n
+>ᴘᴏᴡᴇʀᴇᴅ ʙʏ phantom-x tech `);
