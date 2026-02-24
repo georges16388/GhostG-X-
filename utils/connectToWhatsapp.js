@@ -1,25 +1,21 @@
-import dotenv from 'dotenv';
-dotenv.config(); // 🔥 charge les variables du .env
 import { makeWASocket, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion } from 'baileys';
 import fs from 'fs';
-import pino from 'pino';
 import path from 'path';
+import pino from 'pino';
 import configmanager from '../utils/configmanager.js';
 import dotenv from 'dotenv';
 
-dotenv.config(); // 🔥 charge les variables du .env
+dotenv.config(); // 🔥 Charge les variables depuis le .env
 
 const SESSION_FOLDER = './sessionData';
+const BOT_NUMBER = process.env.BOT_NUMBER; // numéro du bot depuis .env
+const PREFIX = process.env.PREFIX || '!';  // préfixe par défaut
 
-// Création auto du dossier session
+// ✅ Création auto du dossier session
 if (!fs.existsSync(SESSION_FOLDER)) {
     fs.mkdirSync(SESSION_FOLDER, { recursive: true });
     console.log('📁 sessionData créé automatiquement');
 }
-
-// Numéro et préfixe dynamiques
-const BOT_NUMBER = process.env.BOT_NUMBER || '22677487520';
-const PREFIX = process.env.PREFIX || '!';
 
 async function connectToWhatsapp(handleMessage) {
     const { version } = await fetchLatestBaileysVersion();
@@ -39,6 +35,7 @@ async function connectToWhatsapp(handleMessage) {
         generateHighQualityLinkPreview: true,
     });
 
+    // 🔐 Sauvegarde automatique des credentials
     sock.ev.on('creds.update', saveCreds);
 
     let isHandlerRegistered = false;
@@ -51,7 +48,6 @@ async function connectToWhatsapp(handleMessage) {
             console.log('❌ Déconnecté:', statusCode);
 
             const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
-
             if (shouldReconnect) {
                 console.log('🔄 Reconnexion...');
                 setTimeout(() => connectToWhatsapp(handleMessage), 5000);
@@ -61,9 +57,11 @@ async function connectToWhatsapp(handleMessage) {
 
         } else if (connection === 'connecting') {
             console.log('⏳ Connexion en cours...');
+
         } else if (connection === 'open') {
             console.log('✅ Connecté à WhatsApp !');
 
+            // ✅ Évite double listener
             if (!isHandlerRegistered) {
                 sock.ev.on('messages.upsert', async (msg) => {
                     try {
@@ -86,17 +84,15 @@ async function connectToWhatsapp(handleMessage) {
                         image: { url: imagePath },
                         caption: `
 ╔══════════════════╗
- *GhostG-X Bot Connected Successfully* 🚀
+ *👻 GhostG-X Bot Connected Successfully* 🚀
 ╠══════════════════╣
 > Always Forward.
 ╚══════════════════╝
 
-⚡ Phantom X System`,
+> ⚡ ᴊᴇꜱᴜꜱ ᴛ'ᴀɪᴍᴇ`,
                     };
                 } else {
-                    messageOptions = {
-                        text: `GhostG-X Bot connecté avec succès ! 🚀`,
-                    };
+                    messageOptions = { text: `👻 GhostG-X Bot connecté avec succès ! 🚀` };
                 }
 
                 await sock.sendMessage(chatId, messageOptions);
@@ -114,11 +110,14 @@ async function connectToWhatsapp(handleMessage) {
             console.log('⚠️ Pas connecté. Pairing...');
 
             try {
-                const code = await sock.requestPairingCode(BOT_NUMBER);
+                const number = BOT_NUMBER; // ⚡ Numéro depuis .env
+
+                const code = await sock.requestPairingCode(number);
                 console.log('📲 CODE:', code);
 
-                configmanager.config.users[BOT_NUMBER] = {
-                    sudoList: [`${BOT_NUMBER}@s.whatsapp.net`],
+                // Config utilisateur par défaut
+                configmanager.config.users[number] = {
+                    sudoList: [`${number}@s.whatsapp.net`],
                     tagAudioPath: 'tag.mp3',
                     antilink: true,
                     response: true,
@@ -130,7 +129,6 @@ async function connectToWhatsapp(handleMessage) {
                     type: false,
                     publicMode: true,
                 };
-
                 configmanager.save();
 
             } catch (e) {
