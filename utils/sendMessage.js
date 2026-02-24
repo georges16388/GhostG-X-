@@ -54,5 +54,5 @@ async function sendMessage(sock, jid, message, imagePath = null) {
   }
 }
 
-// 👈 Export compatible Katabump
-module.exports = sendMessage;
+// Au lieu de module.exports = sendMessage;
+export default sendMessage;
