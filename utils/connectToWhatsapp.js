@@ -1,3 +1,5 @@
+import dotenv from 'dotenv';
+dotenv.config(); // 🔥 charge les variables du .env
 import { makeWASocket, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion } from 'baileys';
 import fs from 'fs';
 import pino from 'pino';
