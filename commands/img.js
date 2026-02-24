@@ -1,3 +1,4 @@
+import send from "../utils/sendMessage.js";
 import axios from "axios";
 
 async function img(message, client) {
