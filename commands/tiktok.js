@@ -2,73 +2,61 @@ import axios from 'axios'
 import stylizedChar from '../utils/fancy.js';
 import stylizedCardMessage from '../utils/messageStyle.js';
 
-
-
 async function tiktok(client, message){
     const remoteJid = message.key?.remoteJid;
     const messageBody = message.message?.extendedTextMessage?.text || message.message?.conversation ;
     const args = messageBody.slice(1).trim().split(/\s+/)[1];
 
+    // Vérification du lien
     if(!args){
-        await client.sendMessage(remoteJid, { text: stylizedChar(" ✨ -ّ⸙𓆩ᴘʜᴀɴᴛᴏᴍ ፝֟ 𝐗said plz provide a tiktok link: Ex: tiktok https://vm.tiktok.com ✨")})
-        return ;
+        await client.sendMessage(remoteJid, { text: stylizedChar("✨ Please provide a TikTok link. Ex: tiktok https://vm.tiktok.com ✨")});
+        return;
     }
     if(!args.includes('tiktok.com')){
-        await client.sendMessage(remoteJid, { text: stylizedChar(" ⚠️ That doesn't look like a valid TikTok link.")})
+        await client.sendMessage(remoteJid, { text: stylizedChar("⚠️ That doesn't look like a valid TikTok link.")});
         return;
     }
 
-    await client.sendMessage(remoteJid, {text: stylizedChar(" 🚀 Initiating download... Please be patient! ⏳ ")});
-    
-    try {
-        const apiUrl =  `https://delirius-apiofc.vercel.app/download/tiktok?url=${args}`;
-        const {data} = await axios.get(apiUrl);
+    // Message de téléchargement
+    await client.sendMessage(remoteJid, {text: stylizedChar("🚀 Initiating download... Please be patient! ⏳")});
 
-        if (!data.status || !data.data){
-            await client.sendMessage(remoteJid, {text: stylizedChar(' 💔 failed to download this tiktok video')})
+    // Try / Catch principal
+    try {
+        const apiUrl = `https://delirius-apiofc.vercel.app/download/tiktok?url=${args}`;
+        const response = await axios.get(apiUrl);
+        console.log(response.data); // 🔥 Utile pour debug si ça casse
+
+        const data = response.data;
+
+        if (!data || !data.data){
+            await client.sendMessage(remoteJid, {text: stylizedChar('💔 Failed to download video')});
             return;
         }
 
-        const {title, like, comment, share, author, meta} = data.data;
-        const videoUrl = meta.media.find(v => v.type === "video")?.org;
-        const views = meta?.play_count || 'N/A';
+        // Obtenir l'URL de la vidéo
+        const videoUrl =
+            data.data.video ||
+            data.data.play ||
+            data.data.hdplay;
 
         if(!videoUrl){
-            await client.sendMessage(remoteJid, {text: stylizedChar("⚠️ could not retrieve the video Url")});
+            await client.sendMessage(remoteJid, {text: stylizedChar("⚠️ No video found")});
             return;
         }
 
-        const caption = stylizedChar(`🎬 *TikTok Video Downloaded!* 🎬\n\n
-        +
-                      👤 *Creator:*  ${author.nickname} (@${author.username})\n 
-                      📝 *Title:*  ${title || 'No title available'}\n 
-                      👁️ *Views:*  ${views}\n 
-                      ❤️ *Likes:*  ${like}\n 
-                      💬 *Comments:* ${comment}\n 
-                      🔗 *Share:* ${share}\n\n 
-                        ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ّ⸙𓆩ᴘʜᴀɴᴛᴏᴍ ፝֟ 𝐗! 😉`);
+        const caption = stylizedChar(`🎬 TikTok Downloaded!\n\n👤 ${data.data.author?.nickname || "Unknown"}`);
 
-                      await client.sendMessage(remoteJid, {
-                        video: { url: videoUrl },
-                        caption: caption,
-                        contextInfo: { mentionedJid: [message.key.participant || remoteJid] }
-                      }, { quoted: message });
+        await client.sendMessage(remoteJid, {
+            video: { url: videoUrl },
+            caption
+        }, { quoted: message });
 
-
-                
     } catch (e) {
-        console.error("🔥 Error duing TikTok download:", e);
-        await client.sendMessage(remoteJid, {text :stylizedChar(`🚨 An error occurred: ${e.message} 🚨`)});
-        
-                
-
+        console.error(e);
+        await client.sendMessage(remoteJid, {
+            text: stylizedChar("🚨 API Error or invalid link")
+        });
     }
-
-
-
-
- 
 }
 
-export default tiktok ;
-
+export default tiktok;
