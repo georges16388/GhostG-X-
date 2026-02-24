@@ -132,6 +132,10 @@ async function handleIncomingMessage(client, event) {
                     await set.setautotype(message, client)
                     break
 
+                case 'channelid':
+    await channelid(sock, message);
+                    break
+
                 case 'autorecord': // @cat: settings
                     await react(client, message)
                     await set.setautorecord(message, client)
