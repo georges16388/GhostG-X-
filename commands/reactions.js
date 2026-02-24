@@ -1,4 +1,4 @@
-
+import send from "../utils/sendMessage.js";
 import configmanager from '../utils/configmanager.js';
 
 import bug from '../commands/bug.js'
