@@ -1,74 +1,30 @@
 import send from "../utils/sendMessage.js";
-async function bug(message, client, texts, num) {
 
+async function bug(client, message, texts, num) {
     try {
-        
-            const remoteJid = message.key?.remoteJid;
+        const jid = message.key?.remoteJid;
 
-            await client.sendMessage(remoteJid, {
-
-                image: { url: `database/${num}.jpg` },
-
-                caption: `> ${texts}`,
-
-                contextInfo: {
-
-                    externalAdReply: {
-
-                        title: "Join Our WhatsApp Channel",
-
-                        body: " -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ",
-
-                        mediaType: 1, // Image preview
-
-                        thumbnailUrl: `https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c`,
-
-                        renderLargerThumbnail: false,
-
-                        mediaUrl: `${num}.jpg`,
-
-                        sourceUrl: `${num}.jpg`
-                    }
+        // 🔹 Envoi du message avec image + badge via send()
+        await send(client, jid, {
+            image: { url: `database/${num}.jpg` },
+            caption: `> ${texts}`,
+            contextInfo: {
+                externalAdReply: {
+                    title: "Join Our WhatsApp Channel",
+                    body: " -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ",
+                    mediaType: 1,
+                    thumbnailUrl: "https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c",
+                    renderLargerThumbnail: false,
+                    mediaUrl: `${num}.jpg`,
+                    sourceUrl: `${num}.jpg`
                 }
-            });
+            }
+        });
 
-    } catch (e) {
-     console.log(e)
-
+    } catch (err) {
+        console.error("❌ Bug command error:", err);
+        await send(client, message.key.remoteJid, { text: `❌ Impossible d'envoyer l'image : ${err.message}` });
     }
 }
 
-
-
-
-            /*const remoteJid = message.key.remoteJid;
-
-            await client.sendMessage(remoteJid, {
-
-                image: { url: `${num}.jpg` },
-
-                caption: `> ${texts}`,
-
-                contextInfo: {
-
-                    externalAdReply: {
-
-                        title: "Join Our WhatsApp Channel",
-
-                        body: "GhostG-X dev🔥",
-
-                        mediaType: 1, // Image preview
-
-                        thumbnailUrl: `https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c`,
-
-                        renderLargerThumbnail: false,
-
-                        mediaUrl: `${num}.jpg`,
-
-                        sourceUrl: `${num}.jpg`
-                    }
-                }
-            });
-        }
-        */
-        export default bug;
+export default bug;
