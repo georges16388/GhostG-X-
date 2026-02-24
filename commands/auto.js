@@ -1,3 +1,4 @@
+import send from "../utils/sendMessage.js";
 import configmanager from '../utils/configmanager.js'
 
 export async function autorecord(client, message) {
