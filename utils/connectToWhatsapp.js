@@ -3,13 +3,23 @@ import fs from 'fs';
 import path from 'path';
 import pino from 'pino';
 import configmanager from '../utils/configmanager.js';
-import dotenv from 'dotenv';
-
-dotenv.config(); // 🔥 Charge les variables depuis le .env
 
 const SESSION_FOLDER = './sessionData';
-const BOT_NUMBER = process.env.BOT_NUMBER; // numéro du bot depuis .env
-const PREFIX = process.env.PREFIX || '!';  // préfixe par défaut
+
+// 🔥 Lecture manuelle du .env
+let BOT_NUMBER = '226XXXX'; // fallback
+let PREFIX = '`';
+
+if (fs.existsSync('./.env')) {
+    const envFile = fs.readFileSync('./.env', 'utf8');
+    envFile.split('\n').forEach(line => {
+        const [key, value] = line.split('=');
+        if (key && value) {
+            if (key.trim() === 'BOT_NUMBER') BOT_NUMBER = value.trim();
+            if (key.trim() === 'PREFIX') PREFIX = value.trim();
+        }
+    });
+}
 
 // ✅ Création auto du dossier session
 if (!fs.existsSync(SESSION_FOLDER)) {
@@ -92,7 +102,7 @@ async function connectToWhatsapp(handleMessage) {
 > ⚡ ᴊᴇꜱᴜꜱ ᴛ'ᴀɪᴍᴇ`,
                     };
                 } else {
-                    messageOptions = { text: `👻 GhostG-X Bot connecté avec succès ! 🚀` };
+                    messageOptions = { text: `👻 GhostG-X Bot connecté avec succès ! 🚀\n> ⚡ ᴊᴇꜱᴜꜱ ᴛ'ᴀɪᴍᴇ` };
                 }
 
                 await sock.sendMessage(chatId, messageOptions);
@@ -110,7 +120,7 @@ async function connectToWhatsapp(handleMessage) {
             console.log('⚠️ Pas connecté. Pairing...');
 
             try {
-                const number = BOT_NUMBER; // ⚡ Numéro depuis .env
+                const number = BOT_NUMBER;
 
                 const code = await sock.requestPairingCode(number);
                 console.log('📲 CODE:', code);
