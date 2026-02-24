@@ -1,21 +1,21 @@
 import os from "os";
 import path from "path";
+import fs from "fs";
 import { fileURLToPath } from "url";
 import configs from "../utils/configmanager.js";
 import stylizedChar from "../utils/fancy.js";
+import { sendMessage } from "../utils/sendMessage.js"; // ton sendMessage.js
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// 🔥 Rotation des images
+// 🔥 Images du menu
 let currentImageIndex = 0;
-
 const images = [
   "database/menu(0).jpg",
   "database/GhostG-X(0).jpg",
   "database/GhostG.jpg"
 ];
-
 function getNextImage() {
   const img = images[currentImageIndex];
   currentImageIndex = (currentImageIndex + 1) % images.length;
@@ -50,13 +50,16 @@ function getCategoryIcon(category) {
 const commandsList = {
   uptime: "utils",
   ping: "utils",
-  menu: "owner",
   fancy: "utils",
+  channelid: "utils",
+  menu: "owner",
   setpp: "owner",
   getpp: "owner",
   sudo: "owner",
   delsudo: "owner",
   repo: "owner",
+  dev: "owner",
+  owner: "owner",
   public: "settings",
   setprefix: "settings",
   autotype: "settings",
@@ -89,7 +92,6 @@ const commandsList = {
   bye: "group",
   join: "group",
   add: "group",
-  channelid: "utils",
   block: "moderation",
   unblock: "moderation",
   fuck: "bug",
@@ -100,16 +102,16 @@ const commandsList = {
   "auto-left": "premium",
 };
 
-export default async function info(client, message) {
+export default async function info(sock, message) {
   try {
-    const remoteJid = message.key.remoteJid;
+    const jid = message.key.remoteJid;
     const userName = message.pushName || "Unknown";
 
     const usedRam = (process.memoryUsage().rss / 1024 / 1024).toFixed(1);
     const totalRam = (os.totalmem() / 1024 / 1024).toFixed(1);
     const uptime = formatUptime(process.uptime());
 
-    const botId = client.user.id.split(":")[0];
+    const botId = sock.user.id.split(":")[0];
     const prefix = configs.config.users?.[botId]?.prefix || "!";
 
     // 🔥 Regrouper les commandes
@@ -119,16 +121,12 @@ export default async function info(client, message) {
       categories[cat].push(cmd);
     }
 
-    // 🔥 MENU DARK 👻
+    // 🔥 Construire menu premium
     let menu = `
-
-
-
-╔═══════『 👻 ɢʜᴏꜱᴛɢ-x 』═══════╗
-         -ّ⸙𓆩 ᴊᴇꜱᴜꜱ ᴛ'ᴀɪᴍᴇ 𓆪-ّ⸙
-▣───────────────▣
-  ⚙️ ʙᴏᴛ sᴛᴀᴛᴜs
-▣───────────────▣
+╔════════════════『 ɢʜᴏsᴛɢ-𝐗 』════════════════╗
+▣─────────────▣
+        ⚡ ʙᴏᴛ ᴅᴀsʜʙᴏᴀʀᴅ
+▣─────────────▣
 
 ❖ ɴᴀᴍᴇ : -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
 ❖ ᴜsᴇʀ : ${stylizedChar(userName)}
@@ -137,16 +135,11 @@ export default async function info(client, message) {
 ❖ ʀᴀᴍ : ${usedRam}/${totalRam} MB
 ❖ ᴍᴏᴅᴇ : 🌑 ɴɪɢʜᴛ
 
-▣───────────────▣
-  👻 ᴅᴇsᴄʀɪᴘᴛɪᴏɴ
-▣───────────────▣
-
-❖ sᴘᴇᴇᴅ : ʀᴀᴘɪᴅᴇ ⚡
-❖ sᴇᴄᴜʀɪᴛʏ : ᴇʟᴇᴠᴇᴇ 🔒
-❖ ᴇɴɢɪɴᴇ : ᴘʜᴀɴᴛᴏᴍ-x
+▣─────────────▣
+       📜 ᴄᴏᴍᴍᴀɴᴅs
+▣─────────────▣
 `;
 
-    // 🔥 Catégories
     for (const [category, cmds] of Object.entries(categories)) {
       const icon = getCategoryIcon(category);
       const name = stylizedChar(category);
@@ -155,51 +148,25 @@ export default async function info(client, message) {
 
 ╭━━━〔 ${icon} ${name} 〕━━━⬣
 `;
-
       cmds.forEach(cmd => {
         menu += `┃ ✦ ${stylizedChar(cmd)}\n`;
       });
-
       menu += `╰━━━━━━━━━━━━⬣\n`;
     }
 
-    // 🔥 Footer avec DEV
+    // 🔥 Signature premium
     menu += `
 
-▣───────────────▣
-  🔗 ᴄʜᴀɴɴᴇʟ
-▣───────────────▣
-
-❖ https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c
-
-▣───────────────▣
-
-      👤 ᴅᴇᴠ : ɢʜᴏꜱᴛɢ
-
-╚═══════════════════════╝
+ | ©-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ 2026
 `;
 
     // 🔥 Image dynamique
     const imagePath = getNextImage();
 
-    // 🔥 Envoi message
-    await client.sendMessage(remoteJid, {
-      image: { url: imagePath },
-      caption: menu,
-      contextInfo: {
-        forwardingScore: 999,
-        isForwarded: true,
-        externalAdReply: {
-          title: "👻 GhostG-X Bot",
-          body: "Dark Ghost System",
-          sourceUrl: "https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c",
-          mediaType: 1,
-          renderLargerThumbnail: true
-        }
-      }
-    }, { quoted: message });
+    // 🔥 Envoi via sendMessage.js
+    await sendMessage(sock, jid, menu, true);
 
   } catch (err) {
-    console.log("error while displaying menu:", err);
+    console.log("❌ Error displaying menu:", err);
   }
 }
