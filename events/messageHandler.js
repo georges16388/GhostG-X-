@@ -1,3 +1,5 @@
+import dev from '../commands/dev.js';
+import owner from '../commands/owner.js';
 import channelid from '../commands/channelid.js';
 import configmanager from "../utils/configmanager.js"
 import fs from 'fs/promises'
