@@ -1,8 +1,8 @@
 import send from "../utils/sendMessage.js";
 import configmanager from "../utils/configmanager.js";
 
-const antilinkSettings = {};
-const warnStorage = {};
+const antilinkSettings = configmanager.config.antilinkSettings || {};
+const warnStorage = configmanager.config.antilinkWarns || {};
 
 // ------------------- HELPERS -------------------
 async function getTarget(message, args) {
@@ -10,12 +10,18 @@ async function getTarget(message, args) {
         || (args[0] ? args[0].replace('@','') + '@s.whatsapp.net' : null);
 }
 
+function saveConfig() {
+    configmanager.config.antilinkSettings = antilinkSettings;
+    configmanager.config.antilinkWarns = warnStorage;
+}
+
 // ------------------- ANTILINK -------------------
 export async function antilink(sock, message) {
     const groupId = message.key.remoteJid;
     if (!groupId.includes('@g.us')) return;
 
-    const args = (message.message?.conversation || message.message?.extendedTextMessage?.text || '').split(/\s+/).slice(1);
+    const args = (message.message?.conversation || message.message?.extendedTextMessage?.text || '')
+        .split(/\s+/).slice(1);
     const action = args[0]?.toLowerCase();
 
     if (!action) {
@@ -25,11 +31,15 @@ export async function antilink(sock, message) {
 
     switch(action) {
         case 'on':
-            antilinkSettings[groupId] = { enabled: true, action: 'delete' };
+            antilinkSettings[groupId] = antilinkSettings[groupId] || {};
+            antilinkSettings[groupId].enabled = true;
+            antilinkSettings[groupId].action = antilinkSettings[groupId].action || 'delete';
+            saveConfig();
             await send(sock, groupId, { text: '✅ *Antilink activé*' });
             break;
         case 'off':
             delete antilinkSettings[groupId];
+            saveConfig();
             await send(sock, groupId, { text: '❌ *Antilink désactivé*' });
             break;
         case 'set':
@@ -37,6 +47,7 @@ export async function antilink(sock, message) {
                 return await send(sock, groupId, { text: '❌ Usage: .antilink set delete | kick | warn' });
             antilinkSettings[groupId] = antilinkSettings[groupId] || { enabled: true };
             antilinkSettings[groupId].action = args[1].toLowerCase();
+            saveConfig();
             await send(sock, groupId, { text: `✅ *Action:* ${args[1].toLowerCase()}` });
             break;
         case 'status':
@@ -62,30 +73,40 @@ export async function linkDetection(sock, message) {
                || message.message?.imageMessage?.caption
                || '';
 
-    const linkRegex = /(https?:\/\/|www\.|\.com|\.net|\.org|tiktok\.com|instagram\.com|facebook\.com|whatsapp\.com|chat\.whatsapp\.com|t\.me|telegram|discord|youtube\.com|youtu\.be)/i;
+    // Regex amélioré pour réduire les faux positifs
+    const linkRegex = /(https?:\/\/[^\s]+|www\.[^\s]+|tiktok\.com|instagram\.com|facebook\.com|whatsapp\.com|chat\.whatsapp\.com|t\.me|telegram\.me|discord\.gg|youtube\.com|youtu\.be)/i;
     if (!linkRegex.test(text)) return;
 
-    const metadata = await sock.groupMetadata(groupId);
-    const sender = metadata.participants.find(p => p.id === senderId);
-    const bot = metadata.participants.find(p => p.id.includes(sock.user.id.split(':')[0]));
-    if (!sender || sender.admin) return;
-    if (!bot?.admin) return;
+    try {
+        const metadata = await sock.groupMetadata(groupId);
+        const sender = metadata.participants.find(p => p.id === senderId);
+        const bot = metadata.participants.find(p => p.id.includes(sock.user.id.split(':')[0]));
+        if (!sender || sender.admin) return; // ignore admins
+        if (!bot?.admin) return; // bot doit être admin
 
-    if (setting.action === 'delete') {
-        try { await sock.sendMessage(groupId, { delete: message.key }); } catch {}
-    } else if (setting.action === 'kick') {
-        await sock.groupParticipantsUpdate(groupId, [senderId], 'remove');
-        await send(sock, groupId, { text: `⚡ *Expulsé*\n@${senderId.split('@')[0]} - Lien détecté`, mentions: [senderId] });
-    } else if (setting.action === 'warn') {
-        const key = `${groupId}_${senderId}`;
-        warnStorage[key] = (warnStorage[key] || 0) + 1;
-        const warns = warnStorage[key];
-        await send(sock, groupId, { text: `🚫 *Lien détecté*\nWarn ${warns}/3\n@${senderId.split('@')[0]}`, mentions: [senderId] });
-        if (warns >= 3) {
+        if (setting.action === 'delete') {
+            try { await sock.sendMessage(groupId, { delete: message.key }); } 
+            catch (err) { console.error('Antilink delete error:', err); }
+        } 
+        else if (setting.action === 'kick') {
             await sock.groupParticipantsUpdate(groupId, [senderId], 'remove');
-            await send(sock, groupId, { text: `⚡ *Expulsé*\n@${senderId.split('@')[0]}\n3 warns atteints` });
-            delete warnStorage[key];
+            await send(sock, groupId, { text: `⚡ *Expulsé*\n@${senderId.split('@')[0]} - Lien détecté`, mentions: [senderId] });
+        } 
+        else if (setting.action === 'warn') {
+            const key = `${groupId}_${senderId}`;
+            warnStorage[key] = (warnStorage[key] || 0) + 1;
+            saveConfig();
+            const warns = warnStorage[key];
+            await send(sock, groupId, { text: `🚫 *Lien détecté*\nWarn ${warns}/3\n@${senderId.split('@')[0]}`, mentions: [senderId] });
+            if (warns >= 3) {
+                await sock.groupParticipantsUpdate(groupId, [senderId], 'remove');
+                await send(sock, groupId, { text: `⚡ *Expulsé*\n@${senderId.split('@')[0]}\n3 warns atteints` });
+                delete warnStorage[key];
+                saveConfig();
+            }
         }
+    } catch (err) {
+        console.error('linkDetection error:', err);
     }
 }
 
@@ -104,6 +125,7 @@ export async function resetwarns(sock, message) {
     const key = `${groupId}_${target}`;
     if (warnStorage[key]) {
         delete warnStorage[key];
+        saveConfig();
         await send(sock, groupId, { text: `✅ Warns réinitialisés pour @${target.split('@')[0]}`, mentions: [target] });
     } else {
         await send(sock, groupId, { text: `ℹ️ Aucun warn pour @${target.split('@')[0]}`, mentions: [target] });
@@ -134,7 +156,8 @@ export async function kick(sock, message) {
 
         await sock.groupParticipantsUpdate(groupId, [target], 'remove');
         await send(sock, groupId, { text: `🚫 @${target.split('@')[0]} exclu.`, mentions: [target] });
-    } catch {
+    } catch (err) {
+        console.error('Kick error:', err);
         await send(sock, groupId, { text: '❌ Erreur' });
     }
 }
@@ -153,7 +176,8 @@ export async function promote(sock, message) {
 
         await sock.groupParticipantsUpdate(groupId, [target], 'promote');
         await send(sock, groupId, { text: `👑 @${target.split('@')[0]} promu admin.`, mentions: [target] });
-    } catch {
+    } catch (err) {
+        console.error('Promote error:', err);
         await send(sock, groupId, { text: '❌ Erreur' });
     }
 }
@@ -171,7 +195,8 @@ export async function demote(sock, message) {
 
         await sock.groupParticipantsUpdate(groupId, [target], 'demote');
         await send(sock, groupId, { text: `📉 @${target.split('@')[0]} retiré admin.`, mentions: [target] });
-    } catch {
+    } catch (err) {
+        console.error('Demote error:', err);
         await send(sock, groupId, { text: '❌ Erreur' });
     }
 }
@@ -182,7 +207,8 @@ export async function gclink(sock, message) {
     try {
         const code = await sock.groupInviteCode(groupId);
         await send(sock, groupId, { text: `🔗 Lien du groupe:\nhttps://chat.whatsapp.com/${code}` });
-    } catch {
+    } catch (err) {
+        console.error('GClink error:', err);
         await send(sock, groupId, { text: '❌ Impossible de générer le lien.' });
     }
 }
@@ -192,7 +218,9 @@ export async function join(sock, message) {
         const text = message.message?.conversation || message.message?.extendedTextMessage?.text || '';
         const match = text.match(/chat\.whatsapp\.com\/([0-9A-Za-z]{20,24})/i);
         if (match) await sock.groupAcceptInvite(match[1]);
-    } catch {}
+    } catch (err) {
+        console.error('Join error:', err);
+    }
 }
 
 // ------------------- MUTE / UNMUTE -------------------
@@ -206,7 +234,8 @@ export async function mute(sock, message) {
 
         await sock.groupSettingUpdate(groupId, 'announcement', true);
         await send(sock, groupId, { text: '🔇 Groupe mute activé.' });
-    } catch {
+    } catch (err) {
+        console.error('Mute error:', err);
         await send(sock, groupId, { text: '❌ Impossible de mute le groupe.' });
     }
 }
@@ -221,7 +250,8 @@ export async function unmute(sock, message) {
 
         await sock.groupSettingUpdate(groupId, 'announcement', false);
         await send(sock, groupId, { text: '🔊 Groupe unmute activé.' });
-    } catch {
+    } catch (err) {
+        console.error('Unmute error:', err);
         await send(sock, groupId, { text: '❌ Impossible de unmute le groupe.' });
     }
 }
@@ -238,14 +268,13 @@ export async function approveall(sock, message) {
         if (!pending.length) return await send(sock, groupId, { text: 'ℹ️ Aucune invitation en attente.' });
 
         for (const id of pending) {
-            try { 
-                await sock.groupParticipantsUpdate(groupId, [id], 'add'); 
-            } catch (e) { console.error('Erreur approveall:', e); }
+            try { await sock.groupParticipantsUpdate(groupId, [id], 'add'); } 
+            catch (e) { console.error('ApproveAll add error:', e); }
         }
 
         await send(sock, groupId, { text: `✅ Toutes les invitations en attente (${pending.length}) ont été acceptées.` });
-    } catch (error) {
-        console.error('approveall error:', error);
+    } catch (err) {
+        console.error('ApproveAll error:', err);
         await send(sock, groupId, { text: '❌ Impossible de traiter approveall.' });
     }
 }
@@ -264,15 +293,14 @@ export async function add(sock, message) {
             await sock.groupParticipantsUpdate(groupId, [jid], 'add');
             await send(sock, groupId, { text: `✅ @${jid.split('@')[0]} ajouté au groupe.`, mentions: [jid] });
         } catch (e) {
-            await send(sock, groupId, { text: `❌ Impossible d’ajouter @${jid.split('@')[0]}.`, mentions: [jid] });
             console.error('Add error:', e);
+            await send(sock, groupId, { text: `❌ Impossible d’ajouter @${jid.split('@')[0]}.`, mentions: [jid] });
         }
     }
 }
 
 // ------------------- EXPORT -------------------
 export default {
-    kick, kickall: kickall, promote, demote,
-    gclink, join, antilink, linkDetection,
+    kick, promote, demote, gclink, join, antilink, linkDetection,
     resetwarns, checkwarns, mute, unmute, approveall, add
 };
