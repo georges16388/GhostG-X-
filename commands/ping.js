@@ -1,3 +1,4 @@
+import send from "../utils/sendMessage.js";
 import stylizedChar from "../utils/fancy.js"
 
 export async function pingTest(client, message) {
