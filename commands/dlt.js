@@ -1,40 +1,47 @@
+// fichier: commands/dlt.js
 import sender from "../commands/sender.js";
+import 'dotenv/config'; // Charge les variables .env automatiquement
+
+const PREFIX = process.env.PREFIX || "!";
 
 async function dlt(client, message) {
     try {
-        const quotedMessageInfo = message.message?.extendedTextMessage?.contextInfo;
+        const quoted = message.message?.extendedTextMessage?.contextInfo;
 
-        if (!quotedMessageInfo || !quotedMessageInfo.quotedMessage) {
-            sender(message, client, "❌ Please reply to a message to delete it.");
+        if (!quoted || !quoted.quotedMessage) {
+            await sender(message, client, "❌ Veuillez répondre à un message pour le supprimer.");
             return;
         }
 
         const chatId = message.key.remoteJid;
-        const quotedMessageKey = quotedMessageInfo.stanzaId;
-        const quotedSender = quotedMessageInfo.participant;
-        const isFromBot = quotedSender === client.user.id;
+        const quotedMessageKey = quoted.stanzaId || quoted.id;
+        const quotedSender = quoted.participant;
+        const isFromBot = quotedSender === client.user.id || quotedSender?.includes(client.user.id);
 
         if (!quotedMessageKey || !chatId) {
-            sender(message, client, "❌ Could not find the message to delete.");
+            await sender(message, client, "❌ Impossible de trouver le message à supprimer.");
             return;
         }
 
-        console.log(`🗑 Attempting to delete message ID: ${quotedMessageKey} in ${chatId}`);
+        console.log(`🗑 Tentative de suppression du message ID: ${quotedMessageKey} dans ${chatId}`);
 
-        // Suppression pour tous
+        // Suppression pour tous si possible
         try {
-            await client.sendMessage(chatId, { delete: { remoteJid: chatId, id: quotedMessageKey, fromMe: isFromBot } });
-            console.log("✅ Message deleted successfully.");
-            return;
+            await client.sendMessage(chatId, {
+                delete: { remoteJid: chatId, id: quotedMessageKey, fromMe: isFromBot }
+            });
+            console.log("✅ Message supprimé avec succès !");
+            await sender(message, client, "✅ Message supprimé avec succès !");
         } catch (error) {
-            console.error("❌ Failed to delete message:", error);
-            sender(message, client, "⚠️ Unable to delete message for everyone.");
+            console.error("❌ Échec de la suppression :", error);
+            await sender(message, client, "⚠️ Impossible de supprimer le message pour tous.");
         }
 
     } catch (error) {
-        console.error("❌ Error deleting message:", error);
-        sender(message, client, "❌ Failed to delete the message.");
+        console.error("❌ Erreur lors de la suppression :", error);
+        await sender(message, client, "❌ Une erreur est survenue lors de la suppression du message.");
     }
 }
 
-export default dlt;
+// Export avec le prefix pour l'utiliser directement dans ton gestionnaire
+export default { command: `${PREFIX}dlt`, handler: dlt };
