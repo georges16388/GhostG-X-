@@ -1,109 +1,104 @@
 import send from "../utils/sendMessage.js";
-import { createWriteStream } from 'fs'
-import { downloadMediaMessage } from "baileys"
-import configmanager from '../utils/configmanager.js'
+import configmanager from '../utils/configmanager.js';
 
+/** Tag tous les membres du groupe */
 export async function tagall(client, message) {
-    const remoteJid = message.key.remoteJid
-    if (!remoteJid.includes('@g.us')) return
+    const remoteJid = message.key.remoteJid;
+    if (!remoteJid.includes('@g.us')) return;
 
     try {
-        const groupMetadata = await client.groupMetadata(remoteJid)
-        const participants = groupMetadata.participants.map(user => user.id)
-        const text = participants.map(user => `@${user.split('@')[0]}`).join(' \n')
+        const groupMetadata = await client.groupMetadata(remoteJid);
+        const participants = groupMetadata.participants.map(user => user.id);
+        const text = participants.map(u => `@${u.split('@')[0]}`).join(' \n');
 
-        await client.sendMessage(remoteJid, {
-            text: `╭─⌈ 🚀 -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ Broadcast ⌋\n│\n${text}\n│\n╰─⌊ Powered by -ّ⸙𓆩ᴘʜᴀɴᴛᴏᴍ ፝֟ 𝐗 ⌉`,
-            mentions: participants
-        })
-
+        await send(message, client, 
+`╭─⌈ 🚀 -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ Broadcast ⌋
+│
+${text}
+│
+╰─⌊ Powered by -ّ⸙𓆩ᴘʜᴀɴᴛᴏᴍ ፝֟ 𝐗 ⌉`, participants);
     } catch (error) {
-        console.error("Tagall error:", error)
+        console.error("Tagall error:", error);
     }
 }
 
+/** Tag tous les admins sauf le bot */
 export async function tagadmin(client, message) {
-    const remoteJid = message.key.remoteJid
-    const botNumber = client.user.id.split(':')[0] + '@s.whatsapp.net'
-    if (!remoteJid.includes('@g.us')) return
+    const remoteJid = message.key.remoteJid;
+    const botNumber = client.user.id.split(':')[0] + '@s.whatsapp.net';
+    if (!remoteJid.includes('@g.us')) return;
 
     try {
-        const { participants } = await client.groupMetadata(remoteJid)
-        const admins = participants.filter(p => p.admin && p.id !== botNumber).map(p => p.id)
-        
-        if (admins.length === 0) return
+        const { participants } = await client.groupMetadata(remoteJid);
+        const admins = participants.filter(p => p.admin && p.id !== botNumber).map(p => p.id);
+        if (!admins.length) return;
 
-        const text = `╭─⌈ 🛡️ -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ Alert ⌋\n│ Admin Alert\n│\n${admins.map(user => `@${user.split('@')[0]}`).join('\n')}\n│\n╰─⌊ MR-SAYAN Control ⌉`
+        const text = `╭─⌈ 🛡️ -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ Alert ⌋
+│ Admin Alert
+│
+${admins.map(u => `@${u.split('@')[0]}`).join('\n')}
+│
+╰─⌊ MR-SAYAN Control ⌉`;
 
-        await client.sendMessage(remoteJid, { text, mentions: admins })
-
+        await send(message, client, text, admins);
     } catch (error) {
-        console.error("Tagadmin error:", error)
+        console.error("Tagadmin error:", error);
     }
 }
 
+/** Réponse automatique avec audio si mentionné */
 export async function respond(client, message) {
-    const number = client.user.id.split(':')[0]
-    const remoteJid = message.key.remoteJid
-    const messageBody = message.message?.extendedTextMessage?.text || message.message?.conversation || ''
-    if (!configmanager.config.users[number]) return
+    const number = client.user.id.split(':')[0];
+    if (!configmanager.config.users[number]) return;
 
-    const tagRespond = configmanager.config.users[number].response
-    if ((!message.key.fromMe) && tagRespond) {
-        const lid = client.user?.lid.split(':')[0]
+    const tagRespond = configmanager.config.users[number].response;
+    if (!message.key.fromMe && tagRespond) {
+        const lid = client.user?.lid?.split(':')[0] || number;
+        const messageBody = message.message?.conversation || message.message?.extendedTextMessage?.text || '';
+
         if (messageBody.includes(`@${lid}`)) {
-            await client.sendMessage(remoteJid, {
+            await client.sendMessage(message.key.remoteJid, {
                 audio: { url: "database/DigiX.mp3" },
                 mimetype: "audio/mp4",
                 ptt: true,
-                contextInfo: { 
+                contextInfo: {
                     stanzaId: message.key.id,
                     participant: message.key.participant || lid,
                     quotedMessage: message.message
                 }
-            })
+            });
         }
     }
 }
 
+/** Tag personnalisé ou reply */
 export async function tag(client, message) {
-    const remoteJid = message.key.remoteJid
-    if (!remoteJid.includes('@g.us')) return
+    const remoteJid = message.key.remoteJid;
+    if (!remoteJid.includes('@g.us')) return;
 
     try {
-        const groupMetadata = await client.groupMetadata(remoteJid)
-        const participants = groupMetadata.participants.map(user => user.id)
-        const messageBody = message.message?.conversation || message.message?.extendedTextMessage?.text || ""
-        const commandAndArgs = messageBody.slice(1).trim()
-        const parts = commandAndArgs.split(/\s+/)
-        const text = parts.slice(1).join(' ') || 'Ghost G X Alert'
+        const groupMetadata = await client.groupMetadata(remoteJid);
+        const participants = groupMetadata.participants.map(u => u.id);
 
-        const quotedMessage = message.message?.extendedTextMessage?.contextInfo?.quotedMessage
+        const messageBody = message.message?.conversation || message.message?.extendedTextMessage?.text || '';
+        const args = messageBody.slice(1).trim().split(/\s+/).slice(1);
+        const text = args.join(' ') || 'Ghost G X Alert';
+
+        const quotedMessage = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
         if (quotedMessage) {
             if (quotedMessage.stickerMessage) {
-                await client.sendMessage(remoteJid, { 
-                    sticker: quotedMessage.stickerMessage, 
-                    mentions: participants 
-                })
-                return
+                await send(message, client, null, participants, quotedMessage.stickerMessage);
+            } else {
+                const quotedText = quotedMessage.conversation || quotedMessage.extendedTextMessage?.text || text;
+                await send(message, client, quotedText, participants);
             }
-            const quotedText = quotedMessage.conversation || quotedMessage.extendedTextMessage?.text || ""
-            await client.sendMessage(remoteJid, { 
-                text: `${quotedText}`, 
-                mentions: participants 
-            })
-            return
+            return;
         }
 
-        await client.sendMessage(remoteJid, { 
-            text: `${text}`, 
-            mentions: participants 
-        })
-
+        await send(message, client, text, participants);
     } catch (error) {
-        console.error("Tag error:", error)
+        console.error("Tag error:", error);
     }
 }
 
-export default { tagall, tagadmin, respond, tag }
-
+export default { tagall, tagadmin, respond, tag };
