@@ -1,7 +1,29 @@
 import send from "../utils/sendMessage.js";
 // fichier: commands/dlt.js
 import sender from "../commands/sender.js";
-import 'dotenv/config'; // Charge les variables .env automatiquement
+import fs from "fs";
+
+// 🔥 Lecture manuelle du .env
+let BOT_NUMBER = '226XXXX'; // fallback si non défini
+let PREFIX = '`';           // préfixe par défaut
+
+if (fs.existsSync('./.env')) {
+    const envFile = fs.readFileSync('./.env', 'utf8');
+    envFile.split('\n').forEach(line => {
+        line = line.trim();
+        if (!line || line.startsWith('#')) return; // ignorer les lignes vides ou les commentaires
+
+        const [key, ...vals] = line.split('=');
+        const value = vals.join('=').trim();
+
+        if (key === 'BOT_NUMBER') BOT_NUMBER = value;
+        if (key === 'PREFIX') PREFIX = value;
+    });
+}
+
+// 🔹 Maintenant tu peux utiliser BOT_NUMBER et PREFIX
+console.log("Bot number:", BOT_NUMBER);
+console.log("Prefix:", PREFIX);
 
 const PREFIX = process.env.PREFIX || "!";
 
