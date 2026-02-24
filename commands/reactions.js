@@ -1,123 +1,72 @@
 import send from "../utils/sendMessage.js";
-import configmanager from '../utils/configmanager.js';
+import configmanager from "../utils/configmanager.js";
+import bug from '../commands/bug.js';
 
-import bug from '../commands/bug.js'
+// ------------------- AUTO REACT -------------------
+export async function auto(client, message, cond, emoji) {
+    try {
+        const remoteJid = message.key.remoteJid;
+        if (!remoteJid) return;
 
-export async function auto(client, message, cond, emoji){
-
-    const remoteJid = message.key.remoteJid;
-
-    if(cond){
-
-        await client.sendMessage(remoteJid, 
-
-            {
+        if (cond) {
+            await client.sendMessage(remoteJid, {
                 react: {
                     text: `${emoji}`,
-
                     key: message.key
                 }
-            }
-    )
-
-    } else {
-
-        return
+            });
+        }
+    } catch (err) {
+        console.error('AUTO ERROR:', err);
     }
 }
 
 // Simple emoji regex (works for most cases)
-function isEmoji(str) {
-
+export function isEmoji(str) {
     const emojiRegex = /^(?:\p{Emoji_Presentation}|\p{Extended_Pictographic})$/u;
-
     return emojiRegex.test(str);
 }
 
+// ------------------- AUTOREACT TOGGLE -------------------
 export async function autoreact(client, message) {
-
     const number = client.user.id.split(':')[0];
+    const remoteJid = message.key?.remoteJid;
+
+    if (!remoteJid) {
+        console.error('Autoreact: remoteJid undefined');
+        return;
+    }
 
     try {
-
-        const remoteJid = message.key?.remoteJid;
-
-        if (!remoteJid) {
-
-            throw new Error("Message JID is undefined.");
-        }
-
-        const messageBody =
-
-            message.message?.extendedTextMessage?.text ||
-
-            message.message?.conversation ||
-
-            '';
-
-        const commandAndArgs = messageBody.slice(1).trim();
-
-        const parts = commandAndArgs.split(/\s+/);
-
-        const args = parts.slice(1);
+        const messageBody = message.message?.extendedTextMessage?.text || message.message?.conversation || '';
+        const args = messageBody.trim().split(/\s+/).slice(1);
 
         if (args.length === 0) {
-
-            throw new Error("Please provide 'on', 'off'.");
+            return await send(client, remoteJid, { text: "_*Sélectionne une option : on/off*_ " });
         }
 
         const input = args[0].toLowerCase();
 
         if (!configmanager.config.users[number]) {
-
             configmanager.config.users[number] = {};
         }
 
         const userConfig = configmanager.config.users[number];
 
         if (input === 'on') {
-
             userConfig.autoreact = true;
-
             configmanager.save();
-
-            await bug(
-
-                message,
-
-                client,
-
-                `L'Auto-react est activé *${input.toUpperCase()}*.`,
-                3
-            );
-        
-        } else if (input === "off"){
-
-             userConfig.autoreact = false;
-
+            await bug(message, client, `✅ L'Auto-react est activé *ON*`, 3);
+        } else if (input === 'off') {
+            userConfig.autoreact = false;
             configmanager.save();
-
-            await bug(
-
-                message,
-
-                client,
-
-                `L'Auto-react est désactivée *${input.toUpperCase()}*.`,
-                3
-            );
-
-        } else{
-
-            await client.sendMessage(remoteJid, { text: "_*Select an option: On/off*_" });
+            await bug(message, client, `❌ L'Auto-react est désactivée *OFF*`, 3);
+        } else {
+            await send(client, remoteJid, { text: "_*Sélectionne une option : on/off*_ " });
         }
-
     } catch (error) {
-
-        await client.sendMessage(message.key.remoteJid, {
-
-            text: `❌ Error while updating autoreact settings: ${error.message}`,
-        });
+        console.error('AUTOREACT ERROR:', error);
+        await send(client, remoteJid, { text: `❌ Erreur lors de la mise à jour de l'Auto-react: ${error.message}` });
     }
 }
 
