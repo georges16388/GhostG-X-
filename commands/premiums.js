@@ -1,45 +1,56 @@
 import send from "../utils/sendMessage.js";
 import configmanager from "../utils/configmanager.js";
-import fs from 'fs';
 
 export async function modifyprem(client, message, action) {
-    const filePath = "db.json";
-    let list = configmanager.premiums;
-
     try {
         const remoteJid = message.key?.remoteJid;
         if (!remoteJid) throw new Error("Invalid remote JID.");
 
         const messageBody = message.message?.extendedTextMessage?.text || message.message?.conversation || '';
-        const commandAndArgs = messageBody.slice(1).trim();
-        const parts = commandAndArgs.split(/\s+/);
-        const args = parts.slice(1);
+        const parts = messageBody.trim().split(/\s+/).slice(1);
+        const args = parts;
 
         let participant;
         if (message.message?.extendedTextMessage?.contextInfo?.quotedMessage) {
             participant = message.message?.extendedTextMessage?.contextInfo?.participant || message.key.participant;
         } else if (args.length > 0) {
             const jidMatch = args[0].match(/\d+/);
-            if (!jidMatch) throw new Error("Invalid participant format.");
-            participant = jidMatch[0] + '@s.whatsapp.net';
+            if (!jidMatch) {
+                await send(client, remoteJid, { text: "❌ Format de participant invalide." });
+                return;
+            }
+            participant = jidMatch[0] + "@s.whatsapp.net";
         } else {
-            throw new Error("No participant specified.");
+            await send(client, remoteJid, { text: "❌ Aucun participant spécifié." });
+            return;
         }
+
+        let list = configmanager.premiums || [];
 
         if (action === "add") {
             if (!list.includes(participant)) {
                 list.push(participant);
+                configmanager.premiums = list;
                 configmanager.saveP();
+                await send(client, remoteJid, { text: `✅ ${participant.split('@')[0]} ajouté à la liste premium.` });
             } else {
-                return;
+                await send(client, remoteJid, { text: `ℹ️ ${participant.split('@')[0]} est déjà premium.` });
             }
         } else if (action === "remove") {
-            list = list.filter(item => item !== participant);
-            configmanager.premiums = list;
-            configmanager.saveP();
+            if (list.includes(participant)) {
+                list = list.filter(item => item !== participant);
+                configmanager.premiums = list;
+                configmanager.saveP();
+                await send(client, remoteJid, { text: `❌ ${participant.split('@')[0]} retiré de la liste premium.` });
+            } else {
+                await send(client, remoteJid, { text: `ℹ️ ${participant.split('@')[0]} n'était pas premium.` });
+            }
         }
+
     } catch (error) {
-        console.error("Error in premium list:", error);
+        console.error("❌ Erreur premium:", error);
+        const remoteJid = message.key?.remoteJid;
+        if (remoteJid) await send(client, remoteJid, { text: `❌ Erreur: ${error.message}` });
     }
 }
 
@@ -52,4 +63,3 @@ export async function delprem(client, message) {
 }
 
 export default { addprem, delprem };
-
