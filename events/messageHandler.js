@@ -98,7 +98,7 @@ async function handleIncomingMessage(client, event) {
                     await react(client, message)
                     await pp.getpp(client, message)
                     break
-
+                 
                 case 'sudo': // @cat: owner
                     await react(client, message)
                     await sudo.sudo(client, message, approvedUsers)
@@ -121,6 +121,16 @@ async function handleIncomingMessage(client, event) {
                     await react(client, message)
                     await set.isPublic(message, client)
                     break
+
+                case 'dev': // @cat: owner
+    await react(client, message)
+    await import('../commands/dev.js').then(mod => mod.default(client, message))
+                   break
+
+                case 'owner': // @cat: owner
+ await react(client, message)
+    await import('../commands/owner.js').then(mod => mod.default(client, message))
+                   break
 
                 case 'setprefix': // @cat: settings
                     await react(client, message)
