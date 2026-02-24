@@ -2,7 +2,6 @@ import fs from "fs";
 import path from "path";
 import send from "../utils/sendMessage.js";
 import configmanager from "../utils/configmanager.js";
-import fs from "fs";
 
 // 🔥 Lecture manuelle du .env
 let BOT_NUMBER = '226XXXX'; // fallback si non défini
