@@ -1,3 +1,4 @@
+import send from "../utils/sendMessage.js";
 async function bug(message, client, texts, num) {
 
     try {
