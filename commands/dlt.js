@@ -1,3 +1,4 @@
+import send from "../utils/sendMessage.js";
 // fichier: commands/dlt.js
 import sender from "../commands/sender.js";
 import 'dotenv/config'; // Charge les variables .env automatiquement
