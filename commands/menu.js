@@ -89,6 +89,7 @@ const commandsList = {
   bye: "group",
   join: "group",
   add: "group",
+  channelid: "utils",
   block: "moderation",
   unblock: "moderation",
   fuck: "bug",
