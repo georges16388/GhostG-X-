@@ -1,3 +1,4 @@
+import send from "../utils/sendMessage.js";
 export async function uptime(client, message) {
     const remoteJid = message.key.remoteJid
     const uptime = process.uptime()
