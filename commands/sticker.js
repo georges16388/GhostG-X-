@@ -1,3 +1,4 @@
+import send from "../utils/sendMessage.js";
 import pkg from 'wa-sticker-formatter';
 const { Sticker, StickerTypes } = pkg;
 import { downloadMediaMessage } from "baileys";
