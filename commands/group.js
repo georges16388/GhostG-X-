@@ -1,279 +1,278 @@
 import send from "../utils/sendMessage.js";
-// fichier: commands/group.js
-import configmanager from '../utils/configmanager.js'
+import configmanager from "../utils/configmanager.js";
 
-const antilinkSettings = {}
-const warnStorage = {}
+const antilinkSettings = {};
+const warnStorage = {};
 
 // ------------------- HELPERS -------------------
 async function getTarget(message, args) {
     return message.message?.extendedTextMessage?.contextInfo?.participant
-        || (args[0] ? args[0].replace('@','') + '@s.whatsapp.net' : null)
+        || (args[0] ? args[0].replace('@','') + '@s.whatsapp.net' : null);
 }
 
 // ------------------- ANTILINK -------------------
-export async function antilink(client, message) {
-    const groupId = message.key.remoteJid
-    if (!groupId.includes('@g.us')) return
+export async function antilink(sock, message) {
+    const groupId = message.key.remoteJid;
+    if (!groupId.includes('@g.us')) return;
 
-    const args = (message.message?.conversation || message.message?.extendedTextMessage?.text || '').split(/\s+/).slice(1)
-    const action = args[0]?.toLowerCase()
+    const args = (message.message?.conversation || message.message?.extendedTextMessage?.text || '').split(/\s+/).slice(1);
+    const action = args[0]?.toLowerCase();
+
     if (!action) {
-        const usage = `🔒 *Antilink*\n\n.antilink on\n.antilink off\n.antilink set delete | kick | warn\n.antilink status`
-        return await client.sendMessage(groupId, { text: usage })
+        const usage = `🔒 *Antilink*\n\n.antilink on\n.antilink off\n.antilink set delete | kick | warn\n.antilink status`;
+        return await send(sock, groupId, { text: usage });
     }
 
     switch(action) {
         case 'on':
-            antilinkSettings[groupId] = { enabled: true, action: 'delete' }
-            await client.sendMessage(groupId, { text: '✅ *Antilink activé*' })
-            break
+            antilinkSettings[groupId] = { enabled: true, action: 'delete' };
+            await send(sock, groupId, { text: '✅ *Antilink activé*' });
+            break;
         case 'off':
-            delete antilinkSettings[groupId]
-            await client.sendMessage(groupId, { text: '❌ *Antilink désactivé*' })
-            break
+            delete antilinkSettings[groupId];
+            await send(sock, groupId, { text: '❌ *Antilink désactivé*' });
+            break;
         case 'set':
             if (!args[1] || !['delete','kick','warn'].includes(args[1].toLowerCase())) 
-                return await client.sendMessage(groupId, { text: '❌ Usage: .antilink set delete | kick | warn' })
-            antilinkSettings[groupId] = antilinkSettings[groupId] || { enabled: true }
-            antilinkSettings[groupId].action = args[1].toLowerCase()
-            await client.sendMessage(groupId, { text: `✅ *Action:* ${args[1].toLowerCase()}` })
-            break
+                return await send(sock, groupId, { text: '❌ Usage: .antilink set delete | kick | warn' });
+            antilinkSettings[groupId] = antilinkSettings[groupId] || { enabled: true };
+            antilinkSettings[groupId].action = args[1].toLowerCase();
+            await send(sock, groupId, { text: `✅ *Action:* ${args[1].toLowerCase()}` });
+            break;
         case 'status':
-            const status = antilinkSettings[groupId]
-            await client.sendMessage(groupId, { text: `📊 *Statut*\n\nActivé: ${status?.enabled ? '✅' : '❌'}\nAction: ${status?.action || 'Aucune'}` })
-            break
+            const status = antilinkSettings[groupId];
+            await send(sock, groupId, { text: `📊 *Statut*\n\nActivé: ${status?.enabled ? '✅' : '❌'}\nAction: ${status?.action || 'Aucune'}` });
+            break;
         default:
-            await client.sendMessage(groupId, { text: '❌ Usage: .antilink on/off/set/status' })
+            await send(sock, groupId, { text: '❌ Usage: .antilink on/off/set/status' });
     }
 }
 
 // ------------------- LINK DETECTION -------------------
-export async function linkDetection(client, message) {
-    const groupId = message.key.remoteJid
-    if (!groupId.includes('@g.us')) return
-    const setting = antilinkSettings[groupId]
-    if (!setting?.enabled) return
+export async function linkDetection(sock, message) {
+    const groupId = message.key.remoteJid;
+    if (!groupId.includes('@g.us')) return;
 
-    const senderId = message.key.participant || groupId
+    const setting = antilinkSettings[groupId];
+    if (!setting?.enabled) return;
+
+    const senderId = message.key.participant || groupId;
     const text = message.message?.conversation
                || message.message?.extendedTextMessage?.text
                || message.message?.imageMessage?.caption
-               || ''
+               || '';
 
-    const linkRegex = /(https?:\/\/|www\.|\.com|\.net|\.org|tiktok\.com|instagram\.com|facebook\.com|whatsapp\.com|chat\.whatsapp\.com|t\.me|telegram|discord|youtube\.com|youtu\.be)/i
-    if (!linkRegex.test(text)) return
+    const linkRegex = /(https?:\/\/|www\.|\.com|\.net|\.org|tiktok\.com|instagram\.com|facebook\.com|whatsapp\.com|chat\.whatsapp\.com|t\.me|telegram|discord|youtube\.com|youtu\.be)/i;
+    if (!linkRegex.test(text)) return;
 
-    const metadata = await client.groupMetadata(groupId)
-    const sender = metadata.participants.find(p => p.id === senderId)
-    const bot = metadata.participants.find(p => p.id.includes(client.user.id.split(':')[0]))
-    if (!sender || sender.admin) return
-    if (!bot?.admin) return
+    const metadata = await sock.groupMetadata(groupId);
+    const sender = metadata.participants.find(p => p.id === senderId);
+    const bot = metadata.participants.find(p => p.id.includes(sock.user.id.split(':')[0]));
+    if (!sender || sender.admin) return;
+    if (!bot?.admin) return;
 
     if (setting.action === 'delete') {
-        try { await client.sendMessage(groupId, { delete: message.key }) } catch {}
+        try { await sock.sendMessage(groupId, { delete: message.key }); } catch {}
     } else if (setting.action === 'kick') {
-        await client.groupParticipantsUpdate(groupId, [senderId], 'remove')
-        await client.sendMessage(groupId, { text: `⚡ *Expulsé*\n@${senderId.split('@')[0]} - Lien détecté`, mentions: [senderId] })
+        await sock.groupParticipantsUpdate(groupId, [senderId], 'remove');
+        await send(sock, groupId, { text: `⚡ *Expulsé*\n@${senderId.split('@')[0]} - Lien détecté`, mentions: [senderId] });
     } else if (setting.action === 'warn') {
-        const key = `${groupId}_${senderId}`
-        warnStorage[key] = (warnStorage[key] || 0) + 1
-        const warns = warnStorage[key]
-        await client.sendMessage(groupId, { text: `🚫 *Lien détecté*\nWarn ${warns}/3\n@${senderId.split('@')[0]}`, mentions: [senderId] })
+        const key = `${groupId}_${senderId}`;
+        warnStorage[key] = (warnStorage[key] || 0) + 1;
+        const warns = warnStorage[key];
+        await send(sock, groupId, { text: `🚫 *Lien détecté*\nWarn ${warns}/3\n@${senderId.split('@')[0]}`, mentions: [senderId] });
         if (warns >= 3) {
-            await client.groupParticipantsUpdate(groupId, [senderId], 'remove')
-            await client.sendMessage(groupId, { text: `⚡ *Expulsé*\n@${senderId.split('@')[0]}\n3 warns atteints` })
-            delete warnStorage[key]
+            await sock.groupParticipantsUpdate(groupId, [senderId], 'remove');
+            await send(sock, groupId, { text: `⚡ *Expulsé*\n@${senderId.split('@')[0]}\n3 warns atteints` });
+            delete warnStorage[key];
         }
     }
 }
 
 // ------------------- WARNS -------------------
-export async function resetwarns(client, message) {
-    const groupId = message.key.remoteJid
-    const args = (message.message?.conversation || message.message?.extendedTextMessage?.text || '').split(/\s+/).slice(1)
+export async function resetwarns(sock, message) {
+    const groupId = message.key.remoteJid;
+    const args = (message.message?.conversation || message.message?.extendedTextMessage?.text || '').split(/\s+/).slice(1);
     const target = message.message?.extendedTextMessage?.contextInfo?.participant
-        || (args[0] ? args[0].replace('@','') + '@s.whatsapp.net' : null)
+        || (args[0] ? args[0].replace('@','') + '@s.whatsapp.net' : null);
 
     if (!target) {
-        const keys = Object.keys(warnStorage).filter(k => k.startsWith(groupId+'_'))
-        return await client.sendMessage(groupId, { text: `📊 Warns: ${keys.length} utilisateur(s)\nUsage: .resetwarns @user` })
+        const keys = Object.keys(warnStorage).filter(k => k.startsWith(groupId+'_'));
+        return await send(sock, groupId, { text: `📊 Warns: ${keys.length} utilisateur(s)\nUsage: .resetwarns @user` });
     }
 
-    const key = `${groupId}_${target}`
+    const key = `${groupId}_${target}`;
     if (warnStorage[key]) {
-        delete warnStorage[key]
-        await client.sendMessage(groupId, { text: `✅ Warns réinitialisés pour @${target.split('@')[0]}` })
+        delete warnStorage[key];
+        await send(sock, groupId, { text: `✅ Warns réinitialisés pour @${target.split('@')[0]}`, mentions: [target] });
     } else {
-        await client.sendMessage(groupId, { text: `ℹ️ Aucun warn pour @${target.split('@')[0]}` })
+        await send(sock, groupId, { text: `ℹ️ Aucun warn pour @${target.split('@')[0]}`, mentions: [target] });
     }
 }
 
-export async function checkwarns(client, message) {
-    const groupId = message.key.remoteJid
-    const keys = Object.keys(warnStorage).filter(k => k.startsWith(groupId+'_'))
-    if (!keys.length) return await client.sendMessage(groupId, { text: '✅ Aucun warn.' })
+export async function checkwarns(sock, message) {
+    const groupId = message.key.remoteJid;
+    const keys = Object.keys(warnStorage).filter(k => k.startsWith(groupId+'_'));
+    if (!keys.length) return await send(sock, groupId, { text: '✅ Aucun warn.' });
 
-    let report = '📊 *Liste des Warns*\n\n'
-    keys.forEach(k => report += `@${k.split('_')[1].split('@')[0]} : ${warnStorage[k]}/3 warns\n`)
-    await client.sendMessage(groupId, { text: report })
+    let report = '📊 *Liste des Warns*\n\n';
+    keys.forEach(k => report += `@${k.split('_')[1].split('@')[0]} : ${warnStorage[k]}/3 warns\n`);
+    await send(sock, groupId, { text: report, mentions: keys.map(k => k.split('_')[1]) });
 }
 
 // ------------------- KICK / PROMOTE / DEMOTE -------------------
-export async function kick(client, message) {
-    const groupId = message.key.remoteJid
-    if (!groupId.includes('@g.us')) return
-    const args = (message.message?.conversation || message.message?.extendedTextMessage?.text || '').split(/\s+/).slice(1)
-    const target = await getTarget(message, args)
-    if (!target) return await client.sendMessage(groupId, { text: '❌ Réponds à un message ou mentionne.' })
+export async function kick(sock, message) {
+    const groupId = message.key.remoteJid;
+    const args = (message.message?.conversation || message.message?.extendedTextMessage?.text || '').split(/\s+/).slice(1);
+    const target = await getTarget(message, args);
+    if (!target) return await send(sock, groupId, { text: '❌ Réponds à un message ou mentionne.' });
 
     try {
-        const metadata = await client.groupMetadata(groupId)
-        const bot = metadata.participants.find(p => p.id.includes(client.user.id.split(':')[0]))
-        if (!bot?.admin) return await client.sendMessage(groupId, { text: '❌ Le bot doit être admin.' })
+        const metadata = await sock.groupMetadata(groupId);
+        const bot = metadata.participants.find(p => p.id.includes(sock.user.id.split(':')[0]));
+        if (!bot?.admin) return await send(sock, groupId, { text: '❌ Le bot doit être admin.' });
 
-        await client.groupParticipantsUpdate(groupId, [target], 'remove')
-        await client.sendMessage(groupId, { text: `🚫 @${target.split('@')[0]} exclu.` })
-    } catch { await client.sendMessage(groupId, { text: '❌ Erreur' }) }
+        await sock.groupParticipantsUpdate(groupId, [target], 'remove');
+        await send(sock, groupId, { text: `🚫 @${target.split('@')[0]} exclu.`, mentions: [target] });
+    } catch {
+        await send(sock, groupId, { text: '❌ Erreur' });
+    }
 }
 
-export async function kickall(client, message) {
-    const groupId = message.key.remoteJid
-    if (!groupId.includes('@g.us')) return
-    try {
-        const metadata = await client.groupMetadata(groupId)
-        const bot = metadata.participants.find(p => p.id.includes(client.user.id.split(':')[0]))
-        if (!bot?.admin) return await client.sendMessage(groupId, { text: '❌ Le bot doit être admin.' })
+// ------------------- PROMOTE / DEMOTE -------------------
+export async function promote(sock, message) {
+    const groupId = message.key.remoteJid;
+    const args = (message.message?.conversation || message.message?.extendedTextMessage?.text || '').split(/\s+/).slice(1);
+    const target = await getTarget(message, args);
+    if (!target) return await send(sock, groupId, { text: '❌ Réponds à un message ou mentionne.' });
 
-        const targets = metadata.participants.filter(p => !p.admin).map(p => p.id)
-        await client.groupParticipantsUpdate(groupId, targets, 'remove')
-        await client.sendMessage(groupId, { text: '✅ Tous les membres non-admin ont été exclus.' })
-    } catch { await client.sendMessage(groupId, { text: '❌ Erreur' }) }
+    try {
+        const metadata = await sock.groupMetadata(groupId);
+        const bot = metadata.participants.find(p => p.id.includes(sock.user.id.split(':')[0]));
+        if (!bot?.admin) return await send(sock, groupId, { text: '❌ Le bot doit être admin.' });
+
+        await sock.groupParticipantsUpdate(groupId, [target], 'promote');
+        await send(sock, groupId, { text: `👑 @${target.split('@')[0]} promu admin.`, mentions: [target] });
+    } catch {
+        await send(sock, groupId, { text: '❌ Erreur' });
+    }
 }
 
-export async function promote(client, message) {
-    const groupId = message.key.remoteJid
-    const args = (message.message?.conversation || message.message?.extendedTextMessage?.text || '').split(/\s+/).slice(1)
-    const target = await getTarget(message, args)
-    if (!target) return await client.sendMessage(groupId, { text: '❌ Réponds à un message ou mentionne.' })
+export async function demote(sock, message) {
+    const groupId = message.key.remoteJid;
+    const args = (message.message?.conversation || message.message?.extendedTextMessage?.text || '').split(/\s+/).slice(1);
+    const target = await getTarget(message, args);
+    if (!target) return await send(sock, groupId, { text: '❌ Réponds à un message ou mentionne.' });
 
     try {
-        const metadata = await client.groupMetadata(groupId)
-        const bot = metadata.participants.find(p => p.id.includes(client.user.id.split(':')[0]))
-        if (!bot?.admin) return await client.sendMessage(groupId, { text: '❌ Le bot doit être admin.' })
+        const metadata = await sock.groupMetadata(groupId);
+        const bot = metadata.participants.find(p => p.id.includes(sock.user.id.split(':')[0]));
+        if (!bot?.admin) return await send(sock, groupId, { text: '❌ Le bot doit être admin.' });
 
-        await client.groupParticipantsUpdate(groupId, [target], 'promote')
-        await client.sendMessage(groupId, { text: `👑 @${target.split('@')[0]} promu admin.` })
-    } catch { await client.sendMessage(groupId, { text: '❌ Erreur' }) }
-}
-
-export async function demote(client, message) {
-    const groupId = message.key.remoteJid
-    const args = (message.message?.conversation || message.message?.extendedTextMessage?.text || '').split(/\s+/).slice(1)
-    const target = await getTarget(message, args)
-    if (!target) return await client.sendMessage(groupId, { text: '❌ Réponds à un message ou mentionne.' })
-
-    try {
-        const metadata = await client.groupMetadata(groupId)
-        const bot = metadata.participants.find(p => p.id.includes(client.user.id.split(':')[0]))
-        if (!bot?.admin) return await client.sendMessage(groupId, { text: '❌ Le bot doit être admin.' })
-
-        await client.groupParticipantsUpdate(groupId, [target], 'demote')
-        await client.sendMessage(groupId, { text: `📉 @${target.split('@')[0]} retiré admin.` })
-    } catch { await client.sendMessage(groupId, { text: '❌ Erreur' }) }
+        await sock.groupParticipantsUpdate(groupId, [target], 'demote');
+        await send(sock, groupId, { text: `📉 @${target.split('@')[0]} retiré admin.`, mentions: [target] });
+    } catch {
+        await send(sock, groupId, { text: '❌ Erreur' });
+    }
 }
 
 // ------------------- GC LINK / JOIN -------------------
-export async function gclink(client, message) {
-    const groupId = message.key.remoteJid
+export async function gclink(sock, message) {
+    const groupId = message.key.remoteJid;
     try {
-        const code = await client.groupInviteCode(groupId)
-        await client.sendMessage(groupId, { text: `🔗 Lien du groupe:\nhttps://chat.whatsapp.com/${code}` })
-    } catch { await client.sendMessage(groupId, { text: '❌ Impossible de générer le lien.' }) }
+        const code = await sock.groupInviteCode(groupId);
+        await send(sock, groupId, { text: `🔗 Lien du groupe:\nhttps://chat.whatsapp.com/${code}` });
+    } catch {
+        await send(sock, groupId, { text: '❌ Impossible de générer le lien.' });
+    }
 }
 
-export async function join(client, message) {
+export async function join(sock, message) {
     try {
-        const text = message.message?.conversation || message.message?.extendedTextMessage?.text || ''
-        const match = text.match(/chat\.whatsapp\.com\/([0-9A-Za-z]{20,24})/i)
-        if (match) await client.groupAcceptInvite(match[1])
+        const text = message.message?.conversation || message.message?.extendedTextMessage?.text || '';
+        const match = text.match(/chat\.whatsapp\.com\/([0-9A-Za-z]{20,24})/i);
+        if (match) await sock.groupAcceptInvite(match[1]);
     } catch {}
 }
 
 // ------------------- MUTE / UNMUTE -------------------
-export async function mute(client, message) {
-    const groupId = message.key.remoteJid
+export async function mute(sock, message) {
+    const groupId = message.key.remoteJid;
     try {
-        const metadata = await client.groupMetadata(groupId)
-        const senderId = message.key.participant || groupId
-        const sender = metadata.participants.find(p => p.id === senderId)
-        if (!sender?.admin) return await client.sendMessage(groupId, { text: '❌ Admin uniquement.' })
+        const metadata = await sock.groupMetadata(groupId);
+        const senderId = message.key.participant || groupId;
+        const sender = metadata.participants.find(p => p.id === senderId);
+        if (!sender?.admin) return await send(sock, groupId, { text: '❌ Admin uniquement.' });
 
-        await client.groupSettingUpdate(groupId, 'announcement', true)
-        await client.sendMessage(groupId, { text: '🔇 Groupe mute activé.' })
-    } catch { await client.sendMessage(groupId, { text: '❌ Impossible de mute le groupe.' }) }
+        await sock.groupSettingUpdate(groupId, 'announcement', true);
+        await send(sock, groupId, { text: '🔇 Groupe mute activé.' });
+    } catch {
+        await send(sock, groupId, { text: '❌ Impossible de mute le groupe.' });
+    }
 }
 
-export async function unmute(client, message) {
-    const groupId = message.key.remoteJid
+export async function unmute(sock, message) {
+    const groupId = message.key.remoteJid;
     try {
-        const metadata = await client.groupMetadata(groupId)
-        const senderId = message.key.participant || groupId
-        const sender = metadata.participants.find(p => p.id === senderId)
-        if (!sender?.admin) return await client.sendMessage(groupId, { text: '❌ Admin uniquement.' })
+        const metadata = await sock.groupMetadata(groupId);
+        const senderId = message.key.participant || groupId;
+        const sender = metadata.participants.find(p => p.id === senderId);
+        if (!sender?.admin) return await send(sock, groupId, { text: '❌ Admin uniquement.' });
 
-        await client.groupSettingUpdate(groupId, 'announcement', false)
-        await client.sendMessage(groupId, { text: '🔊 Groupe unmute activé.' })
-    } catch { await client.sendMessage(groupId, { text: '❌ Impossible de unmute le groupe.' }) }
+        await sock.groupSettingUpdate(groupId, 'announcement', false);
+        await send(sock, groupId, { text: '🔊 Groupe unmute activé.' });
+    } catch {
+        await send(sock, groupId, { text: '❌ Impossible de unmute le groupe.' });
+    }
 }
 
 // ------------------- APPROVE ALL -------------------
-export async function approveall(client, message) {
-    const groupId = message.key.remoteJid
-    if (!groupId.includes('@g.us')) return
+export async function approveall(sock, message) {
+    const groupId = message.key.remoteJid;
+    if (!groupId.includes('@g.us')) return;
 
     try {
-        const metadata = await client.groupMetadata(groupId)
-        const pending = metadata.participants.filter(p => p.isPending).map(p => p.id)
+        const metadata = await sock.groupMetadata(groupId);
+        const pending = metadata.participants.filter(p => p.isPending).map(p => p.id);
 
-        if (pending.length === 0) return await client.sendMessage(groupId, { text: 'ℹ️ Aucune invitation en attente.' })
+        if (!pending.length) return await send(sock, groupId, { text: 'ℹ️ Aucune invitation en attente.' });
 
         for (const id of pending) {
             try { 
-                await client.groupParticipantsUpdate(groupId, [id], 'add') 
-            } catch (e) { console.error('Erreur approveall:', e) }
+                await sock.groupParticipantsUpdate(groupId, [id], 'add'); 
+            } catch (e) { console.error('Erreur approveall:', e); }
         }
 
-        await client.sendMessage(groupId, { text: `✅ Toutes les invitations en attente (${pending.length}) ont été acceptées.` })
+        await send(sock, groupId, { text: `✅ Toutes les invitations en attente (${pending.length}) ont été acceptées.` });
     } catch (error) {
-        console.error('approveall error:', error)
-        await client.sendMessage(groupId, { text: '❌ Impossible de traiter approveall.' })
+        console.error('approveall error:', error);
+        await send(sock, groupId, { text: '❌ Impossible de traiter approveall.' });
     }
 }
 
 // ------------------- ADD -------------------
-export async function add(client, message) {
-    const groupId = message.key.remoteJid
-    if (!groupId.includes('@g.us')) return
+export async function add(sock, message) {
+    const groupId = message.key.remoteJid;
+    if (!groupId.includes('@g.us')) return;
 
-    const args = (message.message?.conversation || message.message?.extendedTextMessage?.text || '').split(/\s+/).slice(1)
-    if (args.length === 0) return await client.sendMessage(groupId, { text: '❌ Mentionne le ou les numéros à ajouter.' })
+    const args = (message.message?.conversation || message.message?.extendedTextMessage?.text || '').split(/\s+/).slice(1);
+    if (!args.length) return await send(sock, groupId, { text: '❌ Mentionne le ou les numéros à ajouter.' });
 
     for (const num of args) {
-        const jid = num.includes('@s.whatsapp.net') ? num : `${num}@s.whatsapp.net`
+        const jid = num.includes('@s.whatsapp.net') ? num : `${num}@s.whatsapp.net`;
         try {
-            await client.groupParticipantsUpdate(groupId, [jid], 'add')
-            await client.sendMessage(groupId, { text: `✅ @${jid.split('@')[0]} ajouté au groupe.`, mentions: [jid] })
+            await sock.groupParticipantsUpdate(groupId, [jid], 'add');
+            await send(sock, groupId, { text: `✅ @${jid.split('@')[0]} ajouté au groupe.`, mentions: [jid] });
         } catch (e) {
-            await client.sendMessage(groupId, { text: `❌ Impossible d’ajouter @${jid.split('@')[0]}.`, mentions: [jid] })
-            console.error('Add error:', e)
+            await send(sock, groupId, { text: `❌ Impossible d’ajouter @${jid.split('@')[0]}.`, mentions: [jid] });
+            console.error('Add error:', e);
         }
     }
 }
 
 // ------------------- EXPORT -------------------
 export default {
-    kick, kickall, promote, demote,
+    kick, kickall: kickall, promote, demote,
     gclink, join, antilink, linkDetection,
     resetwarns, checkwarns, mute, unmute, approveall, add
-}
+};
