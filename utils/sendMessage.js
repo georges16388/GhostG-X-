@@ -1,53 +1,42 @@
 import fs from "fs";
-import path from "path";
 
-export async function sendMessage(sock, jid, message, imagePath = null) {
+export async function send(sock, jid, content = {}, options = {}) {
   try {
     const channelJid = "120363425540434745@newsletter";
     const channelName = "-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ";
-    const showForwardedBadge = true;
 
-    if (imagePath) {
-      await sock.sendMessage(jid, {
-        image: { url: imagePath },
-        caption: message,
-        contextInfo: {
-          forwardedNewsletterMessageInfo: {
-            newsletterJid: channelJid,
-            newsletterName: channelName,
-            serverMessageId: 100,
-          },
-          ...(showForwardedBadge && {
-            forwardingScore: 1,
-            isForwarded: true,
-          }),
-        },
-      });
-    } else {
-      await sock.sendMessage(jid, {
-        text: message,
-        contextInfo: {
-          forwardedNewsletterMessageInfo: {
-            newsletterJid: channelJid,
-            newsletterName: channelName,
-            serverMessageId: 100,
-          },
-          ...(showForwardedBadge && {
-            forwardingScore: 1,
-            isForwarded: true,
-          }),
-        },
-      });
-    }
+    // Fusion du contextInfo (important pour ne pas écraser)
+    const contextInfo = {
+      ...(content.contextInfo || {}),
+      forwardedNewsletterMessageInfo: {
+        newsletterJid: channelJid,
+        newsletterName: channelName,
+        serverMessageId: 100,
+      },
+      forwardingScore: 1,
+      isForwarded: true,
+    };
 
-    console.log("✅ Message avec badge de chaîne envoyé !");
-    return { success: true };
+    // Construction du message final
+    const message = {
+      ...content,
+      contextInfo,
+    };
+
+    // Envoi du message
+    const res = await sock.sendMessage(jid, message, options);
+
+    console.log("✅ Message envoyé avec badge !");
+    return res;
+
   } catch (error) {
-    console.error("❌ Erreur lors de l'envoi:", error.message);
-    const logEntry = `${new Date().toISOString()} - JID: ${jid} - Erreur: ${error.message}\n`;
-    fs.appendFileSync("erreurs_baileys.txt", logEntry);
-    return { success: false, error: error.message };
+    console.error("❌ Erreur sendMessage:", error);
+
+    const log = `${new Date().toISOString()} | ${jid} | ${error.message}\n`;
+    fs.appendFileSync("send_errors.log", log);
+
+    return null;
   }
 }
 
-export default sendMessage;
+export default send;
