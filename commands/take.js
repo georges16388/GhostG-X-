@@ -1,3 +1,4 @@
+import send from "../utils/sendMessage.js";
 import { Sticker, createSticker, StickerTypes } from 'wa-sticker-formatter' // ES6
 // const { Sticker, createSticker, StickerTypes } = require('wa-sticker-formatter') // CommonJS
 
