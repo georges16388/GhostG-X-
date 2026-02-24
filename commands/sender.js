@@ -1,24 +1,15 @@
 import send from "../utils/sendMessage.js";
 import stylizedChar from "../utils/fancy.js";
-async function sender(message, client, texts) {
 
+export async function sender(message, client, text) {
     const remoteJid = message?.key?.remoteJid;
+    if (!remoteJid) return;
 
     try {
-        await client.sendMessage(remoteJid, {
-
-            text: stylizedChar(`> _*${texts}*_`),
-    
-        });
-    } catch (e) {
-        console.log(e)
-        return;
+        await send(client, remoteJid, { text: stylizedChar(`> _*${text}*_`) });
+    } catch (err) {
+        console.error('SENDER ERROR:', err);
     }
-
-   
 }
 
-//22677487520@s.whatsapp.net
-
 export default sender;
-
