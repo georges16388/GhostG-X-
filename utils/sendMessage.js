@@ -49,3 +49,5 @@ export async function sendMessage(sock, jid, message, imagePath = null) {
     return { success: false, error: error.message };
   }
 }
+
+export default sendMessage;
