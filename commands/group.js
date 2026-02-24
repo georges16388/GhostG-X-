@@ -1,3 +1,4 @@
+// fichier: commands/group.js
 import configmanager from '../utils/configmanager.js'
 
 const antilinkSettings = {}
@@ -17,7 +18,7 @@ export async function antilink(client, message) {
     const args = (message.message?.conversation || message.message?.extendedTextMessage?.text || '').split(/\s+/).slice(1)
     const action = args[0]?.toLowerCase()
     if (!action) {
-        const usage = `🔒 *-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ - Antilink*\n\n.antilink on\n.antilink off\n.antilink set delete | kick | warn\n.antilink status`
+        const usage = `🔒 *Antilink*\n\n.antilink on\n.antilink off\n.antilink set delete | kick | warn\n.antilink status`
         return await client.sendMessage(groupId, { text: usage })
     }
 
@@ -54,7 +55,10 @@ export async function linkDetection(client, message) {
     if (!setting?.enabled) return
 
     const senderId = message.key.participant || groupId
-    const text = message.message?.conversation || message.message?.extendedTextMessage?.text || ''
+    const text = message.message?.conversation
+               || message.message?.extendedTextMessage?.text
+               || message.message?.imageMessage?.caption
+               || ''
 
     const linkRegex = /(https?:\/\/|www\.|\.com|\.net|\.org|tiktok\.com|instagram\.com|facebook\.com|whatsapp\.com|chat\.whatsapp\.com|t\.me|telegram|discord|youtube\.com|youtu\.be)/i
     if (!linkRegex.test(text)) return
@@ -123,6 +127,10 @@ export async function kick(client, message) {
     if (!target) return await client.sendMessage(groupId, { text: '❌ Réponds à un message ou mentionne.' })
 
     try {
+        const metadata = await client.groupMetadata(groupId)
+        const bot = metadata.participants.find(p => p.id.includes(client.user.id.split(':')[0]))
+        if (!bot?.admin) return await client.sendMessage(groupId, { text: '❌ Le bot doit être admin.' })
+
         await client.groupParticipantsUpdate(groupId, [target], 'remove')
         await client.sendMessage(groupId, { text: `🚫 @${target.split('@')[0]} exclu.` })
     } catch { await client.sendMessage(groupId, { text: '❌ Erreur' }) }
@@ -133,6 +141,9 @@ export async function kickall(client, message) {
     if (!groupId.includes('@g.us')) return
     try {
         const metadata = await client.groupMetadata(groupId)
+        const bot = metadata.participants.find(p => p.id.includes(client.user.id.split(':')[0]))
+        if (!bot?.admin) return await client.sendMessage(groupId, { text: '❌ Le bot doit être admin.' })
+
         const targets = metadata.participants.filter(p => !p.admin).map(p => p.id)
         await client.groupParticipantsUpdate(groupId, targets, 'remove')
         await client.sendMessage(groupId, { text: '✅ Tous les membres non-admin ont été exclus.' })
@@ -146,6 +157,10 @@ export async function promote(client, message) {
     if (!target) return await client.sendMessage(groupId, { text: '❌ Réponds à un message ou mentionne.' })
 
     try {
+        const metadata = await client.groupMetadata(groupId)
+        const bot = metadata.participants.find(p => p.id.includes(client.user.id.split(':')[0]))
+        if (!bot?.admin) return await client.sendMessage(groupId, { text: '❌ Le bot doit être admin.' })
+
         await client.groupParticipantsUpdate(groupId, [target], 'promote')
         await client.sendMessage(groupId, { text: `👑 @${target.split('@')[0]} promu admin.` })
     } catch { await client.sendMessage(groupId, { text: '❌ Erreur' }) }
@@ -158,6 +173,10 @@ export async function demote(client, message) {
     if (!target) return await client.sendMessage(groupId, { text: '❌ Réponds à un message ou mentionne.' })
 
     try {
+        const metadata = await client.groupMetadata(groupId)
+        const bot = metadata.participants.find(p => p.id.includes(client.user.id.split(':')[0]))
+        if (!bot?.admin) return await client.sendMessage(groupId, { text: '❌ Le bot doit être admin.' })
+
         await client.groupParticipantsUpdate(groupId, [target], 'demote')
         await client.sendMessage(groupId, { text: `📉 @${target.split('@')[0]} retiré admin.` })
     } catch { await client.sendMessage(groupId, { text: '❌ Erreur' }) }
@@ -188,7 +207,8 @@ export async function mute(client, message) {
         const senderId = message.key.participant || groupId
         const sender = metadata.participants.find(p => p.id === senderId)
         if (!sender?.admin) return await client.sendMessage(groupId, { text: '❌ Admin uniquement.' })
-        await client.groupSettingUpdate(groupId, 'announcement')
+
+        await client.groupSettingUpdate(groupId, 'announcement', true)
         await client.sendMessage(groupId, { text: '🔇 Groupe mute activé.' })
     } catch { await client.sendMessage(groupId, { text: '❌ Impossible de mute le groupe.' }) }
 }
@@ -200,7 +220,8 @@ export async function unmute(client, message) {
         const senderId = message.key.participant || groupId
         const sender = metadata.participants.find(p => p.id === senderId)
         if (!sender?.admin) return await client.sendMessage(groupId, { text: '❌ Admin uniquement.' })
-        await client.groupSettingUpdate(groupId, 'not_announcement')
+
+        await client.groupSettingUpdate(groupId, 'announcement', false)
         await client.sendMessage(groupId, { text: '🔊 Groupe unmute activé.' })
     } catch { await client.sendMessage(groupId, { text: '❌ Impossible de unmute le groupe.' }) }
 }
@@ -212,8 +233,7 @@ export async function approveall(client, message) {
 
     try {
         const metadata = await client.groupMetadata(groupId)
-        // Filtre uniquement les participants avec un statut "invite" en attente
-        const pending = metadata.participants.filter(p => p.admin === 'pending').map(p => p.id)
+        const pending = metadata.participants.filter(p => p.isPending).map(p => p.id)
 
         if (pending.length === 0) return await client.sendMessage(groupId, { text: 'ℹ️ Aucune invitation en attente.' })
 
@@ -229,6 +249,7 @@ export async function approveall(client, message) {
         await client.sendMessage(groupId, { text: '❌ Impossible de traiter approveall.' })
     }
 }
+
 // ------------------- ADD -------------------
 export async function add(client, message) {
     const groupId = message.key.remoteJid
@@ -248,6 +269,7 @@ export async function add(client, message) {
         }
     }
 }
+
 // ------------------- EXPORT -------------------
 export default {
     kick, kickall, promote, demote,
