@@ -1,46 +1,53 @@
-import send from "../utils/sendMessage.js";
-import configmanager from '../utils/configmanager.js'
+import configmanager from '../utils/configmanager.js';
+import send from "../utils/sendMessage.js"; // 🔹 ton send uniforme
 
 export async function autorecord(client, message) {
-    try {
-        const remoteJid = message.key.remoteJid
-        const number = client.user.id.split(':')[0]
+  try {
+    const jid = message.key.remoteJid;
+    const userId = client.user.id.split(':')[0];
 
-        if (!configmanager.config.users[number]) return
-        if (!configmanager.config.users[number].record) return
+    if (!configmanager.config.users[userId]?.record) return;
 
-        // 🔹 Juste en ligne au lieu de recording
-        await client.sendPresenceUpdate('available', remoteJid)
+    // 🔹 Juste en ligne au lieu de recording
+    await client.sendPresenceUpdate('available', jid);
 
-    } catch (error) {
-        console.error('Autorecord error:', error)
-    }
+    // 🔹 Envoi d’un message informatif
+    await send(client, jid, { text: "🎙️ Mode enregistrement automatique activé (juste en ligne)." });
+
+  } catch (err) {
+    console.error('❌ Autorecord error:', err);
+    await send(client, message.key.remoteJid, { text: `❌ Erreur autorecord : ${err.message}` });
+  }
 }
 
 export async function autotype(client, message) {
-    try {
-        const remoteJid = message.key.remoteJid
-        const number = client.user.id.split(':')[0]
+  try {
+    const jid = message.key.remoteJid;
+    const userId = client.user.id.split(':')[0];
 
-        if (!configmanager.config.users[number]) return
-        if (!configmanager.config.users[number].type) return
+    if (!configmanager.config.users[userId]?.type) return;
 
-        // 🔹 Delay aléatoire 30-45 secondes avant typing
-        const delay = Math.floor(Math.random() * (45000 - 30000 + 1)) + 30000;
+    // 🔹 Delay aléatoire 30-45 secondes avant typing
+    const delay = Math.floor(Math.random() * (45000 - 30000 + 1)) + 30000;
 
-        setTimeout(async () => {
-            await client.sendPresenceUpdate('composing', remoteJid)
+    setTimeout(async () => {
+      await client.sendPresenceUpdate('composing', jid);
 
-            // 🔹 Revenir en ligne après 3 secondes
-            setTimeout(async () => {
-                await client.sendPresenceUpdate('available', remoteJid)
-            }, 3000)
+      // 🔹 Message informatif via send()
+      await send(client, jid, { text: "⌨️ Le bot est en train de taper..." });
 
-        }, delay)
+      // 🔹 Revenir en ligne après 3 secondes
+      setTimeout(async () => {
+        await client.sendPresenceUpdate('available', jid);
+        await send(client, jid, { text: "✅ Le bot a fini de taper." });
+      }, 3000);
 
-    } catch (error) {
-        console.error('Autotype error:', error)
-    }
+    }, delay);
+
+  } catch (err) {
+    console.error('❌ Autotype error:', err);
+    await send(client, message.key.remoteJid, { text: `❌ Erreur autotype : ${err.message}` });
+  }
 }
 
-export default { autorecord, autotype }
+export default { autorecord, autotype };
