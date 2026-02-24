@@ -42,7 +42,7 @@ function getCategoryIcon(category) {
   if (c === "creator") return "👑";
   if (c === "premium") return "💎";
   if (c === "settings") return "⚡";
-  return "🎯";
+  return "👍🏾";
 }
 
 // 🔥 Liste des commandes
