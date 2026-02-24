@@ -1,14 +1,13 @@
-import fs from "fs";
-import path from "path";
+const fs = require("fs");
+const path = require("path");
 
-export default async function sendMessage(sock, jid, message, imagePath = null) {
+async function sendMessage(sock, jid, message, imagePath = null) {
   try {
     const channelJid = "120363425540434745@newsletter";
     const channelName = "-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ";
     const showForwardedBadge = true;
 
     if (imagePath) {
-      // Si imagePath est fourni, envoi avec image + caption
       await sock.sendMessage(jid, {
         image: { url: imagePath },
         caption: message,
@@ -25,7 +24,6 @@ export default async function sendMessage(sock, jid, message, imagePath = null) 
         },
       });
     } else {
-      // Sinon envoi texte simple
       await sock.sendMessage(jid, {
         text: message,
         contextInfo: {
@@ -51,3 +49,5 @@ export default async function sendMessage(sock, jid, message, imagePath = null) 
     return { success: false, error: error.message };
   }
 }
+
+module.exports = sendMessage; // 👈 compatible Katabump
