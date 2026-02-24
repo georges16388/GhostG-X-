@@ -77,6 +77,11 @@ async function handleIncomingMessage(client, event) {
                     await uptime(client, message)
                     break
 
+                case 'help': // @cat: utils
+    await react(client, message)
+    await helpCommand(client, message, parts.slice(1))
+                    break
+
                 case 'ping': // @cat: utils
                     await react(client, message)
                     await pingTest(client, message)
