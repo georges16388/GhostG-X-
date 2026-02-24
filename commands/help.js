@@ -76,7 +76,7 @@ export default async function helpCommand(sock, message, args) {
         helpText += `╰━━━━━━━━━━━━⬣\n\n`;
       }
       helpText += `╚═════════════════════════════════════════╝`;
-      await sock.sendMessage(jid, { text: helpText });
+      await send(sock, jid, { text: helpText });
       return;
     }
 
@@ -90,18 +90,18 @@ export default async function helpCommand(sock, message, args) {
         text += `┃ ✦ Description : ${info.desc}\n`;
         text += `┃ ✦ Usage : ${prefix}${info.usage}\n`;
         text += `╚═════════════════════════════════════════════════╝`;
-        await sock.sendMessage(jid, { text });
+        await send(sock, jid, { text });
         found = true;
         break;
       }
     }
 
     if (!found) {
-      await sock.sendMessage(jid, { text: `❌ La commande "${commandQuery}" est inconnue.` });
+      await send(sock, jid, { text: `❌ La commande "${commandQuery}" est inconnue.` });
     }
 
   } catch (err) {
     console.error("❌ Erreur dans helpCommand:", err);
-    await sock.sendMessage(jid, { text: `❌ Impossible d'afficher l'aide : ${err.message}` });
+    await send(sock, jid, { text: `❌ Impossible d'afficher l'aide : ${err.message}` });
   }
 }
