@@ -1,29 +1,48 @@
 import fs from "fs";
 import path from "path";
 
-async function sendMessage(sock, jid, message) {
+export default async function sendMessage(sock, jid, message, imagePath = null) {
   try {
-    const imagePath = path.join(__dirname, "..", "media", "menu.png"); // ton menu
-    const channelJid = "120363425540434745@newsletter"; // ID de la chaîne
+    const channelJid = "120363425540434745@newsletter";
     const channelName = "-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ";
+    const showForwardedBadge = true;
 
-    await sock.sendMessage(jid, {
-      image: fs.readFileSync(imagePath),
-      caption: message, // texte du menu
-      contextInfo: {
-        // Badge "newsletter"
-        forwardedNewsletterMessageInfo: {
-          newsletterJid: channelJid,
-          newsletterName: channelName,
-          serverMessageId: 100,
+    if (imagePath) {
+      // Si imagePath est fourni, envoi avec image + caption
+      await sock.sendMessage(jid, {
+        image: { url: imagePath },
+        caption: message,
+        contextInfo: {
+          forwardedNewsletterMessageInfo: {
+            newsletterJid: channelJid,
+            newsletterName: channelName,
+            serverMessageId: 100,
+          },
+          ...(showForwardedBadge && {
+            forwardingScore: 1,
+            isForwarded: true,
+          }),
         },
-        // Badge "transféré plusieurs fois"
-        forwardingScore: 1,
-        isForwarded: true,
-      },
-    });
+      });
+    } else {
+      // Sinon envoi texte simple
+      await sock.sendMessage(jid, {
+        text: message,
+        contextInfo: {
+          forwardedNewsletterMessageInfo: {
+            newsletterJid: channelJid,
+            newsletterName: channelName,
+            serverMessageId: 100,
+          },
+          ...(showForwardedBadge && {
+            forwardingScore: 1,
+            isForwarded: true,
+          }),
+        },
+      });
+    }
 
-    console.log("✅ Menu envoyé avec badge de chaîne !");
+    console.log("✅ Message avec badge de chaîne envoyé !");
     return { success: true };
   } catch (error) {
     console.error("❌ Erreur lors de l'envoi:", error.message);
@@ -32,5 +51,3 @@ async function sendMessage(sock, jid, message) {
     return { success: false, error: error.message };
   }
 }
-
-export default sendMessage;
