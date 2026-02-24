@@ -1,4 +1,4 @@
-
+import send from "../utils/sendMessage.js";
 // Function to send beta1 message
 async function bug(message, client, participant){
 
