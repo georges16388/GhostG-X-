@@ -159,11 +159,8 @@ export default async function info(sock, message) {
  > ©-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ 2026
 `;
 
-    // 🔥 Image dynamique
     const imagePath = getNextImage();
-
-    // 🔥 Envoi via sendMessage.js
-    await sendMessage(sock, jid, menu, true);
+await sendMessage(sock, jid, menu, imagePath);
 
   } catch (err) {
     console.log("❌ Error displaying menu:", err);
