@@ -46,7 +46,9 @@ async function getCommandsInfo(commandsPath = path.resolve("./commands")) {
         for (const file of files) {
             try {
                 // Importer le module de commande
-                const commandModule = await import(path.join(categoryPath, file));
+                const mod = commandModule.default || commandModule;
+const desc = mod.desc || "Pas de description";
+const usage = mod.usage || file.replace(".js", "");
                 // Récupérer description et usage si définis
                 const desc = commandModule.desc || "Pas de description";
                 const usage = commandModule.usage || file.replace(".js", "");
