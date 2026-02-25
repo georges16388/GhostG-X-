@@ -15,7 +15,7 @@ export default async function channelid(client, message) {
         if (type === "group") {
             const metadata = await client.groupMetadata(jid);
             if (metadata?.subject) chatName = metadata.subject;
-        } else if (type === "channel")) {
+        } else if (type === "channel") {
             const metadata = await client.newsletterMetadata(jid);
             if (metadata?.name) chatName = metadata.name;
         } else {
