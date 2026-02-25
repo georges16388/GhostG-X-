@@ -185,17 +185,33 @@ export async function promote(sock, message) {
 
 export async function demote(sock, message) {
     const groupId = message.key.remoteJid;
-    const args = (message.message?.conversation || message.message?.extendedTextMessage?.text || '').split(/\s+/).slice(1);
-    const target = await getTarget(message, args);
+
+    const args = (message.message?.conversation || message.message?.extendedTextMessage?.text || '')
+        .split(/\s+/).slice(1);
+
+    const target = message.message?.extendedTextMessage?.contextInfo?.participant
+        || (args[0] ? args[0].replace('@','') + '@s.whatsapp.net' : null);
+
     if (!target) return await send(sock, groupId, { text: '❌ Réponds à un message ou mentionne.' });
 
     try {
         const metadata = await sock.groupMetadata(groupId);
-        const bot = metadata.participants.find(p => p.id.includes(sock.user.id.split(':')[0]));
-        if (!bot?.admin) return await send(sock, groupId, { text: '❌ Le bot doit être admin.' });
+
+        // 🔥 BOT ID FIX
+        const botId = sock.user.id.split(':')[0] + '@s.whatsapp.net';
+        const bot = metadata.participants.find(p => p.id === botId);
+
+        if (!bot?.admin) {
+            return await send(sock, groupId, { text: '❌ Le bot doit être admin.' });
+        }
 
         await sock.groupParticipantsUpdate(groupId, [target], 'demote');
-        await send(sock, groupId, { text: `📉 @${target.split('@')[0]} retiré admin.`, mentions: [target] });
+
+        await send(sock, groupId, { 
+            text: `📉 @${target.split('@')[0]} retiré admin.`,
+            mentions: [target]
+        });
+
     } catch (err) {
         console.error('Demote error:', err);
         await send(sock, groupId, { text: '❌ Erreur' });
