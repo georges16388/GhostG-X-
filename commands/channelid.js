@@ -2,7 +2,8 @@ import send from "../utils/sendMessage.js";
 
 export default async function channelid(client, message) {
     try {
-        let jid = message.key.remoteJid;
+        if (!jid) return;
+let jid = message.key.remoteJid;
 let type;
 if (jid.includes("@g.us")) type = "group";
 else if (jid.includes("@newsletter")) type = "channel";
