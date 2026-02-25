@@ -67,8 +67,8 @@ export async function linkDetection(sock, message) {
     const setting = antilinkSettings[groupId];
     if (!setting?.enabled) return;
 
-    const senderId = message.key.participant || groupId;
-    const text = message.message?.conversation
+    const senderId = message.key.participant;
+if (!senderId) return; // ignore si pas de participant message.message?.conversation
                || message.message?.extendedTextMessage?.text
                || message.message?.imageMessage?.caption
                || '';
