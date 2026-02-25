@@ -10,15 +10,15 @@ if (jid.includes("@g.us")) type = "group";
 else if (jid.includes("@newsletter")) type = "channel";
 else type = "private";
 
-        if (!jid) return;
+     let chatName = "Nom non disponible";
+   if (!jid) return;
 
        if (type === "channel") {
     const metadata = await client.newsletterMetadata(jid);
     console.log("DEBUG CHANNEL METADATA:", metadata);
     if (metadata?.name) chatName = metadata.name;
 }  
-        let chatName = "Nom non disponible";
-
+        
 try {
     if (type === "group") {
         const metadata = await client.groupMetadata(jid);
