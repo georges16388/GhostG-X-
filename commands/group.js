@@ -152,7 +152,8 @@ export async function kick(sock, message) {
 
     try {
         const metadata = await sock.groupMetadata(groupId);
-        const bot = metadata.participants.find(p => p.id.includes(sock.user.id.split(':')[0]));
+        const botId = sock.user.id.split(':')[0] + '@s.whatsapp.net';
+const bot = metadata.participants.find(p => p.id === botId);
         if (!bot?.admin) return await send(sock, groupId, { text: '❌ Le bot doit être admin.' });
 
         await sock.groupParticipantsUpdate(groupId, [target], 'remove');
@@ -172,7 +173,8 @@ export async function promote(sock, message) {
 
     try {
         const metadata = await sock.groupMetadata(groupId);
-        const bot = metadata.participants.find(p => p.id.includes(sock.user.id.split(':')[0]));
+        const botId = sock.user.id.split(':')[0] + '@s.whatsapp.net';
+const bot = metadata.participants.find(p => p.id === botId);
         if (!bot?.admin) return await send(sock, groupId, { text: '❌ Le bot doit être admin.' });
 
         await sock.groupParticipantsUpdate(groupId, [target], 'promote');
