@@ -13,18 +13,19 @@ else type = "private";
      let chatName = "Nom non disponible";
        
         
-try {
     if (type === "group") {
         const metadata = await client.groupMetadata(jid);
         if (metadata?.subject) chatName = metadata.subject;
-    } } else if (type === "channel") {
+    }  else if (type === "channel") {
         const metadata = await client.newsletterMetadata(jid);
         if (metadata?.name) chatName = metadata.name;
-    } else {}
+    } else {
         // Chat privé
-        chatName = message.pushName || "Nom non disponible";
+        chatName = message.pushName || "Nom non disponible";}
     }
-} catch (e) {}
+catch (e) {
+
+}
    
 await send(client, jid, {
     text: `📢 *CHAT INFO*\n\nNom : ${chatName}\nID : ${jid}\nType : ${type}`
