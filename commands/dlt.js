@@ -1,17 +1,15 @@
-import send from "../utils/sendMessage.js";
-// fichier: commands/dlt.js
 import sender from "../commands/sender.js";
 import fs from "fs";
 
-// 🔥 Lecture manuelle du .env
-let BOT_NUMBER = '226XXXX'; // fallback si non défini
-let PREFIX = '`';           // préfixe par défaut
+// 🔥 Lecture .env manuel
+let BOT_NUMBER = '226XXXX';
+let PREFIX = '`';
 
 if (fs.existsSync('./.env')) {
     const envFile = fs.readFileSync('./.env', 'utf8');
     envFile.split('\n').forEach(line => {
         line = line.trim();
-        if (!line || line.startsWith('#')) return; // ignorer les lignes vides ou les commentaires
+        if (!line || line.startsWith('#')) return;
 
         const [key, ...vals] = line.split('=');
         const value = vals.join('=').trim();
@@ -21,50 +19,45 @@ if (fs.existsSync('./.env')) {
     });
 }
 
-// 🔹 Maintenant tu peux utiliser BOT_NUMBER et PREFIX
-console.log("Bot number:", BOT_NUMBER);
-console.log("Prefix:", PREFIX);
-
-const PREFIX = process.env.PREFIX || "!";
-
+// 🔹 Commande delete
 async function dlt(client, message) {
     try {
         const quoted = message.message?.extendedTextMessage?.contextInfo;
 
         if (!quoted || !quoted.quotedMessage) {
-            await sender(message, client, "❌ Veuillez répondre à un message pour le supprimer.");
-            return;
+            return sender(message, client, "❌ Reply à un message à supprimer.");
         }
 
         const chatId = message.key.remoteJid;
-        const quotedMessageKey = quoted.stanzaId || quoted.id;
+        const quotedMessageKey = quoted.stanzaId;
         const quotedSender = quoted.participant;
-        const isFromBot = quotedSender === client.user.id || quotedSender?.includes(client.user.id);
 
-        if (!quotedMessageKey || !chatId) {
-            await sender(message, client, "❌ Impossible de trouver le message à supprimer.");
-            return;
+        const isFromBot =
+            quotedSender === client.user.id ||
+            quotedSender?.includes(client.user.id);
+
+        if (!quotedMessageKey) {
+            return sender(message, client, "❌ Message introuvable.");
         }
 
-        console.log(`🗑 Tentative de suppression du message ID: ${quotedMessageKey} dans ${chatId}`);
+        await client.sendMessage(chatId, {
+            delete: {
+                remoteJid: chatId,
+                id: quotedMessageKey,
+                fromMe: isFromBot
+            }
+        });
 
-        // Suppression pour tous si possible
-        try {
-            await client.sendMessage(chatId, {
-                delete: { remoteJid: chatId, id: quotedMessageKey, fromMe: isFromBot }
-            });
-            console.log("✅ Message supprimé avec succès !");
-            await sender(message, client, "✅ Message supprimé avec succès !");
-        } catch (error) {
-            console.error("❌ Échec de la suppression :", error);
-            await sender(message, client, "⚠️ Impossible de supprimer le message pour tous.");
-        }
+        await sender(message, client, "✅ Message supprimé !");
 
     } catch (error) {
-        console.error("❌ Erreur lors de la suppression :", error);
-        await sender(message, client, "❌ Une erreur est survenue lors de la suppression du message.");
+        console.error(error);
+        await sender(message, client, "❌ Erreur.");
     }
 }
 
-// Export avec le prefix pour l'utiliser directement dans ton gestionnaire
-export default { command: `${PREFIX}dlt`, handler: dlt };
+export default dlt;
+
+// 🔥 Pour le menu auto
+export const desc = "Supprime un message (reply)";
+export const usage = "dlt";
