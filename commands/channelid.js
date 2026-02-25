@@ -25,11 +25,7 @@ try {
         chatName = message.pushName || "Nom non disponible";
     }
 } catch (e) {
-    
-if (!chatName) chatName = "[Nom du channel inconnu]";
-// Si ça plante, on met fallback
-    chatName = message.pushName || "Nom non disponible";
-}
+   
 await send(client, jid, {
     text: `📢 *CHAT INFO*\n\nNom : ${chatName}\nID : ${jid}\nType : ${type}`
 });
