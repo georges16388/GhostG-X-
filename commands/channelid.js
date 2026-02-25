@@ -2,19 +2,35 @@ import send from "../utils/sendMessage.js";
 
 export default async function channelid(client, message) {
     try {
-        const jid = message.key.remoteJid;
+        let jid = message.key.remoteJid;
+
         if (!jid) return;
 
-        // Récupération du nom réel du chat / channel
-        let channelName = message.pushName || "Nom non disponible";
-        try {
-            const metadata = await client.groupMetadata(jid); // pour groupes
-            if (metadata?.subject) channelName = metadata.subject;
-        } catch(e) {
-            // pas grave, utiliser pushName
+        // 🔥 Si c'est un channel WhatsApp
+        const isChannel = jid.includes("@newsletter");
+
+        if (!isChannel) {
+            await send(client, jid, {
+                text: "❌ Cette commande fonctionne uniquement dans une chaîne WhatsApp."
+            });
+            return;
         }
 
-        // Envoi des infos
+        // 🔥 Nom du channel
+        let channelName = "Nom non disponible";
+
+        try {
+            // Certaines versions de Baileys permettent ça
+            const metadata = await client.newsletterMetadata(jid);
+            if (metadata?.name) {
+                channelName = metadata.name;
+            }
+        } catch (e) {
+            // fallback
+            channelName = message.pushName || "Nom non disponible";
+        }
+
+        // 🔥 Résultat
         await send(client, jid, {
             text: `📢 *CHANNEL INFO*\n\nNom : ${channelName}\nID : ${jid}`
         });
@@ -23,9 +39,9 @@ export default async function channelid(client, message) {
 
     } catch (err) {
         console.error("❌ Erreur channelid :", err);
-        const chatId = message.key.remoteJid || message.chatId;
-        await send(client, chatId, {
-            text: `❌ Erreur lors de la récupération de l'ID : ${err.message}`
+
+        await send(client, message.key.remoteJid, {
+            text: `❌ Erreur : ${err.message}`
         });
     }
 }
