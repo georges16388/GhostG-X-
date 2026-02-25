@@ -151,7 +151,7 @@ async function handleIncomingMessage(client, event) {
                     break
 
                 case 'channelid':
-    await channelid(sock, message);
+    await channelid(client, message);
                     break
 
                 case 'autorecord': // @cat: settings
