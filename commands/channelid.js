@@ -25,7 +25,6 @@ else type = "private";
     }
 catch (e) {
 
-}
 
    
 await send(client, jid, {
