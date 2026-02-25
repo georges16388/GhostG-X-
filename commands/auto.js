@@ -1,52 +1,50 @@
 import configmanager from '../utils/configmanager.js';
-import send from "../utils/sendMessage.js"; // 🔹 ton send uniforme
 
+// 🔹 AUTORECORD (SILENCIEUX)
 export async function autorecord(client, message) {
   try {
     const jid = message.key.remoteJid;
     const userId = client.user.id.split(':')[0];
 
+    // Vérifie si activé
     if (!configmanager.config.users[userId]?.record) return;
 
-    // 🔹 Juste en ligne au lieu de recording
+    // 🔹 Juste présence (PAS de message)
     await client.sendPresenceUpdate('available', jid);
-
-    // 🔹 Envoi d’un message informatif
-    await send(client, jid, { text: "🎙️ Mode enregistrement automatique activé (juste en ligne)." });
 
   } catch (err) {
     console.error('❌ Autorecord error:', err);
-    await send(client, message.key.remoteJid, { text: `❌ Erreur autorecord : ${err.message}` });
   }
 }
 
+// 🔹 AUTOTYPE (SILENCIEUX + SAFE)
 export async function autotype(client, message) {
   try {
     const jid = message.key.remoteJid;
     const userId = client.user.id.split(':')[0];
 
+    // Vérifie si activé
     if (!configmanager.config.users[userId]?.type) return;
 
-    // 🔹 Delay aléatoire 30-45 secondes avant typing
-    const delay = Math.floor(Math.random() * (45000 - 30000 + 1)) + 30000;
+    // 🔹 Delay plus court pour éviter accumulation
+    const delay = Math.floor(Math.random() * 5000) + 2000; // 2 à 7 sec
 
     setTimeout(async () => {
-      await client.sendPresenceUpdate('composing', jid);
+      try {
+        await client.sendPresenceUpdate('composing', jid);
 
-      // 🔹 Message informatif via send()
-      await send(client, jid, { text: "⌨️ Le bot est en train de taper..." });
+        // 🔹 Stop typing après 2 sec
+        setTimeout(async () => {
+          try {
+            await client.sendPresenceUpdate('available', jid);
+          } catch {}
+        }, 2000);
 
-      // 🔹 Revenir en ligne après 3 secondes
-      setTimeout(async () => {
-        await client.sendPresenceUpdate('available', jid);
-        await send(client, jid, { text: "✅ Le bot a fini de taper." });
-      }, 3000);
-
+      } catch {}
     }, delay);
 
   } catch (err) {
     console.error('❌ Autotype error:', err);
-    await send(client, message.key.remoteJid, { text: `❌ Erreur autotype : ${err.message}` });
   }
 }
 
