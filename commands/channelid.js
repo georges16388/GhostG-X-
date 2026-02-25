@@ -11,13 +11,7 @@ else if (jid.includes("@newsletter")) type = "channel";
 else type = "private";
 
      let chatName = "Nom non disponible";
-   if (!jid) return;
-
-       if (type === "channel") {
-    const metadata = await client.newsletterMetadata(jid);
-    console.log("DEBUG CHANNEL METADATA:", metadata);
-    if (metadata?.name) chatName = metadata.name;
-}  
+       
         
 try {
     if (type === "group") {
@@ -31,7 +25,9 @@ try {
         chatName = message.pushName || "Nom non disponible";
     }
 } catch (e) {
-    // Si ça plante, on met fallback
+    
+if (!chatName) chatName = "[Nom du channel inconnu]";
+// Si ça plante, on met fallback
     chatName = message.pushName || "Nom non disponible";
 }
 await send(client, jid, {
