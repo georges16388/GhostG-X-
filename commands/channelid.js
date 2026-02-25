@@ -6,6 +6,7 @@ export default async function channelid(client, message) {
 let type;
 if (jid.includes("@g.us")) type = "group";
 else if (jid.includes("@newsletter")) type = "channel";
+if (!jid) return
 else type = "private";
 
         if (!jid) return;
