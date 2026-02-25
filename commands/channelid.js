@@ -12,7 +12,11 @@ else type = "private";
 
         if (!jid) return;
 
-         
+       if (type === "channel") {
+    const metadata = await client.newsletterMetadata(jid);
+    console.log("DEBUG CHANNEL METADATA:", metadata);
+    if (metadata?.name) chatName = metadata.name;
+}  
         let chatName = "Nom non disponible";
 
 try {
