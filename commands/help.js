@@ -28,3 +28,4 @@ async function getCommandsInfo(commandsPath = path.resolve("./commands")) {
 
     return commandsInfo;
 }
+export default getCommandsInfo;
