@@ -20,7 +20,7 @@ try {
     } else if (type === "channel") {
         const metadata = await client.newsletterMetadata(jid);
         if (metadata?.name) chatName = metadata.name;
-    } else {
+    } else {}
         // Chat privé
         chatName = message.pushName || "Nom non disponible";
     }
