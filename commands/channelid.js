@@ -3,19 +3,18 @@ import send from "../utils/sendMessage.js";
 export default async function channelid(client, message) {
     try {
         const jid = message.key.remoteJid;
+        if (!jid) return;
 
-        // Vérifie si le chat est un channel/chaîne
-        if (!jid || !jid.includes("@newsletter")) {
-            await send(client, jid, {
-                text: "❌ Cette commande fonctionne uniquement dans une chaîne WhatsApp."
-            });
-            return;
+        // Récupération du nom réel du chat / channel
+        let channelName = message.pushName || "Nom non disponible";
+        try {
+            const metadata = await client.groupMetadata(jid); // pour groupes
+            if (metadata?.subject) channelName = metadata.subject;
+        } catch(e) {
+            // pas grave, utiliser pushName
         }
 
-        // Récupère le nom du channel ou pushName si disponible
-        const channelName = message.pushName || "Nom non disponible";
-
-        // Envoie les infos du channel avec badge via send()
+        // Envoi des infos
         await send(client, jid, {
             text: `📢 *CHANNEL INFO*\n\nNom : ${channelName}\nID : ${jid}`
         });
