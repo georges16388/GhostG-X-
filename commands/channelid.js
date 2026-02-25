@@ -25,7 +25,7 @@ else type = "private";
     }
 }catch (e) {
 
-
+}
    
 await send(client, jid, {
     text: `📢 *CHAT INFO*\n\nNom : ${chatName}\nID : ${jid}\nType : ${type}`
