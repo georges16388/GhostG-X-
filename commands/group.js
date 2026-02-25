@@ -81,8 +81,6 @@ export async function linkDetection(sock, message) {
         const sender = metadata.participants.find(p => p.id === senderId);
         const botId = sock.user.id.split(':')[0] + '@s.whatsapp.net';
 const bot = metadata.participants.find(p => p.id === botId);
-        const botId = sock.user.id.split(':')[0] + '@s.whatsapp.net';
-const bot = metadata.participants.find(p => p.id === botId);
 if (!bot?.admin) return;
         if (!bot?.admin) return; // bot doit être admin
 
