@@ -161,8 +161,7 @@ export default async function info(sock, message) {
 `;
 
     const imagePath = getNextImage();
-await send(sock, jid, { image: { url: imagePath }, caption: menu })
-});
+await send(sock, jid, { image: { url: imagePath }, caption: menu });
 
   } catch (err) {
     console.log("❌ Error displaying menu:", err);
