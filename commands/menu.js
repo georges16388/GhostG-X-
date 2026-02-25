@@ -51,6 +51,7 @@ const commandsList = {
   ping: "utils",
   fancy: "utils",
   channelid: "utils",
+  help: "utils";
   menu: "owner",
   setpp: "owner",
   getpp: "owner",
