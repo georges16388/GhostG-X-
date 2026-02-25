@@ -46,7 +46,7 @@ function getCommandsInfo(commandsPath = path.resolve("./commands")) {
         for (const file of files) {
             try {
                 // Importer le module de commande
-                const commandModule = require(path.join(categoryPath, file));
+                const commandModule = await import(path.join(categoryPath, file));
                 // Récupérer description et usage si définis
                 const desc = commandModule.desc || "Pas de description";
                 const usage = commandModule.usage || file.replace(".js", "");
