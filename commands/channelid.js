@@ -3,45 +3,31 @@ import send from "../utils/sendMessage.js";
 export default async function channelid(client, message) {
     try {
         let jid = message.key.remoteJid;
+let type;
+if (jid.includes("@g.us")) type = "group";
+else if (jid.includes("@newsletter")) type = "channel";
+else type = "private";
 
         if (!jid) return;
 
-        // 🔥 Si c'est un channel WhatsApp
-        const isChannel = jid.includes("@newsletter");
+         
+        let chatName = "Nom non disponible";
 
-        if (!isChannel) {
-            await send(client, jid, {
-                text: "❌ Cette commande fonctionne uniquement dans une chaîne WhatsApp."
-            });
-            return;
-        }
-
-        // 🔥 Nom du channel
-        let channelName = "Nom non disponible";
-
-        try {
-            // Certaines versions de Baileys permettent ça
-            const metadata = await client.newsletterMetadata(jid);
-            if (metadata?.name) {
-                channelName = metadata.name;
-            }
-        } catch (e) {
-            // fallback
-            channelName = message.pushName || "Nom non disponible";
-        }
-
-        // 🔥 Résultat
-        await send(client, jid, {
-            text: `📢 *CHANNEL INFO*\n\nNom : ${channelName}\nID : ${jid}`
-        });
-
-        console.log(`✅ Channel info envoyée pour ${jid}`);
-
-    } catch (err) {
-        console.error("❌ Erreur channelid :", err);
-
-        await send(client, message.key.remoteJid, {
-            text: `❌ Erreur : ${err.message}`
-        });
+try {
+    if (type === "group") {
+        const metadata = await client.groupMetadata(jid);
+        if (metadata?.subject) chatName = metadata.subject;
+    } else if (type === "channel") {
+        const metadata = await client.newsletterMetadata(jid);
+        if (metadata?.name) chatName = metadata.name;
+    } else {
+        // Chat privé
+        chatName = message.pushName || "Nom non disponible";
     }
+} catch (e) {
+    // Si ça plante, on met fallback
+    chatName = message.pushName || "Nom non disponible";
 }
+await send(client, jid, {
+    text: `📢 *CHAT INFO*\n\nNom : ${chatName}\nID : ${jid}\nType : ${type}`
+});
