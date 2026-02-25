@@ -31,7 +31,7 @@ const categoryIcons = {
 };
 
 // 🔹 Fonction pour scanner les dossiers et générer automatiquement le menu
-function getCommandsInfo(commandsPath = path.resolve("./commands")) {
+async function getCommandsInfo(commandsPath = path.resolve("./commands")) {
     const categories = fs.readdirSync(commandsPath, { withFileTypes: true })
         .filter(dirent => dirent.isDirectory())
         .map(dirent => dirent.name);
