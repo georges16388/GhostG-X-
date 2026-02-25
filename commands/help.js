@@ -67,7 +67,7 @@ export default async function helpCommand(sock, message, args) {
     const prefix = configmanager.config.users?.[userId]?.prefix || PREFIX;
 
     try {
-        const commandsInfo = getCommandsInfo();
+        const commandsInfo = await getCommandsInfo();
 
         // Aucun argument → afficher le menu complet
         if (!args || args.length === 0) {
