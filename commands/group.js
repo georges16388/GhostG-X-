@@ -82,7 +82,9 @@ if (!senderId) return; // ignore si pas de participant message.message?.conversa
         const sender = metadata.participants.find(p => p.id === senderId);
         const botId = sock.user.id.split(':')[0] + '@s.whatsapp.net';
 const bot = metadata.participants.find(p => p.id === botId);
-        if (!sender || sender.admin) return; // ignore admins
+        const botId = sock.user.id.split(':')[0] + '@s.whatsapp.net';
+const bot = metadata.participants.find(p => p.id === botId);
+if (!bot?.admin) return;
         if (!bot?.admin) return; // bot doit être admin
 
         if (setting.action === 'delete') {
