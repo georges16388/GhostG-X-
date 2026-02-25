@@ -22,7 +22,7 @@ else type = "private";
     } else {
         // Chat privé
         chatName = message.pushName || "Nom non disponible";}
-    }
+    
 } catch (e) { console.error("Erreur dans channelid:", e);
 
 }
