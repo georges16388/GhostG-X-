@@ -8,7 +8,7 @@ import fs from "fs";
 import path from "path";
 import P from "pino";
 import send from "./sendMessage.js";
-import CONFIG from "./utils/config.js";
+import CONFIG from "./config.js";
 
 const SESSION_DIR = "./sessionData";
 
