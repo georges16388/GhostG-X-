@@ -190,6 +190,6 @@ export async function kick(sock, message) {
 
 // ------------------- EXPORT -------------------
 export default {
-    kick, promote, demote, gclink, join, antilink, linkDetection,
-    resetwarns, checkwarns, mute, unmute, approveall, add
+   kick, antilink, linkDetection,
+    resetwarns, checkwarns
 };
