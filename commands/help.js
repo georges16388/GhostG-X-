@@ -21,10 +21,10 @@ export default async function help(client, message, args) {
                 const cmd = categoryCommands[commandName];
                 const text = `
 ╔══════════════『 ${CONFIG.BOT_NAME.toUpperCase()} 』══════════════╗
-📌 COMMANDE : ${prefix}${cmd.usage}
+📌 COMMANDE : ${PREFIX}${cmd.usage}
 📝 DESCRIPTION : ${cmd.desc}
 🗂️ CATÉGORIE : ${category.toUpperCase()}
-✦ UTILISATION : ${prefix}${cmd.usage}
+✦ UTILISATION : ${PREFIX}${cmd.usage}
 ╚═════════════════════════════════════╝
 
 > VIEW CHANNEL : ${CONFIG.CHANNEL_NAME}
