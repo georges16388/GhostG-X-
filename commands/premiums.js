@@ -1,59 +1,61 @@
 import send from "../utils/sendMessage.js";
 import configmanager from "../utils/configmanager.js";
+import stylizedChar from "../utils/fancy.js";
 
 export async function modifyprem(client, message, action) {
     try {
-        const remoteJid = message.key?.remoteJid;
-        if (!remoteJid) throw new Error("Invalid remote JID.");
+        const jid = message.key?.remoteJid;
+        if (!jid) throw new Error("JID invalide.");
 
-        const messageBody = message.message?.extendedTextMessage?.text || message.message?.conversation || '';
-        const parts = messageBody.trim().split(/\s+/).slice(1);
-        const args = parts;
-
+        // 🔹 Récupération du participant
         let participant;
-        if (message.message?.extendedTextMessage?.contextInfo?.quotedMessage) {
-            participant = message.message?.extendedTextMessage?.contextInfo?.participant || message.key.participant;
+        const quoted = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+        const args = (message.message?.conversation || message.message?.extendedTextMessage?.text || '').trim().split(/\s+/).slice(1);
+
+        if (quoted) {
+            participant = message.message.extendedTextMessage.contextInfo.participant || message.key.participant;
         } else if (args.length > 0) {
-            const jidMatch = args[0].match(/\d+/);
-            if (!jidMatch) {
-                await send(client, remoteJid, { text: "❌ Format de participant invalide." });
-                return;
+            const numMatch = args[0].match(/\d+/);
+            if (!numMatch) {
+                return await send(client, jid, { text: stylizedChar("❌ Maître, format de participant invalide.") });
             }
-            participant = jidMatch[0] + "@s.whatsapp.net";
+            participant = numMatch[0] + "@s.whatsapp.net";
         } else {
-            await send(client, remoteJid, { text: "❌ Aucun participant spécifié." });
-            return;
+            return await send(client, jid, { text: stylizedChar("❌ Maître, aucun participant spécifié.") });
         }
 
-        let list = configmanager.premiums || [];
+        // 🔹 Récupération de la liste premium
+        let list = Array.isArray(configmanager.premiums) ? configmanager.premiums : [];
 
+        // 🔹 Ajouter ou retirer
         if (action === "add") {
             if (!list.includes(participant)) {
                 list.push(participant);
                 configmanager.premiums = list;
-                configmanager.saveP();
-                await send(client, remoteJid, { text: `✅ ${participant.split('@')[0]} ajouté à la liste premium.` });
+                if (typeof configmanager.saveP === "function") configmanager.saveP();
+                await send(client, jid, { text: stylizedChar(`✅ ${participant.split('@')[0]} a été élevé au rang Premium. L’ombre l’observe maintenant.`) });
             } else {
-                await send(client, remoteJid, { text: `ℹ️ ${participant.split('@')[0]} est déjà premium.` });
+                await send(client, jid, { text: stylizedChar(`ℹ️ ${participant.split('@')[0]} est déjà Premium.`) });
             }
         } else if (action === "remove") {
             if (list.includes(participant)) {
-                list = list.filter(item => item !== participant);
+                list = list.filter(p => p !== participant);
                 configmanager.premiums = list;
-                configmanager.saveP();
-                await send(client, remoteJid, { text: `❌ ${participant.split('@')[0]} retiré de la liste premium.` });
+                if (typeof configmanager.saveP === "function") configmanager.saveP();
+                await send(client, jid, { text: stylizedChar(`❌ ${participant.split('@')[0]} a été retiré de la liste Premium. Les ténèbres le surveillent.`) });
             } else {
-                await send(client, remoteJid, { text: `ℹ️ ${participant.split('@')[0]} n'était pas premium.` });
+                await send(client, jid, { text: stylizedChar(`ℹ️ ${participant.split('@')[0]} n'était pas Premium.`) });
             }
         }
 
-    } catch (error) {
-        console.error("❌ Erreur premium:", error);
-        const remoteJid = message.key?.remoteJid;
-        if (remoteJid) await send(client, remoteJid, { text: `❌ Erreur: ${error.message}` });
+    } catch (err) {
+        console.error("❌ Erreur premium:", err);
+        const jid = message.key?.remoteJid;
+        if (jid) await send(client, jid, { text: stylizedChar(`❌ Maître, une erreur est survenue : ${err.message}`) });
     }
 }
 
+// 🔹 Commandes principales
 export async function addprem(client, message) {
     await modifyprem(client, message, "add");
 }
