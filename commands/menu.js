@@ -107,7 +107,7 @@ ${getIntro()}
             text += `\n╭━━━〔 ${data.icon} ${data.name} 〕━━━⬣\n`;
 
             commands[cat].forEach(cmd => {
-                text += `┃ ${data.bullet} ${prefix}${cmd}\n`;
+                text += `┃ ${data.bullet} ${PREFIX}${cmd}\n`;
             });
 
             text += `╰━━━━━━━━━━━━⬣\n`;
