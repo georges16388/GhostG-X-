@@ -17,11 +17,11 @@ export async function modifyprem(client, message, action) {
         } else if (args.length > 0) {
             const numMatch = args[0].match(/\d+/);
             if (!numMatch) {
-                return await send(client, jid, { text: stylizedChar("❌ Maître, format de participant invalide.") });
+                return await send(client, jid, { text: stylizedChar("👑 Maître,le format du participant est invalide.") });
             }
             participant = numMatch[0] + "@s.whatsapp.net";
         } else {
-            return await send(client, jid, { text: stylizedChar("❌ Maître, aucun participant spécifié.") });
+            return await send(client, jid, { text: stylizedChar("👑 Maître, aucun participant spécifié.") });
         }
 
         // 🔹 Récupération de la liste premium
@@ -51,7 +51,7 @@ export async function modifyprem(client, message, action) {
     } catch (err) {
         console.error("❌ Erreur premium:", err);
         const jid = message.key?.remoteJid;
-        if (jid) await send(client, jid, { text: stylizedChar(`❌ Maître, une erreur est survenue : ${err.message}`) });
+        if (jid) await send(client, jid, { text: stylizedChar(`👑Maître, une erreur est survenue : ${err.message}`) });
     }
 }
 
