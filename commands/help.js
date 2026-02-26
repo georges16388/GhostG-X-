@@ -1,48 +1,95 @@
 // help.js
-import commandsInfo from "./commandsInfo.js";
+import commandsInfo from "./commandsInfo.js"; // Objet avec toutes les commandes et leurs infos
 import send from "../utils/sendMessage.js";
 import configmanager from "../utils/configmanager.js";
+import CONFIG from "../utils/config.js";
 
 export default async function help(client, message, args) {
-  const botId = client.user.id.split(":")[0]; // ID du bot
-  const botConfig = configmanager.getUser(botId); // ✅ récupère la config du bot
-  const prefix = botConfig?.prefix || "!"; // fallback si pas défini
+    const jid = message.key.remoteJid;
+    const botId = client.user.id.split(":")[0];
+    const userConfig = configmanager.getUser(botId);
+    const prefix = userConfig?.prefix || CONFIG.PREFIX;
 
-  const commandName = args[0]?.toLowerCase(); // commande ciblée
+    // ---------- 1️⃣ Commande spécifique ----------
+    const commandName = args[0]?.toLowerCase();
+    if (commandName) {
+        let found = false;
+        for (const category in commandsInfo) {
+            const categoryCommands = commandsInfo[category];
+            if (categoryCommands[commandName]) {
+                const cmd = categoryCommands[commandName];
+                const text = `
+╔══════════════『 ${CONFIG.BOT_NAME.toUpperCase()} 』══════════════╗
+📌 COMMANDE : ${prefix}${cmd.usage}
+📝 DESCRIPTION : ${cmd.desc}
+🗂️ CATÉGORIE : ${category.toUpperCase()}
+✦ UTILISATION : ${prefix}${cmd.usage}
+╚═════════════════════════════════════╝
 
-  // ---------- 1️⃣ Commande spécifique ----------
-  if (commandName) {
+> VIEW CHANNEL : ${CONFIG.CHANNEL_NAME}
+> ${CONFIG.CHANNEL_ID}
+`;
+                await send(client, jid, { text });
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) {
+            // Si la commande n'existe pas, affiche quand même toutes les commandes
+            await send(client, jid, { text: await buildFullHelp(prefix) });
+        }
+        return;
+    }
+
+    // ---------- 2️⃣ Toutes les commandes ----------
+    const fullHelpText = await buildFullHelp(prefix);
+    await send(client, jid, { text: fullHelpText });
+}
+
+// ---------- Fonction pour construire le help complet ----------
+async function buildFullHelp(prefix) {
+    let text = `╔══════════════『 ${CONFIG.BOT_NAME.toUpperCase()} 』══════════════╗
+▣─────────────▣
+          📜 COMMANDES DE L'ULTIME BOT 💀
+▣─────────────▣
+`;
+
     for (const category in commandsInfo) {
-      const categoryCommands = commandsInfo[category];
-      if (categoryCommands[commandName]) {
-        const cmd = categoryCommands[commandName];
-        const text = `📌 Commande : ${prefix}${cmd.usage}\n📝 Description : ${cmd.desc}\n🗂️ Catégorie : ${category.toUpperCase()}`;
-        return await send(client, message.key.remoteJid, text);
-      }
+        const catName = category.toUpperCase();
+        const icon = getCategoryIcon(category);
+        text += `\n╭━━━〔 ${icon} ${catName} 〕━━━⬣\n`;
+
+        const categoryCommands = commandsInfo[category];
+        for (const cmdName in categoryCommands) {
+            text += `┃ ✦ ${prefix}${cmdName}\n`;
+        }
+
+        text += `╰━━━━━━━━━━━━⬣\n`;
     }
-    return await send(client, message.key.remoteJid, `⚠️ La commande "${commandName}" est introuvable.`);
-  }
 
-  // ---------- 2️⃣ Affiche toutes les commandes ----------
-  let text = `╔════════════════『 ɢʜᴏsᴛɢ-𝐗 』════════════════╗\n`;
-  text += `▣─────────────▣\n`;
-  text += `          📜 COMMANDES DE L'ULTIME BOT 💀\n`;
-  text += `▣─────────────▣\n\n`;
+    text += `
+▣─────────────▣
+۞ ${CONFIG.CHANNEL_NAME}
+⚡ DANS L’OMBRE, J’OBSERVE ET J’EXÉCUTE VOS ORDRES
+▣─────────────▣
 
-  for (const category in commandsInfo) {
-    text += `╭━━━〔 ${category.toUpperCase()} 〕━━━⬣\n`;
-    const categoryCommands = commandsInfo[category];
+> VIEW CHANNEL : ${CONFIG.CHANNEL_NAME}
+> ${CONFIG.CHANNEL_ID}
+`;
+    return text;
+}
 
-    for (const cmdName in categoryCommands) {
-      const cmd = categoryCommands[cmdName];
-      // Format: prefix + commande : description
-      text += `┃ ${prefix}${cmd.usage} : ${cmd.desc}\n`;
-    }
-    text += `╰━━━━━━━━━━━━⬣\n\n`;
-  }
-
-  text += ` > Préfixe actuel : ${prefix}\n`;
-  text += ` > ©-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ 💀`;
-
-  await send(client, message.key.remoteJid, text);
+// ---------- Icones catégories ----------
+function getCategoryIcon(category) {
+    const icons = {
+        artefacts: "⍟",
+        illusions: "✦",
+        sanctuaire: "۞",
+        jugement: "✶",
+        autorite: "♛",
+        elite: "⭒",
+        anomalies: "✶"
+    };
+    return icons[category] || "✦";
 }
