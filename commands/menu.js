@@ -183,4 +183,3 @@ export default commandsInfo;
   }
 }
 
-export default commandsInfo;
