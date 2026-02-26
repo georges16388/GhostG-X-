@@ -5,60 +5,92 @@ const configPath = 'config.json';
 const premiumPath = 'db.json';
 
 // 🔹 Load config
-let config = {};
+let config = { users: {} };
+
 if (fs.existsSync(configPath)) {
     try {
         config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-        console.log('✅ Config file read successfully');
+        console.log('✅ Config file loaded');
     } catch (e) {
-        console.log('❌ Error reading config.json, resetting...');
-        config = { users: {} };
+        console.log('❌ Config error, reset');
     }
 } else {
-    console.log('⚠️ config.json not found, creating default');
-    config = { users: {} };
+    console.log('⚠️ config.json not found → creating');
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 }
 
-// 🔹 Load premium users
-let premiums = {};
+// 🔹 Load premium
+let premiums = { premiumUser: {} };
+
 if (fs.existsSync(premiumPath)) {
     try {
         premiums = JSON.parse(fs.readFileSync(premiumPath, 'utf-8'));
-        console.log('✅ Premium users loaded');
+        console.log('✅ Premium loaded');
     } catch (e) {
-        console.log('❌ Error reading db.json, resetting...');
-        premiums = { premiumUser: {} };
+        console.log('❌ db.json error, reset');
     }
 } else {
-    console.log('⚠️ db.json not found, creating default');
-    premiums = { premiumUser: {} };
+    console.log('⚠️ db.json not found → creating');
+    fs.writeFileSync(premiumPath, JSON.stringify(premiums, null, 2));
 }
 
-// 🔹 Save functions
+// 🔹 Save
 function saveConfig() {
     fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-    console.log('💾 Config saved');
 }
 
 function savePremium() {
     fs.writeFileSync(premiumPath, JSON.stringify(premiums, null, 2));
-    console.log('💎 Premium users saved');
 }
 
-// 🔹 Exported manager with get/set
+// 🔥 EXPORT
 export default {
+
     config,
     premiums,
 
-    saveP() {
-        savePremium()
-    },
     save() {
-        saveConfig()
+        saveConfig();
     },
 
-    // 🔹 nouvelle méthode pour récupérer la config d’un bot
+    saveP() {
+        savePremium();
+    },
+
+    // ✅ GET GLOBAL
+    get(key) {
+        return config[key];
+    },
+
+    // ✅ SET GLOBAL
+    set(key, value) {
+        config[key] = value;
+        saveConfig();
+    },
+
+    // ✅ GET USER (SAFE)
     getUser(botId) {
-        return this.config.users?.[botId] || null;
+        if (!config.users) config.users = {};
+
+        if (!config.users[botId]) {
+            config.users[botId] = {
+                prefix: "!"
+            };
+            saveConfig();
+        }
+
+        return config.users[botId];
+    },
+
+    // ✅ SET USER
+    setUser(botId, data) {
+        if (!config.users) config.users = {};
+
+        config.users[botId] = {
+            ...config.users[botId],
+            ...data
+        };
+
+        saveConfig();
     }
-}
+};
