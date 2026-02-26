@@ -50,15 +50,15 @@ export default {
     config,
     premiums,
 
-    save() { saveConfig(); },
-    saveP() { savePremium(); },
-
-    get(key) {
-        return this.config[key];
+    saveP() {
+        savePremium()
+    },
+    save() {
+        saveConfig()
     },
 
-    set(key, value) {
-        this.config[key] = value;
-        this.save();
+    // 🔹 nouvelle méthode pour récupérer la config d’un bot
+    getUser(botId) {
+        return this.config.users?.[botId] || null;
     }
-};
+}
