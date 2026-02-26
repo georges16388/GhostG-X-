@@ -86,6 +86,7 @@ const commandsList = {
   fuck: "bug",
   addprem: "creator", delprem: "creator",
   "auto-promote": "premium", "auto-demote": "premium", "auto-left": "premium",
+ghostscan: "premium" 
 };
 
 // 🔥 MENU
