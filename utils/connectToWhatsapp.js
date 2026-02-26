@@ -164,3 +164,5 @@ https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c
 
 // --- Lancement ---
 connectToWhatsApp();
+
+export default connectToWhatsApp;
