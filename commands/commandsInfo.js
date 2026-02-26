@@ -7,81 +7,81 @@ const PREFIX = CONFIG.PREFIX;
 // 🔹 Informations sur toutes les commandes
 export const commandsInfo = {
   utils: {
-    uptime: { usage: `${prefix}uptime`, desc: "⏱️ Mesure le temps de survie du système des ténèbres" },
+    uptime: { usage: `${PREFIX}uptime`, desc: "⏱️ Mesure le temps de survie du système des ténèbres" },
     ping: { usage: `${prefix}ping`, desc: "⚡ Vérifie la réactivité des ombres" },
-    fancy: { usage: `${prefix}fancy <texte>`, desc: "🎨 Transforme votre texte en runes cryptiques" },
-    channelid: { usage: `${prefix}channelid`, desc: "🔗 Expose l’ID secret du canal ou du sanctuaire" },
-    help: { usage: `${prefix}help [commande]`, desc: "📜 Liste des artefacts et leur fonction" }
+    fancy: { usage: `${PREFIX}fancy <texte>`, desc: "🎨 Transforme votre texte en runes cryptiques" },
+    channelid: { usage: `${PREFIX}channelid`, desc: "🔗 Expose l’ID secret du canal ou du sanctuaire" },
+    help: { usage: `${PREFIX}help [commande]`, desc: "📜 Liste des artefacts et leur fonction" }
   },
 
   owner: {
-    menu: { usage: `${prefix}menu`, desc: "🛠️ Dévoile l’arsenal complet du Ghost Bot" },
-    setpp: { usage: `${prefix}setpp`, desc: "🖼️ Modifie l’avatar du spectre" },
-    getpp: { usage: `${prefix}getpp`, desc: "🔍 Inspecte l’avatar d’une entité" },
-    sudo: { usage: `${prefix}sudo <@>`, desc: "👑 Accorde un pouvoir privilégié à une âme" },
-    delsudo: { usage: `${prefix}delsudo <@>`, desc: "❌ Révoque un accès aux forces occultes" },
-    repo: { usage: `${prefix}repo`, desc: "📂 Lien vers le grimoire du code" },
-    dev: { usage: `${prefix}dev`, desc: "🛡️ Révèle l’identité du Maître des ténèbres" },
-    owner: { usage: `${prefix}owner`, desc: "👑 Dévoile le gardien de ce spectre" }
+    menu: { usage: `${PREFIX}menu`, desc: "🛠️ Dévoile l’arsenal complet du Ghost Bot" },
+    setpp: { usage: `${PREFIX}setpp`, desc: "🖼️ Modifie l’avatar du spectre" },
+    getpp: { usage: `${PREFIX}getpp`, desc: "🔍 Inspecte l’avatar d’une entité" },
+    sudo: { usage: `${PREFIX}sudo <@>`, desc: "👑 Accorde un pouvoir privilégié à une âme" },
+    delsudo: { usage: `${PREFIX}delsudo <@>`, desc: "❌ Révoque un accès aux forces occultes" },
+    repo: { usage: `${PREFIX}repo`, desc: "📂 Lien vers le grimoire du code" },
+    dev: { usage: `${PREFIX}dev`, desc: "🛡️ Révèle l’identité du Maître des ténèbres" },
+    owner: { usage: `${PREFIX}owner`, desc: "👑 Dévoile le gardien de ce spectre" }
   },
 
   settings: {
-    public: { usage: `${prefix}public`, desc: "🌐 Active le mode ouverture du sanctuaire" },
-    setprefix: { usage: `${prefix}setprefix <préfixe>`, desc: "🔧 Redéfinit la clé de commande des ombres" },
-    autotype: { usage: `${prefix}autotype`, desc: "⌨️ Simule la frappe des esprits" },
-    autorecord: { usage: `${prefix}autorecord`, desc: "🎙️ Capture automatiquement les murmures" },
-    welcome: { usage: `${prefix}welcome`, desc: "👋 Initie le rituel de bienvenue des âmes" }
+    public: { usage: `${PREFIX}public`, desc: "🌐 Active le mode ouverture du sanctuaire" },
+    setprefix: { usage: `${PREFIX}setprefix <préfixe>`, desc: "🔧 Redéfinit la clé de commande des ombres" },
+    autotype: { usage: `${PREFIX}autotype`, desc: "⌨️ Simule la frappe des esprits" },
+    autorecord: { usage: `${PREFIX}autorecord`, desc: "🎙️ Capture automatiquement les murmures" },
+    welcome: { usage: `${PREFIX}welcome`, desc: "👋 Initie le rituel de bienvenue des âmes" }
   },
 
   media: {
-    photo: { usage: `${prefix}photo`, desc: "📸 Convertit un flux en image spectrale" },
-    toaudio: { usage: `${prefix}toaudio`, desc: "🎵 Transforme la vidéo en onde des ténèbres" },
-    sticker: { usage: `${prefix}sticker`, desc: "💠 Forge un talisman sticker depuis le média" },
-    play: { usage: `${prefix}play <titre>`, desc: "🎶 Invoque un morceau depuis le néant" },
-    img: { usage: `${prefix}img <texte>`, desc: "🖼️ Génère une image depuis les runes du texte" },
-    vv: { usage: `${prefix}vv`, desc: "👁️ Télécharge un flux éphémère du spectre" },
-    save: { usage: `${prefix}save`, desc: "💾 Capture et sécurise un artefact" },
-    tiktok: { usage: `${prefix}tiktok <lien>`, desc: "🎬 Extrait le flux TikTok du néant" },
-    url: { usage: `${prefix}url <texte>`, desc: "🔗 Dévoile le lien direct d’un artefact" }
+    photo: { usage: `${PREFIX}photo`, desc: "📸 Convertit un flux en image spectrale" },
+    toaudio: { usage: `${PREFIX}toaudio`, desc: "🎵 Transforme la vidéo en onde des ténèbres" },
+    sticker: { usage: `${PREFIX}sticker`, desc: "💠 Forge un talisman sticker depuis le média" },
+    play: { usage: `${PREFIX}play <titre>`, desc: "🎶 Invoque un morceau depuis le néant" },
+    img: { usage: `${PREFIX}img <texte>`, desc: "🖼️ Génère une image depuis les runes du texte" },
+    vv: { usage: `${PREFIX}vv`, desc: "👁️ Télécharge un flux éphémère du spectre" },
+    save: { usage: `${PREFIX}save`, desc: "💾 Capture et sécurise un artefact" },
+    tiktok: { usage: `${PREFIX}tiktok <lien>`, desc: "🎬 Extrait le flux TikTok du néant" },
+    url: { usage: `${PREFIX}url <texte>`, desc: "🔗 Dévoile le lien direct d’un artefact" }
   },
 
   group: {
-    tag: { usage: `${prefix}tag`, desc: "📣 Alarme tous les âmes présentes" },
-    tagall: { usage: `${prefix}tagall`, desc: "📢 Invoque chaque membre et gardien" },
-    tagadmin: { usage: `${prefix}tagadmin`, desc: "🛡️ Cible uniquement les gardiens du sanctuaire" },
-    kick: { usage: `${prefix}kick @utilisateur`, desc: "❌ Expulse une entité indésirable" },
-    kickall: { usage: `${prefix}kickall`, desc: "⚡ Purge toutes les âmes non élues" },
-    promote: { usage: `${prefix}promote @utilisateur`, desc: "👑 Élévation au rang de gardien du sanctuaire" },
-    demote: { usage: `${prefix}demote @utilisateur`, desc: "⬇️ Révocation du rang de gardien" },
-    mute: { usage: `${prefix}mute @utilisateur`, desc: "🔇 Scelle la voix d’une entité" },
-    unmute: { usage: `${prefix}unmute @utilisateur`, desc: "🔊 Déverrouille la voix d’un membre" },
-    gclink: { usage: `${prefix}gclink`, desc: "🔗 Dévoile le portail du sanctuaire" },
-    antilink: { usage: `${prefix}antilink`, desc: "🚫 Neutralise les liens maudits automatiquement" },
-    approveall: { usage: `${prefix}approveall`, desc: "✅ Accorde l’accès à toutes les âmes candidates" },
-    bye: { usage: `${prefix}bye`, desc: "👋 Quitte le sanctuaire dans l’ombre" },
-    join: { usage: `${prefix}join <lien>`, desc: "🔗 Infiltration dans le sanctuaire via lien" },
-    add: { usage: `${prefix}add @utilisateur`, desc: "➕ Intègre une âme dans l’ordre" }
+    tag: { usage: `${PREFIX}tag`, desc: "📣 Alarme tous les âmes présentes" },
+    tagall: { usage: `${PREFIX}tagall`, desc: "📢 Invoque chaque membre et gardien" },
+    tagadmin: { usage: `${PREFIX}tagadmin`, desc: "🛡️ Cible uniquement les gardiens du sanctuaire" },
+    kick: { usage: `${PREFIX}kick @utilisateur`, desc: "❌ Expulse une entité indésirable" },
+    kickall: { usage: `${PREFIX}kickall`, desc: "⚡ Purge toutes les âmes non élues" },
+    promote: { usage: `${PREFIX}promote @utilisateur`, desc: "👑 Élévation au rang de gardien du sanctuaire" },
+    demote: { usage: `${PREFIX}demote @utilisateur`, desc: "⬇️ Révocation du rang de gardien" },
+    mute: { usage: `${PREFIX}mute @utilisateur`, desc: "🔇 Scelle la voix d’une entité" },
+    unmute: { usage: `${PREFIX}unmute @utilisateur`, desc: "🔊 Déverrouille la voix d’un membre" },
+    gclink: { usage: `${PREFIX}gclink`, desc: "🔗 Dévoile le portail du sanctuaire" },
+    antilink: { usage: `${PREFIX}antilink`, desc: "🚫 Neutralise les liens maudits automatiquement" },
+    approveall: { usage: `${PREFIX}approveall`, desc: "✅ Accorde l’accès à toutes les âmes candidates" },
+    bye: { usage: `${PREFIX}bye`, desc: "👋 Quitte le sanctuaire dans l’ombre" },
+    join: { usage: `${PREFIX}join <lien>`, desc: "🔗 Infiltration dans le sanctuaire via lien" },
+    add: { usage: `${PREFIX}add @utilisateur`, desc: "➕ Intègre une âme dans l’ordre" }
   },
 
   moderation: {
-    block: { usage: `${prefix}block @utilisateur`, desc: "🚫 Bannissement immédiat dans l’ombre" },
-    unblock: { usage: `${prefix}unblock @utilisateur`, desc: "✅ Réintègre une entité bannie" }
+    block: { usage: `${PREFIX}block @utilisateur`, desc: "🚫 Bannissement immédiat dans l’ombre" },
+    unblock: { usage: `${PREFIX}unblock @utilisateur`, desc: "✅ Réintègre une entité bannie" }
   },
 
   bug: {
-    fuck: { usage: `${prefix}fuck`, desc: "🐞 Test ou rapport d’anomalie spectrale" }
+    fuck: { usage: `${PREFIX}fuck`, desc: "🐞 Test ou rapport d’anomalie spectrale" }
   },
 
   creator: {
-    addprem: { usage: `${prefix}addprem @utilisateur`, desc: "💎 Accorde le privilège élite" },
-    delprem: { usage: `${prefix}delprem @utilisateur`, desc: "❌ Révoque le statut élite" }
+    addprem: { usage: `${PREFIX}addprem @utilisateur`, desc: "💎 Accorde le privilège élite" },
+    delprem: { usage: `${PREFIX}delprem @utilisateur`, desc: "❌ Révoque le statut élite" }
   },
 
   premium: {
-    ghostscan: { usage: `${prefix}ghostscan`, desc: "🌑 Analyse des ombres (réservé aux Premium)" },
-    "auto-promote": { usage: `${prefix}auto-promote`, desc: "⚡ Promotion automatique (Premium)" },
-    "auto-demote": { usage: `${prefix}auto-demote`, desc: "⬇️ Rétrogradation automatique (Premium)" },
-    "auto-left": { usage: `${prefix}auto-left`, desc: "🚪 Quitte automatiquement un groupe (Premium)" }
+    ghostscan: { usage: `${PREFIX}ghostscan`, desc: "🌑 Analyse des ombres (réservé aux Premium)" },
+    "auto-promote": { usage: `${PREFIX}auto-promote`, desc: "⚡ Promotion automatique (Premium)" },
+    "auto-demote": { usage: `${PREFIX}auto-demote`, desc: "⬇️ Rétrogradation automatique (Premium)" },
+    "auto-left": { usage: `${PREFIX}auto-left`, desc: "🚪 Quitte automatiquement un groupe (Premium)" }
   }
 };
 
