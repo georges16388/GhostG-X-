@@ -2,8 +2,8 @@
 import fs from 'fs';
 
 // Valeurs par défaut
-let PREFIX = '`';
-let BOT_NUMBER = '22677487520'; // valeur par défaut si .env absent
+export const PREFIX = '`';
+export const BOT_NUMBER = '22677487520'; // valeur par défaut si .env absent
 
 // Lecture manuelle du .env
 if (fs.existsSync('./.env')) {
