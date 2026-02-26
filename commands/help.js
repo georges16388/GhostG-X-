@@ -4,23 +4,26 @@ import send from "../utils/sendMessage.js";
 import configmanager from "../utils/configmanager.js";
 
 export default async function help(client, message, args) {
-  const prefix = configmanager.get("PREFIX") || "."; 
+  const botId = client.user.id.split(":")[0]; // ID du bot
+  const botConfig = configmanager.getUser(botId); // ✅ récupère la config du bot
+  const prefix = botConfig?.prefix || "!"; // fallback si pas défini
+
   const commandName = args[0]?.toLowerCase(); // commande ciblée
 
-  // ---------- 1️⃣ Si une commande spécifique est demandée ----------
+  // ---------- 1️⃣ Commande spécifique ----------
   if (commandName) {
     for (const category in commandsInfo) {
       const categoryCommands = commandsInfo[category];
       if (categoryCommands[commandName]) {
         const cmd = categoryCommands[commandName];
-        const text = `📌 Commande : ${cmd.usage}\n📝 Description : ${cmd.desc}\n🗂️ Catégorie : ${category.toUpperCase()}`;
+        const text = `📌 Commande : ${prefix}${cmd.usage}\n📝 Description : ${cmd.desc}\n🗂️ Catégorie : ${category.toUpperCase()}`;
         return await send(client, message.key.remoteJid, text);
       }
     }
     return await send(client, message.key.remoteJid, `⚠️ La commande "${commandName}" est introuvable.`);
   }
 
-  // ---------- 2️⃣ Sinon afficher toutes les commandes ----------
+  // ---------- 2️⃣ Affiche toutes les commandes ----------
   let text = `╔════════════════『 ɢʜᴏsᴛɢ-𝐗 』════════════════╗\n`;
   text += `▣─────────────▣\n`;
   text += `          📜 COMMANDES DE L'ULTIME BOT 💀\n`;
@@ -32,8 +35,8 @@ export default async function help(client, message, args) {
 
     for (const cmdName in categoryCommands) {
       const cmd = categoryCommands[cmdName];
-      // Format: - prefix + commande : description
-      text += `┃ ${cmd.usage} : ${cmd.desc}\n`;
+      // Format: prefix + commande : description
+      text += `┃ ${prefix}${cmd.usage} : ${cmd.desc}\n`;
     }
     text += `╰━━━━━━━━━━━━⬣\n\n`;
   }
@@ -42,4 +45,4 @@ export default async function help(client, message, args) {
   text += ` > ©-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ 💀`;
 
   await send(client, message.key.remoteJid, text);
-};
+}
