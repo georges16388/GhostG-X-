@@ -2,7 +2,7 @@
 import configmanager from "../utils/configmanager.js";
 import { PREFIX } from "../config.js"; // <- import du config manuel
 
-const prefix = PREFIX;
+const PREFIX = CONFIG.PREFIX;
 
 // 🔹 Informations sur toutes les commandes
 export const commandsInfo = {
