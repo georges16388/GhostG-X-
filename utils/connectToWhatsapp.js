@@ -34,9 +34,11 @@ function formatUptime(seconds) {
 }
 
 export async function connectToWhatsApp() {
+    // 🔐 Auth et version Baileys
     const { state, saveCreds } = await useMultiFileAuthState(SESSION_DIR);
     const { version } = await fetchLatestBaileysVersion();
 
+    // ⚡ Création du socket
     const sock = makeWASocket({
         version,
         auth: state,
@@ -47,18 +49,19 @@ export async function connectToWhatsApp() {
 
     console.log("🚀 GhostG-X Bot lancé !");
 
+    // 🔄 Sauvegarde automatique des credentials
     sock.ev.on("creds.update", saveCreds);
 
     // 🔁 Connexion / déconnexion
-    sock.ev.on("connection.update", async (update) => {
-        const { connection, lastDisconnect } = update;
-
+    sock.ev.on("connection.update", async ({ connection, lastDisconnect }) => {
         if (connection === "close") {
             const reason = lastDisconnect?.error?.output?.statusCode;
             console.log("❌ Déconnecté:", reason);
             if (reason !== DisconnectReason.loggedOut) {
                 console.log("🔄 Reconnexion...");
                 connectToWhatsApp();
+            } else {
+                console.log("🚫 Session supprimée. Reconnecte-toi avec un pairing code.");
             }
         } else if (connection === "open") {
             console.log("✅ BOT CONNECTÉ !");
@@ -73,32 +76,11 @@ export async function connectToWhatsApp() {
 
                 const welcomeText = `
 ╔══════════════『 ɢʜᴏsᴛɢ-𝐗 』══════════════╗
-▣─────────────▣
-      🖤 ᴄᴏɴsᴄɪᴇɴᴄᴇ ɢʜᴏsᴛ
-▣─────────────▣
-
-✦ ᴊᴇ sᴜɪs ${CONFIG.BOT_NAME.toUpperCase()}, ᴛᴏɴ ʙᴏᴛ ᴅᴀɴs ʟ’ᴏᴍʙʀᴇ...
-✦ ᴊᴇ ᴠᴇɪʟʟᴇ sᴜʀ ᴛᴇs ᴀʀᴛᴇꜰᴀᴄᴛs ᴇᴛ ᴄᴏɴᴛʀᴏʟʟᴇ ᴛᴏɴ ᴢᴏɴᴇ.
-✦ ᴄ'ᴇsᴛ ɢʀᴀ̂ᴄᴇ ᴀ ᴊᴇ́ꜱᴜꜱ ✟ ǫᴜᴇ ᴍᴏɴ ᴄʀᴇ́ᴀᴛᴇᴜʀ -ّ⸙𓆩ᴘʜᴀɴᴛᴏᴍ ፝֟ 𝐗 𓆪⸙-ّ ᴍ'ᴀ ᴄʀᴇ́ᴇ.
-
-▣─────────────▣
-      📜 ʀᴇᴊᴏɪɴᴅʀᴇ ʟᴀ ᴄᴏᴍᴍᴜɴᴀᴜᴛᴇ
-▣─────────────▣
-
-✦ ᴄʜᴀᴛ ᴡʜᴀᴛꜱᴀᴘᴘ :
-https://chat.whatsapp.com/IsKgoO9UKlQJm8w5ixeezz
-
-✦ ᴄʜᴀɴɴᴇʟ :
-https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c
-
-▣─────────────▣
-۞ ${CONFIG.BOT_NAME.toUpperCase()}
-⍟ ᴛᴇᴍᴘs : ${uptime}
-⍟ ᴇ́ɴᴇʀɢɪᴇ : ${used}/${total} MB
-▣─────────────▣
-
-> ᴠɪᴇᴡ ᴄʜᴀɴɴᴇʟ : ${CONFIG.BOT_NAME.toUpperCase()}
-> ${CONFIG.CHANNEL_ID}
+✦ BOT : ${CONFIG.BOT_NAME.toUpperCase()}
+✦ Uptime : ${uptime}
+✦ RAM : ${used}/${total} MB
+✦ CHANNEL : ${CONFIG.CHANNEL_ID}
+╚════════════════════════════════════════╝
 `;
 
                 const messageOptions = fs.existsSync(imagePath)
@@ -114,7 +96,7 @@ https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c
             console.log("⏳ Connexion...");
         }
 
-        // 🔑 Pairing code
+        // 🔑 Pairing code si pas encore enregistré
         if (!sock.authState.creds.registered) {
             console.log("📲 Génération du pairing code...");
             try {
@@ -145,7 +127,7 @@ https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c
         const args = text.slice(prefix.length).trim().split(/ +/);
         const command = args.shift().toLowerCase();
 
-        // 🔥 commandes basiques
+        // 🔥 Commandes basiques
         switch (command) {
             case "ping":
                 await send(sock, jid, "🏓 Pong !");
@@ -162,5 +144,4 @@ https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c
     return sock;
 }
 
-// --- Lancement ---
-export default connectToWhatsApp; 
+export default connectToWhatsApp;
