@@ -8,7 +8,7 @@ const PREFIX = CONFIG.PREFIX;
 export const commandsInfo = {
   utils: {
     uptime: { usage: `${PREFIX}uptime`, desc: "⏱️ Mesure le temps de survie du système des ténèbres" },
-    ping: { usage: `${prefix}ping`, desc: "⚡ Vérifie la réactivité des ombres" },
+    ping: { usage: `${PREFIX}ping`, desc: "⚡ Vérifie la réactivité des ombres" },
     fancy: { usage: `${PREFIX}fancy <texte>`, desc: "🎨 Transforme votre texte en runes cryptiques" },
     channelid: { usage: `${PREFIX}channelid`, desc: "🔗 Expose l’ID secret du canal ou du sanctuaire" },
     help: { usage: `${PREFIX}help [commande]`, desc: "📜 Liste des artefacts et leur fonction" }
