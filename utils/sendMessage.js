@@ -1,42 +1,64 @@
-import fs from "fs";
+// utils/sendMessage.js
 
-export async function send(sock, jid, content = {}, options = {}) {
-  try {
-    const channelJid = "120363425540434745@newsletter";
-    const channelName = "-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ";
+export default async function send(sock, jid, content, options = {}) {
+    try {
 
-    // Fusion du contextInfo (important pour ne pas écraser)
-    const contextInfo = {
-      ...(content.contextInfo || {}),
-      forwardedNewsletterMessageInfo: {
-        newsletterJid: channelJid,
-        newsletterName: channelName,
-        serverMessageId: 100,
-      },
-      forwardingScore: 1,
-      isForwarded: true,
-    };
+        let text = content.text || "";
+        let mentions = content.mentions || [];
 
-    // Construction du message final
-    const message = {
-      ...content,
-      contextInfo,
-    };
+        // 🔥 Signature Ghost automatique
+        const signature = `\n\n> 🖤 -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ`;
 
-    // Envoi du message
-    const res = await sock.sendMessage(jid, message, options);
+        // 🔥 Désactiver signature si demandé
+        if (!options.noGhost) {
+            if (text) text += signature;
+        }
 
-    console.log("✅ Message envoyé avec badge !");
-    return res;
+        // 🔥 Gestion texte
+        if (text) {
+            return await sock.sendMessage(jid, {
+                text,
+                mentions
+            });
+        }
 
-  } catch (error) {
-    console.error("❌ Erreur sendMessage:", error);
+        // 🔥 Gestion image
+        if (content.image) {
+            return await sock.sendMessage(jid, {
+                image: content.image,
+                caption: (content.caption || "") + (options.noGhost ? "" : signature),
+                mentions
+            });
+        }
 
-    const log = `${new Date().toISOString()} | ${jid} | ${error.message}\n`;
-    fs.appendFileSync("send_errors.log", log);
+        // 🔥 Gestion vidéo
+        if (content.video) {
+            return await sock.sendMessage(jid, {
+                video: content.video,
+                caption: (content.caption || "") + (options.noGhost ? "" : signature),
+                mentions
+            });
+        }
 
-    return null;
-  }
+        // 🔥 Gestion audio
+        if (content.audio) {
+            return await sock.sendMessage(jid, {
+                audio: content.audio,
+                mimetype: "audio/mpeg"
+            });
+        }
+
+        // 🔥 Gestion sticker
+        if (content.sticker) {
+            return await sock.sendMessage(jid, {
+                sticker: content.sticker
+            });
+        }
+
+        // 🔥 fallback
+        return await sock.sendMessage(jid, content);
+
+    } catch (err) {
+        console.error("❌ sendMessage error:", err);
+    }
 }
-
-export default send;
