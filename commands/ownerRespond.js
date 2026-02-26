@@ -38,4 +38,4 @@ export async function ownerRespond(client, message) {
     return false; // pas traité si ce n'est pas toi
 }
 
-export default { ownerRespond };
+export default ownerRespond;
