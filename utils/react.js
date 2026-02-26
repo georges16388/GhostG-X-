@@ -14,7 +14,7 @@ export default async function react(client, message) {
             await client.sendMessage(remoteJid, {
                 react: { text: emoji, key: message.key }
             });
-            await sleep(1000); // 1 seconde entre chaque reaction
+            await sleep(300); // 1 seconde entre chaque reaction
         }
 
         // Retire la dernière réaction après un délai
