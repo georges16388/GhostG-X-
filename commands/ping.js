@@ -3,19 +3,37 @@ import stylizedChar from "../utils/fancy.js";
 
 export async function pingTest(sock, message) {
     const jid = message.key.remoteJid;
-    const start = Date.now();
+    const userName = message.pushName || "Maître";
 
-    // Message initial
-    await send(sock, jid, { text: "📡 Pinging..." });
+    try {
+        // 🔹 Message immersif initial
+        await send(sock, jid, {
+            text: `🖤 ${userName}… le réseau est scruté dans l’ombre.`
+        });
 
-    const latency = Date.now() - start;
+        const start = Date.now();
 
-    // Message final avec latence
-    const text = stylizedChar(
-        `🚀 -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ Network\n\n` +
-        `Latency: ${latency} ms\n\n` +
-        `-ّ⸙𓆩ᴘʜᴀɴᴛᴏᴍ ፝֟ 𝐗`
-    );
+        // 🔹 On simule un petit ping (tu peux ajouter un delay si nécessaire)
+        const latency = Date.now() - start;
 
-    await send(sock, jid, { text });
+        // 🔹 Message final stylisé Ghost Dark
+        const text = stylizedChar(
+            `💀 -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ \n\n` +
+            `Latency: ${latency} ms\n` +
+            `Utilisateur: ${userName}\n\n` +
+            `👑 Dans l’ombre, le réseau répond à vos ordres…`
+        );
+
+        await send(sock, jid, { text });
+
+    } catch (err) {
+        console.error("❌ pingTest error:", err);
+        await send(sock, jid, {
+            text: `👑 Maître… une anomalie a empêché le test du réseau : ${err.message}`
+        });
+    }
 }
+
+// 🔹 Pour le menu automatique
+export const desc = "Teste la latence du réseau au style Ghost Dark";
+export const usage = "ping";
