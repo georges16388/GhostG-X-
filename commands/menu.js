@@ -185,4 +185,3 @@ ${intro}
   }
 }
 
-export default commandsInfo;
