@@ -1,4 +1,4 @@
-import { ownerRespond } from './commands/ownerRespond.js';
+import ownerRespond from '../commands/ownerRespond.js';
 import helpCommand from "../commands/help.js";
 import dev from '../commands/dev.js';
 import owner from '../commands/owner.js';
