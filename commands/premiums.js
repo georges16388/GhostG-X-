@@ -4,7 +4,7 @@ import stylizedChar from "../utils/fancy.js";
 
 // 🔹 Vérification si un participant est premium
 function isPremium(participant) {
-    const list = Array.isArray(configmanager.premiums) ? configmanager.premiums : [];
+    const list = Object.values(configmanager.premiums.premiumUser || {}).map(u => u.premium);
     return list.includes(participant);
 }
 
