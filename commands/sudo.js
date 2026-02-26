@@ -1,7 +1,8 @@
 import send from "../utils/sendMessage.js";
+import stylizedChar from '../utils/fancy.js';
 
 /**
- * Modifie une liste d'utilisateurs (sudo ou premium)
+ * Modifie une liste d'utilisateurs (sudo ou premium) avec style ghost
  * @param {object} client - Le client WhatsApp
  * @param {object} message - Le message reçu
  * @param {Array} list - La liste cible (sudoList ou premiumList)
@@ -11,7 +12,7 @@ import send from "../utils/sendMessage.js";
 export async function modifyUserList(client, message, list, action, type = "sudo") {
     try {
         const remoteJid = message.key?.remoteJid;
-        if (!remoteJid) throw new Error("Invalid remote JID.");
+        if (!remoteJid) return;
 
         const messageBody = message.message?.extendedTextMessage?.text || message.message?.conversation || '';
         const commandAndArgs = messageBody.slice(1).trim();
@@ -20,41 +21,39 @@ export async function modifyUserList(client, message, list, action, type = "sudo
 
         let participant;
 
-        // Priorité : message reply
+        // Priorité : reply
         if (message.message?.extendedTextMessage?.contextInfo?.quotedMessage) {
             participant = message.message.extendedTextMessage.contextInfo.participant || message.key.participant;
         } 
-        // Sinon : numéro passé en argument
+        // Sinon : argument
         else if (args.length > 0) {
             const jidMatch = args[0].match(/\d+/);
-            if (!jidMatch) throw new Error("Invalid participant format.");
+            if (!jidMatch) throw new Error("❌ Numéro invalide pour l'utilisateur.");
             participant = jidMatch[0] + '@s.whatsapp.net';
         } else {
-            throw new Error("No participant specified.");
+            throw new Error("❌ Aucune entité spécifiée.");
         }
 
-        // Ajouter l'utilisateur
+        // Ghost language messages
         if (action === "add") {
             if (!list.includes(participant)) {
                 list.push(participant);
-                await send(message, client, `✅ ${participant} ajouté ${type}`);
+                await send(message, client, stylizedChar(`✅ ${participant} ajouté au cercle ${type} 👻`));
             } else {
-                await send(message, client, `⚠️ ${participant} est déjà ${type}`);
+                await send(message, client, stylizedChar(`⚠️ ${participant} est déjà ${type} dans l'ombre`));
             }
-        } 
-        // Retirer l'utilisateur
-        else if (action === "remove") {
+        } else if (action === "remove") {
             const index = list.indexOf(participant);
             if (index !== -1) {
                 list.splice(index, 1);
-                await send(message, client, `🚫 ${participant} retiré ${type}`);
+                await send(message, client, stylizedChar(`🚫 ${participant} retiré du cercle ${type} 👁️‍🗨️`));
             } else {
-                await send(message, client, `⚠️ ${participant} n'était pas ${type}`);
+                await send(message, client, stylizedChar(`⚠️ ${participant} n'était pas ${type} dans le sanctuaire`));
             }
         }
     } catch (error) {
-        console.error(`Error modifyUserList (${type}):`, error);
-        await send(message, client, `❌ Erreur: ${error.message}`);
+        console.error(`❌ modifyUserList (${type}) error:`, error);
+        await send(message, client, stylizedChar(`⚠️ Erreur: ${error.message}`));
     }
 }
 
