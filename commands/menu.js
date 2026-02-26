@@ -175,12 +175,14 @@ ${intro}
   }
 };
 
-export default commandsInfo;
     const imagePath = getNextImage();
     await send(sock, jid, { image: { url: imagePath }, caption: menu });
 
   } catch (err) {
     console.log("❌ Menu error:", err);
+
+
+export default commandsInfo;
   }
 }
 
