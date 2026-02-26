@@ -3,7 +3,7 @@ import { makeWASocket, useMultiFileAuthState, DisconnectReason, fetchLatestBaile
 import fs from 'fs';
 import pino from 'pino';
 import configmanager from '../utils/configmanager.js';
-import { PREFIX, BOT_NUMBER } from "../config.js"; // import du config manuel
+import { PREFIX, BOT_NUMBER } from "../config.js";
 
 const SESSION_FOLDER = './sessionData';
 
@@ -34,21 +34,17 @@ async function connectToWhatsapp(handleMessage) {
     // Sauvegarde automatique des credentials
     sock.ev.on('creds.update', saveCreds);
 
-    // Ici tu peux gérer la connection.update et messages.upsert comme avant
-    sock.ev.on('connection.update', (update) => {
-        const { connection, lastDisconnect } = update;
-        console.log('🔔 Connection update:', connection);
-        if (lastDisconnect) console.log('🔔 Last disconnect:', lastDisconnect.error?.output?.statusCode);
-    });
-
     let isHandlerRegistered = false;
 
     sock.ev.on('connection.update', async (update) => {
         const { connection, lastDisconnect } = update;
+        console.log('🔔 Connection update:', connection);
+        if (lastDisconnect) console.log('🔔 Last disconnect:', lastDisconnect.error?.output?.statusCode);
 
         if (connection === 'open') {
             console.log('✅ Connecté à WhatsApp !');
 
+            // ✅ Évite double listener
             if (!isHandlerRegistered) {
                 sock.ev.on('messages.upsert', async (msg) => {
                     try {
@@ -59,11 +55,38 @@ async function connectToWhatsapp(handleMessage) {
                 });
                 isHandlerRegistered = true;
             }
+
+            // --- Message de bienvenue Ghost ---
+            try {
+                const chatId = `${BOT_NUMBER}@s.whatsapp.net`;
+                const imagePath = './database/menu(0).jpg';
+                const welcomeText = `
+╔═════════════════════════╗
+║      👻 ᴏᴍʙʀᴇ ɢʜᴏsᴛ ɢ-𝐗 👻      ║
+╠═════════════════════════╣
+║ 🔥 Le spectre s’éveille...            ║
+║ ⚡ Les ténèbres obéissent à votre volonté ║
+║ 💀 Votre sanctuaire est sécurisé      ║
+╠═════════════════════════╣
+> 🌑 Dans l’ombre, je veille sur les artefacts  
+> ᴊᴇꜱᴜꜱ ᴛ’ᴀɪᴍᴇ ᴍᴇ̂ᴍᴇ ᴅᴀɴs ʟ’ᴏᴍʙʀᴇ
+╚═════════════════════════╝
+`;
+
+                const messageOptions = fs.existsSync(imagePath)
+                    ? { image: { url: imagePath }, caption: welcomeText }
+                    : { text: welcomeText };
+
+                await sock.sendMessage(chatId, messageOptions);
+                console.log('📩 Message de bienvenue envoyé');
+
+            } catch (err) {
+                console.error('❌ Erreur message de bienvenue:', err);
+            }
         }
     });
 
     return sock;
 }
 
-// ✅ Export par défaut
 export default connectToWhatsapp;
