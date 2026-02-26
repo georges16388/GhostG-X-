@@ -1,12 +1,13 @@
-import premiums from "../commands/premiums.js";
+
 import os from "os";
-import path from "path";
 import fs from "fs";
+import path from "path";
 import { fileURLToPath } from "url";
 import configs from "../utils/configmanager.js";
 import stylizedChar from "../commands/fancy.js";
 import send from "../utils/sendMessage.js";
 
+// Pour gérer __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -74,22 +75,19 @@ function getIntro() {
   return intros[Math.floor(Math.random() * intros.length)];
 }
 
-// 🔥 Liste commandes
+// 🔥 Liste commandes (exemple)
 const commandsList = {
-  uptime: "utils", ping: "utils", fancy: "utils", channelid: "utils", help: "utils",
+  uptime: "utils", ping: "utils", fancy: "utils", help: "utils",
   menu: "owner", setpp: "owner", getpp: "owner", sudo: "owner", delsudo: "owner",
-  repo: "owner", dev: "owner", owner: "owner",
-  public: "settings", setprefix: "settings", autotype: "settings", autorecord: "settings", welcome: "settings",
-  photo: "media", toaudio: "media", sticker: "media", play: "media", img: "media", vv: "media", save: "media", tiktok: "media", url: "media",
-  tag: "group", tagall: "group", tagadmin: "group", kick: "group", kickall: "group", kickall2: "group", promote: "group", demote: "group", promoteall: "group", demoteall: "group", mute: "group", unmute: "group", gclink: "group", antilink: "group", approveall: "group", bye: "group", join: "group", add: "group",
+  public: "settings", setprefix: "settings", autotype: "settings",
+  photo: "media", sticker: "media", play: "media", img: "media",
+  tag: "group", kick: "group", promote: "group", demote: "group",
   block: "moderation", unblock: "moderation",
-  fuck: "bug",
   addprem: "creator", delprem: "creator",
-  "auto-promote": "premium", "auto-demote": "premium", "auto-left": "premium",
-ghostscan: "premium" 
+  "auto-promote": "premium", "auto-demote": "premium", ghostscan: "premium"
 };
 
-// 🔥 MENU
+// 🔥 MENU principal
 export default async function info(sock, message) {
   try {
     const jid = message.key.remoteJid;
@@ -98,9 +96,12 @@ export default async function info(sock, message) {
     const totalRam = (os.totalmem() / 1024 / 1024).toFixed(1);
     const uptime = formatUptime(process.uptime());
     const botId = sock.user.id.split(":")[0];
-    const prefix = configs.config.users?.[botId]?.prefix || "!";
+    
+    // ✅ prefix depuis configmanager
+    const botConfig = configs.getUser(botId);
+    const prefix = botConfig?.prefix || "!";
 
-    // Grouper commandes
+    // Grouper commandes par catégorie
     const categories = {};
     for (const [cmd, cat] of Object.entries(commandsList)) {
       if (!categories[cat]) categories[cat] = [];
@@ -116,7 +117,6 @@ export default async function info(sock, message) {
 
 ${intro}
 
-❖ ᴇɴᴛɪᴛᴇ́ : -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
 ❖ ᴍᴀɪ̂ᴛʀᴇ : ${stylizedChar(userName)}
 ❖ sɪɢɴᴇ : ${prefix}
 ❖ ᴛᴇᴍᴘs : ${uptime}
@@ -128,6 +128,7 @@ ${intro}
 ▣─────────────▣
 `;
 
+    // Ajoute les commandes par catégorie
     for (const [category, cmds] of Object.entries(categories)) {
       const icon = getCategoryIcon(category);
       const name = stylizedChar(getCategoryName(category));
@@ -136,6 +137,7 @@ ${intro}
       menu += `╰━━━━━━━━━━━━⬣\n`;
     }
 
+    // Footer
     menu += `
 ▣─────────────▣
 🖤 Alimenté par -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
@@ -143,45 +145,16 @@ ${intro}
 💀 Les ténèbres guident vos artefacts, Maître.
 ▣─────────────▣
 `;
- 
-   const commandsInfo = {
-  utils: { /* ... tes commandes utils ... */ },
-  owner: { /* ... */ },
-  settings: { /* ... */ },
-  group: { /* ... */ },
-  media: { /* ... */ },
-  moderation: { /* ... */ },
-  bug: { /* ... */ },
-  creator: { /* ... */ },
 
-  // 🔹 Commandes premium à la fin
-  premium: {
-    ghostscan: {
-      usage: `${prefix}ghostscan`,
-      desc: "🌑 Analyse des ombres (réservé aux Premium)"
-    },
-    "auto-promote": {
-      usage: `${prefix}auto-promote`,
-      desc: "⚡ Promotion automatique (Premium)"
-    },
-    "auto-demote": {
-      usage: `${prefix}auto-demote`,
-      desc: "⬇️ Rétrogradation automatique (Premium)"
-    },
-    "auto-left": {
-      usage: `${prefix}auto-left`,
-      desc: "🚪 Quitte automatiquement un groupe (Premium)"
-    }
-  }
-};
-
+    // Image aléatoire
     const imagePath = getNextImage();
-    await send(sock, jid, { image: { url: imagePath }, caption: menu });
+    const messageOptions = fs.existsSync(imagePath)
+      ? { image: { url: imagePath }, caption: menu }
+      : { text: menu };
+
+    await send(sock, jid, messageOptions);
 
   } catch (err) {
-    console.log("❌ Menu error:", err);
-
-
+    console.error("❌ Menu error:", err);
   }
 }
-
