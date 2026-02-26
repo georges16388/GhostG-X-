@@ -1,31 +1,45 @@
-async function getCommandsInfo(commandsPath = path.resolve("./commands")) {
-    const categories = fs.readdirSync(commandsPath, { withFileTypes: true })
-        .filter(dirent => dirent.isDirectory())
-        .map(dirent => dirent.name);
+// help.js
+import commandsInfo from "./commandsInfo.js";
+import send from "../utils/sendMessage.js";
+import configmanager from "../utils/configmanager.js";
 
-    const commandsInfo = {};
+export default async function help(client, message, args) {
+  const prefix = configmanager.get("PREFIX") || "."; 
+  const commandName = args[0]?.toLowerCase(); // commande ciblée
 
-    for (const category of categories) {
-        const categoryPath = path.join(commandsPath, category);
-        const files = fs.readdirSync(categoryPath).filter(f => f.endsWith(".js"));
-        commandsInfo[category] = {};
-
-        for (const file of files) {
-            try {
-                // Charger le module de commande en ES Module
-                const modulePath = path.join(categoryPath, file);
-                const commandModule = (await import(`file://${modulePath}`)).default;
-
-                const desc = commandModule.desc || "Pas de description";
-                const usage = commandModule.usage || file.replace(".js", "");
-                commandsInfo[category][usage] = { desc, usage };
-
-            } catch (err) {
-                console.error(`⚠️ Impossible de charger ${file}:`, err.message);
-            }
-        }
+  // ---------- 1️⃣ Si une commande spécifique est demandée ----------
+  if (commandName) {
+    for (const category in commandsInfo) {
+      const categoryCommands = commandsInfo[category];
+      if (categoryCommands[commandName]) {
+        const cmd = categoryCommands[commandName];
+        const text = `📌 Commande : ${cmd.usage}\n📝 Description : ${cmd.desc}\n🗂️ Catégorie : ${category.toUpperCase()}`;
+        return await send(client, message.key.remoteJid, text);
+      }
     }
+    return await send(client, message.key.remoteJid, `⚠️ La commande "${commandName}" est introuvable.`);
+  }
 
-    return commandsInfo;
-}
-export default getCommandsInfo;
+  // ---------- 2️⃣ Sinon afficher toutes les commandes ----------
+  let text = `╔════════════════『 ɢʜᴏsᴛɢ-𝐗 』════════════════╗\n`;
+  text += `▣─────────────▣\n`;
+  text += `          📜 COMMANDES DE L'ULTIME BOT 💀\n`;
+  text += `▣─────────────▣\n\n`;
+
+  for (const category in commandsInfo) {
+    text += `╭━━━〔 ${category.toUpperCase()} 〕━━━⬣\n`;
+    const categoryCommands = commandsInfo[category];
+
+    for (const cmdName in categoryCommands) {
+      const cmd = categoryCommands[cmdName];
+      // Format: - prefix + commande : description
+      text += `┃ ${cmd.usage} : ${cmd.desc}\n`;
+    }
+    text += `╰━━━━━━━━━━━━⬣\n\n`;
+  }
+
+  text += ` > Préfixe actuel : ${prefix}\n`;
+  text += ` > ©-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ 💀`;
+
+  await send(client, message.key.remoteJid, text);
+};
