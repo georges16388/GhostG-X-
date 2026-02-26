@@ -50,7 +50,7 @@ export async function play(message, sock) {
 
     } catch (err) {
         console.error("❌ Erreur play command :", err);
-        await send(sock, jid, { text: stylizedChar(👑 Maître… une ombre a bloqué l’invocation : ${err.message}`) });
+        await send(sock, jid, { text: stylizedChar(`👑 Maître… une ombre a bloqué l’invocation : ${err.message}`) });
     }
 }
 
