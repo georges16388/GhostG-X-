@@ -182,7 +182,7 @@ ${intro}
     console.log("❌ Menu error:", err);
 
 
-export default commandsInfo;
   }
 }
 
+export default commandsInfo;
