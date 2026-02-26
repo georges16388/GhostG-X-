@@ -3,52 +3,54 @@ import stylizedChar from "../utils/fancy.js";
 import axios from "axios";
 
 export async function play(message, sock) {
-    const remoteJid = message.key.remoteJid;
-    const rawText = message.message?.conversation || message.message?.extendedTextMessage?.text || '';
-    const text = rawText.toLowerCase().trim();
+    const jid = message.key.remoteJid;
+    const userName = message.pushName || "Maître";
 
     try {
-        const query = text.split(/\s+/).slice(1).join(' ');
+        const rawText = message.message?.conversation || message.message?.extendedTextMessage?.text || '';
+        const args = rawText.trim().split(/\s+/).slice(1);
+        const query = args.join(' ');
+
         if (!query) {
-            return await send(sock, remoteJid, { text: stylizedChar('❌ Fournis un titre de vidéo.') });
+            return await send(sock, jid, { text: stylizedChar(`⚡ ${userName}, fournis un titre de vidéo à invoquer, Maître…`) });
         }
 
-        console.log('🎯 Recherche :', query);
-        await send(sock, remoteJid, { text: stylizedChar(`🔎 Recherche : ${query}`), quoted: message });
+        // 🔹 Message immersif Ghost Dark
+        await send(sock, jid, { text: stylizedChar(`🔎 ${userName}, je scrute les ombres pour trouver : ${query}`), quoted: message });
 
+        // 🔹 Requête API
         const searchUrl = `https://apis.davidcyriltech.my.id/play?query=${encodeURIComponent(query)}`;
-        const searchResponse = await axios.get(searchUrl, { timeout: 10000 });
+        const searchResponse = await axios.get(searchUrl, { timeout: 15000 });
 
         if (!searchResponse.data.status || !searchResponse.data.result) {
-            throw new Error('Vidéo non trouvée.');
+            throw new Error("Aucune vidéo trouvée dans les ténèbres…");
         }
 
         const videoData = searchResponse.data.result;
         const videoUrl = videoData.url || videoData.download_url;
-        if (!videoUrl) throw new Error('URL de téléchargement non disponible.');
+        if (!videoUrl) throw new Error("L’URL de téléchargement n’existe pas.");
 
         const apiUrl = `https://youtubeabdlpro.abrahamdw882.workers.dev/?url=${encodeURIComponent(videoUrl)}`;
 
-        // Envoi de la miniature + infos
-        await send(sock, remoteJid, {
-            image: { url: videoData.thumbnail },
-            caption: `🎵 *${videoData.title}*\n⏱️ ${videoData.duration || 'Inconnu'}\n👁️ ${videoData.views || 'Inconnu'} vues\n\n© -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ`,
-            quoted: message
-        });
+        // 🔹 Envoi miniature + infos Ghost Dark
+        const infoText = stylizedChar(
+            `🎵 *${videoData.title}*\n` +
+            `⏱️ ${videoData.duration || 'Inconnu'}\n` +
+            `👁️ ${videoData.views || 'Inconnu'} vues\n\n` +
+            `👑 Maître, la mélodie est prête à être invoquée…`
+        );
 
-        // Envoi de l'audio
-        await send(sock, remoteJid, {
-            audio: { url: apiUrl },
-            mimetype: 'audio/mp4',
-            ptt: false,
-            quoted: message
-        });
+        await send(sock, jid, { image: { url: videoData.thumbnail }, caption: infoText, quoted: message });
 
-        console.log('✅ Audio envoyé :', videoData.title);
+        // 🔹 Envoi audio Ghost Dark
+        await send(sock, jid, { audio: { url: apiUrl, mimetype: 'audio/mp4', ptt: false }, quoted: message });
 
-    } catch (error) {
-        console.error('❌ Erreur play :', error.message);
-        await send(sock, remoteJid, { text: stylizedChar('❌ Erreur de téléchargement.') });
+        // 🔹 Confirmation immersive
+        await send(sock, jid, { text: stylizedChar(`✅ ${userName}, le morceau "${videoData.title}" a été invoqué dans le sanctuaire.`) });
+
+    } catch (err) {
+        console.error("❌ Erreur play command :", err);
+        await send(sock, jid, { text: stylizedChar(👑 Maître… une ombre a bloqué l’invocation : ${err.message}`) });
     }
 }
 
