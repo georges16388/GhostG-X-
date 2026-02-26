@@ -1,5 +1,10 @@
 import configmanager from "../utils/configmanager.js";
-import { PREFIX } from "../utils/connectToWhatsApp.js" ; // si /connectToWhatsApp.js'; // si tu exportes PREFIX
+import { PREFIX } from '../connectToWhatsApp.js'; // chemin relatif correct
+
+// Utilisation
+if (message.body.startsWith(PREFIX + 'antilink')) {
+    // ton code ici
+}
 
 // puis
 const prefix = PREFIX;
