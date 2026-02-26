@@ -3,7 +3,7 @@ import { makeWASocket, useMultiFileAuthState, DisconnectReason, fetchLatestBaile
 import fs from 'fs';
 import pino from 'pino';
 import configmanager from '../utils/configmanager.js';
-import { PREFIX, BOT_NUMBER } from "../config.js"; // import du config manuel
+import { PREFIX, BOT_NUMBER } from "../config.js";
 
 const SESSION_FOLDER = './sessionData';
 
@@ -17,6 +17,7 @@ async function connectToWhatsapp(handleMessage) {
     const { version } = await fetchLatestBaileysVersion();
     console.log('📦 Baileys version:', version.join('.'));
 
+    // Multi-file auth state (credentials stockées dans SESSION_FOLDER)
     const { state, saveCreds } = await useMultiFileAuthState(SESSION_FOLDER);
 
     const sock = makeWASocket({
@@ -31,48 +32,56 @@ async function connectToWhatsapp(handleMessage) {
         generateHighQualityLinkPreview: true,
     });
 
-    // Sauvegarde automatique des credentials
+    // 🔐 Sauvegarde automatique des credentials
     sock.ev.on('creds.update', saveCreds);
 
     let isHandlerRegistered = false;
 
+    // ------------------- CONNECTION UPDATE -------------------
     sock.ev.on('connection.update', async (update) => {
         const { connection, lastDisconnect } = update;
 
-        if (connection === 'close') {
-            const statusCode = lastDisconnect?.error?.output?.statusCode;
-            console.log('❌ Déconnecté:', statusCode);
+        // 🔔 Logs détaillés pour debug
+        console.log('🔔 Connection update:', connection);
+        if (lastDisconnect) console.log('🔔 Last disconnect:', lastDisconnect.error?.output);
 
-            if (statusCode !== DisconnectReason.loggedOut) {
-                console.log('🔄 Reconnexion...');
-                setTimeout(() => connectToWhatsapp(handleMessage), 5000);
-            } else {
-                console.log('🚫 Session supprimée. Reconnecte-toi.');
-            }
+        switch (connection) {
+            case 'close':
+                const statusCode = lastDisconnect?.error?.output?.statusCode;
+                console.log('❌ Déconnecté:', statusCode);
 
-        } else if (connection === 'connecting') {
-            console.log('⏳ Connexion en cours...');
+                if (statusCode !== DisconnectReason.loggedOut) {
+                    console.log('🔄 Reconnexion automatique dans 5s...');
+                    setTimeout(() => connectToWhatsapp(handleMessage), 5000);
+                } else {
+                    console.log('🚫 Session supprimée. Il faudra re-pairer le bot.');
+                }
+                break;
 
-        } else if (connection === 'open') {
-            console.log('✅ Connecté à WhatsApp !');
+            case 'connecting':
+                console.log('⏳ Connexion en cours...');
+                break;
 
-            // ✅ Évite double listener
-            if (!isHandlerRegistered) {
-                sock.ev.on('messages.upsert', async (msg) => {
-                    try {
-                        await handleMessage(sock, msg, { PREFIX, BOT_NUMBER });
-                    } catch (err) {
-                        console.error('❌ Handler error:', err);
-                    }
-                });
-                isHandlerRegistered = true;
-            }
+            case 'open':
+                console.log('✅ Connecté à WhatsApp !');
 
-            // --- WELCOME MESSAGE ---
-            try {
-                const chatId = `${BOT_NUMBER}@s.whatsapp.net`;
-                const imagePath = './database/menu(0).jpg';
-                const welcomeText = `
+                // ✅ Évite double listener
+                if (!isHandlerRegistered) {
+                    sock.ev.on('messages.upsert', async (msg) => {
+                        try {
+                            await handleMessage(sock, msg, { PREFIX, BOT_NUMBER });
+                        } catch (err) {
+                            console.error('❌ Handler error:', err);
+                        }
+                    });
+                    isHandlerRegistered = true;
+                }
+
+                // --- MESSAGE DE BIENVENUE ---
+                try {
+                    const chatId = `${BOT_NUMBER}@s.whatsapp.net`;
+                    const imagePath = './database/menu(0).jpg';
+                    const welcomeText = `
 ╔═════════════════════════╗
 ║      👻 ᴏᴍʙʀᴇ ɢʜᴏsᴛ ɢ-𝐗 👻      ║
 ╠═════════════════════════╣
@@ -84,28 +93,27 @@ async function connectToWhatsapp(handleMessage) {
 > ᴊᴇꜱᴜꜱ ᴛ’ᴀɪᴍᴇ ᴍᴇ̂ᴍᴇ ᴅᴀɴs ʟ’ᴏᴍʙʀᴇ
 ╚═════════════════════════╝
 `;
+                    const messageOptions = fs.existsSync(imagePath)
+                        ? { image: { url: imagePath }, caption: welcomeText }
+                        : { text: welcomeText };
 
-                const messageOptions = fs.existsSync(imagePath)
-                    ? { image: { url: imagePath }, caption: welcomeText }
-                    : { text: welcomeText };
-
-                await sock.sendMessage(chatId, messageOptions);
-                console.log('📩 Message de bienvenue envoyé');
-
-            } catch (err) {
-                console.error('❌ Erreur message de bienvenue:', err);
-            }
+                    await sock.sendMessage(chatId, messageOptions);
+                    console.log('📩 Message de bienvenue envoyé');
+                } catch (err) {
+                    console.error('❌ Erreur message de bienvenue:', err);
+                }
+                break;
         }
     });
 
-    // --- PAIRING CODE ---
+    // ------------------- PAIRING CODE -------------------
     setTimeout(async () => {
         if (!state.creds.registered) {
             console.log('⚠️ Pas connecté. Pairing...');
 
             try {
                 const code = await sock.requestPairingCode(BOT_NUMBER);
-                console.log('📲 CODE:', code);
+                console.log('📲 CODE PAIRING:', code);
 
                 configmanager.config.users[BOT_NUMBER] = {
                     sudoList: [`${BOT_NUMBER}@s.whatsapp.net`],
@@ -121,7 +129,6 @@ async function connectToWhatsapp(handleMessage) {
                     publicMode: true,
                 };
                 configmanager.save();
-
             } catch (e) {
                 console.error('❌ Pairing error:', e);
             }
