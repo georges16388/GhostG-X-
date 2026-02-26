@@ -1,4 +1,4 @@
-import premium from "./commands/premium.js";
+import premiums from "./commands/premiums.js";
 import os from "os";
 import path from "path";
 import fs from "fs";
