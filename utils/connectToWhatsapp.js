@@ -1,19 +1,39 @@
+// connectToWhatsApp.js
 import makeWASocket, { 
     useMultiFileAuthState, 
     DisconnectReason,
     fetchLatestBaileysVersion
 } from "@whiskeysockets/baileys";
-
 import fs from "fs";
+import path from "path";
 import P from "pino";
-import send from "./utils/sendMessage.js"; // ton utilitaire send
+import send from "./utils/sendMessage.js";
+import CONFIG from "./utils/config.js";
 
 const SESSION_DIR = "./sessionData";
-const OWNER_NUMBER = "22677487520"; // ton numéro
-const PREFIX = "!";
 
-async function connectToWhatsApp() {
+// 📸 Images pour welcome et menu
+const images = [
+    "database/menu(0).jpg",
+    "database/GhostG-X(0).jpg",
+    "database/GhostG.jpg"
+];
+let currentImage = 0;
+function getNextImage() {
+    const img = images[currentImage];
+    currentImage = (currentImage + 1) % images.length;
+    return img;
+}
 
+// ⏱️ Format uptime
+function formatUptime(seconds) {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = Math.floor(seconds % 60);
+    return `${h}h ${m}m ${s}s`;
+}
+
+export async function connectToWhatsApp() {
     const { state, saveCreds } = await useMultiFileAuthState(SESSION_DIR);
     const { version } = await fetchLatestBaileysVersion();
 
@@ -29,6 +49,7 @@ async function connectToWhatsApp() {
 
     sock.ev.on("creds.update", saveCreds);
 
+    // 🔁 Connexion / déconnexion
     sock.ev.on("connection.update", async (update) => {
         const { connection, lastDisconnect } = update;
 
@@ -39,25 +60,45 @@ async function connectToWhatsApp() {
                 console.log("🔄 Reconnexion...");
                 connectToWhatsApp();
             }
-
         } else if (connection === "open") {
             console.log("✅ BOT CONNECTÉ !");
 
-            // --- Message de bienvenue Ghost ---
+            // --- MESSAGE DE BIENVENUE ---
             try {
-                const chatId = `${OWNER_NUMBER}@s.whatsapp.net`;
-                const imagePath = './database/menu(0).jpg';
+                const chatId = `${CONFIG.OWNER}@s.whatsapp.net`;
+                const imagePath = getNextImage();
+                const uptime = formatUptime(process.uptime());
+                const used = (process.memoryUsage().rss / 1024 / 1024).toFixed(0);
+                const total = (require("os").totalmem() / 1024 / 1024).toFixed(0);
+
                 const welcomeText = `
-╔═════════════════════════╗
-║      👻 ᴏᴍʙʀᴇ ɢʜᴏsᴛ ɢ-𝐗 👻      ║
-╠═════════════════════════╣
-║ 🔥 Le spectre s’éveille...            ║
-║ ⚡ Les ténèbres obéissent à votre volonté ║
-║ 💀 Votre sanctuaire est sécurisé      ║
-╠═════════════════════════╣
-> 🌑 Dans l’ombre, je veille sur les artefacts  
-> ᴊᴇꜱᴜꜱ ᴛ’ᴀɪᴍᴇ ᴍᴇ̂ᴍᴇ ᴅᴀɴs ʟ’ᴏᴍʙʀᴇ
-╚═════════════════════════╝
+╔══════════════『 ɢʜᴏsᴛɢ-𝐗 』══════════════╗
+▣─────────────▣
+      🖤 ᴄᴏɴsᴄɪᴇɴᴄᴇ ɢʜᴏsᴛ
+▣─────────────▣
+
+✦ ᴊᴇ sᴜɪs ${CONFIG.BOT_NAME.toUpperCase()}, ᴛᴏɴ ʙᴏᴛ ᴅᴀɴs ʟ’ᴏᴍʙʀᴇ...
+✦ ᴊᴇ ᴠᴇɪʟʟᴇ sᴜʀ ᴛᴇs ᴀʀᴛᴇꜰᴀᴄᴛs ᴇᴛ ᴄᴏɴᴛʀᴏʟʟᴇ ᴛᴏɴ ᴢᴏɴᴇ.
+✦ ᴄ'ᴇsᴛ ɢʀᴀ̂ᴄᴇ ᴀ ᴊᴇ́ꜱᴜꜱ ǫᴜᴇ ᴍᴏɴ ᴄʀᴇ́ᴀᴛᴇᴜʀ -ّ⸙𓆩ᴘʜᴀɴᴛᴏᴍ ፝֟ 𝐗 𓆪⸙-ّ ᴍ'ᴀ ᴄʀᴇ́ᴇ.
+
+▣─────────────▣
+      📜 ʀᴇᴊᴏɪɴᴅʀᴇ ʟᴀ ᴄᴏᴍᴍᴜɴᴀᴜᴛᴇ
+▣─────────────▣
+
+✦ ᴄʜᴀᴛ ᴡʜᴀᴛꜱᴀᴘᴘ :
+https://chat.whatsapp.com/IsKgoO9UKlQJm8w5ixeezz
+
+✦ ᴄʜᴀɴɴᴇʟ :
+https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c
+
+▣─────────────▣
+۞ ${CONFIG.BOT_NAME.toUpperCase()}
+⍟ ᴛᴇᴍᴘs : ${uptime}
+⍟ ᴇ́ɴᴇʀɢɪᴇ : ${used}/${total} MB
+▣─────────────▣
+
+> ᴠɪᴇᴡ ᴄʜᴀɴɴᴇʟ : ${CONFIG.BOT_NAME.toUpperCase()}
+> ${CONFIG.CHANNEL_ID}
 `;
 
                 const messageOptions = fs.existsSync(imagePath)
@@ -65,11 +106,10 @@ async function connectToWhatsApp() {
                     : { text: welcomeText };
 
                 await send(sock, chatId, messageOptions);
-                console.log('📩 Message de bienvenue envoyé');
+                console.log("📩 Message de bienvenue envoyé !");
             } catch (err) {
-                console.error('❌ Erreur message de bienvenue:', err);
+                console.error("❌ Erreur message de bienvenue :", err);
             }
-
         } else if (connection === "connecting") {
             console.log("⏳ Connexion...");
         }
@@ -77,8 +117,12 @@ async function connectToWhatsApp() {
         // 🔑 Pairing code
         if (!sock.authState.creds.registered) {
             console.log("📲 Génération du pairing code...");
-            const code = await sock.requestPairingCode(OWNER_NUMBER);
-            console.log("🔑 TON CODE :", code);
+            try {
+                const code = await sock.requestPairingCode(CONFIG.OWNER);
+                console.log("🔑 TON CODE :", code);
+            } catch (e) {
+                console.error("❌ Erreur code pairing :", e);
+            }
         }
     });
 
@@ -86,41 +130,30 @@ async function connectToWhatsApp() {
     sock.ev.on("messages.upsert", async ({ messages }) => {
         const m = messages[0];
         if (!m.message) return;
-
-        // éviter boucle
         if (m.key.fromMe) return;
 
         const jid = m.key.remoteJid;
-
-        // Récupérer le texte peu importe la structure
         const text = m.message.conversation
             || m.message.extendedTextMessage?.text
             || m.message.listResponseMessage?.singleSelectReply?.selectedRowId
             || "";
-
         if (!text) return;
 
-        console.log("📩 Message reçu :", text);
+        const prefix = CONFIG.PREFIX;
+        if (!text.startsWith(prefix)) return;
 
-        if (!text.startsWith(PREFIX)) return;
-
-        const args = text.slice(PREFIX.length).trim().split(/ +/);
+        const args = text.slice(prefix.length).trim().split(/ +/);
         const command = args.shift().toLowerCase();
 
-        // 🔥 commandes
+        // 🔥 commandes basiques
         switch (command) {
             case "ping":
                 await send(sock, jid, "🏓 Pong !");
                 break;
-
             case "menu":
-                await send(sock, jid, `📜 MENU
-
-${PREFIX}ping - Test bot
-${PREFIX}menu - Voir menu
-                `);
+                const menuModule = await import("./commands/menu.js");
+                await menuModule.default(sock, m);
                 break;
-
             default:
                 await send(sock, jid, "❓ Commande inconnue");
         }
@@ -129,4 +162,5 @@ ${PREFIX}menu - Voir menu
     return sock;
 }
 
+// --- Lancement ---
 connectToWhatsApp();
