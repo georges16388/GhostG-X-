@@ -18,7 +18,7 @@ export default async function react(client, message) {
         }
 
         // Retire la dernière réaction après un délai
-        await sleep(1000);
+        await sleep(300);
         await client.sendMessage(remoteJid, {
             react: { remove: true, key: message.key }
         });
