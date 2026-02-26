@@ -1,6 +1,6 @@
 // utils/configmanager.js
 import fs from "fs";
-import CONFIG from "./config.js"; // ton config.js qui charge le .env
+import CONFIG from "../config.js"; // ton config.js qui charge le .env
 
 // 🔹 Paths
 const configPath = "config.json";
