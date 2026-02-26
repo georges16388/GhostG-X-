@@ -6,7 +6,7 @@ export default async function react(client, message) {
     const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
     // Emojis du cycle Ghost
-    const ghostEmojis = ['👻', '🔥', '🌑', '⚡', '💀'];
+    const ghostEmojis = ['👻', '🔥'];
 
     try {
         // Boucle sur les emojis avec délai
