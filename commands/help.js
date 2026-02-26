@@ -1,5 +1,5 @@
 // help.js
-import commandsInfo from './commandsInfo.js'; // Objet avec toutes les commandes et leurs infos
+import commandsInfo from "./commandsInfo.js"; // Objet avec toutes les commandes et leurs infos
 import send from "../utils/sendMessage.js";
 import configmanager from "../utils/configmanager.js";
 import CONFIG from "../utils/config.js";
