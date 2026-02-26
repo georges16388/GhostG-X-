@@ -7,7 +7,7 @@ import makeWASocket, {
 import fs from "fs";
 import path from "path";
 import P from "pino";
-import send from "./utils/sendMessage.js";
+import send from "./sendMessage.js";
 import CONFIG from "./utils/config.js";
 
 const SESSION_DIR = "./sessionData";
