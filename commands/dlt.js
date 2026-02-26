@@ -1,4 +1,4 @@
-import sender from "../commands/sender.js";
+import send from "../utils/sendMessage.js";
 import fs from "fs";
 
 // 🔥 Lecture .env manuel
@@ -19,28 +19,30 @@ if (fs.existsSync('./.env')) {
     });
 }
 
-// 🔹 Commande delete
-async function dlt(client, message) {
+// 🔹 Commande delete avec effet Ghost Dark
+async function dlt(sock, message) {
     try {
         const quoted = message.message?.extendedTextMessage?.contextInfo;
 
         if (!quoted || !quoted.quotedMessage) {
-            return sender(message, client, "❌ Reply à un message à supprimer.");
+            return await send(sock, message.key.remoteJid, { 
+                text: "👑 Maître… vous devez répondre à un message pour le faire disparaître." 
+            });
         }
 
         const chatId = message.key.remoteJid;
-        const quotedMessageKey = quoted.stanzaId;
-        const quotedSender = quoted.participant;
+        const quotedMessageKey = quoted.stanzaId || quoted.quotedMessage?.key?.id;
+        const quotedSender = quoted.participant || quoted.quotedMessage?.key?.participant;
 
         const isFromBot =
-            quotedSender === client.user.id ||
-            quotedSender?.includes(client.user.id);
+            quotedSender === sock.user.id ||
+            quotedSender?.includes(sock.user.id);
 
         if (!quotedMessageKey) {
-            return sender(message, client, "❌ Message introuvable.");
+            return await send(sock, chatId, { text: "👑 Maître… le message semble s’être évaporé." });
         }
 
-        await client.sendMessage(chatId, {
+        await sock.sendMessage(chatId, {
             delete: {
                 remoteJid: chatId,
                 id: quotedMessageKey,
@@ -48,11 +50,16 @@ async function dlt(client, message) {
             }
         });
 
-        await sender(message, client, "✅ Message supprimé !");
+        // ✅ Message immersif Ghost Dark
+        await send(sock, chatId, { 
+            text: `👑 Maître… le message a été effacé dans l'ombre. Il ne pourra plus troubler le sanctuaire.` 
+        });
 
     } catch (error) {
-        console.error(error);
-        await sender(message, client, "❌ Erreur.");
+        console.error("❌ dlt error:", error);
+        await send(sock, message.key.remoteJid, { 
+            text: `👑 Maître… une anomalie a empêché la suppression. Les ombres observent.` 
+        });
     }
 }
 
@@ -60,4 +67,4 @@ export default dlt;
 
 // 🔥 Pour le menu auto
 export const desc = "Supprime un message (reply)";
-export const usage = "dlt";
+export const usage = `${PREFIX}dlt`;
