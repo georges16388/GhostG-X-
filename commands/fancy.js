@@ -1,13 +1,19 @@
 import send from "../utils/sendMessage.js";
 
-// Maps de polices
-const cursiveMap = { /*... ton cursiveMap ...*/ };
-const boldMap = { /*... ton boldMap ...*/ };
-const italicMap = { /*... ton italicMap ...*/ };
-const boldItalicMap = { /*... ton boldItalicMap ...*/ };
-const squaredMap = { /*... ton squaredMap ...*/ };
+// ====================
+// 🔥 MAPS
+// ====================
 
-// Fonts classiques et décoratives
+const cursiveMap = { /* garde ton map */ };
+const boldMap = { /* garde ton map */ };
+const italicMap = { /* garde ton map */ };
+const boldItalicMap = { /* garde ton map */ };
+const squaredMap = { /* garde ton map */ };
+
+// ====================
+// 🔥 FONTS
+// ====================
+
 const classicFonts = [
     (t) => t, 
     (t) => t.toUpperCase(),
@@ -29,6 +35,7 @@ const classicFonts = [
     (t) => `⟦${t}⟧`,
     (t) => `*${t}*`,
 ];
+
 const decorativeFonts = [
     (t) => `✨ ${t} ✨`,
     (t) => `🔥 ${t.toUpperCase()} 🔥`,
@@ -41,7 +48,40 @@ const decorativeFonts = [
     (t) => `👑${t}👑`,
     (t) => `✧･ﾟ: *✧･ﾟ:* ${t} *:･ﾟ✧*:･ﾟ✧`,
 ];
+
 const fancyFonts = [...classicFonts, ...decorativeFonts];
+
+// ====================
+// 💀 STYLE GHOST
+// ====================
+
+export function ghost(text = "") {
+    const map = {
+        a:"ᴀ", b:"ʙ", c:"ᴄ", d:"ᴅ", e:"ᴇ", f:"ғ",
+        g:"ɢ", h:"ʜ", i:"ɪ", j:"ᴊ", k:"ᴋ", l:"ʟ",
+        m:"ᴍ", n:"ɴ", o:"ᴏ", p:"ᴘ", q:"ǫ", r:"ʀ",
+        s:"s", t:"ᴛ", u:"ᴜ", v:"ᴠ", w:"ᴡ", x:"x",
+        y:"ʏ", z:"ᴢ"
+    };
+
+    return text
+        .split("")
+        .map(l => map[l.toLowerCase()] || l)
+        .join("");
+}
+
+// ====================
+// 🔥 UTILISER FANCY
+// ====================
+
+export function applyFancy(index, text) {
+    if (index < 0 || index >= fancyFonts.length) return text;
+    return fancyFonts[index](text);
+}
+
+// ====================
+// 💀 COMMANDE FANCY
+// ====================
 
 export default async function fancyCommand(sock, message) {
     try {
@@ -50,10 +90,13 @@ export default async function fancyCommand(sock, message) {
         const parts = text.trim().split(/\s+/);
         const args = parts.slice(1).filter(p => p.trim() !== '');
 
-        // Pas d'argument : afficher preview
+        // 👁️ Preview
         if (args.length === 0 || isNaN(parseInt(args[0]))) {
-            const sampleText = "Fancy Text";
-            const preview = fancyFonts.map((f, i) => `*${i + 1}.* ${f(sampleText)}`).join('\n\n');
+            const sampleText = ghost("ghostg-x");
+            const preview = fancyFonts
+                .map((f, i) => `*${i + 1}.* ${f(sampleText)}`)
+                .join('\n\n');
+
             return await send(sock, jid, { text: preview });
         }
 
@@ -62,23 +105,27 @@ export default async function fancyCommand(sock, message) {
 
         if (styleIndex < 0 || styleIndex >= fancyFonts.length) {
             return await send(sock, jid, {
-                text: `❌ Numéro de style invalide. Utilise *.fancy* pour voir les styles.`
+                text: `❌ Style invalide, maître.`
             });
         }
 
         if (!content.trim()) {
             return await send(sock, jid, {
-                text: `⚠️ Fournis le texte à styliser.\nExemple: *.fancy 3 Hello World!*`
+                text: `⚠️ Maître, donnez-moi un texte à transformer.\nEx: *.fancy 3 Hello*`
             });
         }
 
         const styled = fancyFonts[styleIndex](content);
-        await send(sock, jid, { text: styled });
+
+        await send(sock, jid, {
+            text: `💀 ${ghost("transformation effectuée")}\n\n${styled}`
+        });
 
     } catch (err) {
         console.error("❌ Erreur fancyCommand:", err);
+
         await send(sock, message.key.remoteJid, {
-            text: `❌ Impossible de styliser le texte : ${err.message}`
+            text: `❌ ${ghost("échec de la transformation")} : ${err.message}`
         });
     }
 }
