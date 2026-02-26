@@ -17,7 +17,7 @@
     "crew"
   ],
   "dependencies": {
-    "@whiskeysockets/baileys": "^7.11.3"
+    "@whiskeysockets/baileys": "^7.11.3",
     "axios": "^1.7.7",
     "axios-retry": "^3.9.1",
     "uuid": "^9.0.1",
