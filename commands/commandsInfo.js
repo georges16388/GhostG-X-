@@ -1,5 +1,5 @@
 import configmanager from "../utils/configmanager.js";
-import { PREFIX } from '../connectToWhatsApp.js'; // si tu exportes PREFIX
+import { PREFIX } from "../utils/connectToWhatsApp.js" ; // si /connectToWhatsApp.js'; // si tu exportes PREFIX
 
 // puis
 const prefix = PREFIX;
