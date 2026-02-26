@@ -142,7 +142,39 @@ ${intro}
 💀 Les ténèbres guident vos artefacts, Maître.
 ▣─────────────▣
 `;
+ 
+   const commandsInfo = {
+  utils: { /* ... tes commandes utils ... */ },
+  owner: { /* ... */ },
+  settings: { /* ... */ },
+  group: { /* ... */ },
+  media: { /* ... */ },
+  moderation: { /* ... */ },
+  bug: { /* ... */ },
+  creator: { /* ... */ },
 
+  // 🔹 Commandes premium à la fin
+  premium: {
+    ghostscan: {
+      usage: `${prefix}ghostscan`,
+      desc: "🌑 Analyse des ombres (réservé aux Premium)"
+    },
+    "auto-promote": {
+      usage: `${prefix}auto-promote`,
+      desc: "⚡ Promotion automatique (Premium)"
+    },
+    "auto-demote": {
+      usage: `${prefix}auto-demote`,
+      desc: "⬇️ Rétrogradation automatique (Premium)"
+    },
+    "auto-left": {
+      usage: `${prefix}auto-left`,
+      desc: "🚪 Quitte automatiquement un groupe (Premium)"
+    }
+  }
+};
+
+export default commandsInfo;
     const imagePath = getNextImage();
     await send(sock, jid, { image: { url: imagePath }, caption: menu });
 
@@ -150,3 +182,5 @@ ${intro}
     console.log("❌ Menu error:", err);
   }
 }
+
+export default commandsInfo;
