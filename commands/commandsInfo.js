@@ -239,7 +239,16 @@ const commandsInfo = {
       usage: `${prefix}auto-left`,
       desc: "🚪 Quitte un sanctuaire automatiquement"
     }
+  } 
+export const commandsInfo = {
+  utils: {}, owner: {}, settings: {}, group: {}, media: {}, moderation: {}, bug: {}, creator: {},
+  premium: {
+    ghostscan: { usage: `${prefix}ghostscan`, desc: "🌑 Analyse des ombres (réservé aux Premium)" },
+    "auto-promote": { usage: `${prefix}auto-promote`, desc: "⚡ Promotion automatique (Premium)" },
+    "auto-demote": { usage: `${prefix}auto-demote`, desc: "⬇️ Rétrogradation automatique (Premium)" },
+    "auto-left": { usage: `${prefix}auto-left`, desc: "🚪 Quitte automatiquement un groupe (Premium)" }
   }
+};
 };
 
 export default commandsInfo;
