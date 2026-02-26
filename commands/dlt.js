@@ -1,25 +1,8 @@
 import send from "../utils/sendMessage.js";
-import fs from "fs";
+import CONFIG from "../config.js";
 
-// 🔥 Lecture .env manuel
-let BOT_NUMBER = '226XXXX';
-let PREFIX = '`';
+const PREFIX = CONFIG.PREFIX;
 
-if (fs.existsSync('./.env')) {
-    const envFile = fs.readFileSync('./.env', 'utf8');
-    envFile.split('\n').forEach(line => {
-        line = line.trim();
-        if (!line || line.startsWith('#')) return;
-
-        const [key, ...vals] = line.split('=');
-        const value = vals.join('=').trim();
-
-        if (key === 'BOT_NUMBER') BOT_NUMBER = value;
-        if (key === 'PREFIX') PREFIX = value;
-    });
-}
-
-// 🔹 Commande delete avec effet Ghost Dark
 async function dlt(sock, message) {
     try {
         const quoted = message.message?.extendedTextMessage?.contextInfo;
@@ -50,7 +33,6 @@ async function dlt(sock, message) {
             }
         });
 
-        // ✅ Message immersif Ghost Dark
         await send(sock, chatId, { 
             text: `👑 Maître… le message a été effacé dans l'ombre. Il ne pourra plus troubler le sanctuaire.` 
         });
@@ -65,6 +47,6 @@ async function dlt(sock, message) {
 
 export default dlt;
 
-// 🔥 Pour le menu auto
+// Pour le menu/help
 export const desc = "Supprime un message (reply)";
-export const usage = `${PREFIX}dlt`;
+export const usage = () => `${PREFIX}dlt`;  // <- fonction pour toujours avoir le bon prefix
