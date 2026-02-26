@@ -1,5 +1,8 @@
 import configmanager from "../utils/configmanager.js";
-const prefix = configmanager.get("PREFIX") || "."; // préfixe dynamique
+import { PREFIX } from '../connectToWhatsApp.js'; // si tu exportes PREFIX
+
+// puis
+const prefix = PREFIX;
 
 // 🔹 Informations sur toutes les commandes
 export const commandsInfo = {
