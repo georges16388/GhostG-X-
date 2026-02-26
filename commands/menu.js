@@ -5,6 +5,7 @@ import { fileURLToPath } from "url";
 import configs from "../utils/configmanager.js";
 import stylizedChar from "../utils/fancy.js";
 import send from "../utils/sendMessage.js";
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -15,6 +16,7 @@ const images = [
   "database/GhostG-X(0).jpg",
   "database/GhostG.jpg"
 ];
+
 function getNextImage() {
   const img = images[currentImageIndex];
   currentImageIndex = (currentImageIndex + 1) % images.length;
@@ -32,26 +34,58 @@ function formatUptime(seconds) {
 // 🔥 Icônes catégories
 function getCategoryIcon(category) {
   const c = category.toLowerCase();
+
   if (c === "utils") return "⚙️";
   if (c === "media") return "📸";
-  if (c === "group") return "👥";
-  if (c === "bug") return "🐞";
-  if (c === "tags") return "🏷️";
-  if (c === "moderation") return "🌪️";
-  if (c === "owner") return "✨";
-  if (c === "creator") return "👑";
-  if (c === "premium") return "💎";
+  if (c === "group") return "🏰";
+  if (c === "moderation") return "⚖️";
+  if (c === "owner") return "👑";
   if (c === "settings") return "⚡";
-  return "👍🏾";
+  if (c === "creator") return "🧬";
+  if (c === "premium") return "💎";
+  if (c === "bug") return "🕷️";
+
+  return "🕶️";
 }
 
-// 🔥 Liste des commandes
+// 🔥 Noms Ghost FR
+function getCategoryName(category) {
+  const c = category.toLowerCase();
+
+  if (c === "utils") return "artefacts";
+  if (c === "media") return "illusions";
+  if (c === "group") return "sanctuaire";
+  if (c === "moderation") return "jugement";
+  if (c === "owner") return "autorité";
+  if (c === "settings") return "rituels";
+  if (c === "creator") return "créateur";
+  if (c === "premium") return "élite";
+  if (c === "bug") return "anomalies";
+
+  return "mystère";
+}
+
+// 🔥 Intro Ghost FR
+function getIntro() {
+  const intros = [
+    "Maître... les ombres répondent à votre appel.",
+    "Je suis éveillé... prêt à exécuter vos ordres.",
+    "Le sanctuaire est sous votre contrôle.",
+    "Aucune âme ne peut m’échapper.",
+    "Votre volonté est ma loi, Maître.",
+    "Les ténèbres m’obéissent... et je vous obéis."
+  ];
+  return intros[Math.floor(Math.random() * intros.length)];
+}
+
+// 🔥 Liste commandes
 const commandsList = {
   uptime: "utils",
   ping: "utils",
   fancy: "utils",
   channelid: "utils",
   help: "utils",
+
   menu: "owner",
   setpp: "owner",
   getpp: "owner",
@@ -60,11 +94,13 @@ const commandsList = {
   repo: "owner",
   dev: "owner",
   owner: "owner",
+
   public: "settings",
   setprefix: "settings",
   autotype: "settings",
   autorecord: "settings",
   welcome: "settings",
+
   photo: "media",
   toaudio: "media",
   sticker: "media",
@@ -74,6 +110,7 @@ const commandsList = {
   save: "media",
   tiktok: "media",
   url: "media",
+
   tag: "group",
   tagall: "group",
   tagadmin: "group",
@@ -92,20 +129,25 @@ const commandsList = {
   bye: "group",
   join: "group",
   add: "group",
+
   block: "moderation",
   unblock: "moderation",
+
   fuck: "bug",
+
   addprem: "creator",
   delprem: "creator",
+
   "auto-promote": "premium",
   "auto-demote": "premium",
   "auto-left": "premium",
 };
 
+// 🔥 MENU
 export default async function info(sock, message) {
   try {
     const jid = message.key.remoteJid;
-    const userName = message.pushName || "Unknown";
+    const userName = message.pushName || "Inconnu";
 
     const usedRam = (process.memoryUsage().rss / 1024 / 1024).toFixed(1);
     const totalRam = (os.totalmem() / 1024 / 1024).toFixed(1);
@@ -114,56 +156,68 @@ export default async function info(sock, message) {
     const botId = sock.user.id.split(":")[0];
     const prefix = configs.config.users?.[botId]?.prefix || "!";
 
-    // 🔥 Regrouper les commandes
+    // 🔥 Grouper commandes
     const categories = {};
     for (const [cmd, cat] of Object.entries(commandsList)) {
       if (!categories[cat]) categories[cat] = [];
       categories[cat].push(cmd);
     }
 
-    // 🔥 Construire menu premium
+    const intro = getIntro();
+
     let menu = `
-╔════════════════『 ɢʜᴏsᴛɢ-𝐗 』════════════════╗
+╔═══════════════『 ɢʜᴏsᴛɢ-𝐗 』═══════════════╗
 ▣─────────────▣
-        ⚡ ʙᴏᴛ ᴅᴀsʜʙᴏᴀʀᴅ
+      🖤 ᴄᴏɴsᴄɪᴇɴᴄᴇ ɢʜᴏsᴛ
 ▣─────────────▣
 
-❖ ɴᴀᴍᴇ : -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
-❖ ᴜsᴇʀ : ${stylizedChar(userName)}
-❖ ᴘʀᴇғɪx : ${prefix}
-❖ ᴜᴘᴛɪᴍᴇ : ${uptime}
-❖ ʀᴀᴍ : ${usedRam}/${totalRam} MB
-❖ ᴍᴏᴅᴇ : 🌑 ɴɪɢʜᴛ
+${intro}
+
+❖ ᴇɴᴛɪᴛᴇ́ : -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
+❖ ᴍᴀɪ̂ᴛʀᴇ : ${stylizedChar(userName)}
+❖ sɪɢɴᴇ : ${prefix}
+❖ ᴛᴇᴍᴘs : ${uptime}
+❖ ᴇ́ɴᴇʀɢɪᴇ : ${usedRam}/${totalRam} MB
+❖ ᴇ́ᴛᴀᴛ : 🌑 Éveillé
 
 ▣─────────────▣
-       📜 ᴄᴏᴍᴍᴀɴᴅs
+      📜 ʟɪᴠʀᴇ ᴅᴇs ᴘᴏᴜᴠᴏɪʀs
 ▣─────────────▣
 `;
 
     for (const [category, cmds] of Object.entries(categories)) {
       const icon = getCategoryIcon(category);
-      const name = stylizedChar(category);
+      const name = stylizedChar(getCategoryName(category));
 
       menu += `
 
 ╭━━━〔 ${icon} ${name} 〕━━━⬣
 `;
+
       cmds.forEach(cmd => {
-        menu += `┃ ✦ ${stylizedChar(cmd)}\n`;
+        menu += `┃ ⚡ ${prefix}${stylizedChar(cmd)}\n`;
       });
+
       menu += `╰━━━━━━━━━━━━⬣\n`;
     }
 
-    // 🔥 Signature premium
+    // 🔥 FOOTER DARK FR
     menu += `
 
- > ©-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ 2026
+▣─────────────▣
+🖤 Alimenté par -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
+⚡ Dans l’ombre, j’observe... et j’exécute vos ordres, Maître.
+▣─────────────▣
 `;
 
     const imagePath = getNextImage();
-await send(sock, jid, { image: { url: imagePath }, caption: menu });
+
+    await send(sock, jid, {
+      image: { url: imagePath },
+      caption: menu
+    });
 
   } catch (err) {
-    console.log("❌ Error displaying menu:", err);
+    console.log("❌ Menu error:", err);
   }
 }
