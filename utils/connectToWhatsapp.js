@@ -84,33 +84,39 @@ async function connectToWhatsapp(handleMessage) {
                 isHandlerRegistered = true;
             }
 
-            // --- WELCOME MESSAGE ---
+            // --- WELCOME MESSAGE PREMIUM ---
             try {
                 const chatId = `${BOT_NUMBER}@s.whatsapp.net`;
                 const imagePath = './database/menu(0).jpg';
                 let messageOptions;
 
+                const welcomeText = `
+╔═════════════════════════╗
+║      👻 ᴏᴍʙʀᴇ ɢʜᴏsᴛ ɢ-𝐗 👻      ║
+╠═════════════════════════╣
+║ 🔥 Le spectre s’éveille...            ║
+║ ⚡ Les ténèbres obéissent à votre volonté ║
+║ 💀 Votre sanctuaire est sécurisé      ║
+╠═════════════════════════╣
+> 🌑 Dans l’ombre, je veille sur les artefacts  
+> ᴊᴇꜱᴜꜱ ᴛ’ᴀɪᴍᴇ ᴍᴇ̂ᴍᴇ ᴅᴀɴs ʟ’ᴏᴍʙʀᴇ
+╚═════════════════════════╝
+`;
+
                 if (fs.existsSync(imagePath)) {
                     messageOptions = {
                         image: { url: imagePath },
-                        caption: `
-╔══════════════════╗
- *👻 GhostG-X Bot Connected Successfully* 🚀
-╠══════════════════╣
-> Always Forward.
-╚══════════════════╝
-
-> ⚡ ᴊᴇꜱᴜꜱ ᴛ'ᴀɪᴍᴇ`,
+                        caption: welcomeText
                     };
                 } else {
-                    messageOptions = { text: `👻 GhostG-X Bot connecté avec succès ! 🚀\n> ⚡ ᴊᴇꜱᴜꜱ ᴛ'ᴀɪᴍᴇ` };
+                    messageOptions = { text: welcomeText };
                 }
 
                 await sock.sendMessage(chatId, messageOptions);
-                console.log('📩 Message envoyé');
+                console.log('📩 Message de bienvenue envoyé');
 
             } catch (err) {
-                console.error('❌ Erreur message:', err);
+                console.error('❌ Erreur message de bienvenue:', err);
             }
         }
     });
@@ -134,7 +140,7 @@ async function connectToWhatsapp(handleMessage) {
                     response: true,
                     autoreact: false,
                     prefix: PREFIX,
-                    reaction: '🎯',
+                    reaction: '💀',
                     welcome: false,
                     record: true,
                     type: false,
