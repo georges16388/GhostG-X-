@@ -20,4 +20,5 @@ if (fs.existsSync('./.env')) {
 }
 
 // Exporte pour utilisation dans tous les fichiers
-export { PREFIX, BOT_NUMBER };
+export const PREFIX = "`";
+export const BOT_NUMBER = "22677487520";
