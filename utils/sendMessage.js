@@ -8,29 +8,29 @@ export default async function send(sock, jid, content, options = {}) {
     let mentions = content.mentions || [];
     const showChannel = options.showChannel ?? false;
 
-    // 🔹 Signature Ghost automatique
+    // 🔹 Signature Ghost automatique, uniquement dans le texte principal
     const signature = `\n\n> 🖤 -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ`;
     if (!options.noGhost && text) text += signature;
 
-    // 🔹 Informations pour badge newsletter
-    const channelInfo = {
-      forwardedNewsletterMessageInfo: {
-        newsletterJid: "120363425540434745@newsletter",
-        newsletterName: "-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ",
-        serverMessageId: 100
-      },
-      forwardingScore: 1,
-      isForwarded: true
-    };
-
-    const contextInfo = showChannel ? channelInfo : {};
+    // 🔹 Informations pour badge newsletter (View Channel)
+    const channelInfo = showChannel
+      ? {
+          forwardedNewsletterMessageInfo: {
+            newsletterJid: "120363425540434745@newsletter",
+            newsletterName: "-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ",
+            serverMessageId: 100,
+          },
+          forwardingScore: 1,
+          isForwarded: true,
+        }
+      : {};
 
     // 🔹 Gestion texte
     if (text) {
       return await sock.sendMessage(jid, {
         text,
         mentions,
-        contextInfo
+        contextInfo: channelInfo, // ⚡ badge séparé
       });
     }
 
@@ -38,9 +38,9 @@ export default async function send(sock, jid, content, options = {}) {
     if (content.image) {
       return await sock.sendMessage(jid, {
         image: content.image,
-        caption: (content.caption || "") + (options.noGhost ? "" : signature),
+        caption: content.caption || "", // ⚠️ Pas de signature ici
         mentions,
-        contextInfo
+        contextInfo: channelInfo,
       });
     }
 
@@ -48,9 +48,9 @@ export default async function send(sock, jid, content, options = {}) {
     if (content.video) {
       return await sock.sendMessage(jid, {
         video: content.video,
-        caption: (content.caption || "") + (options.noGhost ? "" : signature),
+        caption: content.caption || "",
         mentions,
-        contextInfo
+        contextInfo: channelInfo,
       });
     }
 
@@ -59,7 +59,7 @@ export default async function send(sock, jid, content, options = {}) {
       return await sock.sendMessage(jid, {
         audio: content.audio,
         mimetype: "audio/mpeg",
-        contextInfo
+        contextInfo: channelInfo,
       });
     }
 
@@ -67,12 +67,12 @@ export default async function send(sock, jid, content, options = {}) {
     if (content.sticker) {
       return await sock.sendMessage(jid, {
         sticker: content.sticker,
-        contextInfo
+        contextInfo: channelInfo,
       });
     }
 
     // 🔹 fallback
-    return await sock.sendMessage(jid, { ...content, contextInfo });
+    return await sock.sendMessage(jid, { ...content, contextInfo: channelInfo });
 
   } catch (err) {
     console.error("❌ sendMessage error:", err);
