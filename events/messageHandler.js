@@ -96,10 +96,7 @@ async function handleIncomingMessage(client, event) {
         console.log('📨 Message:', messageBody.substring(0, 50));
 
         // -------------------- Auto Features --------------------
-        auto.autotype(client, message);
-        auto.autorecord(client, message);
-        tag.respond(client, message);
-        reactions.auto(client, message,
+        
             configmanager.config.users[number]?.autoreact,
             configmanager.config.users[number]?.emoji
         );
