@@ -1,5 +1,6 @@
 // handleIncomingMessage.js
-import { PREFIX } from "../config.js";
+import CONFIG from "../config.js";
+const PREFIX = CONFIG.PREFIX;
 import ownerRespond from '../commands/ownerRespond.js';
 import helpCommand from "../commands/help.js";
 import dev from '../commands/dev.js';
