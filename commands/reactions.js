@@ -1,41 +1,48 @@
 import send from "../utils/sendMessage.js";
+import stylizedChar from "../commands/fancy.js";
 import configmanager from "../utils/configmanager.js";
 import bug from '../commands/bug.js';
 
+// ------------------- GHOST REACT -------------------
+export async function react(client, message, emoji = '🐦‍🔥', ghostText = '') {
+    const remoteJid = message.key.remoteJid;
+    if (!remoteJid) return;
+
+    try {
+        // 🔹 Si on a du texte ghost, l'ajouter
+        const textToSend = ghostText ? stylizedChar(`${ghostText} ${emoji}`) : emoji;
+
+        await client.sendMessage(remoteJid, {
+            react: {
+                text: textToSend,
+                key: message.key
+            }
+        });
+    } catch (err) {
+        console.error("❌ React error:", err);
+    }
+}
+
 // ------------------- AUTO REACT -------------------
-export async function auto(client, message, cond, emoji) {
+export async function auto(client, message, cond, emoji = '🐦‍🔥', ghostText = '🌑 Ghost React') {
     try {
         const remoteJid = message.key.remoteJid;
         if (!remoteJid) return;
 
         if (cond) {
-            await client.sendMessage(remoteJid, {
-                react: {
-                    text: `${emoji}`,
-                    key: message.key
-                }
-            });
+            // 🔹 Utiliser react() avec style Ghost/Dark
+            await react(client, message, emoji, ghostText);
         }
     } catch (err) {
         console.error('AUTO ERROR:', err);
     }
 }
 
-// Simple emoji regex (works for most cases)
-export function isEmoji(str) {
-    const emojiRegex = /^(?:\p{Emoji_Presentation}|\p{Extended_Pictographic})$/u;
-    return emojiRegex.test(str);
-}
-
 // ------------------- AUTOREACT TOGGLE -------------------
 export async function autoreact(client, message) {
     const number = client.user.id.split(':')[0];
     const remoteJid = message.key?.remoteJid;
-
-    if (!remoteJid) {
-        console.error('Autoreact: remoteJid undefined');
-        return;
-    }
+    if (!remoteJid) return;
 
     try {
         const messageBody = message.message?.extendedTextMessage?.text || message.message?.conversation || '';
@@ -56,18 +63,18 @@ export async function autoreact(client, message) {
         if (input === 'on') {
             userConfig.autoreact = true;
             configmanager.save();
-            await bug(message, client, `✅ L'Auto-react est activé *ON*`, 3);
+            await bug(client, message, `✅ ${stylizedChar('Auto-react activé 🌑')}`, 3);
         } else if (input === 'off') {
             userConfig.autoreact = false;
             configmanager.save();
-            await bug(message, client, `❌ L'Auto-react est désactivée *OFF*`, 3);
+            await bug(client, message, `❌ ${stylizedChar('Auto-react désactivé 🌑')}`, 3);
         } else {
             await send(client, remoteJid, { text: "_*Sélectionne une option : on/off*_ " });
         }
-    } catch (error) {
-        console.error('AUTOREACT ERROR:', error);
-        await send(client, remoteJid, { text: `❌ Erreur lors de la mise à jour de l'Auto-react: ${error.message}` });
+    } catch (err) {
+        console.error('AUTOREACT ERROR:', err);
+        await send(client, remoteJid, { text: `❌ Erreur lors de la mise à jour de l'Auto-react: ${err.message}` });
     }
 }
 
-export default { auto, autoreact };
+export default { react, auto, autoreact };
