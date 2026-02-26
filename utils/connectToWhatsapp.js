@@ -3,7 +3,7 @@ import { makeWASocket, useMultiFileAuthState, DisconnectReason, fetchLatestBaile
 import fs from 'fs';
 import pino from 'pino';
 import configmanager from '../utils/configmanager.js';
-import { PREFIX, BOT_NUMBER } from './config.js'; // import du config manuel
+import { PREFIX, BOT_NUMBER } from "../config.js"; // import du config manuel
 
 const SESSION_FOLDER = './sessionData';
 
