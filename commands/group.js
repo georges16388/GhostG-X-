@@ -145,7 +145,10 @@ export async function resetwarns(sock, message) {
         saveConfig();
         await send(sock, groupId, { text: `👑 Maître, warns réinitialisés pour @${target.split('@')[0]}`, mentions: [target] });
     } else {
-        await send(sock, groupId, { text: `👑 Maître, aucun warn pour @${target.split('@')[0]}`, mentions: [target] Il est pour le moment innocent, mais je l'ai à l'oeil, ne vous en faites pas.});
+        await send(sock, groupId, {
+    text: `👑 Maître, aucun warn pour @${target.split('@')[0]}. Il est pour le moment innocent, mais je l'ai à l'oeil, ne vous en faites pas.`,
+    mentions: [target]
+});
     }
 }
 
