@@ -1,241 +1,244 @@
 // commandsInfo.js
+import configmanager from "../utils/configmanager.js";
+const prefix = configmanager.get("PREFIX") || "."; // préfixe dynamique
+
 const commandsInfo = {
   utils: {
     uptime: {
-      usage: ".uptime",
-      desc: "Affiche depuis combien de temps le bot fonctionne"
+      usage: `${prefix}uptime`,
+      desc: "⏱️ Mesure le temps de survie du système"
     },
     ping: {
-      usage: ".ping",
-      desc: "Vérifie si le bot est en ligne et affiche la latence"
+      usage: `${prefix}ping`,
+      desc: "⚡ Vérifie la réactivité du réseau"
     },
     fancy: {
-      usage: ".fancy <texte>",
-      desc: "Transforme le texte en style fancy/orné"
+      usage: `${prefix}fancy <texte>`,
+      desc: "🎨 Code le texte en style cryptique"
     },
     channelid: {
-      usage: ".channelid",
-      desc: "Affiche l'identifiant du canal ou groupe"
+      usage: `${prefix}channelid`,
+      desc: "🔗 Expose l'ID du canal ou du groupe"
     },
     help: {
-      usage: ".help [commande]",
-      desc: "Montre la liste des commandes ou les détails d'une commande"
+      usage: `${prefix}help [commande]`,
+      desc: "📜 Liste les commandes et leur fonction"
     }
   },
 
   owner: {
     menu: {
-      usage: ".menu",
-      desc: "Affiche le menu complet du bot"
+      usage: `${prefix}menu`,
+      desc: "🛠️ Affiche l'arsenal complet du bot"
     },
     setpp: {
-      usage: ".setpp",
-      desc: "Change ton image de profil"
+      usage: `${prefix}setpp`,
+      desc: "🖼️ Modifie l’avatar du bot"
     },
     getpp: {
-      usage: ".getpp",
-      desc: "Récupère l'image de profil actuelle d'un participant"
+      usage: `${prefix}getpp`,
+      desc: "🔍 Inspecte l’avatar d’un utilisateur"
     },
     sudo: {
-      usage: ".sudo <@>",
-      desc: "Permettre à un membre d'utiliser ton -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ"
+      usage: `${prefix}sudo <@>`,
+      desc: "👑 Accorde un accès privilégié"
     },
     delsudo: {
-      usage: ".delsudo <utilisateur>",
-      desc: "Retire un utilisateur des privilèges sudo"
+      usage: `${prefix}delsudo <@>`,
+      desc: "❌ Révoque l’accès privilégié"
     },
     repo: {
-      usage: ".repo",
-      desc: "Affiche le lien vers le dépôt GitHub du bot"
+      usage: `${prefix}repo`,
+      desc: "📂 Lien vers le noyau du code"
     },
     dev: {
-      usage: ".dev",
-      desc: "Affiche le numéro du développeur du bot"
+      usage: `${prefix}dev`,
+      desc: "🛡️ Identité du Maître 💀"
     },
     owner: {
-      usage: ".owner",
-      desc: "Affiche le numéro du propriétaire du bot"
+      usage: `${prefix}owner`,
+      desc: "👑 Révèle le gardien du bot"
     }
   },
 
   settings: {
     public: {
-      usage: ".public",
-      desc: "Active le mode public pour le bot"
+      usage: `${prefix}public`,
+      desc: "🌐 Active le mode ouverture totale"
     },
     setprefix: {
-      usage: ".setprefix <préfixe>",
-      desc: "Change le préfixe utilisé pour les commandes"
+      usage: `${prefix}setprefix <préfixe>`,
+      desc: "🔧 Redéfinit la clé de commande"
     },
     autotype: {
-      usage: ".autotype",
-      desc: "Active la frappe automatique lors de l'envoi des messages"
+      usage: `${prefix}autotype`,
+      desc: "⌨️ Simule la frappe humaine"
     },
     autorecord: {
-      usage: ".autorecord",
-      desc: "Active l'enregistrement automatique des messages vocaux"
+      usage: `${prefix}autorecord`,
+      desc: "🎙️ Capture automatique des flux audio"
     },
     welcome: {
-      usage: ".welcome",
-      desc: "Active ou désactive le message de bienvenue dans les groupes"
+      usage: `${prefix}welcome`,
+      desc: "👋 Initialise le rituel de bienvenue"
     }
   },
 
   media: {
     photo: {
-      usage: ".photo",
-      desc: "Transforme un média reçu en photo"
+      usage: `${prefix}photo`,
+      desc: "📸 Convertit tout flux en image"
     },
     toaudio: {
-      usage: ".toaudio",
-      desc: "Convertit une vidéo ou un voice note en fichier audio"
+      usage: `${prefix}toaudio`,
+      desc: "🎵 Transforme la vidéo en onde sonore"
     },
     sticker: {
-      usage: ".sticker",
-      desc: "Transforme une image ou vidéo en sticker"
+      usage: `${prefix}sticker`,
+      desc: "💠 Forge un sticker à partir du média"
     },
     play: {
-      usage: ".play <titre>",
-      desc: "Télécharge et joue une musique à partir du titre donné"
+      usage: `${prefix}play <titre>`,
+      desc: "🎶 Invoque un morceau depuis le réseau"
     },
     img: {
-      usage: ".img <texte>",
-      desc: "Rechercher une image à partir du texte donné"
+      usage: `${prefix}img <texte>`,
+      desc: "🖼️ Génère une image depuis l’esprit du texte"
     },
     vv: {
-      usage: ".vv",
-      desc: "Télécharge une image/ vidéo de type vue unique"
+      usage: `${prefix}vv`,
+      desc: "👁️ Télécharge un flux éphémère"
     },
     save: {
-      usage: ".save",
-      desc: "Enregistre un média"
+      usage: `${prefix}save`,
+      desc: "💾 Capture et sécurise un média"
     },
     tiktok: {
-      usage: ".tiktok <lien>",
-      desc: "Télécharge une vidéo TikTok depuis le lien fourni"
+      usage: `${prefix}tiktok <lien>`,
+      desc: "🎬 Extrait le flux TikTok demandé"
     },
     url: {
-      usage: ".url <texte>",
-      desc: "Récupère le lien direct d'un media"
+      usage: `${prefix}url <texte>`,
+      desc: "🔗 Dévoile le lien direct d’un média"
     }
   },
 
   group: {
     tag: {
-      usage: ".tag",
-      desc: "Mentionne tous les membres du groupe"
+      usage: `${prefix}tag`,
+      desc: "📣 Alarme tous les membres"
     },
     tagall: {
-      usage: ".tagall",
-      desc: "Mentionne tous les membres y compris les admins"
+      usage: `${prefix}tagall`,
+      desc: "📢 Invoque chaque membre + admin"
     },
     tagadmin: {
-      usage: ".tagadmin",
-      desc: "Mentionne seulement les administrateurs du groupe"
+      usage: `${prefix}tagadmin`,
+      desc: "🛡️ Cible uniquement les gardiens"
     },
     kick: {
-      usage: ".kick @utilisateur",
-      desc: "Expulse un membre du groupe"
+      usage: `${prefix}kick @utilisateur`,
+      desc: "❌ Expulse un intrus"
     },
     kickall: {
-      usage: ".kickall",
-      desc: "Expulse tous les membres non-admins du groupe"
+      usage: `${prefix}kickall`,
+      desc: "⚡ Purge tous les non-élus"
     },
     kickall2: {
-      usage: ".kickall2",
-      desc: "Version alternative pour expulser tous les membres"
+      usage: `${prefix}kickall2`,
+      desc: "⚡ Variante de purge totale"
     },
     promote: {
-      usage: ".promote @utilisateur",
-      desc: "Donne le rôle admin à un membre"
+      usage: `${prefix}promote @utilisateur`,
+      desc: "👑 Élévation au rang de gardien"
     },
     demote: {
-      usage: ".demote @utilisateur",
-      desc: "Retire le rôle admin à un membre"
+      usage: `${prefix}demote @utilisateur`,
+      desc: "⬇️ Révocation du rang de gardien"
     },
     promoteall: {
-      usage: ".promoteall",
-      desc: "Donne le rôle admin à tous les membres"
+      usage: `${prefix}promoteall`,
+      desc: "👑 Tous les membres deviennent gardiens"
     },
     demoteall: {
-      usage: ".demoteall",
-      desc: "Retire le rôle admin à tous les admins"
+      usage: `${prefix}demoteall`,
+      desc: "⬇️ Tous les gardiens perdent leur rang"
     },
     mute: {
-      usage: ".mute @utilisateur",
-      desc: "Empêche les membres non admins d'envoyer des messages dans le groupe"
+      usage: `${prefix}mute @utilisateur`,
+      desc: "🔇 Scelle la voix d’un membre"
     },
     unmute: {
-      usage: ".unmute @utilisateur",
-      desc: "Réactive la possibilité d'envoyer des messages pour les membres non admins"
+      usage: `${prefix}unmute @utilisateur`,
+      desc: "🔊 Déverrouille la voix d’un membre"
     },
     gclink: {
-      usage: ".gclink",
-      desc: "Récupère le lien d'invitation du groupe"
+      usage: `${prefix}gclink`,
+      desc: "🔗 Dévoile le portail du groupe"
     },
     antilink: {
-      usage: ".antilink",
-      desc: "Active la suppression automatique des liens dans le groupe"
+      usage: `${prefix}antilink`,
+      desc: "🚫 Neutralise les liens automatiquement"
     },
     approveall: {
-      usage: ".approveall",
-      desc: "Approuve tous les membres en attente d'accès"
+      usage: `${prefix}approveall`,
+      desc: "✅ Accorde l’accès à tous les candidats"
     },
     bye: {
-      usage: ".bye",
-      desc: "Envoie un message d'au revoir lorsqu'un membre quitte le groupe"
+      usage: `${prefix}bye`,
+      desc: "👋 Quitte le groupe dans l’ombre"
     },
     join: {
-      usage: ".join <lien>",
-      desc: "Rejoindre  un groupe via un lien"
+      usage: `${prefix}join <lien>`,
+      desc: "🔗 Infiltration via lien"
     },
     add: {
-      usage: ".add @utilisateur",
-      desc: "Ajoute un membre au groupe"
+      usage: `${prefix}add @utilisateur`,
+      desc: "➕ Intègre un membre dans l’ordre"
     }
   },
 
   moderation: {
     block: {
-      usage: ".block @utilisateur",
-      desc: "Bloque un utilisateur"
+      usage: `${prefix}block @utilisateur`,
+      desc: "🚫 Bannissement immédiat"
     },
     unblock: {
-      usage: ".unblock @utilisateur",
-      desc: "Débloque un utilisateur"
+      usage: `${prefix}unblock @utilisateur`,
+      desc: "✅ Réintègre l’utilisateur"
     }
   },
 
   bug: {
     fuck: {
-      usage: ".fuck",
-      desc: "Commande pour tester ou signaler un bug"
+      usage: `${prefix}fuck`,
+      desc: "🐞 Test ou rapport d’anomalie"
     }
   },
 
   creator: {
     addprem: {
-      usage: ".addprem @utilisateur",
-      desc: "Donne le statut premium à un utilisateur"
+      usage: `${prefix}addprem @utilisateur`,
+      desc: "💎 Accorde le privilège premium"
     },
     delprem: {
-      usage: ".delprem @utilisateur",
-      desc: "Retire le statut premium à un utilisateur"
+      usage: `${prefix}delprem @utilisateur`,
+      desc: "❌ Révoque le statut premium"
     }
   },
 
   premium: {
     "auto-promote": {
-      usage: ".auto-promote",
-      desc: "Active la promotion automatique des membres"
+      usage: `${prefix}auto-promote`,
+      desc: "⚡ Promotion silencieuse activée"
     },
     "auto-demote": {
-      usage: ".auto-demote",
-      desc: "Active la rétrogradation automatique des admins"
+      usage: `${prefix}auto-demote`,
+      desc: "⬇️ Rétrogradation automatique activée"
     },
     "auto-left": {
-      usage: ".auto-left",
-      desc: "Quitter automatiquement un groupe"
+      usage: `${prefix}auto-left`,
+      desc: "🚪 Quitte un groupe de manière automatique"
     }
   }
 };
