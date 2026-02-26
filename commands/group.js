@@ -45,8 +45,22 @@ export async function antilink(sock, message) {
             break;
         case 'set':
             if (!args[1] || !['delete','kick','warn'].includes(args[1].toLowerCase())) 
-                return await send(sock, groupId, { text: '👑 Maître, c'est plutôt comme ça que vous devez l'utiliser: .antilink set delete | kick | warn' });
-            antilinkSettings[groupId] = antilinkSettings[groupId] || { enabled: true };
+                return await send(sock, 
+            antilinkSettings[groupId] =
+client.on('message', async (message) => {
+    const args = message.body.split(' ');
+
+    if (args[0] === '.antilink' && args[1] === 'set') {
+        const action = args[2]; // delete, kick ou warn
+        if (!['delete','kick','warn'].includes(action)) {
+            return message.reply('⚠️ Non Maitr. Utilisez delete, kick ou warn');
+        }
+
+        // Ici tu sauvegardes l'action choisie dans ta config
+        antilinkSettings[message.chatId] = action;
+        message.reply(`✅ Anitlink configuré pour: ${action}`);
+    }
+}); antilinkSettings[groupId] || { enabled: true };
             antilinkSettings[groupId].action = args[1].toLowerCase();
             saveConfig();
             await send(sock, groupId, { text: `👑 Maître, l’action en cas d’infraction est maintenant: *${args[1].toLowerCase()}*` });
