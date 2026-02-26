@@ -1,68 +1,54 @@
-import send from "../utils/sendMessage.js";
-import { makeWASocket, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion } from "baileys";
+import makeWASocket, { 
+    useMultiFileAuthState, 
+    DisconnectReason,
+    fetchLatestBaileysVersion
+} from "@whiskeysockets/baileys";
+
 import fs from "fs";
-import pino from "pino";
-import { PREFIX, BOT_NUMBER } from "../config.js";
+import P from "pino";
 
-const SESSION_FOLDER = "./sessionData";
+const SESSION_DIR = "./sessionData";
+const OWNER_NUMBER = "22677487520"; // ton numéro
 
-// 🔹 Création du dossier session
-if (!fs.existsSync(SESSION_FOLDER)) {
-    fs.mkdirSync(SESSION_FOLDER, { recursive: true });
-    console.log("📁 sessionData créé");
-}
+async function connectToWhatsApp() {
 
-async function connectToWhatsapp(handleMessage) {
+    const { state, saveCreds } = await useMultiFileAuthState(SESSION_DIR);
     const { version } = await fetchLatestBaileysVersion();
-    console.log("📦 Baileys version:", version.join("."));
-
-    const { state, saveCreds } = await useMultiFileAuthState(SESSION_FOLDER);
 
     const sock = makeWASocket({
         version,
         auth: state,
         printQRInTerminal: false,
-        logger: pino({ level: "silent" }),
-        markOnlineOnConnect: true,
-        syncFullHistory: false,
-        keepAliveIntervalMs: 10000,
-        connectTimeoutMs: 60000,
+        logger: P({ level: "silent" }),
+        browser: ["GhostG-X", "Chrome", "1.0.0"]
     });
 
-    // 🔹 Sauvegarde session
+    console.log("🚀 GhostG-X Bot lancé !");
+
+    // 🔐 Sauvegarde session
     sock.ev.on("creds.update", saveCreds);
 
-    let isHandlerRegistered = false;
-
-    // 🔥 CONNECTION HANDLER
+    // 🔌 Connexion
     sock.ev.on("connection.update", async (update) => {
         const { connection, lastDisconnect } = update;
 
-        console.log("🔔 Connexion:", connection);
+        if (connection === "close") {
+            const reason = lastDisconnect?.error?.output?.statusCode;
 
-        if (connection === "connecting") {
-            console.log("⏳ Connexion en cours...");
-        }
+            console.log("❌ Déconnecté:", reason);
 
-        if (connection === "open") {
-            console.log("✅ Connecté à WhatsApp !");
-
-            // 🔹 éviter double listener
-            if (!isHandlerRegistered) {
-                sock.ev.on("messages.upsert", async (msg) => {
-                    try {
-                        await handleMessage(sock, msg, { PREFIX, BOT_NUMBER });
-                    } catch (err) {
-                        console.error("❌ Handler error:", err);
-                    }
-                });
-                isHandlerRegistered = true;
+            if (reason !== DisconnectReason.loggedOut) {
+                console.log("🔄 Reconnexion...");
+                connectToWhatsApp();
             }
 
-            // 🔥 MESSAGE DE BIENVENUE
-            try {
-                const chatId = `${BOT_NUMBER}@s.whatsapp.net`;
+        } else if (connection === "open") {
+            console.log("✅ BOT CONNECTÉ !");
 
+            // --- Message de bienvenue Ghost ---
+            try {
+                const chatId = `${OWNER_NUMBER}@s.whatsapp.net`;
+                const imagePath = './database/menu(0).jpg';
                 const welcomeText = `
 ╔═════════════════════════╗
 ║      👻 ᴏᴍʙʀᴇ ɢʜᴏsᴛ ɢ-𝐗 👻      ║
@@ -76,56 +62,76 @@ async function connectToWhatsapp(handleMessage) {
 ╚═════════════════════════╝
 `;
 
-                const imagePath = "./database/menu(0).jpg";
-
-                const options = fs.existsSync(imagePath)
+                const messageOptions = fs.existsSync(imagePath)
                     ? { image: { url: imagePath }, caption: welcomeText }
                     : { text: welcomeText };
 
-                await sock.sendMessage(chatId, options);
+                await sock.sendMessage(chatId, messageOptions);
+                console.log('📩 Message de bienvenue envoyé');
 
-                console.log("📩 Message de bienvenue envoyé");
             } catch (err) {
-                console.error("❌ Erreur message:", err);
+                console.error('❌ Erreur message de bienvenue:', err);
             }
+
+        } else if (connection === "connecting") {
+            console.log("⏳ Connexion...");
         }
 
-        if (connection === "close") {
-            const reason = lastDisconnect?.error?.output?.statusCode;
-
-            console.log("❌ Déconnecté:", reason);
-
-            if (reason !== DisconnectReason.loggedOut) {
-                console.log("🔄 Reconnexion...");
-                setTimeout(() => connectToWhatsapp(handleMessage), 5000);
-            } else {
-                console.log("🚫 Session expirée, supprime sessionData");
-            }
+        // 🔑 Pairing code
+        if (!sock.authState.creds.registered) {
+            console.log("📲 Génération du pairing code...");
+            const code = await sock.requestPairingCode(OWNER_NUMBER);
+            console.log("🔑 TON CODE :", code);
         }
     });
 
-    // 🔥 PAIRING CODE
-    setTimeout(async () => {
-        if (!state.creds.registered) {
-            try {
-                console.log("🔑 Génération du pairing code...");
+    // 📩 Réception messages
+    sock.ev.on("messages.upsert", async ({ messages }) => {
+        const m = messages[0];
+        if (!m.message) return;
 
-                const cleanNumber = BOT_NUMBER.replace(/[^0-9]/g, "");
+        // éviter boucle
+        if (m.key.fromMe) return;
 
-                let code = await sock.requestPairingCode(cleanNumber);
+        const jid = m.key.remoteJid;
 
-                // format ABCD-EFGH
-                code = code.match(/.{1,4}/g).join("-");
+        // 📌 récupérer texte
+        const text =
+            m.message.conversation ||
+            m.message.extendedTextMessage?.text ||
+            "";
 
-                console.log("📲 TON CODE WHATSAPP :", code);
+        console.log("📩 Message reçu :", text);
 
-            } catch (err) {
-                console.error("❌ Pairing error:", err);
-            }
+        const prefix = "!";
+        if (!text.startsWith(prefix)) return;
+
+        const args = text.slice(prefix.length).trim().split(/ +/);
+        const command = args.shift().toLowerCase();
+
+        // 🔥 commandes test
+        switch (command) {
+
+            case "ping":
+                await sock.sendMessage(jid, { text: "🏓 Pong !" });
+                break;
+
+            case "menu":
+                await sock.sendMessage(jid, { 
+                    text: `📜 MENU
+
+!ping - Test bot
+!menu - Voir menu
+                    `
+                });
+                break;
+
+            default:
+                await sock.sendMessage(jid, { text: "❓ Commande inconnue" });
         }
-    }, 8000);
+    });
 
     return sock;
 }
 
-export default connectToWhatsapp;
+connectToWhatsApp();
