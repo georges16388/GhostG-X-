@@ -1,42 +1,29 @@
+export default async function react(client, message) {
+    const remoteJid = message?.key?.remoteJid;
+    if (!remoteJid) return;
 
+    // Fonction pause
+    const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-export default async function react(client, message){
+    // Emojis du cycle Ghost
+    const ghostEmojis = ['👻', '🔥', '🌑', '⚡', '💀'];
 
-    const sleep = ms => new Promise(r => setTimeout(r, ms))
-
-    const remoteJid = message?.key.remoteJid;
-
-    await client.sendMessage(remoteJid, 
-
-        {
-            react: {
-                text: '👍🏾',
-
-                key: message.key
-            }
+    try {
+        // Boucle sur les emojis avec délai
+        for (const emoji of ghostEmojis) {
+            await client.sendMessage(remoteJid, {
+                react: { text: emoji, key: message.key }
+            });
+            await sleep(1000); // 1 seconde entre chaque reaction
         }
 
-    )
+        // Retire la dernière réaction après un délai
+        await sleep(1000);
+        await client.sendMessage(remoteJid, {
+            react: { remove: true, key: message.key }
+        });
 
-    await sleep(1000)
-
-    await client.sendMessage(remoteJid, 
-
-        {
-            react: {
-                text: '🔥',
-
-                key: message.key
-            }
-        }
-
-    )
-    await sleep(1000)
-
-     await client.sendMessage(remoteJid, {
-     react: { remove: true,
-     key: message.key }
-  })
-
+    } catch (err) {
+        console.error('❌ Ghost react error:', err);
+    }
 }
-
