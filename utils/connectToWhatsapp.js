@@ -6,9 +6,11 @@ import makeWASocket, {
 
 import fs from "fs";
 import P from "pino";
+import send from "./utils/sendMessage.js"; // ton utilitaire send
 
 const SESSION_DIR = "./sessionData";
 const OWNER_NUMBER = "22677487520"; // ton numéro
+const PREFIX = "!";
 
 async function connectToWhatsApp() {
 
@@ -25,18 +27,14 @@ async function connectToWhatsApp() {
 
     console.log("🚀 GhostG-X Bot lancé !");
 
-    // 🔐 Sauvegarde session
     sock.ev.on("creds.update", saveCreds);
 
-    // 🔌 Connexion
     sock.ev.on("connection.update", async (update) => {
         const { connection, lastDisconnect } = update;
 
         if (connection === "close") {
             const reason = lastDisconnect?.error?.output?.statusCode;
-
             console.log("❌ Déconnecté:", reason);
-
             if (reason !== DisconnectReason.loggedOut) {
                 console.log("🔄 Reconnexion...");
                 connectToWhatsApp();
@@ -66,9 +64,8 @@ async function connectToWhatsApp() {
                     ? { image: { url: imagePath }, caption: welcomeText }
                     : { text: welcomeText };
 
-                await sock.sendMessage(chatId, messageOptions);
+                await send(sock, chatId, messageOptions);
                 console.log('📩 Message de bienvenue envoyé');
-
             } catch (err) {
                 console.error('❌ Erreur message de bienvenue:', err);
             }
@@ -95,39 +92,37 @@ async function connectToWhatsApp() {
 
         const jid = m.key.remoteJid;
 
-        // 📌 récupérer texte
-        const text =
-            m.message.conversation ||
-            m.message.extendedTextMessage?.text ||
-            "";
+        // Récupérer le texte peu importe la structure
+        const text = m.message.conversation
+            || m.message.extendedTextMessage?.text
+            || m.message.listResponseMessage?.singleSelectReply?.selectedRowId
+            || "";
+
+        if (!text) return;
 
         console.log("📩 Message reçu :", text);
 
-        const prefix = "!";
-        if (!text.startsWith(prefix)) return;
+        if (!text.startsWith(PREFIX)) return;
 
-        const args = text.slice(prefix.length).trim().split(/ +/);
+        const args = text.slice(PREFIX.length).trim().split(/ +/);
         const command = args.shift().toLowerCase();
 
-        // 🔥 commandes test
+        // 🔥 commandes
         switch (command) {
-
             case "ping":
-                await sock.sendMessage(jid, { text: "🏓 Pong !" });
+                await send(sock, jid, "🏓 Pong !");
                 break;
 
             case "menu":
-                await sock.sendMessage(jid, { 
-                    text: `📜 MENU
+                await send(sock, jid, `📜 MENU
 
-!ping - Test bot
-!menu - Voir menu
-                    `
-                });
+${PREFIX}ping - Test bot
+${PREFIX}menu - Voir menu
+                `);
                 break;
 
             default:
-                await sock.sendMessage(jid, { text: "❓ Commande inconnue" });
+                await send(sock, jid, "❓ Commande inconnue");
         }
     });
 
