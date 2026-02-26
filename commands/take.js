@@ -15,15 +15,15 @@ export async function take(client, message) {
         const args = commandAndArgs.split(/\s+/).slice(1);
 
         if (!quotedMessage || !quotedMessage.stickerMessage) {
-            return send(message, client, stylizedChar("❌ Reply to a sticker to modify it!"));
+            return await send(client, remoteJid, stylizedChar("👑 Maître, répondez à un sticker pour le modifier ! 🌑"));
         }
 
         // Déterminer le texte du sticker
         const username = args.length ? args.join(" ") : (message.pushName || "Unknown");
 
         // Télécharger le sticker
-        const stickerBuffer = await downloadMediaMessage({ message: quotedMessage }, "buffer", {}, { logger: console });
-        if (!stickerBuffer) return send(message, client, stylizedChar("❌ Failed to download sticker!"));
+        const stickerBuffer = await downloadMediaMessage(quotedMessage, "buffer", {}, { logger: console });
+        if (!stickerBuffer) return await send(client, remoteJid, stylizedChar("❌ Échec du téléchargement du sticker 🌑"));
 
         // Fichier temporaire
         const tempStickerPath = path.resolve(`./temp_sticker_${Date.now()}.webp`);
@@ -34,8 +34,8 @@ export async function take(client, message) {
 
         // Créer le sticker modifié
         const sticker = new Sticker(tempStickerPath, {
-            pack: username,
-            author: username,
+            pack: stylizedChar(username),
+            author: stylizedChar(username),
             type: isAnimated ? StickerTypes.FULL : StickerTypes.DEFAULT,
             quality: 80,
             animated: isAnimated,
@@ -45,15 +45,17 @@ export async function take(client, message) {
         const stickerMessage = await sticker.toMessage();
 
         // Envoyer le sticker
-        await send(message, client, null, null, stickerMessage);
+        await send(client, remoteJid, null, null, stickerMessage);
 
         // Nettoyer le fichier temporaire
         fs.unlinkSync(tempStickerPath);
-        console.log(`✅ Sticker sent successfully with "${username}" metadata!`);
+
+        // Message de succès avec effet Ghost/Dark
+        await send(client, remoteJid, stylizedChar(`✅ Sticker envoyé avec succès avec "${username}" 🌑`));
 
     } catch (error) {
         console.error("❌ Error modifying sticker:", error);
-        await send(message, client, `⚠️ Error modifying sticker: ${error instanceof Error ? error.message : error}`);
+        await send(client, remoteJid, stylizedChar(`⚠️ Erreur lors de la modification du sticker, Maître 👑 : ${error instanceof Error ? error.message : error} 🌑`));
     }
 }
 
