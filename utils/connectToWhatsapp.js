@@ -1,20 +1,13 @@
 import send from "../utils/sendMessage.js";
 import { makeWASocket, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion } from 'baileys';
 import fs from 'fs';
-import path from 'path';
 import pino from 'pino';
 import configmanager from '../utils/configmanager.js';
+import { PREFIX, BOT_NUMBER } from './config.js'; // import du config manuel
 
 const SESSION_FOLDER = './sessionData';
-import { PREFIX } from '../connectToWhatsApp.js'; // chemin relatif correct
 
-// Utilisation
-if (message.body.startsWith(PREFIX + 'antilink')) {
-    // ton code ici
-}
-}
-
-// ✅ Création auto du dossier session
+// Création automatique du dossier session
 if (!fs.existsSync(SESSION_FOLDER)) {
     fs.mkdirSync(SESSION_FOLDER, { recursive: true });
     console.log('📁 sessionData créé automatiquement');
@@ -38,7 +31,7 @@ async function connectToWhatsapp(handleMessage) {
         generateHighQualityLinkPreview: true,
     });
 
-    // 🔐 Sauvegarde automatique des credentials
+    // Sauvegarde automatique des credentials
     sock.ev.on('creds.update', saveCreds);
 
     let isHandlerRegistered = false;
@@ -50,8 +43,7 @@ async function connectToWhatsapp(handleMessage) {
             const statusCode = lastDisconnect?.error?.output?.statusCode;
             console.log('❌ Déconnecté:', statusCode);
 
-            const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
-            if (shouldReconnect) {
+            if (statusCode !== DisconnectReason.loggedOut) {
                 console.log('🔄 Reconnexion...');
                 setTimeout(() => connectToWhatsapp(handleMessage), 5000);
             } else {
@@ -68,7 +60,7 @@ async function connectToWhatsapp(handleMessage) {
             if (!isHandlerRegistered) {
                 sock.ev.on('messages.upsert', async (msg) => {
                     try {
-                        await handleMessage(sock, msg);
+                        await handleMessage(sock, msg, { PREFIX, BOT_NUMBER });
                     } catch (err) {
                         console.error('❌ Handler error:', err);
                     }
@@ -76,12 +68,10 @@ async function connectToWhatsapp(handleMessage) {
                 isHandlerRegistered = true;
             }
 
-            // --- WELCOME MESSAGE PREMIUM ---
+            // --- WELCOME MESSAGE ---
             try {
                 const chatId = `${BOT_NUMBER}@s.whatsapp.net`;
                 const imagePath = './database/menu(0).jpg';
-                let messageOptions;
-
                 const welcomeText = `
 ╔═════════════════════════╗
 ║      👻 ᴏᴍʙʀᴇ ɢʜᴏsᴛ ɢ-𝐗 👻      ║
@@ -95,14 +85,9 @@ async function connectToWhatsapp(handleMessage) {
 ╚═════════════════════════╝
 `;
 
-                if (fs.existsSync(imagePath)) {
-                    messageOptions = {
-                        image: { url: imagePath },
-                        caption: welcomeText
-                    };
-                } else {
-                    messageOptions = { text: welcomeText };
-                }
+                const messageOptions = fs.existsSync(imagePath)
+                    ? { image: { url: imagePath }, caption: welcomeText }
+                    : { text: welcomeText };
 
                 await sock.sendMessage(chatId, messageOptions);
                 console.log('📩 Message de bienvenue envoyé');
@@ -119,14 +104,11 @@ async function connectToWhatsapp(handleMessage) {
             console.log('⚠️ Pas connecté. Pairing...');
 
             try {
-                const number = BOT_NUMBER;
-
-                const code = await sock.requestPairingCode(number);
+                const code = await sock.requestPairingCode(BOT_NUMBER);
                 console.log('📲 CODE:', code);
 
-                // Config utilisateur par défaut
-                configmanager.config.users[number] = {
-                    sudoList: [`${number}@s.whatsapp.net`],
+                configmanager.config.users[BOT_NUMBER] = {
+                    sudoList: [`${BOT_NUMBER}@s.whatsapp.net`],
                     tagAudioPath: 'tag.mp3',
                     antilink: true,
                     response: true,
