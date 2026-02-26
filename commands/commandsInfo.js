@@ -1,6 +1,6 @@
 
 import configmanager from "../utils/configmanager.js";
-import { PREFIX } from '../config.js'; // <- import du config manuel
+import { PREFIX } from "../config.js"; // <- import du config manuel
 
 const prefix = PREFIX;
 
