@@ -3,6 +3,7 @@ import commandsInfo from "./commandsInfo.js"; // Objet avec toutes les commandes
 import send from "../utils/sendMessage.js";
 import configmanager from "../utils/configmanager.js";
 import CONFIG from "../config.js";
+const PREFIX = CONFIG.PREFIX;
 
 export default async function help(client, message, args) {
     const jid = message.key.remoteJid;
