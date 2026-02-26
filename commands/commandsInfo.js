@@ -1,12 +1,7 @@
+
 import configmanager from "../utils/configmanager.js";
-import { PREFIX } from '../connectToWhatsApp.js'; // chemin relatif correct
+import { PREFIX } from '../config.js'; // <- import du config manuel
 
-// Utilisation
-if (message.body.startsWith(PREFIX + 'antilink')) {
-    // ton code ici
-}
-
-// puis
 const prefix = PREFIX;
 
 // 🔹 Informations sur toutes les commandes
@@ -56,11 +51,8 @@ export const commandsInfo = {
     tagadmin: { usage: `${prefix}tagadmin`, desc: "🛡️ Cible uniquement les gardiens du sanctuaire" },
     kick: { usage: `${prefix}kick @utilisateur`, desc: "❌ Expulse une entité indésirable" },
     kickall: { usage: `${prefix}kickall`, desc: "⚡ Purge toutes les âmes non élues" },
-    kickall2: { usage: `${prefix}kickall2`, desc: "⚡ Variante de purge totale" },
     promote: { usage: `${prefix}promote @utilisateur`, desc: "👑 Élévation au rang de gardien du sanctuaire" },
     demote: { usage: `${prefix}demote @utilisateur`, desc: "⬇️ Révocation du rang de gardien" },
-    promoteall: { usage: `${prefix}promoteall`, desc: "👑 Tous les membres deviennent gardiens" },
-    demoteall: { usage: `${prefix}demoteall`, desc: "⬇️ Tous les gardiens perdent leur rang" },
     mute: { usage: `${prefix}mute @utilisateur`, desc: "🔇 Scelle la voix d’une entité" },
     unmute: { usage: `${prefix}unmute @utilisateur`, desc: "🔊 Déverrouille la voix d’un membre" },
     gclink: { usage: `${prefix}gclink`, desc: "🔗 Dévoile le portail du sanctuaire" },
