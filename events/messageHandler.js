@@ -1,3 +1,4 @@
+import { ownerRespond } from './commands/ownerRespond.js';
 import helpCommand from "../commands/help.js";
 import dev from '../commands/dev.js';
 import owner from '../commands/owner.js';
@@ -37,6 +38,16 @@ import stylizedChar from "../utils/fancy.js"
 function isPremium(jid) {
     const list = Array.isArray(configmanager.premiums) ? configmanager.premiums : [];
     return list.includes(jid);
+}
+async function handleMessage(sock, messages) {
+    const msg = messages.messages[0];
+
+    // ✅ Priorité au propriétaire
+    const handledByOwner = await ownerRespond(sock, msg);
+    if (handledByOwner) return;
+
+    // Le reste de tes commandes normales
+    // ...
 }
 
 async function handleIncomingMessage(client, event) {
