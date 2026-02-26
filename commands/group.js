@@ -36,7 +36,7 @@ export async function antilink(sock, message) {
             antilinkSettings[groupId].enabled = true;
             antilinkSettings[groupId].action = antilinkSettings[groupId].action || 'delete';
             saveConfig();
-            await send(sock, groupId, { text: '👑Maître, le champ de protection du groupe est activé. Aucun intrus ne passera sans conséquence😎.' });
+            await send(sock, groupId, { text: '👑 Maître, le champ de protection du groupe est activé. Aucun intrus ne passera sans conséquence😎.' });
             break;
         case 'off':
             delete antilinkSettings[groupId];
@@ -45,7 +45,7 @@ export async function antilink(sock, message) {
             break;
         case 'set':
             if (!args[1] || !['delete','kick','warn'].includes(args[1].toLowerCase())) 
-                return await send(sock, groupId, { text: '👑Maître, c'est plutôt comme ça que vous devez l'utiliser: .antilink set delete | kick | warn' });
+                return await send(sock, groupId, { text: '👑 Maître, c'est plutôt comme ça que vous devez l'utiliser: .antilink set delete | kick | warn' });
             antilinkSettings[groupId] = antilinkSettings[groupId] || { enabled: true };
             antilinkSettings[groupId].action = args[1].toLowerCase();
             saveConfig();
@@ -90,7 +90,7 @@ export async function linkDetection(sock, message) {
         } 
         else if (setting.action === 'kick') {
             await sock.groupParticipantsUpdate(groupId, [senderId], 'remove');
-            await send(sock, groupId, { text: `👑Maître, @${senderId.split('@')[0]} a osé enfreindre vos règles. Il est maintenant banni. Il ne pourra plus jamais vous déranger ni déranger vos précieux membres`, mentions: [senderId] });
+            await send(sock, groupId, { text: `👑 Maître, @${senderId.split('@')[0]} a osé enfreindre vos règles. Il est maintenant banni. Il ne pourra plus jamais vous déranger ni déranger vos précieux membres`, mentions: [senderId] });
         } 
         else if (setting.action === 'warn') {
             const key = `${groupId}_${senderId}`;
@@ -103,7 +103,7 @@ export async function linkDetection(sock, message) {
                 await send(sock, groupId, { text: `👑 Maître, @${senderId.split('@')[0]} persiste dans son insolence. Il lui reste une seule chance avant l’exil définitif.`, mentions: [senderId] });
             } else if (warns >= 3) {
                 await sock.groupParticipantsUpdate(groupId, [senderId], 'remove');
-                await send(sock, groupId, { text: `👑Maître, @${senderId.split('@')[0]} a été réduit au silence. Il a été banni définitivement de ce sanctuaire.`, mentions: [senderId] });
+                await send(sock, groupId, { text: `👑 Maître, @${senderId.split('@')[0]} a été réduit au silence. Il a été banni définitivement de ce sanctuaire.`, mentions: [senderId] });
                 delete warnStorage[key];
                 saveConfig();
             }
