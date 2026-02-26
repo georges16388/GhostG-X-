@@ -6,20 +6,12 @@ import pino from 'pino';
 import configmanager from '../utils/configmanager.js';
 
 const SESSION_FOLDER = './sessionData';
+import { PREFIX } from '../connectToWhatsApp.js'; // chemin relatif correct
 
-// 🔥 Lecture manuelle du .env
-let BOT_NUMBER = '226XXXX'; // fallback
-let PREFIX = '`';
-
-if (fs.existsSync('./.env')) {
-    const envFile = fs.readFileSync('./.env', 'utf8');
-    envFile.split('\n').forEach(line => {
-        const [key, value] = line.split('=');
-        if (key && value) {
-            if (key.trim() === 'BOT_NUMBER') BOT_NUMBER = value.trim();
-            if (key.trim() === 'PREFIX') PREFIX = value.trim();
-        }
-    });
+// Utilisation
+if (message.body.startsWith(PREFIX + 'antilink')) {
+    // ton code ici
+}
 }
 
 // ✅ Création auto du dossier session
