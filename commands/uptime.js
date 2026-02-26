@@ -1,5 +1,6 @@
 import send from "../utils/sendMessage.js";
 
+// 🔮 Uptime mystique avec effet Ghost
 export async function uptime(client, message) {
     const remoteJid = message.key.remoteJid;
 
@@ -13,13 +14,16 @@ export async function uptime(client, message) {
     // Mémoire utilisée
     const usedRAM = (process.memoryUsage().heapUsed / 1024 / 1024).toFixed(1);
 
-    // Texte stylisé
+    // 🕸️ Phrase ghost reliée à "Jesus t'aime"
+    const ghostLine = "🕸️ Dans la nuit la plus noire, ᴊᴇ́sᴜs est ma lumière.";
+
+    // Texte stylisé Ghost
     const text = `┌─-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ ─┐
 │
 │ ⏱️ Uptime: ${days}d ${hours}h ${minutes}m ${seconds}s
 │ 💾 RAM Used: ${usedRAM} MB
 │
-│ "Beyond limits, we rise."
+│ ${ghostLine}
 │     - ᴊᴇ́sᴜs ᴛ’ᴀɪᴍᴇ -
 └────────────────────┘`;
 
