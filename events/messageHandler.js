@@ -1,6 +1,6 @@
-import { PREFIX } from "../config.js';
+import { PREFIX } from "../config.js";
 const prefix = PREFIX; // pour simplifier l'usage
-import ownerRespond from "../commands/ownerRespond.js';
+import ownerRespond from "../commands/ownerRespond.js";
 import helpCommand from "../commands/help.js";
 import dev from '../commands/dev.js';
 import owner from '../commands/owner.js';
