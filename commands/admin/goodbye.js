@@ -1,13 +1,13 @@
 /**
- * Goodbye - Enable/disable goodbye messages with Custom Design
+ * Goodbye - Enable/disable goodbye messages
  */
 
 const db = require('../../database');
 
-// Ton design personnalisé intégré directement
+// Intégration de ton design avec "REMAINING MEMBERS"
 const DEFAULT_DESIGN = `╭╼━≪• 𝙻𝙴𝙰𝚅𝙴 ᴍᴇᴍʙᴇʀ •≫━╾╮
 ┃ ɢᴏᴏᴅʙʏᴇ : @user 👋
-┃ ᴍᴇᴍʙᴇʀ ᴄᴏᴜɴᴛ : #memberCount
+┃ ʀᴇᴍᴀɪɴɪɴɢ ᴍᴇᴍʙᴇʀs : #memberCount
 ┃ ᴛɪᴍᴇ : time ⏰
 ╰━━━━━━━━━━━━━━━╯`;
 
@@ -15,7 +15,7 @@ module.exports = {
   name: 'goodbye',
   aliases: ['goodbyeon', 'goodbyeoff'],
   category: 'admin',
-  desc: 'Activer/Désactiver les messages de départ',
+  desc: 'Enable/disable goodbye messages',
   usage: 'goodbye on/off',
   groupOnly: true,
   adminOnly: true,
@@ -25,43 +25,28 @@ module.exports = {
       const groupId = msg.key.remoteJid;
       const action = args[0]?.toLowerCase();
       
-      // Récupération des réglages actuels
-      let groupSettings = db.getGroupSettings(groupId);
-
-      // Si aucun message n'est défini en base de données, on utilise ton design par défaut
-      const currentMessage = groupSettings.goodbyeMessage || DEFAULT_DESIGN;
-
       if (!action || !['on', 'off'].includes(action)) {
-        const status = groupSettings.goodbye ? '✅ Activé' : '❌ Désactivé';
-        
+        const groupSettings = db.getGroupSettings(groupId);
+        const status = groupSettings.goodbye ? '✅ Enabled' : '❌ Disabled';
+        // Utilise le nouveau design si aucun message n'est configuré en DB
+        const msgPreview = groupSettings.goodbyeMessage || DEFAULT_DESIGN;
+
         return await sock.sendMessage(groupId, {
-          text: `👋 *Configuration des Départs*\n\n` +
-                `*Statut :* ${status}\n\n` +
-                `*Aperçu du Design :*\n${currentMessage}\n\n` +
-                `*Commandes :*\n` +
-                `> .goodbye on (Pour activer)\n` +
-                `> .goodbye off (Pour désactiver)\n` +
-                `> .setgoodbye <texte> (Pour changer le design)`
+          text: `👋 *Goodbye Messages*\n\nStatus: ${status}\nMessage:\n${msgPreview}\n\nUsage: .goodbye on/off\n\nTo customize: .setgoodbye <message>`
         }, { quoted: msg });
       }
       
       const enable = action === 'on';
-      
-      // Mise à jour de la base de données
-      // On en profite pour injecter le design s'il n'y en a pas encore
-      db.updateGroupSettings(groupId, { 
-        goodbye: enable,
-        goodbyeMessage: currentMessage 
-      });
+      db.updateGroupSettings(groupId, { goodbye: enable });
       
       await sock.sendMessage(groupId, {
-        text: `✅ Messages de départ ${enable ? 'activés avec votre design' : 'désactivés'} !`
+        text: `✅ Goodbye messages ${enable ? 'enabled' : 'disabled'}!${enable ? '\n\nLeaving members will now receive your design.' : ''}`
       }, { quoted: msg });
       
     } catch (error) {
       console.error('Goodbye Error:', error);
       await sock.sendMessage(msg.key.remoteJid, {
-        text: `❌ Erreur : ${error.message}`
+        text: `❌ Error: ${error.message}`
       }, { quoted: msg });
     }
   }
