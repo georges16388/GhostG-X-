@@ -1,9 +1,17 @@
 /**
- * AntiTag Command
- * Enable/disable anti-tag and set action (delete/kick)
+ * AntiTag Command - AGM Design Edition
+ * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
 const database = require('../../database');
+
+// --- FONCTION DE DESIGN AGM ---
+const AGM_DESIGN = (status, action) => `╭╼━≪• ᴀɴᴛɪ-ɢʀᴏᴜᴘ ᴍᴇɴᴛɪᴏɴ •≫━╾╮
+┃ sᴛᴀᴛᴜs : ${status === 'ON' ? '🟢 ᴀᴄᴛɪᴠᴀᴛᴇᴅ' : '🔴 ᴅᴇᴀᴄᴛɪᴠᴀᴛᴇᴅ'}
+┃ ᴀᴄᴛɪᴏɴ : ${action.toUpperCase()} ⚡
+┃ ɢᴜᴀʀᴅ : 🛡️ ᴀᴄᴛɪᴠᴇ
+>┃ ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗
+╰━━━━━━━━━━━━━━━╯`;
 
 module.exports = {
   name: 'antitag',
@@ -14,66 +22,51 @@ module.exports = {
   groupOnly: true,
   adminOnly: true,
   botAdminNeeded: true,
-  
+
   async execute(sock, msg, args, extra) {
     try {
-      if (!args[0]) {
-        const settings = database.getGroupSettings(extra.from);
-        const status = settings.antitag ? 'ON' : 'OFF';
-        const action = settings.antitagAction || 'delete';
-        return extra.reply(
-          `📛 Anti-tag is *${status}* (action: *${action}*).\n` +
-          'Usage:\n' +
-          '  .antitag on\n' +
-          '  .antitag off\n' +
-          '  .antitag set delete | kick\n' +
-          '  .antitag get'
-        );
+      const settings = database.getGroupSettings(extra.from);
+      let status = settings.antitag ? 'ON' : 'OFF';
+      let action = settings.antitagAction || 'delete';
+
+      if (!args[0] || args[0].toLowerCase() === 'get') {
+        return extra.reply(AGM_DESIGN(status, action));
       }
-      
+
       const opt = args[0].toLowerCase();
-      
+
       if (opt === 'on') {
-        if (database.getGroupSettings(extra.from).antitag) {
-          return extra.reply('*Antitag is already on*');
-        }
         database.updateGroupSettings(extra.from, { antitag: true });
-        return extra.reply('*Antitag has been turned ON*');
+        return extra.reply(AGM_DESIGN('ON', action));
       }
-      
+
       if (opt === 'off') {
         database.updateGroupSettings(extra.from, { antitag: false });
-        return extra.reply('*Antitag has been turned OFF*');
+        return extra.reply(AGM_DESIGN('OFF', action));
       }
-      
+
       if (opt === 'set') {
-        if (args.length < 2) {
-          return extra.reply('*Please specify an action: .antitag set delete | kick*');
+        if (!args[1]) {
+          return extra.reply('⚠️ *ᴠᴇᴜɪʟʟᴇᴢ sᴘéᴄɪғɪᴇʀ ᴜɴᴇ ᴀᴄᴛɪᴏɴ : ᴅᴇʟᴇᴛᴇ ᴏᴜ ᴋɪᴄᴋ.*');
         }
-        
+
         const setAction = args[1].toLowerCase();
         if (!['delete', 'kick'].includes(setAction)) {
-          return extra.reply('*Invalid action. Choose delete or kick.*');
+          return extra.reply('⚠️ *ᴀᴄᴛɪᴏɴ ɪɴᴠᴀʟɪᴅᴇ. ᴄʜᴏɪsɪssᴇᴢ ᴇɴᴛʀᴇ ᴅᴇʟᴇᴛᴇ ᴏᴜ ᴋɪᴄᴋ.*');
         }
-        
+
         database.updateGroupSettings(extra.from, { 
           antitagAction: setAction,
-          antitag: true // Auto-enable when setting action
+          antitag: true 
         });
-        return extra.reply(`*Antitag action set to ${setAction}*`);
+        return extra.reply(AGM_DESIGN('ON', setAction));
       }
-      
-      if (opt === 'get') {
-        const settings = database.getGroupSettings(extra.from);
-        const status = settings.antitag ? 'ON' : 'OFF';
-        const action = settings.antitagAction || 'delete';
-        return extra.reply(`*Antitag Configuration:*\nStatus: ${status}\nAction: ${action}`);
-      }
-      
-      return extra.reply('*Use .antitag for usage.*');
-      
+
+      await sock.sendMessage(extra.from, { react: { text: "🛡️", key: msg.key } });
+
     } catch (error) {
-      await extra.reply(`❌ Error: ${error.message}`);
+      console.error('Antitag Error:', error);
+      await extra.reply(`❌ ᴇʀʀᴇᴜʀ : ${error.message}`);
     }
   }
 };
