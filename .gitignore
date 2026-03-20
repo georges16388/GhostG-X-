@@ -1,8 +1,0 @@
-# Node modules
-node_modules/
-
-# Secrets et config
-.env
-sessionData/
-database/*.db
-database/*.json
