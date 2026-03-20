@@ -12,7 +12,7 @@ module.exports = {
     prefix: '.',
     sessionName: 'session',
     sessionID: process.env.SESSION_ID || '',
-    newsletterJid: '120363422887304780@newsletter', // Newsletter JID for menu forwarding
+    newsletterJid: '120363425540434745@newsletter', // Newsletter JID for menu forwarding
     updateZipUrl: 'https://github.com/mruniquehacker/KnightBot-Mini/archive/refs/heads/main.zip', // URL to latest code zip for .update command
     
     // Sticker Configuration
