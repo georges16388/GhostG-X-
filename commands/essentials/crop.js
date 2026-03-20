@@ -14,7 +14,7 @@ const { getTempDir, deleteTempFile } = require('../../utils/tempManager');
 module.exports = {
   name: 'crop',
   aliases: ['square', 'cropper', 'carre'],
-  category: 'core', // Nouvelle catégorie CORE
+  category: 'essentials', // Nouvelle catégorie CORE
   description: 'Recadre une image/vidéo en sticker carré parfait.',
   usage: '.crop (en répondant à un média)',
   
