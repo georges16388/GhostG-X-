@@ -15,7 +15,7 @@ const GETPP_DESIGN = (target) => `╭╼━≪• ɢʜᴏsᴛ sᴄᴀɴɴᴇʀ �
 module.exports = {
   name: 'getpp',
   aliases: ['gp', 'getpic', 'pdp'],
-  category: 'core',
+  category: 'essentials',
   description: 'Récupère la photo de profil d\'un utilisateur.',
   usage: '.getpp [@user | reply]',
   
