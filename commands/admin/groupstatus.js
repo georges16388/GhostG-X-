@@ -15,6 +15,7 @@ const STATUS_DESIGN = (type) => `╭╼━≪• ɢʀᴏᴜᴘ sᴛᴀᴛᴜs �
 ┃ ᴛʏᴘᴇ : ${type.toUpperCase()} 📑
 ┃ sᴛᴀᴛᴜs : ᴘᴏsᴛᴇᴅ ✅
 ┃ ᴛᴀʀɢᴇᴛ : ɢʀᴏᴜᴘ 👥
+>┃ ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗
 ╰━━━━━━━━━━━━━━━╯`;
 
 module.exports = {
