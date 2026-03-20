@@ -1,6 +1,22 @@
 /**
  * Global Configuration for WhatsApp MD Bot
  */
+const dotenv = require('dotenv');
+dotenv.config(); // Charge le fichier .env
+
+module.exports = {
+    // Garde tes anciennes variables et ajoute/modifie celles-ci :
+    sessionName: process.env.SESSION_NAME || "session",
+    sessionID: process.env.SESSION_ID || "",
+    
+    // Ajoute cette ligne cruciale :
+    OWNER_NUMBER: process.env.OWNER_NUMBER ? process.env.OWNER_NUMBER.replace(/[^0-9]/g, '') : null,
+    
+    botName: process.env.BOT_NAME || "GhostG-X Bot",
+    prefix: process.env.PREFIX || ".",
+    ownerName: process.env.OWNER_NAME || "Ghost-X User",
+    autoBio: process.env.AUTO_BIO === 'true'
+};
 
 module.exports = {
     // Bot Owner Configuration
