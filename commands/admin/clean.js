@@ -1,6 +1,15 @@
 /**
- * Clean Command - Delete messages in group
+ * Clean Command - AGM Purge Edition
+ * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
+
+// --- FONCTION DE DESIGN AGM ADAPTÉE ---
+const AGM_DESIGN = (deleted, total) => `╭╼━≪• ᴘᴜʀɢᴇ sʏsᴛᴇᴍ •≫━╾╮
+┃ sᴛᴀᴛᴜs : 🟢 ᴄᴏᴍᴘʟᴇᴛᴇᴅ
+┃ ᴅᴇʟᴇᴛᴇᴅ : ${deleted} / ${total} 🗑️
+┃ sᴄᴏᴘᴇ : 🛡️ ᴀᴄᴛɪᴠᴇ
+>┃ ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗
+╰━━━━━━━━━━━━━━━╯`;
 
 module.exports = {
   name: 'clean',
@@ -11,29 +20,28 @@ module.exports = {
   groupOnly: true,
   adminOnly: true,
   botAdminNeeded: true,
-  
+
   async execute(sock, msg, args, extra) {
     try {
       const count = parseInt(args[0]);
       if (!count || count < 1 || count > 100) {
-        return extra.reply('❌ Please enter a valid number (1-100).');
+        return extra.reply('⚠️ *Veuillez entrer un nombre valide (1-100).*');
       }
 
       const jid = extra.from;
       const { store } = require('../../index');
-      
+
       // Check if message is a reply
-      const quotedMsg = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage;
       const quotedParticipant = msg.message?.extendedTextMessage?.contextInfo?.participant;
 
       const msgs = store.messages[jid];
       if (!msgs) {
-        return extra.reply('❌ No stored messages found.');
+        return extra.reply('⚠️ *Aucun message trouvé dans la mémoire du bot.*');
       }
 
       let messagesToDelete = [];
 
-      if (quotedMsg && quotedParticipant) {
+      if (quotedParticipant) {
         // Mode: Delete specific user's messages
         messagesToDelete = Object.values(msgs)
           .filter(m => {
@@ -49,21 +57,30 @@ module.exports = {
           .slice(0, count);
       }
 
-      let deleted = 0;
+      if (messagesToDelete.length === 0) {
+        return extra.reply('⚠️ *Aucun message à supprimer.*');
+      }
+
+      await sock.sendMessage(jid, { react: { text: "🧹", key: msg.key } });
+
+      let deletedCount = 0;
       for (const m of messagesToDelete) {
         try {
           await sock.sendMessage(jid, { delete: m.key });
-          deleted++;
+          deletedCount++;
           // Small delay to avoid rate limiting
-          await new Promise(resolve => setTimeout(resolve, 300));
+          await new Promise(resolve => setTimeout(resolve, 350));
         } catch (err) {
           console.error('[clean] delete error:', err.message);
         }
       }
-      
+
+      // Envoi du rapport de purge final
+      return extra.reply(AGM_DESIGN(deletedCount, count));
+
     } catch (e) {
       console.error('[clean cmd] error:', e);
-      extra.reply('❌ Failed to clean messages.');
+      extra.reply('❌ *Échec du nettoyage du chat.*');
     }
   }
 };
