@@ -1,80 +1,72 @@
 /**
- * Antilink Command - Toggle antilink protection with delete/kick options
+ * Antilink Command - AGM Design Edition
+ * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
 const database = require('../../database');
 
+// --- FONCTION DE DESIGN AGM ---
+const AGM_DESIGN = (status, action) => `╭╼━≪• ᴀɴᴛɪ-ʟɪɴᴋ sʏsᴛᴇᴍ •≫━╾╮
+┃ sᴛᴀᴛᴜs : ${status === 'ON' ? '🟢 ᴀᴄᴛɪᴠᴀᴛᴇᴅ' : '🔴 ᴅᴇᴀᴄᴛɪᴠᴀᴛᴇᴅ'}
+┃ ᴀᴄᴛɪᴏɴ : ${action.toUpperCase()} ⚡
+┃ ɢᴜᴀʀᴅ : 🛡️ ᴀᴄᴛɪᴠᴇ
+>┃ ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗
+╰━━━━━━━━━━━━━━━╯`;
+
 module.exports = {
   name: 'antilink',
-  aliases: [],
+  aliases: ['anti-link'],
   category: 'admin',
   description: 'Configure antilink protection (delete/kick)',
-  usage: '.antilink <on/off/set/get>',
+  usage: '.antilink <on/off/set>',
   groupOnly: true,
   adminOnly: true,
   botAdminNeeded: true,
-  
+
   async execute(sock, msg, args, extra) {
     try {
-      if (!args[0]) {
-        const settings = database.getGroupSettings(extra.from);
-        const status = settings.antilink ? 'ON' : 'OFF';
-        const action = settings.antilinkAction || 'delete';
-        return extra.reply(
-          `🔗 *Antilink Status*\n\n` +
-          `Status: *${status}*\n` +
-          `Action: *${action}*\n\n` +
-          `Usage:\n` +
-          `  .antilink on\n` +
-          `  .antilink off\n` +
-          `  .antilink set delete | kick\n` +
-          `  .antilink get`
-        );
+      const settings = database.getGroupSettings(extra.from);
+      let status = settings.antilink ? 'ON' : 'OFF';
+      let action = settings.antilinkAction || 'delete';
+
+      if (!args[0] || args[0].toLowerCase() === 'get') {
+        return extra.reply(AGM_DESIGN(status, action));
       }
-      
+
       const opt = args[0].toLowerCase();
-      
+
       if (opt === 'on') {
-        if (database.getGroupSettings(extra.from).antilink) {
-          return extra.reply('*Antilink is already on*');
-        }
         database.updateGroupSettings(extra.from, { antilink: true });
-        return extra.reply('*Antilink has been turned ON*');
+        return extra.reply(AGM_DESIGN('ON', action));
       }
-      
+
       if (opt === 'off') {
         database.updateGroupSettings(extra.from, { antilink: false });
-        return extra.reply('*Antilink has been turned OFF*');
+        return extra.reply(AGM_DESIGN('OFF', action));
       }
-      
+
       if (opt === 'set') {
-        if (args.length < 2) {
-          return extra.reply('*Please specify an action: .antilink set delete | kick*');
+        if (!args[1]) {
+          return extra.reply('⚠️ *Veuillez spécifier une action : delete ou kick.*');
         }
-        
+
         const setAction = args[1].toLowerCase();
         if (!['delete', 'kick'].includes(setAction)) {
-          return extra.reply('*Invalid action. Choose delete or kick.*');
+          return extra.reply('⚠️ *Action invalide. Choisissez entre delete ou kick.*');
         }
-        
+
         database.updateGroupSettings(extra.from, { 
           antilinkAction: setAction,
-          antilink: true // Auto-enable when setting action
+          antilink: true 
         });
-        return extra.reply(`*Antilink action set to ${setAction}*`);
+        return extra.reply(AGM_DESIGN('ON', setAction));
       }
-      
-      if (opt === 'get') {
-        const settings = database.getGroupSettings(extra.from);
-        const status = settings.antilink ? 'ON' : 'OFF';
-        const action = settings.antilinkAction || 'delete';
-        return extra.reply(`*Antilink Configuration:*\nStatus: ${status}\nAction: ${action}`);
-      }
-      
-      return extra.reply('*Use .antilink for usage.*');
-      
+
+      await sock.sendMessage(extra.from, { react: { text: "🛡️", key: msg.key } });
+
     } catch (error) {
-      await extra.reply(`❌ Error: ${error.message}`);
+      console.error('Antilink Error:', error);
+      await extra.reply(`❌ ᴇʀʀᴇᴜʀ : ${error.message}`);
     }
   }
 };
