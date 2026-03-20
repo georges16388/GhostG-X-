@@ -4,6 +4,13 @@
 
 const { findParticipant } = require('../../utils/jidHelper');
 
+// Design pour l'annonce de la destitution
+const DEMOTE_DESIGN = (user) => `╭╼━≪• ᴀᴅᴍɪɴ ᴅᴇᴍᴏᴛᴇᴅ •≫━╾╮
+┃ ᴜsᴇʀ : @${user.split('@')[0]} 👋
+┃ sᴛᴀᴛᴜs : ɴᴏ ʟᴏɴɢᴇʀ ᴀᴅᴍɪɴ
+┃ ᴀᴄᴛɪᴏɴ : sᴜᴄᴄᴇssғᴜʟ ✅
+╰━━━━━━━━━━━━━━━╯`;
+
 module.exports = {
   name: 'demote',
   aliases: ['removeadmin'],
@@ -13,13 +20,13 @@ module.exports = {
   groupOnly: true,
   adminOnly: true,
   botAdminNeeded: true,
-  
+
   async execute(sock, msg, args, extra) {
     try {
       let target;
       const ctx = msg.message?.extendedTextMessage?.contextInfo;
       const mentioned = ctx?.mentionedJid || [];
-      
+
       if (mentioned && mentioned.length > 0) {
         target = mentioned[0];
       } else if (ctx?.participant && ctx.stanzaId && ctx.quotedMessage) {
@@ -27,29 +34,31 @@ module.exports = {
       } else {
         return extra.reply('❌ Please mention or reply to the user to demote!\n\nExample: .demote @user');
       }
-      
+
       // Fetch FRESH group metadata to avoid stale cache
       const freshMetadata = await sock.groupMetadata(extra.from);
-      
+
       // Use findParticipant for LID-aware matching with fresh metadata
       const foundParticipant = findParticipant(freshMetadata.participants, target);
-      
+
       if (!foundParticipant) {
         return extra.reply('❌ User not found in group!');
       }
-      
+
       // Check if user is admin using fresh data
       if (foundParticipant.admin !== 'admin' && foundParticipant.admin !== 'superadmin') {
         return extra.reply('❌ This user is not an admin!');
       }
-      
+
+      // Execute demotion
       await sock.groupParticipantsUpdate(extra.from, [target], 'demote');
-      
+
+      // Send confirmation with the new design
       await sock.sendMessage(extra.from, {
-        text: `✅ @${target.split('@')[0]} is no longer an admin!`,
+        text: DEMOTE_DESIGN(target),
         mentions: [target]
       }, { quoted: msg });
-      
+
     } catch (error) {
       await extra.reply(`❌ Error: ${error.message}`);
     }
