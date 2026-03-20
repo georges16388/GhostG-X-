@@ -606,4 +606,483 @@ const handleMessage = async (sock, msg) => {
                 
                 if (action === 'delete') {
                   try {
+                       await sock.sendMessage(from, { delete: msg.key });
+                    await sock.sendMessage(from, { 
+                      text: '⚠️ *Tagall Detected!*',
+                      mentions: [sender]
+                    }, { quoted: msg });
+                  } catch (e) {
+                    console.error('Failed to delete tagall message:', e);
+                  }
+                } else if (action === 'kick') {
+                  try {
+                    await sock.sendMessage(from, { delete: msg.key });
+                  } catch (e) {
+                    console.error('Failed to delete tagall message:', e);
+                  }
+                  
+                  const botIsAdmin = await isBotAdmin(sock, from, groupMetadata);
+                  if (botIsAdmin) {
+                    try {
+                      await sock.groupParticipantsUpdate(from, [sender], 'remove');
+                    } catch (e) {
+                      console.error('Failed to kick for antitag:', e);
+                    }
+                    const usernames = [`@${sender.split('@')[0]}`];
+                    await sock.sendMessage(from, {
+                      text: `🚫 *Antitag Detected!*\n\n${usernames.join(', ')} has been kicked for tagging all members.`,
+                      mentions: [sender],
+                    }, { quoted: msg });
+                  }
+                }
+                return;
+              }
+            }
+          } catch (e) {
+            console.error('Error during anti-tag enforcement:', e);
+          }
+        }
+      }
+    }
+    
+    // Anti-group mention protection (check BEFORE prefix check, as these are non-command messages)
+    if (isGroup) {
+      // Debug logging to confirm we're trying to call the handler
+      const groupSettings = database.getGroupSettings(from);
+      if (groupSettings.antigroupmention) {
+        // Debug log removed
+      }
+      try {
+        await handleAntigroupmention(sock, msg, groupMetadata);
+      } catch (error) {
+        console.error('Error in antigroupmention handler:', error);
+      }
+    }
+    
+    // AutoSticker feature - convert images/videos to stickers automatically
+    if (isGroup) { // Process all messages in groups (including bot's own messages)
+      const groupSettings = database.getGroupSettings(from);
+      if (groupSettings.autosticker) {
+        const mediaMessage = content?.imageMessage || content?.videoMessage;
+        
+        // Only process if it's an image or video (not documents)
+        if (mediaMessage) {
+          // Skip if message has a command prefix (let command handle it)
+          if (!body.startsWith(config.prefix)) {
+            try {
+              // Import sticker command logic
+              const stickerCmd = commands.get('sticker');
+              if (stickerCmd) {
+                // Execute sticker conversion silently
+                await stickerCmd.execute(sock, msg, [], {
+                  from,
+                  sender,
+                  isGroup,
+                  groupMetadata,
+                  isOwner: isOwner(sender),
+                  isAdmin: await isAdmin(sock, sender, from, groupMetadata),
+                  isBotAdmin: await isBotAdmin(sock, from, groupMetadata),
+                  isMod: isMod(sender),
+                  reply: (text) => sock.sendMessage(from, { text }, { quoted: msg }),
+                  react: (emoji) => sock.sendMessage(from, { react: { text: emoji, key: msg.key } })
+                });
+                return; // Don't process as command after auto-converting
+              }
+            } catch (error) {
+              console.error('[AutoSticker Error]:', error);
+              // Continue to normal processing if autosticker fails
+            }
+          }
+        }
+      }
+    }
+
+     // Check for active bomb games (before prefix check)
+    try {
+      const bombModule = require('./commands/fun/bomb');
+      if (bombModule.gameState && bombModule.gameState.has(sender)) {
+        const bombCommand = commands.get('bomb');
+        if (bombCommand && bombCommand.execute) {
+          // User has active game, process input
+          await bombCommand.execute(sock, msg, [], {
+            from,
+            sender,
+            isGroup,
+            groupMetadata,
+            isOwner: isOwner(sender),
+            isAdmin: await isAdmin(sock, sender, from, groupMetadata),
+            isBotAdmin: await isBotAdmin(sock, from, groupMetadata),
+            isMod: isMod(sender),
+            reply: (text) => sock.sendMessage(from, { text }, { quoted: msg }),
+            react: (emoji) => sock.sendMessage(from, { react: { text: emoji, key: msg.key } })
+          });
+          return; // Don't process as command
+        }
+      }
+    } catch (e) {
+      // Silently ignore if bomb command doesn't exist or has errors
+    }
+    
+    // Check for active tictactoe games (before prefix check)
+    try {
+      const tictactoeModule = require('./commands/fun/tictactoe');
+      if (tictactoeModule.handleTicTacToeMove) {
+        // Check if user is in an active game
+        const isInGame = Object.values(tictactoeModule.games || {}).some(room => 
+          room.id.startsWith('tictactoe') && 
+          [room.game.playerX, room.game.playerO].includes(sender) && 
+          room.state === 'PLAYING'
+        );
+        
+        if (isInGame) {
+          // User has active game, process input
+          const handled = await tictactoeModule.handleTicTacToeMove(sock, msg, {
+            from,
+            sender,
+            isGroup,
+            groupMetadata,
+            isOwner: isOwner(sender),
+            isAdmin: await isAdmin(sock, sender, from, groupMetadata),
+            isBotAdmin: await isBotAdmin(sock, from, groupMetadata),
+            isMod: isMod(sender),
+            reply: (text) => sock.sendMessage(from, { text }, { quoted: msg }),
+            react: (emoji) => sock.sendMessage(from, { react: { text: emoji, key: msg.key } })
+          });
+          if (handled) return; // Don't process as command if move was handled
+        }
+      }
+    } catch (e) {
+      // Silently ignore if tictactoe command doesn't exist or has errors
+    }
+    
+    
+    // Check if message starts with prefix
+    if (!body.startsWith(config.prefix)) return;
+    
+    // Parse command
+    const args = body.slice(config.prefix.length).trim().split(/\s+/);
+    const commandName = args.shift().toLowerCase();
+    
+    // Get command
+    const command = commands.get(commandName);
+    if (!command) return;
+    
+    // Check self mode (private mode) - only owner can use commands
+    if (config.selfMode && !isOwner(sender)) {
+      return;
+    }
+    
+    // Permission checks
+    if (command.ownerOnly && !isOwner(sender)) {
+      return sock.sendMessage(from, { text: config.messages.ownerOnly }, { quoted: msg });
+    }
+    
+    if (command.modOnly && !isMod(sender) && !isOwner(sender)) {
+      return sock.sendMessage(from, { text: '🔒 This command is only for moderators!' }, { quoted: msg });
+    }
+    
+    if (command.groupOnly && !isGroup) {
+      return sock.sendMessage(from, { text: config.messages.groupOnly }, { quoted: msg });
+    }
+    
+    if (command.privateOnly && isGroup) {
+      return sock.sendMessage(from, { text: config.messages.privateOnly }, { quoted: msg });
+    }
+    
+    if (command.adminOnly && !(await isAdmin(sock, sender, from, groupMetadata)) && !isOwner(sender)) {
+      return sock.sendMessage(from, { text: config.messages.adminOnly }, { quoted: msg });
+    }
+    
+    if (command.botAdminNeeded) {
+      const botIsAdmin = await isBotAdmin(sock, from, groupMetadata);
+      if (!botIsAdmin) {
+        return sock.sendMessage(from, { text: config.messages.botAdminNeeded }, { quoted: msg });
+      }
+    }
+    
+    // Auto-typing
+    if (config.autoTyping) {
+      await sock.sendPresenceUpdate('composing', from);
+    }
+    
+    // Execute command
+    console.log(`Executing command: ${commandName} from ${sender}`);
+    
+    await command.execute(sock, msg, args, {
+      from,
+      sender,
+      isGroup,
+      groupMetadata,
+      isOwner: isOwner(sender),
+      isAdmin: await isAdmin(sock, sender, from, groupMetadata),
+      isBotAdmin: await isBotAdmin(sock, from, groupMetadata),
+      isMod: isMod(sender),
+      reply: (text) => sock.sendMessage(from, { text }, { quoted: msg }),
+      react: (emoji) => sock.sendMessage(from, { react: { text: emoji, key: msg.key } })
+    });
+    
+  } catch (error) {
+    console.error('Error in message handler:', error);
+    
+    // Don't send error messages for rate limit errors
+    if (error.message && error.message.includes('rate-overlimit')) {
+      console.warn('⚠️ Rate limit reached. Skipping error message.');
+      return;
+    }
+    
+    try {
+      await sock.sendMessage(msg.key.remoteJid, { 
+        text: `${config.messages.error}\n\n${error.message}` 
+      }, { quoted: msg });
+    } catch (e) {
+      // Don't log rate limit errors when sending error messages
+      if (!e.message || !e.message.includes('rate-overlimit')) {
+        console.error('Error sending error message:', e);
+      }
+    }
+  }
+};
+
+// Group participant update handler
+const handleGroupUpdate = async (sock, update) => {
+  try {
+    const { id, participants, action } = update;
+    
+    // Validate group JID before processing
+    if (!id || !id.endsWith('@g.us')) {
+      return;
+    }
+    
+    const groupSettings = database.getGroupSettings(id);
+    
+    if (!groupSettings.welcome && !groupSettings.goodbye) return;
+    
+    const groupMetadata = await getGroupMetadata(sock, id);
+    if (!groupMetadata) return; // Skip if metadata unavailable (forbidden or error)
+    
+    // Helper to extract participant JID
+    const getParticipantJid = (participant) => {
+      if (typeof participant === 'string') {
+        return participant;
+      }
+      if (participant && participant.id) {
+        return participant.id;
+      }
+      if (participant && typeof participant === 'object') {
+        // Try to find JID in object
+        return participant.jid || participant.participant || null;
+      }
+      return null;
+    };
+    
+    for (const participant of participants) {
+      const participantJid = getParticipantJid(participant);
+      if (!participantJid) {
+        console.warn('Could not extract participant JID:', participant);
+        continue;
+      }
+      
+      const participantNumber = participantJid.split('@')[0];
+      
+      if (action === 'add' && groupSettings.welcome) {
+        try {
+          // Get user's display name - find participant using phoneNumber or JID
+          let displayName = participantNumber;
+          
+          // Try to find participant in group metadata
+          const participantInfo = groupMetadata.participants.find(p => {
+            const pId = p.id || p.jid || p.participant;
+            const pPhone = p.phoneNumber;
+            // Match by JID or phoneNumber
+            return pId === participantJid || 
+                   pId?.split('@')[0] === participantNumber ||
+                   pPhone === participantJid ||
+                   pPhone?.split('@')[0] === participantNumber;
+          });
+          
+          // Get phoneNumber JID to fetch contact name
+          let phoneJid = null;
+          if (participantInfo && participantInfo.phoneNumber) {
+            phoneJid = participantInfo.phoneNumber;
+          } else {
+            // Try to normalize participantJid to phoneNumber format
+            // If it's a LID, try to convert to phoneNumber
+            try {
+              const normalized = normalizeJidWithLid(participantJid);
+              if (normalized && normalized.includes('@s.whatsapp.net')) {
+                phoneJid = normalized;
+              }
+            } catch (e) {
+              // If normalization fails, try using participantJid directly if it's a valid JID
+              if (participantJid.includes('@s.whatsapp.net')) {
+                phoneJid = participantJid;
+              }
+            }
+          }
+          
+          // Try to get contact name from phoneNumber JID
+          if (phoneJid) {
+            try {
+              // Method 1: Try to get from contact store if available
+              if (sock.store && sock.store.contacts && sock.store.contacts[phoneJid]) {
+                const contact = sock.store.contacts[phoneJid];
+                if (contact.notify && contact.notify.trim() && !contact.notify.match(/^\d+$/)) {
+                  displayName = contact.notify.trim();
+                } else if (contact.name && contact.name.trim() && !contact.name.match(/^\d+$/)) {
+                  displayName = contact.name.trim();
+                }
+              }
+              
+              // Method 2: Try to fetch contact using onWhatsApp and then check store
+              if (displayName === participantNumber) {
+                try {
+                  await sock.onWhatsApp(phoneJid);
+                  
+                  // After onWhatsApp, check store again (might populate after check)
+                  if (sock.store && sock.store.contacts && sock.store.contacts[phoneJid]) {
+                    const contact = sock.store.contacts[phoneJid];
+                    if (contact.notify && contact.notify.trim() && !contact.notify.match(/^\d+$/)) {
+                      displayName = contact.notify.trim();
+                    }
+                  }
+                } catch (fetchError) {
+                  // Silently handle fetch errors
+                }
+              }
+            } catch (contactError) {
+              // Silently handle contact errors
+            }
+          }
+          
+          // Final fallback: use participantInfo.notify or name if available
+          if (displayName === participantNumber && participantInfo) {
+            if (participantInfo.notify && participantInfo.notify.trim() && !participantInfo.notify.match(/^\d+$/)) {
+              displayName = participantInfo.notify.trim();
+            } else if (participantInfo.name && participantInfo.name.trim() && !participantInfo.name.match(/^\d+$/)) {
+              displayName = participantInfo.name.trim();
+            }
+          }
+          
+          // Get user's profile picture URL
+          let profilePicUrl = '';
+          try {
+            profilePicUrl = await sock.profilePictureUrl(participantJid, 'image');
+          } catch (ppError) {
+            // If profile picture not available, use default avatar
+            profilePicUrl = 'https://img.pyrocdn.com/dbKUgahg.png';
+          }
+          
+          // Get group name and description
+          const groupName = groupMetadata.subject || 'the group';
+          const groupDesc = groupMetadata.desc || 'No description';
+          
+          // Get current time string
+          const now = new Date();
+          const timeString = now.toLocaleTimeString('en-US', { 
+            hour: '2-digit', 
+            minute: '2-digit',
+            hour12: true 
+          });
+          
+          // Create formatted welcome message
+          const welcomeMsg = `╭╼━≪•𝙽𝙴𝚆 𝙼𝙴𝙼𝙱𝙴𝚁•≫━╾╮\n┃𝚆𝙴𝙻𝙲𝙾𝙼𝙴: @${displayName} 👋\n┃Member count: #${groupMetadata.participants.length}\n┃𝚃𝙸𝙼𝙴: ${timeString}⏰\n╰━━━━━━━━━━━━━━━╯\n\n*@${displayName}* Welcome to *${groupName}*! 🎉\n*Group 𝙳𝙴𝚂𝙲𝚁𝙸𝙿𝚃𝙸𝙾𝙽*\n${groupDesc}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ${config.botName}*`;
+          
+          // Construct API URL for welcome image
+          const apiUrl = `https://api.some-random-api.com/welcome/img/7/gaming4?type=join&textcolor=white&username=${encodeURIComponent(displayName)}&guildName=${encodeURIComponent(groupName)}&memberCount=${groupMetadata.participants.length}&avatar=${encodeURIComponent(profilePicUrl)}`;
+          
+          // Download the welcome image
+          const imageResponse = await axios.get(apiUrl, { responseType: 'arraybuffer' });
+          const imageBuffer = Buffer.from(imageResponse.data);
+          
+          // Send the welcome image with formatted caption
+          await sock.sendMessage(id, { 
+            image: imageBuffer,
+            caption: welcomeMsg,
+            mentions: [participantJid] 
+          });
+        } catch (welcomeError) {
+          // Fallback to text message if image generation fails
+          console.error('Welcome image error:', welcomeError);
+          let message = groupSettings.welcomeMessage || 'Welcome @user to @group! 👋\nEnjoy your stay!';
+          message = message.replace('@user', `@${participantNumber}`);
+          message = message.replace('@group', groupMetadata.subject || 'the group');
+          
+          await sock.sendMessage(id, { 
+            text: message, 
+            mentions: [participantJid] 
+          });
+        }
+      } else if (action === 'remove' && groupSettings.goodbye) {
+        try {
+          // Get user's display name - find participant using phoneNumber or JID
+          let displayName = participantNumber;
+          
+          // Try to find participant in group metadata (before they left)
+          const participantInfo = groupMetadata.participants.find(p => {
+            const pId = p.id || p.jid || p.participant;
+            const pPhone = p.phoneNumber;
+            // Match by JID or phoneNumber
+            return pId === participantJid || 
+                   pId?.split('@')[0] === participantNumber ||
+                   pPhone === participantJid ||
+                   pPhone?.split('@')[0] === participantNumber;
+          });
+          
+          // Get phoneNumber JID to fetch contact name
+          let phoneJid = null;
+          if (participantInfo && participantInfo.phoneNumber) {
+            phoneJid = participantInfo.phoneNumber;
+          } else {
+            // Try to normalize participantJid to phoneNumber format
+            try {
+              const normalized = normalizeJidWithLid(participantJid);
+              if (normalized && normalized.includes('@s.whatsapp.net')) {
+                phoneJid = normalized;
+              }
+            } catch (e) {
+              if (participantJid.includes('@s.whatsapp.net')) {
+                phoneJid = participantJid;
+              }
+            }
+          }
+          
+          // Try to get contact name from phoneNumber JID
+          if (phoneJid) {
+            try {
+              // Method 1: Try to get from contact store if available
+              if (sock.store && sock.store.contacts && sock.store.contacts[phoneJid]) {
+                const contact = sock.store.contacts[phoneJid];
+                if (contact.notify && contact.notify.trim() && !contact.notify.match(/^\d+$/)) {
+                  displayName = contact.notify.trim();
+                } else if (contact.name && contact.name.trim() && !contact.name.match(/^\d+$/)) {
+                  displayName = contact.name.trim();
+                }
+              }
+              
+              // Method 2: Try to fetch contact using onWhatsApp and then check store
+              if (displayName === participantNumber) {
+                try {
+                  await sock.onWhatsApp(phoneJid);
+                  
+                  // After onWhatsApp, check store again
+                  if (sock.store && sock.store.contacts && sock.store.contacts[phoneJid]) {
+                    const contact = sock.store.contacts[phoneJid];
+                    if (contact.notify && contact.notify.trim() && !contact.notify.match(/^\d+$/)) {
+                      displayName = contact.notify.trim();
+                    }
+                  }
+                } catch (fetchError) {
+                  // Silently handle fetch errors
+                }
+              }
+            } catch (contactError) {
+              // Silently handle contact errors
+            }
+          }
+          
+          // Final fallback: use participantInfo.notify or name if available
+          if (displayName === participantNumber && participantInfo) {
+            if (participantInfo.notify && participantInfo.notify.trim() && !participantInfo.notify.match(/^\d+$/)) {
+              displayName = participantInfo.notify.trim();
+            } else if (participantInfo.name &
                     
