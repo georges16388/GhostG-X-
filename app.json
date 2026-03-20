@@ -1,0 +1,25 @@
+{
+  "name": "GhostG-X",
+  "description": "WhatsApp bot (Baileys)",
+  "repository": "",
+  "keywords": ["whatsapp", "baileys", "bot", "node"],
+  "buildpacks": [
+    {
+      "url": "https://github.com/heroku/heroku-buildpack-nodejs.git"
+    }
+  ],
+    "env": {
+    "SESSION_ID": {
+      "description": "Laisse vide si tu utilises le numéro de téléphone.",
+      "required": false
+    },
+    "OWNER_NUMBER": {
+      "description": "Ton numéro WhatsApp (ex: 226XXXXXXXX)",
+      "required": true
+    },
+    "PAIRING_CODE": {
+      "description": "Mettre 'true' pour recevoir un code de jumelage sur ton téléphone.",
+      "required": false,
+      "value": "true"
+    }
+  }
