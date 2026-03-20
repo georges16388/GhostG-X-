@@ -100,6 +100,8 @@ module.exports = {
       github: 'https://github.com/georges16388/GhostG-X-/',
       WhatsApp group:
 'https://chat.whatsapp.com/BEYGvU5LnR13lVBpU9ypgK?mode=gi_t'
-    }
+    WhatsApp channel:
+'https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c'
+}
 };
   
