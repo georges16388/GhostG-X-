@@ -4,7 +4,7 @@
 
 module.exports = {
     // Bot Owner Configuration
-    ownerNumber: ['226XXXXXXXX','226XXXX'], // Add your number without + or spaces (e.g., 22651622652)
+    ownerNumber: ['226XXXXXXXX','226XXXXXXX'], // Add your number without + or spaces (e.g., 22651622652)
     ownerName: ['','ᴘʜᴀɴᴛᴏᴍ-x'], // Owner names corresponding to ownerNumber array
     
     // Bot Configuration
@@ -98,8 +98,8 @@ module.exports = {
     // Social Links (optional)
     social: {
       github: 'https://github.com/georges16388/GhostG-X-/',
-      instagram: 'https://instagram.com/yourusername',
-      youtube: 'http://youtube.com/@mr_unique_hacker'
+      WhatsApp group:
+''
     }
 };
   
