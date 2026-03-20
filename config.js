@@ -4,7 +4,7 @@
 
 module.exports = {
     // Bot Owner Configuration
-    ownerNumber: ['22507XXXXXXXX','22607xxxx'], // Add your number without + or spaces (e.g., 22651622652)
+    ownerNumber: ['226XXXXXXXX','226XXXX'], // Add your number without + or spaces (e.g., 22651622652)
     ownerName: ['','ᴘʜᴀɴᴛᴏᴍ-x'], // Owner names corresponding to ownerNumber array
     
     // Bot Configuration
@@ -41,9 +41,25 @@ module.exports = {
       antigroupmention: false, // Anti-group mention feature
       antigroupmentionAction: 'delete', // 'delete', 'kick'
       welcome: false,
-      welcomeMessage: '╭╼━≪•𝙽𝙴𝚆 𝙼𝙴𝙼𝙱𝙴𝚁•≫━╾╮\n┃𝚆𝙴𝙻𝙲𝙾𝙼𝙴: @user 👋\n┃Member count: #memberCount\n┃𝚃𝙸𝙼𝙴: time⏰\n╰━━━━━━━━━━━━━━━╯\n\n*@user* Welcome to *@group*! 🎉\n*Group 𝙳𝙴𝚂𝙲𝚁𝙸𝙿𝚃𝙸𝙾𝙽*\ngroupDesc\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ botName*',
+      welcomeMessage:`╭╼━≪• 𝙽𝙴𝚆 ᴍᴇᴍʙᴇʀ •≫━╾╮
+┃ ᴡᴇʟᴄᴏᴍᴇ : @user 👋
+┃ ᴍᴇᴍʙᴇʀ ᴄᴏᴜɴᴛ : #memberCount
+┃ ᴛɪᴍᴇ : time ⏰
+╰━━━━━━━━━━━━━━━╯
+
+*╭━〔 👋 ᴡᴇʟᴄᴏᴍᴇ 〕━⬣*
+┃ Hey @user,
+┃ bienvenue dans *@group*! 🎉
+┃ Lis les règles et sois actif 💪
+*╰━━━━━━━━━━━━━━━⬣*
+
+┏▣ ◈ *ɢʀᴏᴜᴘ ᴅᴇꜱᴄʀɪᴘᴛɪᴏɴ* ◈
+┃ groupDesc || "No description set."
+┗▣
+
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ${config.botName}*`,
       goodbye: false,
-      goodbyeMessage: 'Goodbye @user 👋 We will never miss you!',
+      goodbyeMessage: 'Goodbye @user 👋 Tu ne nous manquera jamais !',
       antiSpam: false,
       antidelete: false,
       nsfw: false,
@@ -81,7 +97,7 @@ module.exports = {
     
     // Social Links (optional)
     social: {
-      github: 'https://github.com/mruniquehacker',
+      github: 'https://github.com/georges16388/GhostG-X-/',
       instagram: 'https://instagram.com/yourusername',
       youtube: 'http://youtube.com/@mr_unique_hacker'
     }
