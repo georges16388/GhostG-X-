@@ -9,7 +9,7 @@ const { writeExifVid } = require('../../utils/exif');
 module.exports = {
   name: 'attp',
   aliases: ['ttp', 'sante'],
-  category: 'general',
+  category: 'essentials',
   description: 'Crée un sticker animé à partir d\'un texte.',
   usage: '<texte>',
   
