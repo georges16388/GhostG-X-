@@ -1,12 +1,25 @@
 /**
  * ɢʜᴏꜱᴛɢ-x ᴍᴅ - ᴍᴀɪɴ ᴇɴᴛʀʏ ᴘᴏɪɴᴛ (ᴘʀᴇsᴛɪɢᴇ ᴛᴜʀʙᴏ)
- * Final Version: Ultra-Fast, Stable & Full Design
- * ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
-// 1. DÉCLARATION UNIQUE ET GLOBALE (Turbo P-Queue)
-const PQueue = require('p-queue');
-const queue = new PQueue({ concurrency: 1 });
+// --- FIX P-QUEUE (REPLACE LES ANCIENNES LIGNES PAR ÇA) ---
+let queue;
+(async () => {
+    try {
+        const PQueue = require('p-queue');
+        // Si c'est la version 6.x.x
+        queue = new (PQueue.default || PQueue)({ concurrency: 1 });
+    } catch {
+        // Si c'est la version 7.x.x+ (ESM)
+        const { default: PQueueLib } = await import('p-queue');
+        queue = new PQueueLib({ concurrency: 1 });
+    }
+})();
+// --------------------------------------------------------
+
+process.env.PUPPETEER_SKIP_DOWNLOAD = 'true';
+// ... reste de ton code
+
 
 process.env.PUPPETEER_SKIP_DOWNLOAD = 'true';
 process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = 'true';
