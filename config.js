@@ -44,8 +44,8 @@ module.exports = {
 ┃ ᴛɪᴍᴇ : #time ⏰
 ╰━━━━━━━━━━━━━━━╯
 > ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏꜱᴛɢ x`,
-      goodbye: false,
-      goodbyeMessage: 'Goodbye @user 👋 Tu ne nous manquera jamais !',
+      goodbye: true,
+      goodbyeMessage: 'Aurevoir@user 👋 Tu ne nous manquera jamais !',
       antiSpam: false,
       antidelete: false,
       nsfw: false,
