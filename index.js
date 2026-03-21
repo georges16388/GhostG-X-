@@ -1,6 +1,7 @@
 /**
- * ɢʜᴏꜱᴛɢ-x ᴍᴅ - ᴍᴀɪɴ ᴇɴᴛʀʏ ᴘᴏɪɴᴛ (ᴘʀᴇsᴛɪɢᴇ ᴇᴅɪᴛɪᴏɴ)
- * Optimized for Pairing Code, Stability & Branding
+ * ɢʜᴏꜱᴛɢ-x ᴍᴅ - ᴍᴀɪɴ ᴇɴᴛʀʏ ᴘᴏɪɴᴛ (ᴘʀᴇsᴛɪɢᴇ ᴛᴜʀʙᴏ)
+ * Final Version: Ultra-Fast, Stable & Real Mentions
+ * ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
 process.env.PUPPETEER_SKIP_DOWNLOAD = 'true';
@@ -19,7 +20,7 @@ const {
   DisconnectReason,
   Browsers,
   fetchLatestBaileysVersion,
-  makeCacheableSignalKeyStore // Crucial pour la stabilité des sessions
+  makeCacheableSignalKeyStore
 } = require('@whiskeysockets/baileys');
 const qrcode = require('qrcode-terminal');
 const config = require('./config');
@@ -27,10 +28,14 @@ const handler = require('./handler');
 const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
+const PQueue = require('p-queue');
+
+// --- SYSTÈME DE RAPIDITÉ (FILE D'ATTENTE) ---
+const queue = new PQueue({ concurrency: 1 }); // Traite les messages 1 par 1 pour éviter le lag
 
 const store = {
   messages: new Map(),
-  maxPerChat: 20,
+  maxPerChat: 10, 
   bind: (ev) => {
     ev.on('messages.upsert', ({ messages }) => {
       for (const msg of messages) {
@@ -53,7 +58,7 @@ let isReconnecting = false;
 async function startBot() {
   const sessionFolder = `./${config.sessionName}`;
 
-  // Restauration Session ID
+  // Restauration Session ID (Base64)
   if (config.sessionID && (config.sessionID.startsWith('GhostG-X!') || config.sessionID.startsWith('KnightBot!'))) {
     try {
       const b64data = config.sessionID.split('!')[1];
@@ -112,22 +117,24 @@ async function startBot() {
       const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
       if (shouldReconnect && !isReconnecting) {
         isReconnecting = true;
-        console.log(`🔄 Reconnexion en cours...`);
-        setTimeout(() => { startBot(); isReconnecting = false; }, 5000);
+        console.log(`🔄 Reconnexion rapide en cours...`);
+        setTimeout(() => { startBot(); isReconnecting = false; }, 3000);
       }
     } else if (connection === 'open') {
-      console.log('\n✅ ɢʜᴏꜱᴛɢ-x ᴄᴏɴɴᴇᴄᴛᴇ́ !');
+      console.log('\n✅ ɢʜᴏꜱᴛɢ-x ᴄᴏɴɴᴇᴄᴛᴇ́ ᴇᴛ ᴏᴘᴛɪᴍɪsé !');
       handler.initializeAntiCall(sock);
 
       try {
         const { loadCommands } = require('./utils/commandLoader');
         const totalCmds = loadCommands().size || "352";
-        const supremeJid = config.supremeNumber.replace(/\D/g, '') + '@s.whatsapp.net';
+        
+        // --- PRÉPARATION DE LA MENTION CLIQUEABLE ---
+        const supremeNum = config.supremeNumber.replace(/\D/g, '');
+        const supremeJid = supremeNum + '@s.whatsapp.net';
 
-        // --- MESSAGE ALIVE AVEC BADGE NEWSLETTER ---
         const welcomeCaption = `╭╼━≪• *ɢʜᴏsᴛɢ-x ɪs ᴀʟɪᴠᴇ* •≫━╾╮
 ┃ *sᴛᴀᴛᴜᴛ* : 🟢 ᴏɴʟɪɴᴇ
-┃ *ᴍᴀɪᴛʀᴇ* : @${sock.user.name || 'ɢʜᴏꜱᴛɢ-x'}
+┃ *ᴍᴀɪᴛʀᴇ* : @${supremeNum}
 ┃ *ᴘʀᴇғɪxᴇ* : [ ${config.prefix || '.'} ]
 ┃ *ᴄᴏᴍᴍᴀɴᴅᴇs* : ${totalCmds} ғɪʟᴇs
 ┃ *ᴍᴏᴅᴇ* : ${config.selfMode ? '🔒 ᴘʀɪᴠé' : '🌐 ᴘᴜʙʟɪᴄ'}
@@ -152,10 +159,9 @@ https://wa.me/22651622652
           image: { url: 'https://files.catbox.moe/2fmwpu.jpg' },
           caption: welcomeCaption,
           contextInfo: {
-            mentionedJid: [supremeJid],
+            mentionedJid: [supremeJid], // Rends la mention réelle et cliquable
             forwardingScore: 999,
             isForwarded: true,
-            // Configuration du badge Newsletter "Voir la chaîne"
             forwardedNewsletterMessageInfo: {
               newsletterJid: '120363425540434745@newsletter',
               newsletterName: "-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ",
@@ -170,11 +176,17 @@ https://wa.me/22651622652
 
   sock.ev.on('creds.update', saveCreds);
 
+  // --- TRAITEMENT TURBO ---
   sock.ev.on('messages.upsert', ({ messages, type }) => {
     if (type !== 'notify') return;
     for (const msg of messages) {
       if (!msg.message) continue;
-      handler.handleMessage(sock, msg).catch(err => console.error("🔥 Error:", err));
+      
+      // Ajout à la file d'attente pour ne jamais ralentir
+      queue.add(() => 
+        handler.handleMessage(sock, msg)
+        .catch(err => console.error("🔥 Error:", err))
+      );
     }
   });
 
