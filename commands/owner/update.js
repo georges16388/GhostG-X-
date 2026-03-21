@@ -1,5 +1,5 @@
 /**
- * System Updater - AGM Global Core
+ * System Updater - AGM Global Core (Ultra-Stable Edition)
  * Source: https://github.com/georges16388/GhostG-X-
  * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
@@ -12,9 +12,9 @@ const http = require('http');
 const config = require('../../config');
 
 // --- DESIGN AGM ---
-const AGM_UPDATE = (status, files = 0) => `╭╼━≪• ᴀɢᴍ sʏsᴛᴇᴍ ᴜᴘᴅᴀᴛᴇ •≫━╾╮
+const AGM_UPDATE = (status, info = "") => `╭╼━≪• ᴀɢᴍ sʏsᴛᴇᴍ ᴜᴘᴅᴀᴛᴇ •≫━╾╮
 ┃ sᴛᴀᴛᴜs : ${status} 🔄
-┃ ғɪʟᴇs : ${files} 📁
+┃ ɪɴғᴏ : ${info} 📁
 ┃ sᴏᴜʀᴄᴇ : ɢɪᴛʜᴜʙ/ᴍᴀɪɴ 🌐
 ╰━━━━━━━━━━━━━━━╯
 > ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
@@ -23,7 +23,7 @@ const AGM_UPDATE = (status, files = 0) => `╭╼━≪• ᴀɢᴍ sʏsᴛᴇ�
 function run(cmd) {
   return new Promise((resolve, reject) => {
     exec(cmd, { windowsHide: true }, (err, stdout, stderr) => {
-      if (err) return reject(new Error((stderr || stdout || err.message || '').toString()));
+      if (err) return reject(new Error((stderr || stdout || '').toString()));
       resolve((stdout || '').toString());
     });
   });
@@ -45,28 +45,17 @@ function downloadFile(url, dest) {
   });
 }
 
-// --- UTILS : EXTRACT ZIP ---
-async function extractZip(zipPath, outDir) {
-  if (process.platform === 'win32') {
-    await run(`powershell -Command "Expand-Archive -Path '${zipPath}' -DestinationPath '${outDir}' -Force"`);
-  } else {
-    try { await run(`unzip -o '${zipPath}' -d '${outDir}'`); }
-    catch { await run(`7z x -y '${zipPath}' -o'${outDir}'`); }
-  }
-}
-
 // --- UTILS : RECURSIVE COPY ---
-function copyRecursive(src, dest, ignore = [], copied = []) {
+function copyRecursive(src, dest, ignore = []) {
   if (!fs.existsSync(dest)) fs.mkdirSync(dest, { recursive: true });
   for (const entry of fs.readdirSync(src)) {
     if (ignore.includes(entry)) continue;
     const s = path.join(src, entry);
     const d = path.join(dest, entry);
     if (fs.lstatSync(s).isDirectory()) {
-      copyRecursive(s, d, ignore, copied);
+      copyRecursive(s, d, ignore);
     } else {
       fs.copyFileSync(s, d);
-      copied.push(entry);
     }
   }
 }
@@ -75,57 +64,64 @@ module.exports = {
   name: 'update',
   aliases: ['upgrade', 'patch'],
   category: 'owner',
-  description: 'Mettre à jour le bot depuis le repo GitHub officiel',
+  description: 'Mise à jour complète avec installation des dépendances.',
   usage: '.update',
   ownerOnly: true,
 
   async execute(sock, msg, args, extra) {
-    const zipUrl = args[0] || config.updateZipUrl;
-
-    if (!zipUrl) {
-      return extra.reply('❌ *ᴀᴜᴄᴜɴᴇ ᴜʀʟ ᴅᴇ ᴍɪsᴇ à ᴊᴏᴜʀ ᴅéғɪɴɪᴇ ᴅᴀɴs ᴄᴏɴғɪɢ.ᴊs*');
-    }
+    const zipUrl = args[0] || config.updateZipUrl || "https://github.com/georges16388/GhostG-X-/archive/refs/heads/main.zip";
+    const from = extra.from;
 
     try {
-      await sock.sendMessage(extra.from, { react: { text: '📡', key: msg.key } });
+      await sock.sendMessage(from, { react: { text: '📡', key: msg.key } });
       await extra.reply(AGM_UPDATE('🟠 ᴅᴏᴡɴʟᴏᴀᴅɪɴɢ...'));
 
       const tmpDir = path.join(process.cwd(), 'temp_update');
-      if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir);
-      
+      if (fs.existsSync(tmpDir)) fs.rmSync(tmpDir, { recursive: true, force: true });
+      fs.mkdirSync(tmpDir);
+
       const zipPath = path.join(tmpDir, 'update.zip');
       const extractTo = path.join(tmpDir, 'extract');
 
-      // 1. Téléchargement
+      // 1. Téléchargement du ZIP
       await downloadFile(zipUrl, zipPath);
 
       // 2. Extraction
-      if (fs.existsSync(extractTo)) fs.rmSync(extractTo, { recursive: true, force: true });
-      await extractZip(zipPath, extractTo);
+      await run(process.platform === 'win32' 
+        ? `powershell -Command "Expand-Archive -Path '${zipPath}' -DestinationPath '${extractTo}' -Force"`
+        : `unzip -o '${zipPath}' -d '${extractTo}'`
+      );
 
-      // 3. Identification du dossier racine (GitHub rajoute souvent un nom de dossier)
-      const entries = fs.readdirSync(extractTo);
+      // 3. Identification du dossier GitHub (souvent GhostG-X-main)
+      const entries = fs.readdirSync(extractTo).filter(e => !e.startsWith('.'));
       const srcRoot = entries.length === 1 ? path.join(extractTo, entries[0]) : extractTo;
 
-      // 4. Copie des fichiers (en ignorant les fichiers sensibles)
-      const ignore = ['node_modules', '.git', 'session', 'tmp', 'temp', 'database', 'config.js', '.env'];
-      const copied = [];
-      copyRecursive(srcRoot, process.cwd(), ignore, copied);
+      // 4. Copie Sécurisée
+      const ignore = ['node_modules', '.git', 'session', 'GhostG-X-Session', 'database', 'config.js', '.env'];
+      copyRecursive(srcRoot, process.cwd(), ignore);
 
-      // 5. Nettoyage
+      // 5. CRITIQUE : Installation des nouvelles dépendances (npm install)
+      await extra.reply(AGM_UPDATE('🔵 ɪɴsᴛᴀʟʟɪɴɢ...', 'ɴᴘᴍ ᴘᴀᴄᴋᴀɢᴇs'));
+      await run('npm install');
+
+      // 6. Nettoyage
       fs.rmSync(tmpDir, { recursive: true, force: true });
 
-      await sock.sendMessage(extra.from, { react: { text: '✅', key: msg.key } });
-      await extra.reply(AGM_UPDATE('🟢 sᴜᴄᴄᴇss', copied.length));
+      await sock.sendMessage(from, { react: { text: '✅', key: msg.key } });
+      await extra.reply(AGM_UPDATE('🟢 sᴜᴄᴄᴇss', 'ʀᴇsᴛᴀʀᴛɪɴɢ...'));
 
-      // 6. Redémarrage
-      setTimeout(async () => {
-        try { await run('pm2 restart all'); } catch { process.exit(0); }
-      }, 2000);
+      // 7. Redémarrage Intelligent
+      setTimeout(() => {
+        if (process.env.PM2_HOME || process.env.PM2_JSON) {
+          run('pm2 restart all').catch(() => process.exit(0));
+        } else {
+          process.exit(0);
+        }
+      }, 3000);
 
     } catch (error) {
       console.error('Update Error:', error);
-      await extra.reply(`❌ *éᴄʜᴇᴄ sʏsᴛᴇ̀ᴍᴇ :* ${error.message}`);
+      await extra.reply(AGM_UPDATE('🔴 ᴇʀʀᴏʀ', error.message.substring(0, 100)));
     }
   }
 };
