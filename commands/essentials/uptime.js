@@ -22,8 +22,8 @@ const AGM_DESIGN = (uptime, version) => `╭╼━≪• sʏsᴛᴇᴍ ᴀʟɪ�
 ┃ ᴜᴘᴛɪᴍᴇ : ${uptime} ⏱️
 ┃ ᴠᴇʀsɪᴏɴ : ${version} 🧬
 ┃ sᴘᴇᴇᴅ : 🛡️ ᴇʟɪᴛᴇ
->┃ ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗
-╰━━━━━━━━━━━━━━━╯`;
+╰━━━━━━━━━━━━━━━╯
+> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
 
 module.exports = {
   name: 'uptime',
