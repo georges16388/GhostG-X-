@@ -70,7 +70,7 @@ const handleMessage = async (sock, msg) => {
 
             // 🔥 DEBUG SI COMMANDE INTROUVABLE
             if (!command) {
-                console.log("❌ Commande inconnue:", commandName);
+                console.log("❌", toSmallCaps("commande inconnue") + ":", toSmallCaps(commandName));
                 return;
             }
 
