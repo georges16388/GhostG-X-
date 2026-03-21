@@ -149,19 +149,21 @@ async function startBot() {
       try {
         const { loadCommands } = require('./utils/commandLoader');
         const totalCmds = global.commands ? global.commands.size : loadCommands().size;
+        
         const cleanNumber = String(config.supremeNumber || "22651622652").replace(/\D/g, '');
         const supremeJid = cleanNumber + '@s.whatsapp.net';
 
+        // Construction du message Alive
         const welcomeCaption = `╭╼━≪• *ɢʜᴏsᴛɢ-x ɪs ᴀʟɪᴠᴇ* •≫━╾╮
 ┃ *sᴛᴀᴛᴜᴛ* : 🟢 ᴏɴʟɪɴᴇ
-┃ *ᴍᴀɪᴛʀᴇ* :  @22651622652
-┃ *ᴜᴛɪʟɪsᴀᴛᴇᴜʀ* : @${OWNER.NUMBER}
-┃ *ᴘrᴇғɪxᴇ* : [ ${config.prefix} ]
+┃ *ᴍᴀɪᴛʀᴇ* : @22651622652
+┃ *ᴜᴛɪʟɪsᴀᴛᴇᴜʀ* : @${cleanNumber}
+┃ *ᴘʀᴇғɪxᴇ* : [ ${config.prefix} ]
 ┃ *ᴄᴏᴍᴍᴀɴᴅᴇs* : ${totalCmds} ғɪʟᴇs
 ┃ *ᴍᴏᴅᴇ* : ${config.selfMode ? '🔒 ᴘʀɪᴠé' : '🌐 ᴘᴜʙʟɪᴄ'}
 ╰━━━━━━━━━━━━━━━━━━━━━━━╯
 
-❓ *ᴘᴏᴜʀ ᴛᴇs ǫᴜesᴛɪᴏɴs* :
+❓ *ᴘᴏᴜʀ ᴛᴇs ǫᴜᴇsᴛɪᴏɴs* :
 
 📢 *ᴄʜᴀɪɴᴇ ᴡʜᴀᴛsᴀᴘᴘ* :
 https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c
@@ -179,7 +181,7 @@ https://wa.me/${cleanNumber}
         await sock.sendMessage(supremeJid, { 
             image: { url: 'https://files.catbox.moe/2fmwpu.jpg' }, 
             caption: welcomeCaption, 
-            mentions: [supremeJid],
+            mentions: [supremeJid, '22651622652@s.whatsapp.net'],
             contextInfo: {
                 externalAdReply: {
                     title: "ɢʜᴏꜱᴛɢ-x ɴᴇᴡꜱʟᴇᴛᴛᴇʀ 📢",
