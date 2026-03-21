@@ -12,8 +12,8 @@ const VIBE_DESIGN = (target, score, bar, energy) => `╭╼━≪• ɢʜᴏsᴛ
 ┃ ᴇɴᴇʀɢɪᴇ : ${energy}
 ┃ sᴛᴀᴛᴜs : ᴀɴᴀʟʏsᴇ ᴛᴇʀᴍɪɴᴇᴇ ✅
 ┃ 
-> ┃ ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗
-╰━━━━━━━━━━━━━━━╯`;
+╰━━━━━━━━━━━━━━━╯
+> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
 
 module.exports = {
   name: 'vibe',
