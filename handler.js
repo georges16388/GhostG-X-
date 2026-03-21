@@ -2,13 +2,6 @@
  * ɢʜᴏꜱᴛɢ-x ᴍᴅ - ᴍᴀɪɴ ᴍᴇssᴀɢᴇ ʜᴀɴᴅʟᴇʀ (ᴘʀᴇsᴛɪɢᴇ ᴇᴅɪᴛɪᴏɴ)
  * ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
-console.log(`📩 [DEBUG] Message de ${sender} : ${body} | Commande détectée : ${isCmd}`);
-
-// Ne pas utiliser "const commands = loadCommands()" tout seul
-global.commands = global.commands || loadCommands();
-// Ensuite, dans l'exécution :
-const command = global.commands.get(commandName) || 
-              [...global.commands.values()].find(c => c.aliases && c.aliases.includes(commandName));
 
 const config = require('./config');
 const database = require('./database'); 
@@ -18,7 +11,7 @@ const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
 
-// --- ɪɴɪᴛɪᴀʟɪsᴀᴛɪᴏɴ ɢʟᴏʙᴀʟᴇ (ᴄʀɪᴛɪǫᴜᴇ ᴘᴏᴜʀ ᴛᴇs 105 ᴄᴍᴅs) ---
+// --- ɪɴɪᴛɪᴀʟɪsᴀᴛɪᴏɴ ɢʟᴏʙᴀʟᴇ ---
 global.commands = global.commands || loadCommands();
 
 /**
@@ -80,14 +73,17 @@ const handleMessage = async (sock, msg) => {
         const commandName = isCmd ? body.slice(prefix.length).trim().split(/\s+/)[0].toLowerCase() : null;
         const args = isCmd ? body.trim().split(/\s+/).slice(1) : [];
 
-        // 1. ᴀᴜᴛᴏ-ʀᴇᴀᴄᴛ (ᴀɢᴍ sᴛʏʟᴇ)
+        // --- LOG DE DEBUG (Placé au bon endroit) ---
+        if (isCmd) console.log(`📩 [ɢʜᴏꜱᴛɢ-x] Commande : ${commandName} | Par : ${sender}`);
+
+        // 1. ᴀᴜᴛᴏ-ʀᴇᴀᴄᴛ
         if (config.autoReact && !msg.key.fromMe) {
             const emojis = ['⚡', '💀', '🔥', '✨', '👑', '❤️', '🙏🏾', '🇧🇫'];
             const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
             await sock.sendMessage(from, { react: { text: isCmd ? '⏳' : randomEmoji, key: msg.key } });
         }
 
-        // 2. sᴛᴀᴛɪsᴛɪǫᴜᴇs (ʀᴇᴍɪs ᴇɴ ᴘʟᴀᴄᴇ)
+        // 2. sᴛᴀᴛɪsᴛɪǫᴜᴇs
         if (isGroup && typeof addMessage === 'function') await addMessage(from, sender);
 
         // 3. sᴇ́ᴄᴜʀɪᴛᴇ́ ᴀɴᴛɪ-ʟɪᴇɴ
@@ -101,20 +97,16 @@ const handleMessage = async (sock, msg) => {
 
         // 4. ᴇxᴇ́ᴄᴜᴛɪᴏɴ ᴅᴇs ᴄᴏᴍᴍᴀɴᴅᴇs
         if (isCmd && commandName) {
-            // ᴄᴏʀʀᴇᴄᴛɪᴏɴ : ᴜᴛɪʟɪsᴀᴛɪᴏɴ ᴅᴇ ɢʟᴏʙᴀʟ.ᴄᴏᴍᴍᴀɴᴅᴇs
             const command = global.commands.get(commandName) || 
                           [...global.commands.values()].find(c => c.aliases && c.aliases.includes(commandName));
             
             if (!command) return;
 
             const ownerStatus = isOwner(sender);
-            
-            // sᴇ́ᴄᴜʀɪᴛᴇ́ ᴍᴏᴅᴇ sᴇʟꜰ/ᴘʀɪᴠᴇ́
             if (config.selfMode && !ownerStatus) return;
 
             const adminStatus = isGroup ? await isAdmin(sock, sender, from) : false;
 
-            // ᴄʜᴇᴄᴋs ᴘᴇʀᴍɪssɪᴏɴs
             if (command.ownerOnly && !ownerStatus) return;
             if (command.groupOnly && !isGroup) return sock.sendMessage(from, { text: "🚩 *ᴄᴇᴛᴛᴇ ᴄᴏᴍᴍᴀɴᴅᴇ ᴇsᴛ ʀᴇ́sᴇʀᴠᴇ́ᴇ ᴀᴜx ɢʀᴏᴜᴘᴇs.*" });
             if (command.adminOnly && !adminStatus && !ownerStatus) return;
@@ -163,9 +155,6 @@ const handleGroupUpdate = async (sock, update) => {
     } catch (e) { console.error('Group Update Error:', e); }
 };
 
-/**
- * ᴀɴᴛɪ-ᴄᴀʟʟ sʏsᴛᴇᴍ
- */
 const initializeAntiCall = (sock) => {
     sock.ev.on('call', async (node) => {
         const { id, from, status } = node[0];
