@@ -126,5 +126,16 @@ const handleGroupUpdate = async (sock, update) => {
         }
     }
 };
+// Fonction pour bloquer les appels automatiquement
+const initializeAntiCall = (sock) => {
+    sock.ev.on('call', async (node) => {
+        const { id, from, status } = node[0];
+        if (status === 'offer') {
+            await sock.rejectCall(id, from);
+            await sock.sendMessage(from, { text: "🚫 *ʟᴇꜱ ᴀᴘᴘᴇʟꜱ ꜱᴏɴᴛ ɪɴᴛᴇʀᴅɪᴛꜱ. ᴠᴏᴜꜱ ᴀᴠᴇᴢ ᴇ́ᴛᴇ́ ʙʟᴏQᴜᴇ́.*" });
+            await sock.updateBlockStatus(from, "block");
+        }
+    });
+};
 
 module.exports = { handleMessage, handleGroupUpdate, isOwner };
