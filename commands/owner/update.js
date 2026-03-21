@@ -16,8 +16,8 @@ const AGM_UPDATE = (status, files = 0) => `╭╼━≪• ᴀɢᴍ sʏsᴛᴇ�
 ┃ sᴛᴀᴛᴜs : ${status} 🔄
 ┃ ғɪʟᴇs : ${files} 📁
 ┃ sᴏᴜʀᴄᴇ : ɢɪᴛʜᴜʙ/ᴍᴀɪɴ 🌐
->┃ ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗
-╰━━━━━━━━━━━━━━━╯`;
+╰━━━━━━━━━━━━━━━╯
+> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
 
 // --- UTILS : RUN COMMAND ---
 function run(cmd) {
