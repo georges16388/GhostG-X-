@@ -1,6 +1,6 @@
 /**
  * Menu Command - GhostG-X Prestige Edition V5 (Gratitude Edition)
- * Focus: Clean Design + Native WhatsApp Channel Button
+ * Focus: Clean Design + Native WhatsApp Channel Button + Real Mentions
  */
 
 const config = require('../../config');
@@ -20,7 +20,7 @@ module.exports = {
   name: 'menu',
   aliases: ['help', 'h'],
   category: 'essentials',
-  description: 'Menu GhostG-X avec bouton "Voir la chaîne" natif.',
+  description: 'Menu GhostG-X avec mention réelle et bouton de chaîne.',
   usage: '.menu',
 
   async execute(sock, msg, args, extra) {
@@ -41,12 +41,16 @@ module.exports = {
       const prefix = config.prefix || '.';
       const botName = "ɢʜᴏsᴛɢ-x";
       const ownerNumber = "22651622652";
-      const ownerName = toStyledCaps(config.ownerName || "Truth Devices"); 
+      
+      // --- LOGIQUE DE MENTION RÉELLE ---
+      // On récupère le numéro de celui qui tape la commande sans le "@s.whatsapp.net"
+      const senderNumber = extra.sender.split('@')[0];
 
       let menuText = `╭╼━≪• *${botName}* •≫━╾╮\n`;
       menuText += `┃ *${toStyledCaps('statut')}* : 🟢 ᴏɴʟɪɴᴇ\n`;
-      menuText += `┃ *${toStyledCaps('utilisateur')}* : @${ownerName}\n`;
-      menuText += `┃ *${toStyledCaps('jesus taime')}* : ❤️✝️\n`;
+      // Utilisation du @ suivi du numéro pur pour créer le lien cliquable
+      menuText += `┃ *${toStyledCaps('utilisateur')}* : @${senderNumber}\n`; 
+      menuText += `┃ *${toStyledCaps('jesus t'aime')}* : ❤️✝️\n`;
       menuText += `┃ *${toStyledCaps('prefixe')}* : [ ${prefix} ]\n`;
       menuText += `┃ *${toStyledCaps('commandes')}* : ${totalCommands} ғɪʟᴇs\n`;
       menuText += `┃ *${toStyledCaps('developpeur')}* : https://wa.me/${ownerNumber}\n`;
@@ -68,13 +72,12 @@ module.exports = {
       menuText += `> *${toStyledCaps('powered by ghostg-x')}*\n`;
       menuText += `> *${toStyledCaps('merci seigneur pour ta grace')}*`;
 
-      // --- CONFIGURATION SANS LIEN GOOGLE ---
       const messageOptions = {
         image: { url: "https://files.catbox.moe/2fmwpu.jpg" },
         caption: menuText,
-        mentions: [extra.sender],
+        // CRUCIAL : On met le JID complet dans mentionedJid pour activer le lien bleu
         contextInfo: {
-          // Affiche le badge en haut et active le bouton "Voir la chaîne" en bas
+          mentionedJid: [extra.sender], 
           forwardedNewsletterMessageInfo: {
             newsletterJid: '120363425540434745@newsletter',
             newsletterName: "-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ",
@@ -82,7 +85,6 @@ module.exports = {
           },
           isForwarded: true,
           forwardingScore: 1 
-          // J'ai supprimé externalAdReply pour enlever le lien Google/Catbox au-dessus
         }
       };
 
@@ -92,7 +94,7 @@ module.exports = {
       }
 
       await sock.sendMessage(extra.from, messageOptions, { quoted: msg });
-      await sock.sendMessage(extra.from, { react: { text: "🙏", key: msg.key } });
+      await sock.sendMessage(extra.from, { react: { text: "🙏🏾", key: msg.key } });
 
     } catch (error) {
       console.error('Menu Error:', error);
