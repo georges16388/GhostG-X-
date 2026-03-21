@@ -22,6 +22,13 @@ const forbiddenPatternsConsole = [
   'pendingprekey', '_chains', 'registrationid', 'currentratchet', 'chainkey',
   'ratchet', 'signal protocol', 'ephemeralkeypair', 'indexinfo', 'basekey'
 ];
+const sock = makeWASocket({
+    // ... tes autres options
+    keepAliveIntervalMs: 30000, // Garde la connexion active toutes les 30s
+    defaultQueryTimeoutMs: undefined,
+    connectTimeoutMs: 60000,
+});
+
 
 const filterLogs = (args, originalFn) => {
   const message = args.map(a => typeof a === 'string' ? a : typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ').toLowerCase();
