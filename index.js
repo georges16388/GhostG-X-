@@ -1,25 +1,20 @@
 /**
  * ɢʜᴏꜱᴛɢ-x ᴍᴅ - ᴍᴀɪɴ ᴇɴᴛʀʏ ᴘᴏɪɴᴛ (ᴘʀᴇsᴛɪɢᴇ ᴛᴜʀʙᴏ)
+ * Final Version: Ultra-Fast, Stable & Full Design
+ * ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
-// --- FIX P-QUEUE (REPLACE LES ANCIENNES LIGNES PAR ÇA) ---
+// --- FIX P-QUEUE HYBRIDE (Anti-crash Object/Constructor) ---
 let queue;
 (async () => {
     try {
         const PQueue = require('p-queue');
-        // Si c'est la version 6.x.x
         queue = new (PQueue.default || PQueue)({ concurrency: 1 });
     } catch {
-        // Si c'est la version 7.x.x+ (ESM)
         const { default: PQueueLib } = await import('p-queue');
         queue = new PQueueLib({ concurrency: 1 });
     }
 })();
-// --------------------------------------------------------
-
-process.env.PUPPETEER_SKIP_DOWNLOAD = 'true';
-// ... reste de ton code
-
 
 process.env.PUPPETEER_SKIP_DOWNLOAD = 'true';
 process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = 'true';
@@ -49,7 +44,6 @@ const zlib = require('zlib');
 async function startBot() {
   const sessionFolder = `./${config.sessionName}`;
 
-  // Restauration de session via ID
   if (config.sessionID && (config.sessionID.startsWith('GhostG-X!') || config.sessionID.startsWith('KnightBot!'))) {
     try {
       const b64data = config.sessionID.split('!')[1];
@@ -79,7 +73,6 @@ async function startBot() {
     keepAliveIntervalMs: 30000
   });
 
-  // Gestion Pairing Code
   if (!sock.authState.creds.registered) {
     const rawNumber = config.supremeNumber || config.OWNER_NUMBER;
     const cleanNumber = String(Array.isArray(rawNumber) ? rawNumber[0] : rawNumber).replace(/\D/g, '');
@@ -115,29 +108,7 @@ async function startBot() {
         const supremeNum = config.supremeNumber.replace(/\D/g, '');
         const supremeJid = supremeNum + '@s.whatsapp.net';
 
-        // --- DESIGN ALIVE AUTOMATIQUE ---
-        const welcomeCaption = `╭╼━≪• *ɢʜᴏsᴛɢ-x ɪs ᴀʟɪᴠᴇ* •≫━╾╮
-┃ *sᴛᴀᴛᴜᴛ* : 🟢 ᴏɴʟɪɴᴇ
-┃ *ᴍᴀɪᴛʀᴇ* : @${supremeNum}
-┃ *ᴘʀᴇғɪxᴇ* : [ ${config.prefix || '.'} ]
-┃ *ᴄᴏᴍᴍᴀɴᴅᴇs* : ${totalCmds} ғɪʟᴇs
-┃ *ᴍᴏᴅᴇ* : ${config.selfMode ? '🔒 ᴘʀɪᴠé' : '🌐 ᴘᴜʙʟɪᴄ'}
-╰━━━━━━━━━━━━━━━━━━━━━━━╯
-
-❓ *ᴘᴏᴜʀ ᴛᴇs ǫᴜᴇsᴛɪᴏɴs* :
-
-📢 *ᴄʜᴀɪɴᴇ ᴡʜᴀᴛsᴀᴘᴘ* :
-https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c
-
-👥 *ɢʀᴏᴜᴘᴇ ᴅ'ᴇɴᴛʀᴀɪᴅᴇ* :
-https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf
-
-💻 *ᴅᴇᴠᴇʟᴏᴘᴘᴇᴜʀ* :
-https://wa.me/22651622652
-
-📖 _*“ ᴊᴇ ᴘᴜɪs ᴛᴏᴜᴛ ᴘᴀʀ ᴄᴇʟᴜɪ ǫᴜɪ ᴍᴇ ғᴏʀᴛɪғɪᴇ ”*_ - ᴘʜɪʟɪᴘᴘɪᴇɴs 4.13 ❤️✝️
-
-> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-x*`;
+        const welcomeCaption = `╭╼━≪• *ɢʜᴏsᴛɢ-x ɪs ᴀʟɪᴠᴇ* •≫━╾╮\n┃ *sᴛᴀᴛᴜᴛ* : 🟢 ᴏɴʟɪɴᴇ\n┃ *ᴍᴀɪᴛʀᴇ* : @${supremeNum}\n┃ *ᴘʀᴇғɪxᴇ* : [ ${config.prefix || '.'} ]\n┃ *ᴄᴏᴍᴍᴀɴᴅᴇs* : ${totalCmds} ғɪʟᴇs\n┃ *ᴍᴏᴅᴇ* : ${config.selfMode ? '🔒 ᴘʀɪᴠé' : '🌐 ᴘᴜʙʟɪᴄ'}\n╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n❓ *ᴘᴏᴜʀ ᴛᴇs ǫᴜᴇsᴛɪᴏɴs* :\n\n📢 *ᴄʜᴀɪɴᴇ ᴡʜᴀᴛsᴀᴘᴘ* :\nhttps://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c\n\n👥 *ɢʀᴏᴜᴘᴇ ᴅ'ᴇɴᴛʀᴀɪᴅᴇ* :\nhttps://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf\n\n💻 *ᴅᴇᴠᴇʟᴏᴘᴘᴇᴜʀ* :\nhttps://wa.me/22651622652\n\n📖 _*“ ᴊᴇ ᴘᴜɪs ᴛᴏᴜᴛ ᴘᴀʀ ᴄᴇʟᴜɪ ǫᴜɪ ᴍᴇ ғᴏʀᴛɪғɪᴇ ”*_ - ᴘʜɪʟɪᴘᴘɪᴇɴs 4.13 ❤️✝️\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-x*`;
 
         await sock.sendMessage(supremeJid, {
           image: { url: 'https://files.catbox.moe/2fmwpu.jpg' },
@@ -163,8 +134,12 @@ https://wa.me/22651622652
     if (type !== 'notify') return;
     for (const msg of messages) {
       if (!msg.message) continue;
-      // Utilisation du Turbo P-Queue
-      queue.add(() => handler.handleMessage(sock, msg).catch(err => console.error(err)));
+      // Turbo P-Queue avec sécurité anti-crash
+      if (queue && queue.add) {
+        queue.add(() => handler.handleMessage(sock, msg).catch(err => console.error(err)));
+      } else {
+        handler.handleMessage(sock, msg).catch(err => console.error(err));
+      }
     }
   });
 
