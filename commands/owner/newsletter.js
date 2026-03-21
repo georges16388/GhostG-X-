@@ -27,7 +27,7 @@ function getChannelInviteCode(link) {
 
 module.exports = {
   name: 'newsletter',
-  aliases: ['nl', 'channel', 'info-ch'],
+  aliases: ['nl', 'channel', 'info-ch', 'channelid'],
   category: 'owner',
   description: 'Obtenir les infos d\'un canal WhatsApp',
   usage: '.nl <lien>',
