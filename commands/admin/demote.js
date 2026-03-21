@@ -2,7 +2,7 @@
  * Demote Command - Remove admin privileges
  */
 
-const { findParticipant } = require('../../utils/jidHelper');
+const { findParticipant } = require('../../utils/jidHelpers');
 
 // Design pour l'annonce de la destitution
 const DEMOTE_DESIGN = (user) => `╭╼━≪• ᴀᴅᴍɪɴ ᴅᴇᴍᴏᴛᴇᴅ •≫━╾╮
