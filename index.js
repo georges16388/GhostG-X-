@@ -198,11 +198,19 @@ ${config.social.group}
   sock.ev.on('creds.update', saveCreds);
 
   // --- MESSAGES UPSERT (AVEC FILTRE ANTI-LAG) ---
-  sock.ev.on('messages.upsert', ({ messages, type }) => {
-    if (type !== 'notify') return;
-    for (const msg of messages) {
-      if (!msg.message || processedMessages.has(msg.key.id)) continue;
-      processedMessages.add(msg.key.id);
+  sock.ev.on('connection.update', async (update) => {
+    const { connection, lastDisconnect } = update;
+    if (connection === 'close') {
+        const shouldReconnect = (lastDisconnect.error)?.output?.statusCode !== DisconnectReason.loggedOut;
+        if (shouldReconnect) {
+            console.log("🔄 Reconnexion en cours...");
+            startBot(); // Relance la fonction principale
+        } else {
+            console.log("❌ Déconnecté manuellement. Supprime le dossier session et rescane.");
+        }
+    }
+});
+
 
       // FILTRE ANTI-LAG (IGNORER SI > 30 SECONDES)
       const now = Math.floor(Date.now() / 1000);
