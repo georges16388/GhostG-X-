@@ -39,8 +39,8 @@ module.exports = {
 ┃ ᴍsɢs : ${userCount} 📝
 ┃ sʜᴀʀᴇ : ${percentage}% 📈
 ┃ ʀᴀɴᴋ : #${rank} / ${sortedUsers.length} 🏆
->┃ ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗
-╰━━━━━━━━━━━━━━━╯`.trim();
+╰━━━━━━━━━━━━━━━╯
+> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`.trim();
 
             await sock.sendMessage(from, {
                 text,
