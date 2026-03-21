@@ -11,8 +11,8 @@ const WARN_DESIGN = (user, count, max, reason) => `╭╼━≪• ᴜsᴇʀ ᴡ
 ┃ ʀᴇᴀsᴏɴ : ${reason} 📝
 ┃ ᴡᴀʀɴs : ${count}/${max} ⚠️
 ┃ sᴛᴀᴛᴜs : ${count >= max ? 'ᴇxᴘᴜʟsɪᴏɴ 🚨' : 'ᴡᴀʀɴɪɴɢ ᴘᴏsᴛᴇᴅ'}
-> ┃ ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗
-╰━━━━━━━━━━━━━━━╯`;
+╰━━━━━━━━━━━━━━━╯
+> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
 
 module.exports = {
   name: 'warn',
