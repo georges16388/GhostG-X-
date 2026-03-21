@@ -1,65 +1,99 @@
 /**
- * Broadcast System - AGM Global Announcement
- * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
+ * Broadcast System - AGM Global Announcement (Elite Edition)
+ * Optimized for Speed & Identity Preservation
+ * Powered by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
-// --- FONCTION DE DESIGN AGM (BROADCAST STYLE) ---
-const AGM_BC = (message) => `╭╼━≪• ᴀɢᴍ ʙʀᴏᴀᴅᴄᴀsᴛ •≫━╾╮
+const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
+
+// --- FONCTION DE DESIGN AGM (BROADCAST DYNAMIQUE) ---
+// On affiche ton numéro et le nom du bot pour un rendu ultra-pro
+const AGM_BC = (message, sender) => `╭╼━≪• ᴀɢᴍ ʙʀᴏᴀᴅᴄᴀsᴛ •≫━╾╮
 ┃ ᴛʏᴘᴇ : ɢʟᴏʙᴀʟ ᴀɴɴᴏᴜɴᴄᴇ 📢
-┃ ᴀᴜᴛʜᴏʀ : ᴏᴡɴᴇʀ 👑
+┃ ᴀᴜᴛʜᴏʀ : @${sender.split('@')[0]} 👑
+┃ sʏsᴛᴇᴍ : ɢʜᴏsᴛɢ-x ᴍᴅ ⚡
 ┃ ᴍᴇssᴀɢᴇ : ${message}
 ╰━━━━━━━━━━━━━━━╯
 > ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
 
 module.exports = {
   name: 'broadcast',
-  aliases: ['bc'],
+  aliases: ['bc', 'diffuse'],
   category: 'owner',
-  description: 'Diffuser un message à tous les groupes',
-  usage: '.bc <message>',
+  description: 'Diffuse un message ou un média à tous les groupes où le bot est présent.',
+  usage: '.bc <votre message> (ou répondre à une image)',
   ownerOnly: true,
 
   async execute(sock, msg, args, extra) {
     try {
+      const from = extra.from;
+      const sender = extra.sender;
       const text = args.join(' ');
-      if (!text) return extra.reply('⚠️ *ᴠᴇᴜɪʟʟᴇᴢ ᴇɴᴛʀᴇʀ ᴜɴ ᴍᴇssᴀɢᴇ à ᴅɪғғᴜsᴇʀ.*');
-
-      await sock.sendMessage(extra.from, { react: { text: '📡', key: msg.key } });
-
-      const chats = await sock.groupFetchAllParticipating();
-      const groups = Object.values(chats);
       
+      // Détection de message cité (image, vidéo, sticker, etc.)
+      const quoted = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+      
+      if (!text && !quoted) {
+        return sock.sendMessage(from, { 
+            text: '⚠️ *ᴠᴇᴜɪʟʟᴇᴢ ᴇɴᴛʀᴇʀ ᴜɴ ᴍᴇssᴀɢᴇ ᴏᴜ ʀéᴘᴏɴᴅʀᴇ à ᴜɴ ᴍéᴅɪᴀ (ɪᴍᴀɢᴇ/ᴠɪᴅéᴏ).*' 
+        }, { quoted: msg });
+      }
+
+      await sock.sendMessage(from, { react: { text: '📡', key: msg.key } });
+
+      // Récupération de la liste de tous les groupes
+      const getGroups = await sock.groupFetchAllParticipating();
+      const groups = Object.values(getGroups);
+
+      await sock.sendMessage(from, { 
+          text: `🚀 *ʟᴀɴᴄᴇᴍᴇɴᴛ ᴅᴇ ʟᴀ ᴅɪғғᴜsɪᴏɴ...*\n👥 ᴄɪʙʟᴇs : ${groups.length} ɢʀᴏᴜᴘᴇs.` 
+      }, { quoted: msg });
+
       let success = 0;
       let failed = 0;
 
-      // Message d'attente
-      await extra.reply(`🚀 *ᴅɪғғᴜsɪᴏɴ ᴇɴ ᴄᴏᴜʀs sᴜʀ ${groups.length} ɢʀᴏᴜᴘᴇs...*`);
-
-      for (const group of groups) {
+      for (let i = 0; i < groups.length; i++) {
         try {
-          await sock.sendMessage(group.id, {
-            text: AGM_BC(text)
-          });
+          const target = groups[i].id;
+
+          if (quoted) {
+            // SI C'EST UN MÉDIA : On le transfère tel quel (plus sûr pour le ban)
+            await sock.copyNForward(target, msg, true);
+          } else {
+            // SI C'EST DU TEXTE : On applique le design AGM avec ton numéro
+            await sock.sendMessage(target, { 
+              text: AGM_BC(text, sender),
+              mentions: [sender] 
+            });
+          }
+          
           success++;
           
-          // Petit délai de 1.5s entre chaque groupe pour la sécurité du numéro
-          await new Promise(resolve => setTimeout(resolve, 1500));
-        } catch (e) {
+          // DÉLAI DE SÉCURITÉ (Anti-Spam WhatsApp)
+          // On attend 1.2s entre chaque envoi pour rester sous le radar
+          await new Promise(res => setTimeout(res, 1200)); 
+          
+        } catch (err) {
+          console.error(`Erreur d'envoi vers ${groups[i].id}:`, err);
           failed++;
         }
       }
 
-      // Rapport final AGM
+      // RAPPORT FINAL DE DIFFUSION
       const report = `╭╼━≪• ʙᴄ ʀᴇᴘᴏʀᴛ •≫━╾╮\n` +
                      `┃ ✅ sᴜᴄᴄᴇss : ${success}\n` +
                      `┃ ❌ ғᴀɪʟᴇᴅ : ${failed}\n` +
-                     `╰━━━━━━━━━━━━━━━╯`;
-      
-      await extra.reply(report);
+                     `┃ 👥 ᴛᴏᴛᴀʟ : ${groups.length}\n` +
+                     `╰━━━━━━━━━━━━━━━╯\n> ᴅɪғғᴜsɪᴏɴ ᴛᴇʀᴍɪɴéᴇ ᴀᴠᴇᴄ sᴜᴄᴄès.`;
+
+      await sock.sendMessage(from, { text: report }, { quoted: msg });
+      await sock.sendMessage(from, { react: { text: '✅', key: msg.key } });
 
     } catch (error) {
-      console.error('BC Error:', error);
-      await extra.reply(`❌ *ᴇʀʀᴇᴜʀ : ${error.message}*`);
+      console.error('CRITICAL BC ERROR:', error);
+      await sock.sendMessage(extra.from, { 
+          text: `❌ *ᴇʀʀᴇᴜʀ sʏsᴛéᴍᴇ :* ${error.message}` 
+      }, { quoted: msg });
     }
   }
 };
