@@ -13,8 +13,8 @@ const AGM_DESIGN = (title, duration) => `╭╼━≪• ʏᴏᴜᴛᴜʙᴇ ᴍ
 ┃ sᴏɴɢ : ${title.length > 20 ? title.substring(0, 17) + '...' : title} 🎵
 ┃ ᴅᴜʀᴀᴛɪᴏɴ : ${duration} ⏱️
 ┃ sᴛᴀᴛᴜs : 🟢 ᴅᴏᴡɴʟᴏᴀᴅɪɴɢ...
->┃ ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗
-╰━━━━━━━━━━━━━━━╯`;
+╰━━━━━━━━━━━━━━━╯
+> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
 
 module.exports = {
   name: 'song',
