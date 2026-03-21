@@ -10,8 +10,8 @@ const { downloadMediaMessage } = require('@whiskeysockets/baileys');
 const TAG_DESIGN = (text) => `╭╼━≪• ᴀɴɴᴏᴜɴᴄᴇᴍᴇɴᴛ •≫━╾╮
 ${text ? `┃ ᴍsɢ : ${text}\n` : ''}┃ ᴛᴀɢ : ᴇᴠᴇʀʏᴏɴᴇ 🔔
 ┃ ғʀᴏᴍ : ᴀᴅᴍɪɴ 🛡️
->┃ ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗
-╰━━━━━━━━━━━━━━━╯`;
+╰━━━━━━━━━━━━━━━╯
+> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
 
 module.exports = {
   name: 'hidetag',
