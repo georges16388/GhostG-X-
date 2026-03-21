@@ -13,7 +13,7 @@ const AGM_DESIGN = () => `╭╼━≪• ᴛᴀʀɢᴇᴛ ᴅᴇʟᴇᴛᴇᴅ 
 
 module.exports = {
   name: 'delete',
-  aliases: ['del'],
+  aliases: ['del', 'dlt'],
   description: 'Delete a replied message',
   usage: '.delete (reply to a message)',
   category: 'admin',
