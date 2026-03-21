@@ -39,7 +39,7 @@ const handleMessage = async (sock, msg) => {
         const args = isCmd ? body.trim().split(/\s+/).slice(1) : [];
 
         if (isCmd) {
-            console.log(`📩 [ɢʜᴏꜱᴛɢ-x] Commande : ${commandName} | Par : ${pushName}`);
+            console.log(`📩 [ɢʜᴏꜱᴛɢ-x] ${toSmallCaps("commande")} : ${toSmallCaps(commandName)} | ${toSmallCaps("par")} : ${toSmallCaps(pushName)}`);
         }
 
         // 1. Auto-React
