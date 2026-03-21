@@ -1,6 +1,6 @@
 /**
  * GhostG-X Bot - Main Entry Point
- * Optimized for Stability & Immediate Response
+ * Optimized for Stability & Pushname Mentions
  * Prestige Edition - GhostG X
  */
 process.env.PUPPETEER_SKIP_DOWNLOAD = 'true';
@@ -100,9 +100,7 @@ async function startBot() {
     auth: state,
     syncFullHistory: false,
     shouldSyncHistoryMessage: () => false,
-    keepAliveIntervalMs: 30000,
-    connectTimeoutMs: 60000,
-    defaultQueryTimeoutMs: undefined
+    keepAliveIntervalMs: 30000
   });
 
   if (!sock.authState.creds.registered) {
@@ -129,10 +127,7 @@ async function startBot() {
 
     if (connection === 'close') {
       const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
-      if (shouldReconnect) {
-          console.log("🔄 Reconnexion en cours...");
-          startBot();
-      }
+      if (shouldReconnect) startBot();
     } else if (connection === 'open') {
       console.log('\n✅ ɢʜᴏꜱᴛɢ-x ᴄᴏɴɴᴇᴄᴛᴇ́ !');
       handler.initializeAntiCall(sock);
@@ -141,31 +136,22 @@ async function startBot() {
         const { loadCommands } = require('./utils/commandLoader');
         const commandsMap = loadCommands();
         const totalCmds = commandsMap.size;
-        const supremeJid = config.supremeNumber.replace(/\D/g, '') + '@s.whatsapp.net';
         
-        // --- PROPRIÉTAIRE EN SMALLCAPS ---
-        const rawOwner = config.ownerName || "Truth Devices";
-        const styledOwner = toSmallCaps(rawOwner);
+        // Identifiants
+        const supremeJid = config.supremeNumber.replace(/\D/g, '') + '@s.whatsapp.net';
+        const pushName = sock.user.name || "Master"; // Récupère ton pushname bot
 
         // --- WELCOME MESSAGE STYLISÉ ---
         const welcomeCaption = `╭╼━≪• *${toSmallCaps('ghostg-x is alive')}* •≫━╾╮
 ┃ *${toSmallCaps('statut')}* : 🟢 ᴏɴʟɪɴᴇ
-┃ *${toSmallCaps('maitre')}* : @${styledOwner}
+┃ *${toSmallCaps('maitre')}* : @${pushName}
 ┃ *${toSmallCaps('prefixe')}* : [ ${config.prefix} ]
 ┃ *${toSmallCaps('commandes')}* : ${totalCmds} ғɪʟᴇs
 ┃ *${toSmallCaps('mode')}* : ${config.selfMode ? '🔒 ᴘʀɪᴠé' : '🌐 ᴘᴜʙʟɪᴄ'}
 ╰━━━━━━━━━━━━━━━━━━━━━━━╯
 
-❓ *${toSmallCaps('pour tes questions')}* :
-
 📢 *${toSmallCaps('chaine whatsapp')}* :
 https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c
-
-👥 *${toSmallCaps('groupe d\'entraide')}* :
-https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf
-
-💻 *${toSmallCaps('developpeur')}* :
-https://wa.me/22651622652
 
 📖 _*“ ${toSmallCaps('je puis tout par celui qui me fortifie')} ”*_ - ᴘʜɪʟɪᴘᴘɪᴇɴs 4.13 ❤️✝️
 
@@ -174,11 +160,17 @@ https://wa.me/22651622652
         await sock.sendMessage(supremeJid, { 
             image: { url: 'https://files.catbox.moe/2fmwpu.jpg' }, 
             caption: welcomeCaption, 
-            mentions: [supremeJid] 
+            mentions: [supremeJid],
+            contextInfo: {
+                forwardedNewsletterMessageInfo: {
+                    newsletterJid: '120363425540434745@newsletter',
+                    newsletterName: "-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ",
+                    serverMessageId: 100
+                },
+                isForwarded: true,
+                forwardingScore: 1
+            }
         });
-
-        // Petite réaction pour confirmer l'allumage
-        await sock.sendMessage(supremeJid, { react: { text: "⚡", key: { remoteJid: supremeJid, fromMe: true } } });
 
       } catch (err) { console.error('❌ Notification Error:', err.message); }
     }
@@ -195,15 +187,8 @@ https://wa.me/22651622652
     }
   });
 
-  sock.ev.on('group-participants.update', (u) => handler.handleGroupUpdate(sock, u));
-
   return sock;
 }
 
 startBot().catch(err => console.error('❌ Erreur Critique:', err));
-
-process.on('uncaughtException', (err) => {
-    if (!err.message.includes('ENOSPC')) console.error('Uncaught:', err);
-});
-
 module.exports = { store };
