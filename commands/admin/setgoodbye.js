@@ -9,8 +9,8 @@ const SETGOODBYE_DESIGN = (preview) => `╭╼━≪• ɢᴏᴏᴅʙʏᴇ sᴇ�
 ┃ sᴛᴀᴛᴜs : ᴜᴘᴅᴀᴛᴇᴅ ✅
 ┃ ᴛʏᴘᴇ : ᴄᴜsᴛᴏᴍ ᴛᴇxᴛ 📝
 ┃ ᴘʀᴇᴠɪᴇᴡ : ${preview}
-> ┃ ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗
-╰━━━━━━━━━━━━━━━╯`;
+╰━━━━━━━━━━━━━━━╯
+> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
 
 module.exports = {
   name: 'setgoodbye',
