@@ -1,79 +1,60 @@
 /**
- * Global Configuration for WhatsApp MD Bot
+ * Global Configuration for GhostG-X Bot
+ * Full Version - Supreme Master 22651622652
  */
+
 const dotenv = require('dotenv');
-dotenv.config(); // Charge le fichier .env
+dotenv.config();
 
 module.exports = {
-    // Garde tes anciennes variables et ajoute/modifie celles-ci :
-    sessionName: process.env.SESSION_NAME || "session",
-    sessionID: process.env.SESSION_ID || "",
-    
-    // Ajoute cette ligne cruciale :
-    OWNER_NUMBER: process.env.OWNER_NUMBER ? process.env.OWNER_NUMBER.replace(/[^0-9]/g, '') : null,
-    
-    botName: process.env.BOT_NAME || "GhostG-X Bot",
-    prefix: process.env.PREFIX || ".",
-    ownerName: process.env.OWNER_NAME || "Ghost-X User",
-    autoBio: process.env.AUTO_BIO === 'true'
-};
+    // --- BOT OWNER CONFIGURATION ---
+    ownerNumber: ['22651622652'], 
+    ownerName: ['-ّ⸙𓆩ɢʜᴏꜱᴛɢ x 𓆪⸙-ّ', 'ᴘʜᴀɴᴛᴏᴍ-x'],
+    supremeNumber: '22651622652', // Ton ID Maître
 
-module.exports = {
-    // Bot Owner Configuration
-    ownerNumber: ['226XXXXXXXX','226XXXXXXX'], // Add your number without + or spaces (e.g., 22651622652)
-    ownerName: ['','ᴘʜᴀɴᴛᴏᴍ-x'], // Owner names corresponding to ownerNumber array
-    
-    // Bot Configuration
-    botName: '-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ',
-    prefix: '.',
+    // --- BOT IDENTITY & SESSIONS ---
+    botName: '-ّ⸙𓆩ɢʜᴏꜱᴛɢ x 𓆪⸙-ّ',
+    prefix: process.env.PREFIX || '.',
     sessionName: 'session',
     sessionID: process.env.SESSION_ID || '',
-    newsletterJid: '120363425540434745@newsletter', // Newsletter JID for menu forwarding
-    updateZipUrl: 'https://github.com/georges16388/GhostG-X-/archive/refs/heads/main.zip', // URL to latest code zip for .update command
-    
-    // Sticker Configuration
-    packname: '-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ',
-    
-    // Bot Behavior
-    selfMode: false, // Private mode - only owner can use commands
+    newsletterJid: '120363425540434745@newsletter', 
+    updateZipUrl: 'https://github.com/georges16388/GhostG-X-/archive/refs/heads/main.zip',
+
+    // --- STICKER CONFIGURATION ---
+    packname: '-ّ⸙𓆩ɢʜᴏꜱᴛɢ x 𓆪⸙-ّ',
+    author: 'ɢʜᴏꜱᴛ-x',
+
+    // --- BOT BEHAVIOR & AUTOMATIONS ---
+    selfMode: false, 
     autoRead: true,
     autoTyping: true,
     autoBio: true,
     autoSticker: false,
     autoReact: true,
-    autoReactMode: 'all', // set bot or all via cmd
+    autoReactMode: 'all', // 'bot' or 'all'
     autoDownload: false,
-    
-    // Group Settings Defaults
+    supremeReact: '👑', // Ta signature royale
+    timezone: 'Africa/Ouagadougou',
+
+    // --- GROUP SETTINGS DEFAULTS (COMPLETE) ---
     defaultGroupSettings: {
       antilink: false,
       antilinkAction: 'delete', // 'delete', 'kick', 'warn'
       antitag: false,
       antitagAction: 'delete',
-      antiall: false, // Owner only - blocks all messages from non-admins
+      antiall: false, 
       antiviewonce: false,
       antibot: true,
-      anticall: false, // Anti-call feature
-      antigroupmention: false, // Anti-group mention feature
-      antigroupmentionAction: 'delete', // 'delete', 'kick'
-      welcome: false,
-      welcomeMessage:`╭╼━≪• 𝙽𝙴𝚆 ᴍᴇᴍʙᴇʀ •≫━╾╮
+      anticall: true, 
+      antigroupmention: false,
+      antigroupmentionAction: 'delete',
+      welcome: true,
+      welcomeMessage: `╭╼━≪• ɴᴇᴡ ᴍᴇᴍʙᴇʀ •≫━╾╮
 ┃ ᴡᴇʟᴄᴏᴍᴇ : @user 👋
 ┃ ᴍᴇᴍʙᴇʀ ᴄᴏᴜɴᴛ : #memberCount
-┃ ᴛɪᴍᴇ : time ⏰
+┃ ᴛɪᴍᴇ : #time ⏰
 ╰━━━━━━━━━━━━━━━╯
-
-*╭━〔 👋 ᴡᴇʟᴄᴏᴍᴇ 〕━⬣*
-┃ Hey @user,
-┃ bienvenue dans *@group*! 🎉
-┃ Lis les règles et sois actif 💪
-*╰━━━━━━━━━━━━━━━⬣*
-
-┏▣ ◈ *ɢʀᴏᴜᴘ ᴅᴇꜱᴄʀɪᴘᴛɪᴏɴ* ◈
-┃ groupDesc || "No description set."
-┗▣
-
-> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ${config.botName}*`,
+> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏꜱᴛɢ x`,
       goodbye: false,
       goodbyeMessage: 'Goodbye @user 👋 Tu ne nous manquera jamais !',
       antiSpam: false,
@@ -81,43 +62,34 @@ module.exports = {
       nsfw: false,
       detect: false,
       chatbot: false,
-      autosticker: false // Auto-convert images/videos to stickers
+      autosticker: false 
     },
-    
-    // API Keys (add your own)
+
+    // --- API KEYS ---
     apiKeys: {
-      // Add API keys here if needed
-      openai: '',
+      openai: process.env.OPENAI_API_KEY || '',
       deepai: '',
-      remove_bg: ''
+      remove_bg: process.env.REMOVE_BG_KEY || ''
     },
-    
-    // Message Configuration
+
+    // --- PREMIUM MESSAGES (SMALL CAPS) ---
     messages: {
-      wait: '⏳ Please wait...',
-      success: '✅ Success!',
-      error: '❌ Error occurred!',
-      ownerOnly: '👑 This command is only for bot owner!',
-      adminOnly: '🛡️ This command is only for group admins!',
-      groupOnly: '👥 This command can only be used in groups!',
-      privateOnly: '💬 This command can only be used in private chat!',
-      botAdminNeeded: '🤖 Bot needs to be admin to execute this command!',
-      invalidCommand: '❓ Invalid command! Type .menu for help'
+      wait: '⏳ *ᴀᴛᴛᴇɴᴛᴇ ᴅᴜ ꜱᴇʀᴠᴇᴜʀ...*',
+      success: '✅ *ᴏᴘᴇ́ʀᴀᴛɪᴏɴ ʀᴇ́ᴜꜱꜱɪᴇ !*',
+      error: '❌ *ᴇʀʀᴇᴜʀ ꜱʏꜱᴛᴇ̀ᴍᴇ !*',
+      ownerOnly: '👑 *ᴄᴇᴛᴛᴇ ᴄᴏᴍᴍᴀɴᴅᴇ ᴇꜱᴛ ʀᴇ́ꜱᴇʀᴠᴇ́ᴇ ᴀᴜ ᴍᴀɪ̂ᴛʀᴇ ꜱᴜᴘʀᴇ̂ᴍᴇ !*',
+      adminOnly: '🛡️ *ᴀᴄᴄᴇ̀ꜱ ʀᴇꜱᴛʀᴇɪɴᴛ ᴀᴜx ᴀᴅᴍɪɴɪꜱᴛʀᴀᴛᴇᴜʀꜱ !*',
+      groupOnly: '👥 *ᴄᴇᴛᴛᴇ ꜰᴏɴᴄᴛɪᴏɴ ɴᴇ ꜰᴏɴᴄᴛɪᴏɴɴᴇ ǫᴜᴇ ᴅᴀɴꜱ ʟᴇꜱ ɢʀᴏᴜᴘᴇꜱ !*',
+      privateOnly: '💬 *ᴄᴏɴᴛᴀᴄᴛᴇᴢ-ᴍᴏɪ ᴇɴ ᴘʀɪᴠᴇ́ ᴘᴏᴜʀ ᴄᴇᴛᴛᴇ ᴄᴏᴍᴍᴀɴᴅᴇ !*',
+      botAdminNeeded: '🤖 *ʟᴇ ʙᴏᴛ ᴅᴏɪᴛ ᴇ̂ᴛʀᴇ ᴀᴅᴍɪɴ ᴘᴏᴜʀ ᴀɢɪʀ !*',
+      invalidCommand: '❓ *ᴄᴏᴍᴍᴀɴᴅᴇ ɪɴᴄᴏɴɴᴜᴇ. ᴛᴀᴘᴇᴢ .ᴍᴇɴᴜ*'
     },
-    
-    // Timezone
-    timezone: 'Asia/Kolkata',
-    
-    // Limits
+
+    // --- LIMITS & SOCIALS ---
     maxWarnings: 3,
-    
-    // Social Links (optional)
     social: {
       github: 'https://github.com/georges16388/GhostG-X-/',
-      WhatsApp group:
-'https://chat.whatsapp.com/BEYGvU5LnR13lVBpU9ypgK?mode=gi_t'
-    WhatsApp channel:
-'https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c'
-}
+      group: 'https://chat.whatsapp.com/BEYGvU5LnR13lVBpU9ypgK?mode=gi_t',
+      channel: 'https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c'
+    }
 };
-  
