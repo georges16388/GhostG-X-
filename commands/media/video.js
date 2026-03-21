@@ -11,8 +11,8 @@ const AGM_DESIGN = (title, status) => `╭╼━≪• ʏᴏᴜᴛᴜʙᴇ ᴠɪ
 ┃ ᴠɪᴅᴇᴏ : ${title.length > 20 ? title.substring(0, 17) + '...' : title} 🎬
 ┃ sᴛᴀᴛᴜs : ${status}
 ┃ ᴍᴏᴅᴇ : ʜɪɢʜ-ǫᴜᴀʟɪᴛʏ ⚡
->┃ ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗
-╰━━━━━━━━━━━━━━━╯`;
+╰━━━━━━━━━━━━━━━╯
+> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
 
 module.exports = {
   name: 'ytvideo',
