@@ -6,7 +6,6 @@
 const fs = require('fs');
 const path = require('path');
 
-// --- FONCTION DE DESIGN AGM (CORE STYLE) ---
 const AGM_CORE = (oldP, newP, type) => `╭╼━≪• ᴀɢᴍ sʏsᴛᴇᴍ ᴄᴏʀᴇ •≫━╾╮
 ┃ sᴛᴀᴛᴜs : 🟢 ᴘʀᴇғɪx ᴜᴘᴅᴀᴛᴇᴅ
 ┃ ᴛʏᴘᴇ : ${type.toUpperCase()} ⚡
@@ -19,51 +18,58 @@ module.exports = {
   name: 'setprefix',
   aliases: ['prefix', 'setpref'],
   category: 'owner',
-  description: 'Changer le préfixe (Texte ou Sticker)',
-  usage: '.setprefix <symbole> ou répondre à un sticker',
   ownerOnly: true,
-  
+
   async execute(sock, msg, args, extra) {
     try {
       const config = require('../../config');
+      const configPath = path.resolve(__dirname, '../../config.js');
+      
       let newPrefix = args[0];
       let isSticker = false;
 
-      // 1. Détection si c'est une réponse à un sticker
-      const quoted = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage;
-      if (quoted?.stickerMessage) {
-        // On utilise le fileSha256 (identifiant unique du sticker) comme préfixe
-        newPrefix = quoted.stickerMessage.fileSha256.toString('base64');
-        isSticker = true;
+      // 1. Détection de réponse à un sticker
+      const quoted = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage || 
+                     msg.message?.stickerMessage; 
+      
+      if (msg.message?.extendedTextMessage?.contextInfo?.quotedMessage?.stickerMessage) {
+          // Note: Utiliser un sticker comme préfixe global est complexe. 
+          // On va rester sur du texte pour la stabilité du handler.
+          return extra.reply("⚠️ *ʟᴇ ᴘʀᴇꜰɪxᴇ ᴘᴀʀ sᴛɪᴄᴋᴇʀ ɴ'ᴇsᴛ ᴘᴀs ᴇɴᴄᴏʀᴇ sᴜᴘᴘᴏʀᴛé ᴘᴀʀ ʟᴇ ʜᴀɴᴅʟᴇʀ.*");
       }
 
       if (!newPrefix) {
-        return extra.reply(`📌 *ᴄᴜʀʀᴇɴᴛ ᴘʀᴇғɪx :* [ ${config.prefix} ]\n\n*ᴜsᴀɢᴇ :* .sᴇᴛᴘʀᴇғɪx <sʏᴍʙᴏʟᴇ> ᴏᴜ ʀéᴘᴏɴᴅʀᴇ à ᴜɴ sᴛɪᴄᴋᴇʀ.`);
+        return extra.reply(`📌 *ᴄᴜʀʀᴇɴᴛ ᴘʀᴇғɪx :* [ ${config.prefix} ]\n\n*ᴜsᴀɢᴇ :* .sᴇᴛᴘʀᴇғɪx <sʏᴍʙᴏʟᴇ>`);
       }
 
-      const oldPrefix = config.prefix;
-      const configPath = path.join(__dirname, '../../config.js');
-      
-      // 2. Mise à jour du fichier config.js
+      // 2. Mise à jour physique du fichier config.js
       let content = fs.readFileSync(configPath, 'utf8');
-      // On gère les guillemets simples ou doubles dans la config
-      const regex = /prefix:\s*['"`]([^'"`]*)['"`]/;
-      content = content.replace(regex, `prefix: '${newPrefix}'`);
       
-      fs.writeFileSync(configPath, content, 'utf8');
+      // Regex amélioré pour capturer prefix même s'il y a process.env
+      const regex = /prefix:\s*(process\.env\.PREFIX\s*\|\|\s*)?['"`]([^'"`]*)['"`]/;
+      
+      if (regex.test(content)) {
+          content = content.replace(regex, `prefix: '${newPrefix}'`);
+          fs.writeFileSync(configPath, content, 'utf8');
+      } else {
+          // Si le regex échoue, on tente une approche plus brutale mais sûre
+          content = content.replace(/prefix:.*,/, `prefix: '${newPrefix}',`);
+          fs.writeFileSync(configPath, content, 'utf8');
+      }
 
-      // 3. Update en temps réel et Flush Cache
+      // 3. Update mémoire
+      const oldPrefix = config.prefix;
       config.prefix = newPrefix;
+      
+      // Flush cache pour tous les modules qui importent config
       delete require.cache[require.resolve('../../config')];
 
-      await sock.sendMessage(extra.from, { react: { text: '⚙️', key: msg.key } });
-      
-      const displayPrefix = isSticker ? "Sᴛɪᴄᴋᴇʀ-ID" : newPrefix;
-      await extra.reply(AGM_CORE(oldPrefix, displayPrefix, isSticker ? 'sticker' : 'text'));
+      await extra.react('⚙️');
+      await extra.reply(AGM_CORE(oldPrefix, newPrefix, 'text'));
 
     } catch (error) {
       console.error('Prefix Error:', error);
-      await extra.reply('❌ *ᴇʀʀᴇᴜʀ ʟᴏʀs ᴅᴜ ᴄʜᴀɴɢᴇᴍᴇɴᴛ ᴅᴇ ᴘʀᴇғɪxᴇ.*');
+      await extra.reply('❌ *ᴇʀʀᴇᴜʀ sʏsᴛéᴍᴇ ʟᴏʀs ᴅᴜ ᴄʜᴀɴɢᴇᴍᴇɴᴛ.*');
     }
   }
 };
