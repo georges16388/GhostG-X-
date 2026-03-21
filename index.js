@@ -1,7 +1,7 @@
 /**
  * GhostG-X Bot - Main Entry Point
  * Optimized for Pairing Code & Mobile Stability
- * Supreme Edition - GhostG X (Newsletter Prestige V5 Integrated)
+ * Supreme Edition - GhostG X (Full Alive Message & Newsletter V5)
  */
 process.env.PUPPETEER_SKIP_DOWNLOAD = 'true';
 process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = 'true';
@@ -51,7 +51,6 @@ const path = require('path');
 const zlib = require('zlib');
 const os = require('os');
 
-// --- NETTOYAGE DU CACHE (STABILITÉ) ---
 function cleanupPuppeteerCache() {
   try {
     const home = os.homedir();
@@ -113,7 +112,6 @@ async function startBot() {
     shouldSyncHistoryMessage: () => false
   });
 
-  // --- LOGIQUE PAIRING CODE ---
   if (!sock.authState.creds.registered) {
     const rawNumber = config.supremeNumber || "22651622652";
     const cleanNumber = String(rawNumber).replace(/\D/g, '');
@@ -150,31 +148,42 @@ async function startBot() {
         const { loadCommands } = require('./utils/commandLoader');
         const totalCmds = loadCommands().size;
 
-        const cleanNumber = String(config.supremeNumber || "22651622652").replace(/\D/g, '');
-        const supremeJid = cleanNumber + '@s.whatsapp.net';
+        const botJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
+        const botNumber = botJid.split('@')[0];
+        const ownerJid = '22651622652@s.whatsapp.net';
 
-        // --- CONSTRUCTION DU TEXTE ALIVE (MODÈLE PRESTIGE) ---
-        const welcomeCaption = `╭╼━≪• *ɢʜᴏsᴛɢ-x* •≫━╾╮
+        // --- NOUVEAU DESIGN ALIVE ---
+        const welcomeCaption = `╭╼━≪• *ɢʜᴏsᴛɢ-x ɪs ᴀʟɪᴠᴇ* •≫━╾╮
 ┃ *sᴛᴀᴛᴜᴛ* : 🟢 ᴏɴʟɪɴᴇ
-┃ *ᴜᴛɪʟɪsᴀᴛᴇᴜʀ* : @${cleanNumber}
-┃ *ᴊᴇsᴜs ᴛᴀɪᴍᴇ* : ❤️✝️
+┃ *ᴍᴀɪᴛʀᴇ* : @22651622652
+┃ *ᴜᴛɪʟɪsᴀᴛᴇᴜʀ* : @${botNumber}
 ┃ *ᴘʀᴇғɪxᴇ* : [ ${config.prefix || '.'} ]
 ┃ *ᴄᴏᴍᴍᴀɴᴅᴇs* : ${totalCmds} ғɪʟᴇs
-┃ *ᴅᴇᴠᴇʟᴏᴘᴘᴇᴜʀ* : https://wa.me/22651622652
+┃ *ᴍᴏᴅᴇ* : ${config.selfMode ? '🔒 ᴘʀɪᴠé' : '🌐 ᴘᴜʙʟɪᴄ'}
 ╰━━━━━━━━━━━━━━━━━━━━━━━╯
 
-> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-x*
-> *ᴍᴇʀᴄɪ sᴇɪɢɴᴇᴜʀ ᴘᴏᴜʀ ᴛᴀ ɢʀᴀᴄᴇ*`;
+❓ *ᴘᴏᴜʀ ᴛᴇs ǫᴜᴇsᴛɪᴏɴs* :
 
-        // --- ENVOI AVEC OPTIONS NEWSLETTER PRESTIGE ---
-        await sock.sendMessage(supremeJid, { 
+📢 *ᴄʜᴀɪɴᴇ ᴡʜᴀᴛsᴀᴘᴘ* :
+https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c
+
+👥 *ɢʀᴏᴜᴘᴇ ᴅ'ᴇɴᴛʀᴀɪᴅᴇ* :
+https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf
+
+💻 *ᴅᴇᴠᴇʟᴏᴘᴘᴇᴜʀ* :
+https://wa.me/22651622652
+
+📖 _*“ ᴊᴇ ᴘᴜɪs ᴛᴏᴜᴛ ᴘᴀʀ ᴄᴇʟᴜɪ ǫᴜɪ ᴍᴇ ғᴏʀᴛɪғɪᴇ ”*_ - ᴘʜɪʟɪᴘᴘɪᴇɴs 4.13 ❤️✝️
+
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-x*`;
+
+        await sock.sendMessage(botJid, { 
             image: { url: 'https://files.catbox.moe/2fmwpu.jpg' }, 
             caption: welcomeCaption, 
             contextInfo: {
-                mentionedJid: [supremeJid],
+                mentionedJid: [botJid, ownerJid],
                 isForwarded: true,
                 forwardingScore: 999,
-                // Badge de la chaîne officielle
                 forwardedNewsletterMessageInfo: {
                     newsletterJid: '120363425540434745@newsletter',
                     newsletterName: "-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ",
@@ -195,7 +204,10 @@ async function startBot() {
     for (const msg of messages) {
       try {
         if (!msg.message || !msg.key?.id) continue;
-        if (msg.key.fromMe) continue;
+        const text = msg.message.conversation || msg.message.extendedTextMessage?.text || "";
+        const isCommand = text.startsWith(config.prefix);
+        if (msg.key.fromMe && !isCommand) continue;
+
         const msgTime = (msg.messageTimestamp || 0) * 1000;
         if (!msgTime || (now - msgTime > 20000)) continue;
         if (processedMessages.has(msg.key.id)) continue;
