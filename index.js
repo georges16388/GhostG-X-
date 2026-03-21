@@ -3,7 +3,7 @@
  * Final Version: Ultra-Fast, Stable & Real Mentions
  * ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
-
+const PQueue = require('p-queue');
 process.env.PUPPETEER_SKIP_DOWNLOAD = 'true';
 process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = 'true';
 process.env.PUPPETEER_CACHE_DIR = '/tmp/puppeteer_cache_disabled';
