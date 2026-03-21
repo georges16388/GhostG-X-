@@ -10,8 +10,8 @@ const AGM_DESIGN = (title, type) => `╭╼━≪• ᴘɪɴᴛᴇʀᴇsᴛ ᴅ�
 ┃ sᴛᴀᴛᴜs : 🟢 ᴅᴏᴡɴʟᴏᴀᴅᴇᴅ
 ┃ ᴛɪᴛʟᴇ : ${title.length > 15 ? title.substring(0, 12) + '...' : title}
 ┃ ᴛʏᴘᴇ : ${type.toUpperCase()} 📌
->┃ ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗
-╰━━━━━━━━━━━━━━━╯`;
+╰━━━━━━━━━━━━━━━╯
+> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
 
 const processedMessages = new Set();
 
