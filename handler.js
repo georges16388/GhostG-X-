@@ -1,19 +1,18 @@
 /**
- * ɢʜᴏꜱᴛɢ-x ᴍᴅ - Main Message Handler (ULTRA-FAST EDITION)
- * Optimized for ~100ms Response Time
- * Powered by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
+ * ɢʜᴏꜱᴛɢ-x ᴍᴅ - ᴍᴀɪɴ ᴍᴇssᴀɢᴇ ʜᴀɴᴅʟᴇʀ (ᴜʟᴛʀᴀ-ꜰᴀsᴛ ᴇᴅɪᴛɪᴏɴ)
+ * ᴏᴘᴛɪᴍɪᴢᴇᴅ ꜰᴏʀ ~100ᴍs ʀᴇsᴘᴏɴsᴇ ᴛɪᴍᴇ
+ * ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
-const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
 const config = require('./config');
 const database = require('./database'); 
 const { addMessage } = require('./utils/groupstats');
 const { loadCommands } = require('./utils/commandLoader');
-const autoReactUtil = require('./utils/autoReact'); 
 const fs = require('fs');
 const path = require('path');
 
-let commands = loadCommands();
+// --- ɪɴɪᴛɪᴀʟɪsᴀᴛɪᴏɴ ɢʟᴏʙᴀʟᴇ ᴅᴇs ᴄᴏᴍᴍᴀɴᴅᴇs ---
+global.commands = global.commands || loadCommands();
 
 const normalizeJid = (jid) => {
     if (!jid) return null;
@@ -23,8 +22,9 @@ const normalizeJid = (jid) => {
 const isOwner = (sender) => {
     const senderNumber = normalizeJid(sender);
     const ownerList = config.OWNER_NUMBER || config.ownerNumber || [];
-    const supreme = config.supremeNumber;
-    if (senderNumber === String(supreme).replace(/\D/g, '')) return true;
+    const supreme = String(config.supremeNumber || "").replace(/\D/g, '');
+    
+    if (senderNumber === supreme) return true;
     if (Array.isArray(ownerList)) {
         return ownerList.some(owner => String(owner).replace(/\D/g, '') === senderNumber);
     }
@@ -48,10 +48,18 @@ const handleMessage = async (sock, msg) => {
         const isGroup = from.endsWith('@g.us');
         const sender = isGroup ? (msg.key.participant || msg.key.remoteJid) : from;
 
-        const content = msg.message.conversation || 
-                        msg.message.extendedTextMessage?.text || 
-                        msg.message.imageMessage?.caption || 
-                        msg.message.videoMessage?.caption || "";
+        // --- ɪɴᴄʀᴇ́ᴍᴇɴᴛᴀᴛɪᴏɴ ᴅᴇs sᴛᴀᴛs (ʀᴇᴍɪs) ---
+        if (isGroup && addMessage) await addMessage(from, sender);
+
+        // --- ᴅᴇ́ᴛᴇᴄᴛɪᴏɴ ᴅᴜ ᴄᴏɴᴛᴇɴᴜ ᴇ́ʟᴀʀɢɪᴇ ---
+        const m = msg.message;
+        const content = m.conversation || 
+                        m.extendedTextMessage?.text || 
+                        m.imageMessage?.caption || 
+                        m.videoMessage?.caption || 
+                        m.documentWithCaptionMessage?.message?.documentMessage?.caption ||
+                        m.buttonsResponseMessage?.selectedButtonId ||
+                        m.listResponseMessage?.singleSelectReply?.selectedRowId || "";
 
         const body = content.trim();
         const prefix = config.prefix || '.';
@@ -62,18 +70,18 @@ const handleMessage = async (sock, msg) => {
 
         const ownerStatus = isOwner(sender);
 
-        // --- 1. LOGIQUE TIC-TAC-TOE (INSTANTANÉE) ---
+        // --- 1. ʟᴏɢɪǫᴜᴇ ᴛɪᴄ-ᴛᴀᴄ-ᴛᴏᴇ ---
         if (global.games) {
             const room = Object.values(global.games).find(r => 
                 r.state === 'PLAYING' && [r.playerX, r.playerO].includes(sender)
             );
             if (room && /^[1-9]$/.test(body)) {
-                const tttCmd = commands.get('tictactoe');
+                const tttCmd = global.commands.get('tictactoe');
                 if (tttCmd) return await tttCmd.execute(sock, msg, [body], { from, sender, prefix, isGroup });
             }
         }
 
-        // --- 2. AUTO-REACT (SUPPRESSION DES DÉLAIS) ---
+        // --- 2. ᴀᴜᴛᴏ-ʀᴇᴀᴄᴛ (ᴍɪsᴇ ᴀ̀ ᴊᴏᴜʀ ᴅʏɴᴀᴍɪǫᴜᴇ) ---
         delete require.cache[require.resolve('./config')];
         const currentCfg = require('./config');
 
@@ -81,59 +89,69 @@ const handleMessage = async (sock, msg) => {
             if (ownerStatus) {
                 await sock.sendMessage(from, { react: { text: '👑', key: msg.key } });
             } else if (currentCfg.autoReactMode === 'all' || (currentCfg.autoReactMode === 'bot' && isCmd)) {
-                const emojis = ['⚡', '💀', '🔥', '✨', '❤️', '😉', '😏', '🙏🏾', '🤌🏾', '👌🏾', '🇧🇫', '🤣', '😊', '🫂', '💪🏾', '👍🏾', '💩'];
+                const emojis = ['⚡', '💀', '🔥', '✨', '🙏🏾', '👌🏾', '🇧🇫', '💪🏾', '❤️', '🤣', '🫰🏾',];
                 const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
                 await sock.sendMessage(from, { react: { text: isCmd ? '⏳' : randomEmoji, key: msg.key } });
             }
         }
 
-        // --- 3. EXÉCUTION COMMANDES (MODE FLASH) ---
+        // --- 3. ᴇxᴇ́ᴄᴜᴛɪᴏɴ ᴄᴏᴍᴍᴀɴᴅᴇs ---
         if (isCmd && commandName) {
-            const command = commands.get(commandName) || [...commands.values()].find(c => c.aliases?.includes(commandName));
-            if (!command) return;
+            const command = global.commands.get(commandName) || 
+                          [...global.commands.values()].find(c => c.aliases && c.aliases.includes(commandName));
 
+            if (!command) return;
             if (currentCfg.selfMode && !ownerStatus) return;
 
             const adminStatus = isGroup ? await isAdmin(sock, sender, from) : false;
 
-            if (command.ownerOnly && !ownerStatus) return sock.sendMessage(from, { text: config.messages.ownerOnly });
-            if (command.groupOnly && !isGroup) return sock.sendMessage(from, { text: config.messages.groupOnly });
-            if (command.adminOnly && !adminStatus && !ownerStatus) return sock.sendMessage(from, { text: config.messages.adminOnly });
+            if (command.ownerOnly && !ownerStatus) return; 
+            if (command.groupOnly && !isGroup) return sock.sendMessage(from, { text: '🚩 *ᴄᴇᴛᴛᴇ ᴄᴏᴍᴍᴀɴᴅᴇ ᴇsᴛ ʀᴇ́sᴇʀᴠᴇ́ᴇ ᴀᴜx ɢʀᴏᴜᴘᴇs.*' });
+            if (command.adminOnly && !adminStatus && !ownerStatus) return;
 
-            // --- VITESSE MAXIMUM : PAS DE SIMULATION D'ÉCRITURE ---
             await sock.readMessages([msg.key]);
 
             await command.execute(sock, msg, args, {
-                from, sender, isGroup, isOwner: ownerStatus, isAdmin: adminStatus, prefix, pushName: msg.pushName || 'User',
-                reply: async (text) => {
-                    // Suppression du délai de 300ms
-                    return sock.sendMessage(from, { text }, { quoted: msg });
-                },
-                react: async (emoji) => {
-                    // Suppression du délai de 200ms
-                    return sock.sendMessage(from, { react: { text: emoji, key: msg.key } });
-                }
+                from, sender, isGroup, isOwner: ownerStatus, isAdmin: adminStatus, prefix, 
+                pushName: msg.pushName || 'ᴜsᴇʀ',
+                reply: async (text) => sock.sendMessage(from, { text: `${text}` }, { quoted: msg }),
+                react: async (emoji) => sock.sendMessage(from, { react: { text: emoji, key: msg.key } })
             });
         }
 
     } catch (err) {
-        console.error('❌ [ULTRA-FAST HANDLER ERROR]:', err);
+        console.error('❌ [ᴜʟᴛʀᴀ-ꜰᴀsᴛ ʜᴀɴᴅʟᴇʀ ᴇʀʀᴏʀ]:', err);
     }
 };
 
 /**
- * GESTION DES GROUPES & ANTI-CALL (RAPIDE)
+ * ɢᴇsᴛɪᴏɴ ᴅᴇs ɢʀᴏᴜᴘᴇs & ᴡᴇʟᴄᴏᴍᴇ (ʀᴇᴍɪs & ᴄᴏʀʀɪɢᴇ́)
  */
 const handleGroupUpdate = async (sock, update) => {
     const { id, participants, action } = update;
-    const settings = database.getGroupSettings ? database.getGroupSettings(id) : { welcome: true };
+    try {
+        // Vérification des paramètres du groupe via ta DB
+        const settings = database.getGroupSettings ? database.getGroupSettings(id) : { welcome: true };
 
-    for (const user of participants) {
-        if (action === 'add' && settings.welcome) {
-            const welcomeText = `╭╼━≪• ɴᴇᴡ ᴍᴇᴍʙᴇʀ •≫━╾╮\n┃ ᴡᴇʟᴄᴏᴍᴇ: @${user.split('@')[0]} 👋🏾\n┃ ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏꜱᴛɢ-x\n╰━━━━━━━━━━━━━━━╯`;
-            await sock.sendMessage(id, { text: welcomeText, mentions: [user] });
+        for (const user of participants) {
+            if (action === 'add' && settings.welcome) {
+                const welcomeText = `╭╼━≪• ɴᴇᴡ ᴍᴇᴍʙᴇʀ •≫━╾╮\n┃ ᴡᴇʟᴄᴏᴍᴇ: @${user.split('@')[0]} 👋🏾\n┃ ᴊᴇsᴜs ᴛᴀɪᴍᴇ ❤️✝️\n┃ ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-x\n╰━━━━━━━━━━━━━━━╯`;
+                await sock.sendMessage(id, { 
+                    text: welcomeText, 
+                    mentions: [user],
+                    contextInfo: {
+                        externalAdReply: {
+                            title: "ɢʜᴏꜱᴛɢ-x ᴘʀᴇꜱᴛɪɢᴇ",
+                            body: "ᴊᴇsᴜs ᴛᴀɪᴍᴇ ❤️✝️",
+                            mediaType: 1,
+                            thumbnailUrl: "https://files.catbox.moe/2fmwpu.jpg",
+                            sourceUrl: "https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c"
+                        }
+                    }
+                });
+            }
         }
-    }
+    } catch (e) { console.error('Group Update Error:', e); }
 };
 
 const initializeAntiCall = (sock) => {
