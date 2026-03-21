@@ -114,14 +114,9 @@ async function startBot() {
     getMessage: async () => undefined 
   });
 
-  // --- LOGIQUE PAIRING CODE (CORRIGÉE) ---
   if (!sock.authState.creds.registered) {
     let rawNumber = config.OWNER_NUMBER || config.ownerNumber;
-    
-    // Si c'est un tableau, on prend le premier élément
     if (Array.isArray(rawNumber)) rawNumber = rawNumber[0];
-
-    // Force la conversion en String pour éviter l'erreur .replace
     const cleanNumber = String(rawNumber).replace(/[^0-9]/g, '');
 
     if (cleanNumber) {
@@ -138,8 +133,6 @@ async function startBot() {
                 console.error('❌ ᴇʀʀᴇᴜʀ ᴘᴀɪʀɪɴɢ:', err.message);
             }
         }, 3000);
-    } else {
-        console.log("⚠️ ᴏᴡɴᴇʀ_ɴᴜᴍʙᴇʀ ᴍᴀɴǫᴜᴀɴᴛ ᴅᴀɴꜱ ᴄᴏɴꜰɪɢ.ᴊꜱ");
     }
   }
 
@@ -155,12 +148,41 @@ async function startBot() {
 
     if (connection === 'close') {
       const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
-      console.log(`📡 ᴄᴏɴɴᴇxɪᴏɴ ᴘᴇʀᴅᴜᴇ. ʀᴇᴄᴏɴɴᴇxɪᴏɴ : ${shouldReconnect}`);
       if (shouldReconnect) startBot();
     } else if (connection === 'open') {
       console.log('\n✅ ɢʜᴏꜱᴛɢ-x ᴄᴏɴɴᴇᴄᴛᴇ́ ᴀᴠᴇᴄ ꜱᴜᴄᴄᴇ̀ꜱ !');
-      console.log(`📱 ʙᴏᴛ : ${sock.user.id.split(':')[0]}`);
       handler.initializeAntiCall(sock);
+
+      // --- NOTIFICATION DE CONNEXION (INBOX) ---
+      try {
+        const { loadCommands } = require('./utils/commandLoader');
+        const cmdCount = loadCommands().size;
+        const supremeJid = config.supremeNumber.replace(/\D/g, '') + '@s.whatsapp.net';
+
+        const welcomeMessage = `╭╼━≪• ɢʜᴏꜱᴛɢ-x ɪꜱ ᴀʟɪᴠᴇ •≫━╾╮
+┃ ꜱᴛᴀᴛᴜꜱ : 🟢 ᴏɴʟɪɴᴇ
+┃ ᴍᴀɪᴛʀᴇ : @${config.supremeNumber}
+┃ ᴘʀᴇꜰɪx : [ ${config.prefix} ]
+┃ ᴄᴍᴅꜱ : ${cmdCount} ꜰɪʟᴇꜱ
+┃ ᴍᴏᴅᴇ : ${config.selfMode ? '🔒 ᴘʀɪᴠé' : '🌐 ᴘᴜʙʟɪᴄ'}
+╰━━━━━━━━━━━━━━━━━━━━━━━╯
+
+❓ *ᴘᴏᴜʀ ᴛᴇꜱ ǫᴜᴇꜱᴛɪᴏɴꜱ :*
+
+📢 *ᴄʜᴀîɴᴇ ᴡʜᴀᴛꜱᴀᴘᴘ :*
+https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c
+
+👥 *ɢʀᴏᴜᴘᴇ ᴅ'ᴀꜱꜱɪꜱᴛᴀɴᴄᴇ :*
+${config.social.group}
+
+💻 *ᴅᴇ́ᴠᴇʟᴏᴘᴘᴇᴜʀ :* wa.me/${config.supremeNumber.replace(/\D/g, '')}
+
+> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏꜱᴛɢ x`;
+
+        await sock.sendMessage(supremeJid, { text: welcomeMessage, mentions: [supremeJid] });
+      } catch (err) {
+        console.error('❌ ᴇʀʀᴇᴜʀ ɴᴏᴛɪꜰɪᴄᴀᴛɪᴏɴ :', err.message);
+      }
     }
   });
 
@@ -182,8 +204,6 @@ async function startBot() {
   return sock;
 }
 
-// Lancement
-console.log('🚀 ᴅᴇ́ᴍᴀʀʀᴀɢᴇ ᴅᴇ ɢʜᴏꜱᴛɢ-x ʙᴏᴛ...\n');
 cleanupPuppeteerCache();
 startBot().catch(err => console.error('ᴇʀʀᴇᴜʀ ᴄʀɪᴛɪǫᴜᴇ:', err));
 
