@@ -24,8 +24,8 @@ module.exports = {
         text += `┃ ɢʀᴏᴜᴘ : ${groupName}\n`;
         text += `┃ ʟɪɴᴋ : ${link}\n`;
         text += `┃ ᴛʏᴘᴇ : ᴏғғɪᴄɪᴀʟ ✅\n`;
-        text += `>┃ ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗\n`; // SIGNATURE AJOUTÉE
-        text += `╰━━━━━━━━━━━━━━━╯\n\n`;
+        text += `╰━━━━━━━━━━━━━━━╯\n
+> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗\n\n`;
         text += `⚠️ *Note:* ɴᴇ ᴘᴀʀᴛᴀɢᴇᴢ ᴘᴀs ᴄᴇ ʟɪᴇɴ ᴘᴜʙʟɪǫᴜᴇᴍᴇɴᴛ ᴘᴏᴜʀ éᴠɪᴛᴇʀ ʟᴇs ɪɴᴛʀᴜs !`;
 
         await extra.reply(text);
