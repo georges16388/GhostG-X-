@@ -1,6 +1,6 @@
 /**
  * ɢʜᴏꜱᴛɢ-x ᴍᴅ - ᴍᴀɪɴ ᴇɴᴛʀʏ ᴘᴏɪɴᴛ (ᴘʀᴇsᴛɪɢᴇ ᴛᴜʀʙᴏ)
- * Final Version: Ultra-Fast, Stable & Real Mentions
+ * Final Version: Ultra-Fast, Stable & Full Design
  * ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
@@ -28,34 +28,18 @@ const handler = require('./handler');
 const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
-const PQueue = require('p-queue'); // Déclaré une seule fois ici
 
-// --- SYSTÈME DE RAPIDITÉ (FILE D'ATTENTE) ---
-const queue = new PQueue({ concurrency: 1 }); 
-
-const store = {
-  messages: new Map(),
-  maxPerChat: 10, 
-  bind: (ev) => {
-    ev.on('messages.upsert', ({ messages }) => {
-      for (const msg of messages) {
-        if (!msg.key?.id) continue;
-        const jid = msg.key.remoteJid;
-        if (!store.messages.has(jid)) store.messages.set(jid, new Map());
-        const chatMsgs = store.messages.get(jid);
-        chatMsgs.set(msg.key.id, msg);
-        if (chatMsgs.size > store.maxPerChat) {
-          const oldestKey = chatMsgs.keys().next().value;
-          chatMsgs.delete(oldestKey);
-        }
-      }
-    });
-  }
-};
-
-let isReconnecting = false;
+let queue; 
 
 async function startBot() {
+  // Correction P-Queue : Import dynamique pour Katabump
+  try {
+    const { default: PQueue } = await import('p-queue');
+    queue = new PQueue({ concurrency: 1 });
+  } catch (e) {
+    console.error('⚠️ Erreur chargement P-Queue, passage en mode standard.');
+  }
+
   const sessionFolder = `./${config.sessionName}`;
 
   if (config.sessionID && (config.sessionID.startsWith('GhostG-X!') || config.sessionID.startsWith('KnightBot!'))) {
@@ -87,12 +71,12 @@ async function startBot() {
     keepAliveIntervalMs: 30000
   });
 
+  // Gestion Pairing Code
   if (!sock.authState.creds.registered) {
     const rawNumber = config.supremeNumber || config.OWNER_NUMBER;
     const cleanNumber = String(Array.isArray(rawNumber) ? rawNumber[0] : rawNumber).replace(/\D/g, '');
-
-    if (cleanNumber && !isReconnecting) {
-      console.log(`\n⏳ ɢᴇɴᴇʀᴀᴛɪɴɢ ᴘᴀɪʀɪɴɢ ᴄᴏᴅᴇ ꜰᴏʀ : ${cleanNumber}...`);
+    if (cleanNumber) {
+      console.log(`\n⏳ ɢᴇɴᴇʀᴀᴛɪɴɢ ᴘᴀɪʀɪɴɢ ᴄᴏᴅᴇ...`);
       setTimeout(async () => {
         try {
           let code = await sock.requestPairingCode(cleanNumber);
@@ -103,20 +87,15 @@ async function startBot() {
     }
   }
 
-  store.bind(sock.ev);
-
   sock.ev.on('connection.update', async (update) => {
     const { connection, lastDisconnect, qr } = update;
-
     if (qr && !config.supremeNumber) qrcode.generate(qr, { small: true });
 
     if (connection === 'close') {
       const statusCode = lastDisconnect?.error?.output?.statusCode;
-      const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
-      if (shouldReconnect && !isReconnecting) {
-        isReconnecting = true;
-        console.log(`🔄 Reconnexion rapide en cours...`);
-        setTimeout(() => { startBot(); isReconnecting = false; }, 3000);
+      if (statusCode !== DisconnectReason.loggedOut) {
+        console.log(`🔄 Reconnexion en cours...`);
+        setTimeout(() => startBot(), 3000);
       }
     } else if (connection === 'open') {
       console.log('\n✅ ɢʜᴏꜱᴛɢ-x ᴄᴏɴɴᴇᴄᴛᴇ́ ᴇᴛ ᴏᴘᴛɪᴍɪsé !');
@@ -124,11 +103,11 @@ async function startBot() {
 
       try {
         const { loadCommands } = require('./utils/commandLoader');
-        const totalCmds = loadCommands().size || "352";
-        
+        const totalCmds = loadCommands().size || "103";
         const supremeNum = config.supremeNumber.replace(/\D/g, '');
         const supremeJid = supremeNum + '@s.whatsapp.net';
 
+        // --- RETOUR DU DESIGN COMPLET ---
         const welcomeCaption = `╭╼━≪• *ɢʜᴏsᴛɢ-x ɪs ᴀʟɪᴠᴇ* •≫━╾╮
 ┃ *sᴛᴀᴛᴜᴛ* : 🟢 ᴏɴʟɪɴᴇ
 ┃ *ᴍᴀɪᴛʀᴇ* : @${supremeNum}
@@ -156,7 +135,7 @@ https://wa.me/22651622652
           image: { url: 'https://files.catbox.moe/2fmwpu.jpg' },
           caption: welcomeCaption,
           contextInfo: {
-            mentionedJid: [supremeJid], 
+            mentionedJid: [supremeJid],
             forwardingScore: 999,
             isForwarded: true,
             forwardedNewsletterMessageInfo: {
@@ -166,7 +145,6 @@ https://wa.me/22651622652
             }
           }
         });
-
       } catch (err) { console.error('❌ Notification Error:', err.message); }
     }
   });
@@ -177,11 +155,11 @@ https://wa.me/22651622652
     if (type !== 'notify') return;
     for (const msg of messages) {
       if (!msg.message) continue;
-      
-      queue.add(() => 
-        handler.handleMessage(sock, msg)
-        .catch(err => console.error("🔥 Error:", err))
-      );
+      if (queue) {
+        queue.add(() => handler.handleMessage(sock, msg).catch(err => console.error(err)));
+      } else {
+        handler.handleMessage(sock, msg).catch(err => console.error(err));
+      }
     }
   });
 
@@ -189,4 +167,3 @@ https://wa.me/22651622652
 }
 
 startBot().catch(err => console.error('❌ Erreur Critique:', err));
-module.exports = { store };
