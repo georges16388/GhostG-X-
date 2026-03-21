@@ -1,5 +1,6 @@
+
 /**
- * Menu Command - GhostG-X- Prestige Edition V5
+ * Menu Command - GhostG-X- Prestige Edition V5 (Gratitude Edition)
  * Design Minimaliste & Pur par -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
@@ -21,7 +22,7 @@ module.exports = {
   name: 'menu',
   aliases: ['help', 'h'],
   category: 'essentials',
-  description: 'Menu avec en-tête unique GhostG-X.',
+  description: 'Menu avec témoignage de gratitude GhostG-X.',
   usage: '.menu',
 
   async execute(sock, msg, args, extra) {
@@ -44,11 +45,12 @@ module.exports = {
       const ownerNumber = "22651622652";
       const pushName = msg.pushName || 'Guest';
 
-      // --- EN-TÊTE UNIQUE (STYLE ÉPURÉ) ---
+      // --- EN-TÊTE UNIQUE AVEC TÉMOIGNAGE ---
       let menuText = `┏▣ ◈ *${botName}* ◈\n`;
       menuText += `│\n`;
       menuText += `◈ *${toSmallCaps('commandes')}* : [ ${totalCommands} ]\n`;
       menuText += `◈ *${toSmallCaps('utilisateur')}* : ${toSmallCaps(pushName)}\n`;
+      menuText += `◈ *${toSmallCaps('jesus taime')}* ❤️✝️\n`; // La phrase de gratitude ajoutée ici
       menuText += `◈ *${toSmallCaps('prefixe')}* : [ ${prefix} ]\n`;
       menuText += `◈ *${toSmallCaps('developpeur')}* : wa.me/${ownerNumber}\n`;
       menuText += `┗▣\n\n`;
@@ -66,7 +68,8 @@ module.exports = {
         menuText += `┗▣\n\n`;
       }
 
-      menuText += `> ${toSmallCaps('powered by ghostg x')}`;
+      menuText += `> ${toSmallCaps('powered by ghostg x')}\n`;
+      menuText += `> ${toSmallCaps('merci seigneur pour ta grace')}`; // Un second petit rappel discret en bas
 
       const messageOptions = {
         caption: menuText,
@@ -81,7 +84,7 @@ module.exports = {
           },
           externalAdReply: {
             title: botName,
-            body: toSmallCaps("truth devices - prestige"),
+            body: toSmallCaps("jesus taime - truth devices"),
             mediaType: 1,
             sourceUrl: "https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c",
             thumbnailUrl: "https://files.catbox.moe/2fmwpu.jpg",
@@ -99,7 +102,7 @@ module.exports = {
         await sock.sendMessage(extra.from, { image: { url: "https://files.catbox.moe/2fmwpu.jpg" }, ...messageOptions }, { quoted: msg });
       }
 
-      await sock.sendMessage(extra.from, { react: { text: "👻", key: msg.key } });
+      await sock.sendMessage(extra.from, { react: { text: "🙏", key: msg.key } }); // Réaction changée en prière pour le menu
 
     } catch (error) {
       console.error('Menu Error:', error);
