@@ -129,16 +129,15 @@ async function startBot() {
       handler.initializeAntiCall(sock);
 
       try {
-        ┃ ᴄᴍᴅꜱ : ${global.commands ? global.commands.size : require('./utils/commandLoader').loadCommands().size} ꜰɪʟᴇꜱ
-
+        const { loadCommands } = require('./utils/commandLoader');
+        const totalCmds = global.commands ? global.commands.size : loadCommands().size;
         const supremeJid = config.supremeNumber.replace(/\D/g, '') + '@s.whatsapp.net';
 
-        // Message ALIVE avec témoignage de foi
         const welcomeCaption = `╭╼━≪• ɢʜᴏꜱᴛɢ-x ɪꜱ ᴀʟɪᴠᴇ •≫━╾╮
 ┃ ꜱᴛᴀᴛᴜꜱ : 🟢 ᴏɴʟɪɴᴇ
 ┃ ᴍᴀɪᴛʀᴇ : @${config.supremeNumber}
 ┃ ᴘʀᴇꜰɪx : [ ${config.prefix} ]
-┃ ᴄᴍᴅꜱ : ${loadCommands().size} ꜰɪʟᴇꜱ
+┃ ᴄᴍᴅꜱ : ${totalCmds} ꜰɪʟᴇꜱ
 ┃ ᴍᴏᴅᴇ : ${config.selfMode ? '🔒 ᴘʀɪᴠé' : '🌐 ᴘᴜʙʟɪᴄ'}
 ╰━━━━━━━━━━━━━━━━━━━━━━━╯
 
