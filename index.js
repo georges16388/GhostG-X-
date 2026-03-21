@@ -65,6 +65,15 @@ const store = {
 const processedMessages = new Set();
 setInterval(() => processedMessages.clear(), 5 * 60 * 1000);
 
+// --- FONCTION DE STYLE SMALLCAPS ---
+const toSmallCaps = (text) => {
+  if (!text) return "";
+  const fonts = {
+    'a': 'ᴀ', 'b': 'ʙ', 'c': 'ᴄ', 'd': 'ᴅ', 'e': 'ᴇ', 'f': 'ғ', 'g': 'ɢ', 'h': 'ʜ', 'i': 'ɪ', 'j': 'ᴊ', 'k': 'ᴋ', 'l': 'ʟ', 'm': 'ᴍ', 'n': 'ɴ', 'o': 'ᴏ', 'p': 'ᴘ', 'q': 'ǫ', 'r': 'ʀ', 's': 's', 't': 'ᴛ', 'u': 'ᴜ', 'v': 'ᴠ', 'w': 'ᴡ', 'x': 'x', 'y': 'ʏ', 'z': 'ᴢ'
+  };
+  return String(text).toLowerCase().split('').map(c => fonts[c] || c).join('');
+};
+
 async function startBot() {
   const sessionFolder = `./${config.sessionName}`;
 
@@ -130,36 +139,47 @@ async function startBot() {
 
       try {
         const { loadCommands } = require('./utils/commandLoader');
-        const totalCmds = global.commands ? global.commands.size : loadCommands().size;
+        const commandsMap = loadCommands();
+        const totalCmds = commandsMap.size;
         const supremeJid = config.supremeNumber.replace(/\D/g, '') + '@s.whatsapp.net';
+        
+        // --- PROPRIÉTAIRE EN SMALLCAPS ---
+        const rawOwner = config.ownerName || "Truth Devices";
+        const styledOwner = toSmallCaps(rawOwner);
 
-        const welcomeCaption = `╭╼━≪• ɢʜᴏꜱᴛɢ-x ɪꜱ ᴀʟɪᴠᴇ •≫━╾╮
-┃ ꜱᴛᴀᴛᴜꜱ : 🟢 ᴏɴʟɪɴᴇ
-┃ ᴍᴀɪᴛʀᴇ : @${config.supremeNumber}
-┃ ᴘʀᴇꜰɪx : [ ${config.prefix} ]
-┃ ᴄᴍᴅꜱ : ${totalCmds} ꜰɪʟᴇꜱ
-┃ ᴍᴏᴅᴇ : ${config.selfMode ? '🔒 ᴘʀɪᴠé' : '🌐 ᴘᴜʙʟɪᴄ'}
+        // --- WELCOME MESSAGE STYLISÉ ---
+        const welcomeCaption = `╭╼━≪• *${toSmallCaps('ghostg-x is alive')}* •≫━╾╮
+┃ *${toSmallCaps('statut')}* : 🟢 ᴏɴʟɪɴᴇ
+┃ *${toSmallCaps('maitre')}* : @${styledOwner}
+┃ *${toSmallCaps('prefixe')}* : [ ${config.prefix} ]
+┃ *${toSmallCaps('commandes')}* : ${totalCmds} ғɪʟᴇs
+┃ *${toSmallCaps('mode')}* : ${config.selfMode ? '🔒 ᴘʀɪᴠé' : '🌐 ᴘᴜʙʟɪᴄ'}
 ╰━━━━━━━━━━━━━━━━━━━━━━━╯
 
-❓ *ᴘᴏᴜʀ ᴛᴇꜱ ǫᴜᴇꜱᴛɪᴏɴꜱ :*
+❓ *${toSmallCaps('pour tes questions')}* :
 
-📢 *ᴄʜᴀîɴᴇ ᴡʜᴀᴛꜱᴀᴘᴘ :*
+📢 *${toSmallCaps('chaine whatsapp')}* :
 https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c
 
-👥 *ɢʀᴏᴜᴘᴇ ᴅ'ᴀꜱꜱɪꜱᴛᴀɴᴄᴇ :*
-${config.social.group}
+👥 *${toSmallCaps('groupe d\'entraide')}* :
+https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf
 
-💻 *ᴅᴇ́ᴠᴇʟᴏᴘᴘᴇᴜʀ :* wa.me/22651622652
+💻 *${toSmallCaps('developpeur')}* :
+https://wa.me/22651622652
 
-📖 _*“ ᴊᴇ ᴘᴜɪs ᴛᴏᴜᴛ ᴘᴀʀ ᴄᴇʟᴜɪ ǫᴜɪ ᴍᴇ ғᴏʀᴛɪғɪᴇ. ”*_ - ᴘʜɪʟɪᴘᴘɪᴇɴs 4.13 ❤️✝️
+📖 _*“ ${toSmallCaps('je puis tout par celui qui me fortifie')} ”*_ - ᴘʜɪʟɪᴘᴘɪᴇɴs 4.13 ❤️✝️
 
-> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏꜱᴛɢ x`;
+> *${toSmallCaps('powered by ghostg-x')}*`;
 
         await sock.sendMessage(supremeJid, { 
             image: { url: 'https://files.catbox.moe/2fmwpu.jpg' }, 
             caption: welcomeCaption, 
             mentions: [supremeJid] 
         });
+
+        // Petite réaction pour confirmer l'allumage
+        await sock.sendMessage(supremeJid, { react: { text: "⚡", key: { remoteJid: supremeJid, fromMe: true } } });
+
       } catch (err) { console.error('❌ Notification Error:', err.message); }
     }
   });
