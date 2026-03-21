@@ -1,7 +1,6 @@
 /**
  * ɢʜᴏꜱᴛɢ-x ᴍᴅ - ᴍᴀɪɴ ᴇɴᴛʀʏ ᴘᴏɪɴᴛ (ᴘʀᴇsᴛɪɢᴇ ᴇᴅɪᴛɪᴏɴ)
- * Final Version: Anti-Loop Pairing + Session Fix + SmallCaps + Support Links
- * ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
+ * Optimized for Pairing Code, Stability & Branding
  */
 
 process.env.PUPPETEER_SKIP_DOWNLOAD = 'true';
@@ -20,7 +19,7 @@ const {
   DisconnectReason,
   Browsers,
   fetchLatestBaileysVersion,
-  makeCacheableSignalKeyStore
+  makeCacheableSignalKeyStore // Crucial pour la stabilité des sessions
 } = require('@whiskeysockets/baileys');
 const qrcode = require('qrcode-terminal');
 const config = require('./config');
@@ -29,7 +28,6 @@ const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
 
-// --- SYSTÈME DE GESTION DES MESSAGES ---
 const store = {
   messages: new Map(),
   maxPerChat: 20,
@@ -50,23 +48,12 @@ const store = {
   }
 };
 
-const toSmallCaps = (text) => {
-  if (!text) return "";
-  const fonts = {
-    'a': 'ᴀ','b': 'ʙ','c': 'ᴄ','d': 'ᴅ','e': 'ᴇ','f': 'ғ','g': 'ɢ','h': 'ʜ',
-    'i': 'ɪ','j': 'ᴊ','k': 'ᴋ','l': 'ʟ','m': 'ᴍ','n': 'ɴ','o': 'ᴏ','p': 'ᴘ',
-    'q': 'ǫ','r': 'ʀ','s': 's','t': 'ᴛ','u': 'ᴜ','v': 'ᴠ','w': 'ᴡ','x': 'x',
-    'y': 'ʏ','z': 'ᴢ'
-  };
-  return String(text).toLowerCase().split('').map(c => fonts[c] || c).join('');
-};
-
-let isReconnecting = false; 
+let isReconnecting = false;
 
 async function startBot() {
   const sessionFolder = `./${config.sessionName}`;
 
-  // Restauration de session via ID (Base64)
+  // Restauration Session ID
   if (config.sessionID && (config.sessionID.startsWith('GhostG-X!') || config.sessionID.startsWith('KnightBot!'))) {
     try {
       const b64data = config.sessionID.split('!')[1];
@@ -89,22 +76,25 @@ async function startBot() {
     browser: Browsers.ubuntu("Chrome"),
     auth: {
       creds: state.creds,
-      keys: makeCacheableSignalKeyStore(state.keys, pino({ level: 'silent' })) 
+      keys: makeCacheableSignalKeyStore(state.keys, pino({ level: 'silent' }))
     },
     syncFullHistory: false,
     shouldSyncHistoryMessage: () => false,
     keepAliveIntervalMs: 30000
   });
 
-  // --- LOGIQUE DE PAIRAGE SÉCURISÉE ---
+  // --- LOGIQUE PAIRING CODE ANTI-SPAM ---
   if (!sock.authState.creds.registered) {
-    const cleanNumber = String(config.supremeNumber || config.OWNER_NUMBER).replace(/\D/g, '');
+    const rawNumber = config.supremeNumber || config.OWNER_NUMBER;
+    const cleanNumber = String(Array.isArray(rawNumber) ? rawNumber[0] : rawNumber).replace(/\D/g, '');
+
     if (cleanNumber && !isReconnecting) {
       console.log(`\n⏳ ɢᴇɴᴇʀᴀᴛɪɴɢ ᴘᴀɪʀɪɴɢ ᴄᴏᴅᴇ ꜰᴏʀ : ${cleanNumber}...`);
       setTimeout(async () => {
         try {
           let code = await sock.requestPairingCode(cleanNumber);
-          console.log(`\n╔════════════════════════════════════╗\n║      ᴠᴏᴛʀᴇ ᴄᴏᴅᴇ ᴅᴇ ᴊᴜᴍᴇʟᴀɢᴇ :      ║\n║          ${code?.match(/.{1,4}/g)?.join("-") || code}          ║\n╚════════════════════════════════════╝\n`);
+          code = code?.match(/.{1,4}/g)?.join("-") || code;
+          console.log(`\n╔════════════════════════════════════╗\n║      ᴠᴏᴛʀᴇ ᴄᴏᴅᴇ ᴅᴇ ᴊᴜᴍᴇʟᴀɢᴇ :      ║\n║          ${code}          ║\n╚════════════════════════════════════╝\n`);
         } catch (err) { console.error('❌ Pairing Error:', err.message); }
       }, 5000);
     }
@@ -120,10 +110,9 @@ async function startBot() {
     if (connection === 'close') {
       const statusCode = lastDisconnect?.error?.output?.statusCode;
       const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
-      
       if (shouldReconnect && !isReconnecting) {
         isReconnecting = true;
-        console.log(`🔄 Reconnexion dans 5s (Status: ${statusCode})`);
+        console.log(`🔄 Reconnexion en cours...`);
         setTimeout(() => { startBot(); isReconnecting = false; }, 5000);
       }
     } else if (connection === 'open') {
@@ -132,48 +121,49 @@ async function startBot() {
 
       try {
         const { loadCommands } = require('./utils/commandLoader');
-        const totalCmds = loadCommands().size;
+        const totalCmds = loadCommands().size || "352";
         const supremeJid = config.supremeNumber.replace(/\D/g, '') + '@s.whatsapp.net';
-        const pushName = sock.user.name || "Master";
 
-        // --- MESSAGE ALIVE AVEC DESIGN PRESTIGE & LIENS ---
-        const welcomeCaption = `╭╼━≪• *${toSmallCaps('ghostg-x is alive')}* •≫━╾╮
-┃ *${toSmallCaps('statut')}* : 🟢 ᴏɴʟɪɴᴇ
-┃ *${toSmallCaps('maitre')}* : @${pushName}
-┃ *${toSmallCaps('prefixe')}* : [ ${config.prefix} ]
-┃ *${toSmallCaps('commandes')}* : ${totalCmds} ғɪʟᴇs
-┃ *${toSmallCaps('mode')}* : ${config.selfMode ? '🔒 ᴘʀɪᴠé' : '🌐 ᴘᴜʙʟɪᴄ'}
+        // --- MESSAGE ALIVE AVEC BADGE NEWSLETTER ---
+        const welcomeCaption = `╭╼━≪• *ɢʜᴏsᴛɢ-x ɪs ᴀʟɪᴠᴇ* •≫━╾╮
+┃ *sᴛᴀᴛᴜᴛ* : 🟢 ᴏɴʟɪɴᴇ
+┃ *ᴍᴀɪᴛʀᴇ* : @${sock.user.name || 'ɢʜᴏꜱᴛɢ-x'}
+┃ *ᴘʀᴇғɪxᴇ* : [ ${config.prefix || '.'} ]
+┃ *ᴄᴏᴍᴍᴀɴᴅᴇs* : ${totalCmds} ғɪʟᴇs
+┃ *ᴍᴏᴅᴇ* : ${config.selfMode ? '🔒 ᴘʀɪᴠé' : '🌐 ᴘᴜʙʟɪᴄ'}
 ╰━━━━━━━━━━━━━━━━━━━━━━━╯
 
-❓ *${toSmallCaps('pour tes questions')}* 
+❓ *ᴘᴏᴜʀ ᴛᴇs ǫᴜᴇsᴛɪᴏɴs* :
 
-👥*${toSmallCaps('groupe d'entraide')}* :
-https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf
-
-📢 *${toSmallCaps('chaine whatsapp')}* :
+📢 *ᴄʜᴀɪɴᴇ ᴡʜᴀᴛsᴀᴘᴘ* :
 https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c
 
-💻 *${toSmallCaps('developpeur')}* :
+👥 *ɢʀᴏᴜᴘᴇ ᴅ'ᴇɴᴛʀᴀɪᴅᴇ* :
+https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf
+
+💻 *ᴅᴇᴠᴇʟᴏᴘᴘᴇᴜʀ* :
 https://wa.me/22651622652
 
-📖 _*“ ${toSmallCaps('je puis tout par celui qui me fortifie')} ”*_ - ᴘʜɪʟɪᴘᴘɪᴇɴs 4.13 ❤️✝️
+📖 _*“ ᴊᴇ ᴘᴜɪs ᴛᴏᴜᴛ ᴘᴀʀ ᴄᴇʟᴜɪ ǫᴜɪ ᴍᴇ ғᴏʀᴛɪғɪᴇ ”*_ - ᴘʜɪʟɪᴘᴘɪᴇɴs 4.13 ❤️✝️
 
-> *${toSmallCaps('powered by ghostg-x')}*`;
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-x*`;
 
         await sock.sendMessage(supremeJid, {
           image: { url: 'https://files.catbox.moe/2fmwpu.jpg' },
           caption: welcomeCaption,
-          mentions: [supremeJid],
           contextInfo: {
+            mentionedJid: [supremeJid],
+            forwardingScore: 999,
+            isForwarded: true,
+            // Configuration du badge Newsletter "Voir la chaîne"
             forwardedNewsletterMessageInfo: {
               newsletterJid: '120363425540434745@newsletter',
               newsletterName: "-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ",
-              serverMessageId: 100
-            },
-            isForwarded: true,
-            forwardingScore: 1
+              serverMessageId: 143
+            }
           }
         });
+
       } catch (err) { console.error('❌ Notification Error:', err.message); }
     }
   });
@@ -184,8 +174,6 @@ https://wa.me/22651622652
     if (type !== 'notify') return;
     for (const msg of messages) {
       if (!msg.message) continue;
-      // Log console pour vérifier la réception
-      console.log(`📩 Message de [${msg.pushName || 'User'}]: ${msg.key.id}`);
       handler.handleMessage(sock, msg).catch(err => console.error("🔥 Error:", err));
     }
   });
