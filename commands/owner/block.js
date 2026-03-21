@@ -13,7 +13,7 @@ const AGM_BAN = (user) => `╭╼━≪• ᴀɢᴍ ʙʟᴏᴄᴋ sʏsᴛᴇᴍ 
 
 module.exports = {
   name: 'block',
-  aliases: ['banuser'],
+  aliases: ['banuser', 'ban'],
   category: 'owner',
   description: 'Bloquer un utilisateur définitivement',
   usage: '.block @user ou répondre à son message',
