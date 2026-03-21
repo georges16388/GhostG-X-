@@ -10,7 +10,7 @@ const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 // On affiche ton numéro et le nom du bot pour un rendu ultra-pro
 const AGM_BC = (message, sender) => `╭╼━≪• ᴀɢᴍ ʙʀᴏᴀᴅᴄᴀsᴛ •≫━╾╮
 ┃ ᴛʏᴘᴇ : ɢʟᴏʙᴀʟ ᴀɴɴᴏᴜɴᴄᴇ 📢
-┃ ᴀᴜᴛʜᴏʀ : @${sender.split('@')[0]} 👑
+┃ ᴀᴜᴛʜᴏʀ : @${sender.split('@')[0]} 
 ┃ sʏsᴛᴇᴍ : ɢʜᴏsᴛɢ-x ᴍᴅ ⚡
 ┃ ᴍᴇssᴀɢᴇ : ${message}
 ╰━━━━━━━━━━━━━━━╯
