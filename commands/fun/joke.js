@@ -12,8 +12,8 @@ const JOKE_DESIGN = (setup, punchline) => `╭╼━≪• ɢʜᴏsᴛ ʜᴜᴍ�
 ┃ 
 ┃ ʀᴇᴘᴏɴsᴇ : ${punchline} 😂
 ┃ 
-> ┃ ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗
-╰━━━━━━━━━━━━━━━╯`;
+╰━━━━━━━━━━━━━━━╯
+> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
 
 module.exports = {
   name: 'joke',
