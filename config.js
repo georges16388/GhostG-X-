@@ -8,7 +8,7 @@ dotenv.config();
 
 module.exports = {
     // --- BOT OWNER CONFIGURATION ---
-    OWNER_NUMBER: ['22651622652'], 
+    OWNER_NUMBER: '22651622652', 
     ownerName: ['-ّ⸙𓆩ɢʜᴏꜱᴛɢ x 𓆪⸙-ّ', 'ᴘʜᴀɴᴛᴏᴍ-x'],
     supremeNumber: '22651622652', // Ton ID Maître
 
