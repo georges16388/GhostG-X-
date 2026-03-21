@@ -9,8 +9,8 @@ const RESETWARN_DESIGN = (user, prevCount) => `╭╼━≪• ᴡᴀʀɴɪɴɢs
 ┃ ᴜsᴇʀ : @${user.split('@')[0]} 👤
 ┃ ᴘʀᴇᴠɪᴏᴜs : ${prevCount} ⚠️
 ┃ sᴛᴀᴛᴜs : ᴄʟᴇᴀʀᴇᴅ ✨
-> ┃ ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗
-╰━━━━━━━━━━━━━━━╯`;
+╰━━━━━━━━━━━━━━━╯
+> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
 
 module.exports = {
   name: 'resetwarn',
