@@ -3,7 +3,7 @@
  * Final Version: Ultra-Fast, Stable & Real Mentions
  * ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
-const PQueue = require('p-queue');
+
 process.env.PUPPETEER_SKIP_DOWNLOAD = 'true';
 process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = 'true';
 process.env.PUPPETEER_CACHE_DIR = '/tmp/puppeteer_cache_disabled';
@@ -28,10 +28,10 @@ const handler = require('./handler');
 const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
-const PQueue = require('p-queue');
+const PQueue = require('p-queue'); // Déclaré une seule fois ici
 
 // --- SYSTÈME DE RAPIDITÉ (FILE D'ATTENTE) ---
-const queue = new PQueue({ concurrency: 1 }); // Traite les messages 1 par 1 pour éviter le lag
+const queue = new PQueue({ concurrency: 1 }); 
 
 const store = {
   messages: new Map(),
@@ -58,7 +58,6 @@ let isReconnecting = false;
 async function startBot() {
   const sessionFolder = `./${config.sessionName}`;
 
-  // Restauration Session ID (Base64)
   if (config.sessionID && (config.sessionID.startsWith('GhostG-X!') || config.sessionID.startsWith('KnightBot!'))) {
     try {
       const b64data = config.sessionID.split('!')[1];
@@ -88,7 +87,6 @@ async function startBot() {
     keepAliveIntervalMs: 30000
   });
 
-  // --- LOGIQUE PAIRING CODE ANTI-SPAM ---
   if (!sock.authState.creds.registered) {
     const rawNumber = config.supremeNumber || config.OWNER_NUMBER;
     const cleanNumber = String(Array.isArray(rawNumber) ? rawNumber[0] : rawNumber).replace(/\D/g, '');
@@ -128,7 +126,6 @@ async function startBot() {
         const { loadCommands } = require('./utils/commandLoader');
         const totalCmds = loadCommands().size || "352";
         
-        // --- PRÉPARATION DE LA MENTION CLIQUEABLE ---
         const supremeNum = config.supremeNumber.replace(/\D/g, '');
         const supremeJid = supremeNum + '@s.whatsapp.net';
 
@@ -159,7 +156,7 @@ https://wa.me/22651622652
           image: { url: 'https://files.catbox.moe/2fmwpu.jpg' },
           caption: welcomeCaption,
           contextInfo: {
-            mentionedJid: [supremeJid], // Rends la mention réelle et cliquable
+            mentionedJid: [supremeJid], 
             forwardingScore: 999,
             isForwarded: true,
             forwardedNewsletterMessageInfo: {
@@ -176,13 +173,11 @@ https://wa.me/22651622652
 
   sock.ev.on('creds.update', saveCreds);
 
-  // --- TRAITEMENT TURBO ---
   sock.ev.on('messages.upsert', ({ messages, type }) => {
     if (type !== 'notify') return;
     for (const msg of messages) {
       if (!msg.message) continue;
       
-      // Ajout à la file d'attente pour ne jamais ralentir
       queue.add(() => 
         handler.handleMessage(sock, msg)
         .catch(err => console.error("🔥 Error:", err))
