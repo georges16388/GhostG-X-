@@ -1,6 +1,6 @@
 /**
  * GhostG-X Bot - Main Entry Point
- * Optimized for Stability & Pushname Mentions
+ * Fix: Decrypted message with closed session & Pushname Mentions
  * Prestige Edition - GhostG X
  */
 process.env.PUPPETEER_SKIP_DOWNLOAD = 'true';
@@ -33,7 +33,8 @@ const {
   useMultiFileAuthState,
   DisconnectReason,
   Browsers,
-  fetchLatestBaileysVersion
+  fetchLatestBaileysVersion,
+  makeCacheableSignalKeyStore // INDISPENSABLE POUR FIXER LE BUG DE SESSION
 } = require('@whiskeysockets/baileys');
 const qrcode = require('qrcode-terminal');
 const config = require('./config');
@@ -65,7 +66,6 @@ const store = {
 const processedMessages = new Set();
 setInterval(() => processedMessages.clear(), 5 * 60 * 1000);
 
-// --- FONCTION DE STYLE SMALLCAPS ---
 const toSmallCaps = (text) => {
   if (!text) return "";
   const fonts = {
@@ -97,10 +97,14 @@ async function startBot() {
     logger: pino({ level: 'silent' }),
     printQRInTerminal: false,
     browser: Browsers.ubuntu("Chrome"),
-    auth: state,
+    auth: {
+        creds: state.creds,
+        keys: makeCacheableSignalKeyStore(state.keys, pino({ level: 'silent' })) // SOLUTION AU BUG DE RÉPONSE
+    },
     syncFullHistory: false,
     shouldSyncHistoryMessage: () => false,
-    keepAliveIntervalMs: 30000
+    keepAliveIntervalMs: 30000,
+    generateHighQualityLinkPreview: true
   });
 
   if (!sock.authState.creds.registered) {
@@ -134,14 +138,11 @@ async function startBot() {
 
       try {
         const { loadCommands } = require('./utils/commandLoader');
-        const commandsMap = loadCommands();
-        const totalCmds = commandsMap.size;
+        const totalCmds = loadCommands().size;
         
-        // Identifiants
         const supremeJid = config.supremeNumber.replace(/\D/g, '') + '@s.whatsapp.net';
-        const pushName = sock.user.name || "Master"; // Récupère ton pushname bot
+        const pushName = sock.user.name || "Master"; // Ton Pushname
 
-        // --- WELCOME MESSAGE STYLISÉ ---
         const welcomeCaption = `╭╼━≪• *${toSmallCaps('ghostg-x is alive')}* •≫━╾╮
 ┃ *${toSmallCaps('statut')}* : 🟢 ᴏɴʟɪɴᴇ
 ┃ *${toSmallCaps('maitre')}* : @${pushName}
@@ -183,6 +184,8 @@ https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c
     for (const msg of messages) {
       if (!msg.message || processedMessages.has(msg.key.id)) continue;
       processedMessages.add(msg.key.id);
+      
+      // On passe le pushname au handler si besoin
       handler.handleMessage(sock, msg).catch(() => {});
     }
   });
