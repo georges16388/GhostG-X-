@@ -3,6 +3,8 @@
  * Final Version: Ultra-Fast, Stable & Full Design
  * ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
+const PQueue = require('p-queue');
+const queue = new PQueue({ concurrency: 1 });
 
 process.env.PUPPETEER_SKIP_DOWNLOAD = 'true';
 process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = 'true';
