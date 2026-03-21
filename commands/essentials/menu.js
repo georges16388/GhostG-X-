@@ -1,6 +1,6 @@
 /**
- * Menu Command - GhostG-X Prestige Edition V5 (Gratitude Edition)
- * Focus: Clean Design + Native WhatsApp Channel Button + Real Mentions
+ * ɢʜᴏꜱᴛɢ-x ᴍᴅ - ᴍᴇɴᴜ ᴘʀᴇsᴛɪɢᴇ ᴠ5 (ɢʀᴀᴛɪᴛᴜᴅᴇ ᴇᴅɪᴛɪᴏɴ)
+ * Optimisé pour le Pushname cliquable et le bouton Newsletter
  */
 
 const config = require('../../config');
@@ -20,43 +20,47 @@ module.exports = {
   name: 'menu',
   aliases: ['help', 'h'],
   category: 'essentials',
-  description: 'Menu GhostG-X avec mention réelle et bouton de chaîne.',
+  description: 'Menu GhostG-X avec Pushname et bouton Newsletter.',
   usage: '.menu',
 
   async execute(sock, msg, args, extra) {
     try {
+      // 1. CALCUL DU NOMBRE RÉEL DE COMMANDES
       const commands = loadCommands();
       const categories = {};
-      let totalCommands = 0;
+      let totalFiles = 0;
 
       commands.forEach((cmd, name) => {
         if (cmd.name === name) {
-          totalCommands++;
+          totalFiles++;
           const cat = cmd.category ? cmd.category.toLowerCase() : 'autres';
           if (!categories[cat]) categories[cat] = [];
           categories[cat].push(cmd);
         }
       });
 
+      // 2. RÉCUPÉRATION DES INFOS UTILISATEUR
+      const pushName = msg.pushName || 'ᴜsᴇʀ';
+      const senderJid = extra.sender;
+      const senderNumber = senderJid.split('@')[0];
+
       const prefix = config.prefix || '.';
       const botName = "ɢʜᴏsᴛɢ-x";
       const ownerNumber = "22651622652";
-      
-      // --- LOGIQUE DE MENTION RÉELLE ---
-      // On récupère le numéro de celui qui tape la commande sans le "@s.whatsapp.net"
-      const senderNumber = extra.sender.split('@')[0];
 
+      // 3. CONSTRUCTION DU TEXTE (DESIGN PRÉCIS)
       let menuText = `╭╼━≪• *${botName}* •≫━╾╮\n`;
-      menuText += `┃ *${toStyledCaps('statut')}* : 🟢 ᴏɴʟɪɴᴇ\n`;
-      // Utilisation du @ suivi du numéro pur pour créer le lien cliquable
-      menuText += `┃ *${toStyledCaps('utilisateur')}* : @${senderNumber}\n`; 
-      menuText += `┃ *${toStyledCaps('jesus t'aime')}* : ❤️✝️\n`;
-      menuText += `┃ *${toStyledCaps('prefixe')}* : [ ${prefix} ]\n`;
-      menuText += `┃ *${toStyledCaps('commandes')}* : ${totalCommands} ғɪʟᴇs\n`;
-      menuText += `┃ *${toStyledCaps('developpeur')}* : https://wa.me/${ownerNumber}\n`;
+      menuText += `┃ *sᴛᴀᴛᴜᴛ* : 🟢 ᴏɴʟɪɴᴇ\n`;
+      // La mention magique : @numéro (Nom)
+      menuText += `┃ *ᴜᴛɪʟɪsᴀᴛᴇᴜʀ* : @${senderNumber} (${pushName})\n`;
+      menuText += `┃ *ᴊᴇsᴜs ᴛᴀɪᴍᴇ* : ❤️✝️\n`;
+      menuText += `┃ *ᴘʀᴇғɪxᴇ* : [ ${prefix} ]\n`;
+      menuText += `┃ *ᴄᴏᴍᴍᴀɴᴅᴇs* : ${totalFiles} ғɪʟᴇs\n`;
+      menuText += `┃ *ᴅᴇᴠᴇʟᴏᴘᴘᴇᴜʀ* : https://wa.me/${ownerNumber}\n`;
       menuText += `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n`;
 
-      const catOrder = ['essentials', 'ai', 'group', 'admin', 'fun', 'media', 'anime', 'owner', 'utility'];
+      // Liste des catégories dans l'ordre souhaité
+      const catOrder = ['essentials', 'ai', 'admin', 'fun', 'media', 'owner', 'utility', 'faith', 'textmaker'];
       const allCats = Object.keys(categories).sort();
       const finalOrder = [...new Set([...catOrder.filter(c => allCats.includes(c)), ...allCats])];
 
@@ -69,32 +73,28 @@ module.exports = {
         menuText += `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n`;
       }
 
-      menuText += `> *${toStyledCaps('powered by ghostg-x')}*\n`;
-      menuText += `> *${toStyledCaps('merci seigneur pour ta grace')}*`;
+      menuText += `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-x*\n`;
+      menuText += `> *ᴍᴇʀᴄɪ sᴇɪɢɴᴇᴜʀ ᴘᴏᴜʀ ᴛᴀ ɢʀᴀᴄᴇ*`;
 
+      // 4. ENVOI DU MESSAGE AVEC OPTIONS NEWSLETTER
       const messageOptions = {
-        image: { url: "https://files.catbox.moe/2fmwpu.jpg" },
+        image: { url: 'https://files.catbox.moe/2fmwpu.jpg' },
         caption: menuText,
-        // CRUCIAL : On met le JID complet dans mentionedJid pour activer le lien bleu
         contextInfo: {
-          mentionedJid: [extra.sender], 
+          mentionedJid: [senderJid], // Active le lien bleu sur le @numéro
+          isForwarded: true,
+          forwardingScore: 999,
+          // Badge "Voir la chaîne" et Infos Newsletter
           forwardedNewsletterMessageInfo: {
             newsletterJid: '120363425540434745@newsletter',
             newsletterName: "-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ",
-            serverMessageId: 100 
-          },
-          isForwarded: true,
-          forwardingScore: 1 
+            serverMessageId: 143
+          }
         }
       };
 
-      const imagePath = path.join(__dirname, '../../utils/bot_image.jpg');
-      if (fs.existsSync(imagePath)) {
-        messageOptions.image = fs.readFileSync(imagePath);
-      }
-
       await sock.sendMessage(extra.from, messageOptions, { quoted: msg });
-      await sock.sendMessage(extra.from, { react: { text: "🙏🏾", key: msg.key } });
+      await sock.sendMessage(extra.from, { react: { text: "⚡", key: msg.key } });
 
     } catch (error) {
       console.error('Menu Error:', error);
