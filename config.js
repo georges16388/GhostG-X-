@@ -10,12 +10,12 @@ module.exports = {
 
     // --- BOT IDENTITY & SESSIONS ---
     botName: 'ɢʜᴏꜱᴛɢ-x',
-    prefix: process.env.PREFIX || '.',
+    prefix: process.env.PREFIX || ''',
     sessionName: 'session',
     sessionID:'',
     
     // --- BOT BEHAVIOR & AUTOMATIONS ---
-    selfMode: true, 
+    selfMode: false, 
     autoRead: true,
     autoTyping: true,
     autoReact: false,
@@ -41,7 +41,7 @@ module.exports = {
       welcomeMessage: `╭╼━≪• *ɴᴇᴡ ᴍᴇᴍʙᴇʀ* •≫━╾╮
 ┃ *ᴡᴇʟᴄᴏᴍᴇ* : @user 👋🏾
 ┃ *ɴᴏᴜs sᴏᴍᴍᴇs ʜᴇᴜʀᴇᴜx ᴅᴇ ᴛ'ᴀᴠᴏɪʀ ᴘᴀʀᴍɪ ɴᴏᴜs*
-┃ ᴍᴇᴍʙᴇʀ ᴄᴏᴜɴᴛ* : #memberCount
+┃ *ᴍᴇᴍʙʀᴇs ᴀᴄᴛᴜᴇʟs* : #memberCount
 ┃ *ᴛɪᴍᴇ* : #time ⏰
 ╰━━━━━━━━━━━━━━━╯
 > ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏꜱᴛɢ x`,
