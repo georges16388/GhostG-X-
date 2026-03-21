@@ -9,7 +9,7 @@ module.exports = {
     supremeNumber: '22651622652', 
 
     // --- BOT IDENTITY & SESSIONS ---
-    botName: '-ّ⸙𓆩ɢʜᴏꜱᴛɢ x 𓆪⸙-ّ',
+    botName: 'ɢʜᴏꜱᴛɢ-x',
     prefix: process.env.PREFIX || '.',
     sessionName: 'session',
     sessionID: process.env.SESSION_ID || '',
