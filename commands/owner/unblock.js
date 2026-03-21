@@ -15,40 +15,45 @@ module.exports = {
   name: 'unblock',
   aliases: ['unban'],
   category: 'owner',
-  description: 'Débloquer un utilisateur',
-  usage: '.unblock @user ou répondre à son message',
+  description: 'Débloquer un utilisateur sur WhatsApp.',
+  usage: '.unblock @user (ou répondre à un message)',
   ownerOnly: true,
-  
+
   async execute(sock, msg, args, extra) {
     try {
-      let target;
-      
+      const from = extra.from;
       const ctx = msg.message?.extendedTextMessage?.contextInfo;
-      const mentioned = ctx?.mentionedJid || [];
-      
-      // Détection de la cible (mention ou réponse au message cité)
-      if (mentioned && mentioned.length > 0) {
-        target = mentioned[0];
+      let target;
+
+      // 1. Détection de la cible (Mention > Réponse > Argument)
+      if (ctx?.mentionedJid && ctx.mentionedJid.length > 0) {
+        target = ctx.mentionedJid[0];
       } else if (ctx?.participant) {
         target = ctx.participant;
-      } else {
-        return extra.reply('⚠️ *ᴠᴇᴜɪʟʟᴇᴢ ᴍᴇɴᴛɪᴏɴɴᴇʀ ᴏᴜ ʀéᴘᴏɴᴅʀᴇ à ᴜɴ ᴜᴛɪʟɪsᴀᴛᴇᴜʀ.*');
+      } else if (args[0]) {
+        target = args[0].replace(/\D/g, '') + '@s.whatsapp.net';
       }
 
-      await sock.sendMessage(extra.from, { react: { text: '🔓', key: msg.key } });
+      if (!target) {
+        return sock.sendMessage(from, { text: '⚠️ *ᴠᴇᴜɪʟʟᴇᴢ ᴍᴇɴᴛɪᴏɴɴᴇʀ ᴏᴜ ʀéᴘᴏɴᴅʀᴇ à ᴜɴ ᴜᴛɪʟɪsᴀᴛᴇᴜʀ.*' }, { quoted: msg });
+      }
 
-      // Action de déblocage sur WhatsApp
+      await sock.sendMessage(from, { react: { text: '🔓', key: msg.key } });
+
+      // 2. Action de déblocage (WhatsApp API)
       await sock.updateBlockStatus(target, 'unblock');
-      
-      // Message de confirmation avec Design AGM
-      await sock.sendMessage(extra.from, {
+
+      // 3. Confirmation avec Design AGM
+      await sock.sendMessage(from, {
         text: AGM_UNBAN(target),
         mentions: [target]
       }, { quoted: msg });
-      
+
+      await sock.sendMessage(from, { react: { text: '✅', key: msg.key } });
+
     } catch (error) {
       console.error('Unblock Error:', error);
-      await extra.reply(`❌ *ᴇʀʀᴇᴜʀ sʏsᴛᴇ̀ᴍᴇ : ${error.message}*`);
+      await sock.sendMessage(extra.from, { text: `❌ *ᴇʀʀᴇᴜʀ : ${error.message}*` }, { quoted: msg });
     }
   }
 };
