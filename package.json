@@ -1,5 +1,5 @@
 {
-    "name": "ghostg-x",
+    "name": "ghostg-x-bot",
     "version": "1.0.0",
     "description": "ghostg-x WhatsApp Bot — a powerful, fun and intelligent bot packed with extra features, AI capabilities and a sleek futuristic design",
     "main": "index.js",
@@ -42,7 +42,7 @@
         "node-fetch": "^2.7.0",
         "node-webpmux": "^3.1.7",
         "pino": "^9.0.0",
-        "p-queue": "^6.6.2",
+        "p-queue": "6.6.2",
         "qrcode": "^1.5.3",
         "qrcode-terminal": "^0.12.0",
         "ruhend-scraper": "^9.0.8",
