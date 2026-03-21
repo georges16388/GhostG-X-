@@ -7,8 +7,8 @@ const GAY_DESIGN = (target, percent, verdict) => `╭╼━≪• ɢʜᴏsᴛ ɢ
 ┃ ᴄɪʙʟᴇ : @${target.split('@')[0]} 🎯
 ┃ sᴄᴏʀᴇ : ${percent}% 🌈
 ┃ ᴠᴇʀᴅɪᴄᴛ : ${verdict}
-> ┃ ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗
-╰━━━━━━━━━━━━━━━╯`;
+╰━━━━━━━━━━━━━━━╯
+> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
 
 module.exports = {
   name: 'gayrate',
