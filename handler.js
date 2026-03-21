@@ -31,7 +31,7 @@ const handleMessage = async (sock, msg) => {
 
         const body = content.trim();
 
-        console.log("📨 TEXTE REÇU:", body || "[VIDE]");
+        console.log("📨", toSmallCaps("texte reçu") + ":", toSmallCaps(body || "[vide]"));
 
         const prefix = config.prefix || '.';
         const isCmd = body.startsWith(prefix);
