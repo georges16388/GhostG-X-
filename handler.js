@@ -1,6 +1,5 @@
 /**
- * ɢʜᴏꜱᴛɢ-x ᴍᴅ - ᴍᴀɪɴ ᴍᴇssᴀɢᴇ ʜᴀɴᴅʟᴇʀ (ᴜʟᴛʀᴀ-ꜰᴀsᴛ ᴇᴅɪᴛɪᴏɴ)
- * ᴏᴘᴛɪᴍɪᴢᴇᴅ ꜰᴏʀ ~100ᴍs ʀᴇsᴘᴏɴsᴇ ᴛɪᴍᴇ
+ * ɢʜᴏꜱᴛɢ-x ᴍᴅ - ᴍᴀɪɴ ᴍᴇssᴀɢᴇ ʜᴀɴᴅʟᴇʀ (ᴘʀᴇsᴛɪɢᴇ ᴇᴅɪᴛɪᴏɴ)
  * ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
@@ -10,25 +9,34 @@ const { addMessage } = require('./utils/groupstats');
 const { loadCommands } = require('./utils/commandLoader');
 const fs = require('fs');
 const path = require('path');
+const axios = require('axios');
 
-// --- ɪɴɪᴛɪᴀʟɪsᴀᴛɪᴏɴ ɢʟᴏʙᴀʟᴇ ᴅᴇs ᴄᴏᴍᴍᴀɴᴅᴇs ---
+// --- ɪɴɪᴛɪᴀʟɪsᴀᴛɪᴏɴ ɢʟᴏʙᴀʟᴇ (ᴄʀɪᴛɪǫᴜᴇ ᴘᴏᴜʀ ᴛᴇs 105 ᴄᴍᴅs) ---
 global.commands = global.commands || loadCommands();
 
+/**
+ * ɴᴏʀᴍᴀʟɪsᴀᴛɪᴏɴ ᴅᴇs ᴊɪᴅs
+ */
 const normalizeJid = (jid) => {
     if (!jid) return null;
     return jid.split(':')[0].split('@')[0].replace(/\D/g, '');
 };
 
+/**
+ * ᴠᴇ́ʀɪꜰɪᴄᴀᴛɪᴏɴ ᴘʀᴏᴘʀɪᴇ́ᴛᴀɪʀᴇ
+ */
 const isOwner = (sender) => {
     const senderNumber = normalizeJid(sender);
     const ownerList = config.OWNER_NUMBER || config.ownerNumber || [];
     const supreme = String(config.supremeNumber || "").replace(/\D/g, '');
-    
+
     if (senderNumber === supreme) return true;
+
     if (Array.isArray(ownerList)) {
         return ownerList.some(owner => String(owner).replace(/\D/g, '') === senderNumber);
+    } else {
+        return String(ownerList).replace(/\D/g, '') === senderNumber;
     }
-    return String(ownerList).replace(/\D/g, '') === senderNumber;
 };
 
 const isAdmin = async (sock, participant, groupId) => {
@@ -40,6 +48,9 @@ const isAdmin = async (sock, participant, groupId) => {
     } catch { return false; }
 };
 
+/**
+ * ɢᴇsᴛɪᴏɴɴᴀɪʀᴇ ᴘʀɪɴᴄɪᴘᴀʟ
+ */
 const handleMessage = async (sock, msg) => {
     try {
         if (!msg.message || msg.key.remoteJid === 'status@broadcast') return;
@@ -48,89 +59,80 @@ const handleMessage = async (sock, msg) => {
         const isGroup = from.endsWith('@g.us');
         const sender = isGroup ? (msg.key.participant || msg.key.remoteJid) : from;
 
-        // --- ɪɴᴄʀᴇ́ᴍᴇɴᴛᴀᴛɪᴏɴ ᴅᴇs sᴛᴀᴛs (ʀᴇᴍɪs) ---
-        if (isGroup && addMessage) await addMessage(from, sender);
-
-        // --- ᴅᴇ́ᴛᴇᴄᴛɪᴏɴ ᴅᴜ ᴄᴏɴᴛᴇɴᴜ ᴇ́ʟᴀʀɢɪᴇ ---
+        // ᴇxᴛʀᴀᴄᴛɪᴏɴ ᴅᴜ ᴛᴇxᴛᴇ ᴍᴜʟᴛɪ-sᴜᴘᴘᴏʀᴛ
         const m = msg.message;
         const content = m.conversation || 
                         m.extendedTextMessage?.text || 
                         m.imageMessage?.caption || 
                         m.videoMessage?.caption || 
-                        m.documentWithCaptionMessage?.message?.documentMessage?.caption ||
-                        m.buttonsResponseMessage?.selectedButtonId ||
-                        m.listResponseMessage?.singleSelectReply?.selectedRowId || "";
+                        m.documentWithCaptionMessage?.message?.documentMessage?.caption || "";
 
         const body = content.trim();
         const prefix = config.prefix || '.';
-
         const isCmd = body.startsWith(prefix);
-        const args = isCmd ? body.slice(prefix.length).trim().split(/\s+/) : [];
-        const commandName = isCmd ? args.shift().toLowerCase() : null;
+        const commandName = isCmd ? body.slice(prefix.length).trim().split(/\s+/)[0].toLowerCase() : null;
+        const args = isCmd ? body.trim().split(/\s+/).slice(1) : [];
 
-        const ownerStatus = isOwner(sender);
+        // 1. ᴀᴜᴛᴏ-ʀᴇᴀᴄᴛ (ᴀɢᴍ sᴛʏʟᴇ)
+        if (config.autoReact && !msg.key.fromMe) {
+            const emojis = ['⚡', '💀', '🔥', '✨', '👑', '❤️', '🙏🏾', '🇧🇫'];
+            const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+            await sock.sendMessage(from, { react: { text: isCmd ? '⏳' : randomEmoji, key: msg.key } });
+        }
 
-        // --- 1. ʟᴏɢɪǫᴜᴇ ᴛɪᴄ-ᴛᴀᴄ-ᴛᴏᴇ ---
-        if (global.games) {
-            const room = Object.values(global.games).find(r => 
-                r.state === 'PLAYING' && [r.playerX, r.playerO].includes(sender)
-            );
-            if (room && /^[1-9]$/.test(body)) {
-                const tttCmd = global.commands.get('tictactoe');
-                if (tttCmd) return await tttCmd.execute(sock, msg, [body], { from, sender, prefix, isGroup });
+        // 2. sᴛᴀᴛɪsᴛɪǫᴜᴇs (ʀᴇᴍɪs ᴇɴ ᴘʟᴀᴄᴇ)
+        if (isGroup && typeof addMessage === 'function') await addMessage(from, sender);
+
+        // 3. sᴇ́ᴄᴜʀɪᴛᴇ́ ᴀɴᴛɪ-ʟɪᴇɴ
+        if (isGroup && !isOwner(sender) && /(https?:\/\/|chat.whatsapp.com)/gi.test(body)) {
+            const groupSettings = database.getGroupSettings ? database.getGroupSettings(from) : { antilink: false };
+            if (groupSettings?.antilink && !(await isAdmin(sock, sender, from))) {
+                await sock.sendMessage(from, { delete: msg.key });
+                return;
             }
         }
 
-        // --- 2. ᴀᴜᴛᴏ-ʀᴇᴀᴄᴛ (ᴍɪsᴇ ᴀ̀ ᴊᴏᴜʀ ᴅʏɴᴀᴍɪǫᴜᴇ) ---
-        delete require.cache[require.resolve('./config')];
-        const currentCfg = require('./config');
-
-        if (currentCfg.autoReact && !msg.key.fromMe) {
-            if (ownerStatus) {
-                await sock.sendMessage(from, { react: { text: '👑', key: msg.key } });
-            } else if (currentCfg.autoReactMode === 'all' || (currentCfg.autoReactMode === 'bot' && isCmd)) {
-                const emojis = ['⚡', '💀', '🔥', '✨', '🙏🏾', '👌🏾', '🇧🇫', '💪🏾', '❤️', '🤣', '🫰🏾',];
-                const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
-                await sock.sendMessage(from, { react: { text: isCmd ? '⏳' : randomEmoji, key: msg.key } });
-            }
-        }
-
-        // --- 3. ᴇxᴇ́ᴄᴜᴛɪᴏɴ ᴄᴏᴍᴍᴀɴᴅᴇs ---
+        // 4. ᴇxᴇ́ᴄᴜᴛɪᴏɴ ᴅᴇs ᴄᴏᴍᴍᴀɴᴅᴇs
         if (isCmd && commandName) {
+            // ᴄᴏʀʀᴇᴄᴛɪᴏɴ : ᴜᴛɪʟɪsᴀᴛɪᴏɴ ᴅᴇ ɢʟᴏʙᴀʟ.ᴄᴏᴍᴍᴀɴᴅᴇs
             const command = global.commands.get(commandName) || 
                           [...global.commands.values()].find(c => c.aliases && c.aliases.includes(commandName));
-
+            
             if (!command) return;
-            if (currentCfg.selfMode && !ownerStatus) return;
+
+            const ownerStatus = isOwner(sender);
+            
+            // sᴇ́ᴄᴜʀɪᴛᴇ́ ᴍᴏᴅᴇ sᴇʟꜰ/ᴘʀɪᴠᴇ́
+            if (config.selfMode && !ownerStatus) return;
 
             const adminStatus = isGroup ? await isAdmin(sock, sender, from) : false;
 
-            if (command.ownerOnly && !ownerStatus) return; 
-            if (command.groupOnly && !isGroup) return sock.sendMessage(from, { text: '🚩 *ᴄᴇᴛᴛᴇ ᴄᴏᴍᴍᴀɴᴅᴇ ᴇsᴛ ʀᴇ́sᴇʀᴠᴇ́ᴇ ᴀᴜx ɢʀᴏᴜᴘᴇs.*' });
+            // ᴄʜᴇᴄᴋs ᴘᴇʀᴍɪssɪᴏɴs
+            if (command.ownerOnly && !ownerStatus) return;
+            if (command.groupOnly && !isGroup) return sock.sendMessage(from, { text: "🚩 *ᴄᴇᴛᴛᴇ ᴄᴏᴍᴍᴀɴᴅᴇ ᴇsᴛ ʀᴇ́sᴇʀᴠᴇ́ᴇ ᴀᴜx ɢʀᴏᴜᴘᴇs.*" });
             if (command.adminOnly && !adminStatus && !ownerStatus) return;
 
-            await sock.readMessages([msg.key]);
+            if (config.autoTyping) await sock.sendPresenceUpdate('composing', from);
 
             await command.execute(sock, msg, args, {
-                from, sender, isGroup, isOwner: ownerStatus, isAdmin: adminStatus, prefix, 
+                from, sender, isGroup, isOwner: ownerStatus, isAdmin: adminStatus, prefix,
                 pushName: msg.pushName || 'ᴜsᴇʀ',
-                reply: async (text) => sock.sendMessage(from, { text: `${text}` }, { quoted: msg }),
-                react: async (emoji) => sock.sendMessage(from, { react: { text: emoji, key: msg.key } })
+                reply: (text) => sock.sendMessage(from, { text: `${text}` }, { quoted: msg }),
+                react: (emoji) => sock.sendMessage(from, { react: { text: emoji, key: msg.key } })
             });
         }
 
     } catch (err) {
-        console.error('❌ [ᴜʟᴛʀᴀ-ꜰᴀsᴛ ʜᴀɴᴅʟᴇʀ ᴇʀʀᴏʀ]:', err);
+        console.error('❌ [ʜᴀɴᴅʟᴇʀ ᴇʀʀᴏʀ]:', err);
     }
 };
 
 /**
- * ɢᴇsᴛɪᴏɴ ᴅᴇs ɢʀᴏᴜᴘᴇs & ᴡᴇʟᴄᴏᴍᴇ (ʀᴇᴍɪs & ᴄᴏʀʀɪɢᴇ́)
+ * ʙɪᴇɴᴠᴇɴᴜᴇ & ᴀᴜ ʀᴇᴠᴏɪʀ
  */
 const handleGroupUpdate = async (sock, update) => {
     const { id, participants, action } = update;
     try {
-        // Vérification des paramètres du groupe via ta DB
         const settings = database.getGroupSettings ? database.getGroupSettings(id) : { welcome: true };
 
         for (const user of participants) {
@@ -154,12 +156,22 @@ const handleGroupUpdate = async (sock, update) => {
     } catch (e) { console.error('Group Update Error:', e); }
 };
 
+/**
+ * ᴀɴᴛɪ-ᴄᴀʟʟ sʏsᴛᴇᴍ
+ */
 const initializeAntiCall = (sock) => {
     sock.ev.on('call', async (node) => {
-        if (node[0].status === 'offer') {
-            await sock.rejectCall(node[0].id, node[0].from);
+        const { id, from, status } = node[0];
+        if (status === 'offer') {
+            await sock.rejectCall(id, from);
+            await sock.sendMessage(from, { text: "🚫 *ʟᴇꜱ ᴀᴘᴘᴇʟꜱ ꜱᴏɴᴛ ɪɴᴛᴇʀᴅɪᴛꜱ.* \nᴊᴇsᴜs ᴛᴀɪᴍᴇ ❤️✝️" });
         }
     });
 };
 
-module.exports = { handleMessage, handleGroupUpdate, isOwner, initializeAntiCall };
+module.exports = { 
+    handleMessage, 
+    handleGroupUpdate, 
+    isOwner, 
+    initializeAntiCall 
+};
