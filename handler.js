@@ -2,6 +2,7 @@
  * ɢʜᴏꜱᴛɢ-x ᴍᴅ - Main Message Handler
  * Powered by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
+const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
 const config = require('./config');
 const database = require('./database'); 
