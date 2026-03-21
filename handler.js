@@ -1,5 +1,6 @@
 /**
- * ɢʜᴏꜱᴛɢ-x ᴍᴅ - Main Message Handler (Anti-Ban & Speed Optimized)
+ * ɢʜᴏꜱᴛɢ-x ᴍᴅ - Main Message Handler (ULTRA-FAST EDITION)
+ * Optimized for ~100ms Response Time
  * Powered by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
@@ -61,7 +62,7 @@ const handleMessage = async (sock, msg) => {
 
         const ownerStatus = isOwner(sender);
 
-        // --- 1. LOGIQUE TIC-TAC-TOE ---
+        // --- 1. LOGIQUE TIC-TAC-TOE (INSTANTANÉE) ---
         if (global.games) {
             const room = Object.values(global.games).find(r => 
                 r.state === 'PLAYING' && [r.playerX, r.playerO].includes(sender)
@@ -72,23 +73,21 @@ const handleMessage = async (sock, msg) => {
             }
         }
 
-        // --- 2. AUTO-REACT (LÉGER & ALÉATOIRE) ---
+        // --- 2. AUTO-REACT (SUPPRESSION DES DÉLAIS) ---
         delete require.cache[require.resolve('./config')];
         const currentCfg = require('./config');
 
         if (currentCfg.autoReact && !msg.key.fromMe) {
-            // Entre 500ms et 1200ms (naturel)
-            await delay(Math.floor(Math.random() * 700) + 500); 
             if (ownerStatus) {
                 await sock.sendMessage(from, { react: { text: '👑', key: msg.key } });
             } else if (currentCfg.autoReactMode === 'all' || (currentCfg.autoReactMode === 'bot' && isCmd)) {
-                const emojis = ['⚡', '💀', '🔥', '✨', '❤️', '😉', '😏', '🙏🏾'];
+                const emojis = ['⚡', '💀', '🔥', '✨', '❤️', '😉', '😏', '🙏🏾', '🤌🏾', '👌🏾', '🇧🇫', '🤣', '😊', '🫂', '💪🏾', '👍🏾', '💩'];
                 const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
                 await sock.sendMessage(from, { react: { text: isCmd ? '⏳' : randomEmoji, key: msg.key } });
             }
         }
 
-        // --- 3. EXÉCUTION COMMANDES ---
+        // --- 3. EXÉCUTION COMMANDES (MODE FLASH) ---
         if (isCmd && commandName) {
             const command = commands.get(commandName) || [...commands.values()].find(c => c.aliases?.includes(commandName));
             if (!command) return;
@@ -101,37 +100,29 @@ const handleMessage = async (sock, msg) => {
             if (command.groupOnly && !isGroup) return sock.sendMessage(from, { text: config.messages.groupOnly });
             if (command.adminOnly && !adminStatus && !ownerStatus) return sock.sendMessage(from, { text: config.messages.adminOnly });
 
-            // --- PROTECTION ANTI-BAN (HUMAN SIMULATION) ---
-            // Marquer comme "Vu"
+            // --- VITESSE MAXIMUM : PAS DE SIMULATION D'ÉCRITURE ---
             await sock.readMessages([msg.key]);
-
-            if (config.autoTyping) {
-                // Simule l'écriture pendant un temps court et variable (0.7s à 1.5s)
-                await sock.sendPresenceUpdate('composing', from);
-                await delay(Math.floor(Math.random() * 800) + 700); 
-                await sock.sendPresenceUpdate('paused', from);
-            }
 
             await command.execute(sock, msg, args, {
                 from, sender, isGroup, isOwner: ownerStatus, isAdmin: adminStatus, prefix, pushName: msg.pushName || 'User',
                 reply: async (text) => {
-                    await delay(300); // Petit délai avant l'envoi
+                    // Suppression du délai de 300ms
                     return sock.sendMessage(from, { text }, { quoted: msg });
                 },
                 react: async (emoji) => {
-                    await delay(200);
+                    // Suppression du délai de 200ms
                     return sock.sendMessage(from, { react: { text: emoji, key: msg.key } });
                 }
             });
         }
 
     } catch (err) {
-        console.error('❌ [HANDLER ERROR]:', err);
+        console.error('❌ [ULTRA-FAST HANDLER ERROR]:', err);
     }
 };
 
 /**
- * GESTION DES GROUPES & ANTI-CALL
+ * GESTION DES GROUPES & ANTI-CALL (RAPIDE)
  */
 const handleGroupUpdate = async (sock, update) => {
     const { id, participants, action } = update;
@@ -139,8 +130,7 @@ const handleGroupUpdate = async (sock, update) => {
 
     for (const user of participants) {
         if (action === 'add' && settings.welcome) {
-            await delay(1500); 
-            const welcomeText = `╭╼━≪• ɴᴇᴡ ᴍᴇᴍʙᴇʀ •≫━╾╮\n┃ ᴡᴇʟᴄᴏᴍᴇ: @${user.split('@')[0]} 👋\n┃ ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏꜱᴛɢ-x\n╰━━━━━━━━━━━━━━━╯`;
+            const welcomeText = `╭╼━≪• ɴᴇᴡ ᴍᴇᴍʙᴇʀ •≫━╾╮\n┃ ᴡᴇʟᴄᴏᴍᴇ: @${user.split('@')[0]} 👋🏾\n┃ ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏꜱᴛɢ-x\n╰━━━━━━━━━━━━━━━╯`;
             await sock.sendMessage(id, { text: welcomeText, mentions: [user] });
         }
     }
@@ -149,9 +139,7 @@ const handleGroupUpdate = async (sock, update) => {
 const initializeAntiCall = (sock) => {
     sock.ev.on('call', async (node) => {
         if (node[0].status === 'offer') {
-            await delay(500);
             await sock.rejectCall(node[0].id, node[0].from);
-            await sock.sendMessage(node[0].from, { text: "🚫 *ʟᴇꜱ ᴀᴘᴘᴇʟꜱ ꜱᴏɴᴛ ɪɴᴛᴇʀᴅɪᴛꜱ.*" });
         }
     });
 };
