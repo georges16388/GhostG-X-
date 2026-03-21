@@ -8,8 +8,8 @@ const AGM_NL = (name, subs, id) => `╭╼━≪• ᴀɢᴍ ɴᴇᴡsʟᴇᴛ�
 ┃ ɴᴀᴍᴇ : ${name} 📢
 ┃ sᴜʙs : ${subs.toLocaleString()} 👥
 ┃ ɪᴅ : ${id} 🆔
->┃ ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗
-╰━━━━━━━━━━━━━━━╯`;
+╰━━━━━━━━━━━━━━━╯
+> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
 
 // --- EXTRACTION DU CODE D'INVITATION ---
 function getChannelInviteCode(link) {
