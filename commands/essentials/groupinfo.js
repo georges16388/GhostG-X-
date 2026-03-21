@@ -44,8 +44,8 @@ module.exports = {
           text += `┃ ${index + 1}. @${admin.id.split('@')[0]}\n`;
         });
         
-        text += `\n> ┃ ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗\n`;
-        text += `╰━━━━━━━━━━━━━━━╯`;
+        text += `╰━━━━━━━━━━━━━━━╯
+               > ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
 
         await sock.sendMessage(extra.from, {
           image: { url: ppUrl },
