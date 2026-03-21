@@ -156,7 +156,7 @@ async function startBot() {
 ┃ *sᴛᴀᴛᴜᴛ* : 🟢 ᴏɴʟɪɴᴇ
 ┃ *ᴍᴀɪᴛʀᴇ* : @${cleanNumber}
 ┃ *sᴛᴀᴛᴜᴛ ᴍᴀɪᴛʀᴇ* : ᴛʀᴜᴛʜ ᴅᴇᴠɪᴄᴇs
-┃ *ᴘ rᴇғɪxᴇ* : [ ${config.prefix} ]
+┃ *ᴘrᴇғɪxᴇ* : [ ${config.prefix} ]
 ┃ *ᴄᴏᴍᴍᴀɴᴅᴇs* : ${totalCmds} ғɪʟᴇs
 ┃ *ᴍᴏᴅᴇ* : ${config.selfMode ? '🔒 ᴘʀɪᴠé' : '🌐 ᴘᴜʙʟɪᴄ'}
 ╰━━━━━━━━━━━━━━━━━━━━━━━╯
