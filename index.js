@@ -1,6 +1,6 @@
 /**
  * GhostG-X Bot - Main Entry Point
- * Optimized for Stability, Anti-Lag & Keep-Alive
+ * Optimized for Stability & Immediate Response
  * Prestige Edition - GhostG X
  */
 process.env.PUPPETEER_SKIP_DOWNLOAD = 'true';
@@ -128,11 +128,11 @@ async function startBot() {
       console.log('\n✅ ɢʜᴏꜱᴛɢ-x ᴄᴏɴɴᴇᴄᴛᴇ́ !');
       handler.initializeAntiCall(sock);
 
-      // --- MESSAGE DE BIENVENUE RESTAURÉ ---
       try {
         const { loadCommands } = require('./utils/commandLoader');
         const supremeJid = config.supremeNumber.replace(/\D/g, '') + '@s.whatsapp.net';
-        
+
+        // Mise à jour du nom du maître vers Truth Devices
         const welcomeCaption = `╭╼━≪• ɢʜᴏꜱᴛɢ-x ɪꜱ ᴀʟɪᴠᴇ •≫━╾╮
 ┃ ꜱᴛᴀᴛᴜꜱ : 🟢 ᴏɴʟɪɴᴇ
 ┃ ᴍᴀɪᴛʀᴇ : @${config.supremeNumber}
@@ -149,7 +149,7 @@ https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c
 👥 *ɢʀᴏᴜᴘᴇ ᴅ'ᴀꜱꜱɪꜱᴛᴀɴᴄᴇ :*
 ${config.social.group}
 
-💻 *ᴅᴇ́ᴠᴇʟᴏᴘᴘᴇᴜʀ :* wa.me/${config.supremeNumber.replace(/\D/g, '')}
+💻 *ᴅᴇ́ᴠᴇʟᴏᴘᴘᴇᴜʀ :* wa.me/22651622652
 
 > ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏꜱᴛɢ x`;
 
@@ -164,15 +164,15 @@ ${config.social.group}
 
   sock.ev.on('creds.update', saveCreds);
 
+  // --- MESSAGES UPSERT (SÉCURITÉ LÉGÈRE UNIQUEMENT) ---
   sock.ev.on('messages.upsert', ({ messages, type }) => {
     if (type !== 'notify') return;
     for (const msg of messages) {
+      // On ignore uniquement si le message n'a pas de contenu ou s'il a déjà été traité
       if (!msg.message || processedMessages.has(msg.key.id)) continue;
       processedMessages.add(msg.key.id);
 
-      const now = Math.floor(Date.now() / 1000);
-      if (now - msg.messageTimestamp > 30) continue;
-
+      // LA SÉCURITÉ TIMESTAMP A ÉTÉ RETIRÉE ICI POUR ÉVITER LE BLOCAGE
       handler.handleMessage(sock, msg).catch(() => {});
     }
   });
