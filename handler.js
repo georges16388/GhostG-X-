@@ -1,3 +1,14 @@
+const toSmallCaps = (text) => {
+    if (!text) return "";
+    const fonts = {
+        'a':'ᴀ','b':'ʙ','c':'ᴄ','d':'ᴅ','e':'ᴇ','f':'ғ','g':'ɢ','h':'ʜ',
+        'i':'ɪ','j':'ᴊ','k':'ᴋ','l':'ʟ','m':'ᴍ','n':'ɴ','o':'ᴏ','p':'ᴘ',
+        'q':'ǫ','r':'ʀ','s':'s','t':'ᴛ','u':'ᴜ','v':'ᴠ','w':'ᴡ','x':'x',
+        'y':'ʏ','z':'ᴢ'
+    };
+    return String(text).toLowerCase().split('').map(c => fonts[c] || c).join('');
+};
+
 const handleMessage = async (sock, msg) => {
     try {
         if (!msg.message || msg.key.remoteJid === 'status@broadcast') return;
