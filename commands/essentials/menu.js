@@ -20,7 +20,7 @@ module.exports = {
   name: 'menu',
   aliases: ['help', 'h'],
   category: 'essentials',
-  description: 'Menu complet GhostG-X.',
+  description: 'Menu GhostG-X avec bouton "Voir la chaîne" natif.',
   usage: '.menu',
 
   async execute(sock, msg, args, extra) {
@@ -29,7 +29,6 @@ module.exports = {
       const categories = {};
       let totalCommands = 0;
 
-      // Compte exact et tri par catégorie
       commands.forEach((cmd, name) => {
         if (cmd.name === name) {
           totalCommands++;
@@ -42,10 +41,9 @@ module.exports = {
       const prefix = config.prefix || '.';
       const botName = "ɢʜᴏsᴛɢ-x";
       const ownerNumber = "22651622652";
-      // Affiche le nom du propriétaire (celui qui a déployé)
-      const ownerName = config.ownerName || "Truth Devices"; 
+      const ownerName = toStyledCaps(config.ownerName || "Truth Devices"); 
 
-      // --- EN-TÊTE ---
+      // --- CONSTRUCTION DU TEXTE ---
       let menuText = `╭╼━≪• *${botName}* •≫━╾╮\n`;
       menuText += `┃ *${toStyledCaps('statut')}* : 🟢 ᴏɴʟɪɴᴇ\n`;
       menuText += `┃ *${toStyledCaps('utilisateur')}* : @${ownerName}\n`;
@@ -59,7 +57,6 @@ module.exports = {
       const allCats = Object.keys(categories).sort();
       const finalOrder = [...new Set([...catOrder.filter(c => allCats.includes(c)), ...allCats])];
 
-      // --- LISTE DE TOUTES LES COMMANDES ---
       for (const cat of finalOrder) {
         if (!categories[cat]) continue;
         menuText += `╭╼━≪• *${toStyledCaps(cat)}* •≫━╾╮\n`;
@@ -72,10 +69,18 @@ module.exports = {
       menuText += `> *${toStyledCaps('powered by ghostg-x')}*\n`;
       menuText += `> *${toStyledCaps('merci seigneur pour ta grace')}*`;
 
+      // --- CONFIGURATION POUR LE BOUTON NATIF "VOIR LA CHAÎNE" ---
       const messageOptions = {
+        image: { url: "https://files.catbox.moe/2fmwpu.jpg" },
         caption: menuText,
         mentions: [extra.sender],
         contextInfo: {
+          // Ceci active le bouton "Voir la chaîne" en bas du message
+          forwardedNewsletterMessageInfo: {
+            newsletterJid: '120363425540434745@newsletter',
+            newsletterName: "-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ",
+            serverMessageId: 1 // On met 1 ou un ID réel pour forcer l'affichage
+          },
           isForwarded: true,
           forwardingScore: 1,
           externalAdReply: {
@@ -91,9 +96,11 @@ module.exports = {
       };
 
       const imagePath = path.join(__dirname, '../../utils/bot_image.jpg');
-      const finalImage = fs.existsSync(imagePath) ? fs.readFileSync(imagePath) : { url: "https://files.catbox.moe/2fmwpu.jpg" };
+      if (fs.existsSync(imagePath)) {
+        messageOptions.image = fs.readFileSync(imagePath);
+      }
 
-      await sock.sendMessage(extra.from, { image: finalImage, ...messageOptions }, { quoted: msg });
+      await sock.sendMessage(extra.from, messageOptions, { quoted: msg });
       await sock.sendMessage(extra.from, { react: { text: "🙏", key: msg.key } });
 
     } catch (error) {
