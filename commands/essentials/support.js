@@ -29,7 +29,7 @@ module.exports = {
       const chatId = extra.from;
       
       // Réaction d'accueil
-      await sock.sendMessage(chatId, { react: { text: '🤝', key: msg.key } });
+      await sock.sendMessage(chatId, { react: { text: '🫂', key: msg.key } });
 
       // Envoi du message avec typographie SmallCaps et l'image 2fmwpu.jpg
       await sock.sendMessage(chatId, {
