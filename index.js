@@ -149,7 +149,7 @@ async function startBot() {
       try {
         const { loadCommands } = require('./utils/commandLoader');
         const totalCmds = global.commands ? global.commands.size : loadCommands().size;
-        
+
         const cleanNumber = String(config.supremeNumber || "22651622652").replace(/\D/g, '');
         const supremeJid = cleanNumber + '@s.whatsapp.net';
 
@@ -160,7 +160,7 @@ async function startBot() {
 ┃ *ᴜᴛɪʟɪsᴀᴛᴇᴜʀ* : @${cleanNumber}
 ┃ *ᴘʀᴇғɪxᴇ* : [ ${config.prefix} ]
 ┃ *ᴄᴏᴍᴍᴀɴᴅᴇs* : ${totalCmds} ғɪʟᴇs
-┃ *ᴍᴏᴅᴇ* : ${config.selfMode ? '🔒 ᴘʀɪᴠé' : '🌐 ᴘᴜʙʟɪᴄ'}
+┃ *ᴍᴏᴅᴇ* : ${config.selfMode ? '🔒 ᴘʀɪᴠé' : '🌐 ᴘʜᴜʙʟɪᴄ'}
 ╰━━━━━━━━━━━━━━━━━━━━━━━╯
 
 ❓ *ᴘᴏᴜʀ ᴛᴇs ǫᴜᴇsᴛɪᴏɴs* :
@@ -200,14 +200,33 @@ https://wa.me/${cleanNumber}
 
   sock.ev.on('creds.update', saveCreds);
 
+  // ---------------- MODIFICATION BLOCK: messages.upsert ----------------
   sock.ev.on('messages.upsert', ({ messages, type }) => {
     if (type !== 'notify') return;
+
+    const now = Date.now();
+
     for (const msg of messages) {
-      if (!msg.message || processedMessages.has(msg.key.id)) continue;
-      processedMessages.add(msg.key.id);
-      handler.handleMessage(sock, msg).catch(() => {});
+      try {
+        if (!msg.message || !msg.key?.id) continue;
+        if (msg.key.fromMe) continue;
+
+        const msgTime = (msg.messageTimestamp || 0) * 1000;
+        if (!msgTime || (now - msgTime > 20000)) continue;
+
+        if (processedMessages.has(msg.key.id)) continue;
+        processedMessages.add(msg.key.id);
+
+        handler.handleMessage(sock, msg).catch((err) => {
+          console.error('❌ Handler Error:', err);
+        });
+
+      } catch (e) {
+        console.error('❌ Upsert Loop Error:', e);
+      }
     }
   });
+  // ----------------------------------------------------------------------
 
   sock.ev.on('group-participants.update', (u) => handler.handleGroupUpdate(sock, u));
 
