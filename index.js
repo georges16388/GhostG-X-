@@ -1,6 +1,6 @@
 /**
  * GhostG-X Bot - Main Entry Point
- * Optimized for Pairing Code
+ * Optimized for Pairing Code & Mobile Stability
  */
 process.env.PUPPETEER_SKIP_DOWNLOAD = 'true';
 process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = 'true';
@@ -82,14 +82,9 @@ const store = {
 const processedMessages = new Set();
 setInterval(() => processedMessages.clear(), 5 * 60 * 1000);
 
-const createSuppressedLogger = (level = 'silent') => {
-  return pino({ level });
-};
-
 async function startBot() {
   const sessionFolder = `./${config.sessionName}`;
-  
-  // Gestion automatique du SessionID compressé
+
   if (config.sessionID && (config.sessionID.startsWith('GhostG-X!') || config.sessionID.startsWith('KnightBot!'))) {
     try {
       const b64data = config.sessionID.split('!')[1];
@@ -98,10 +93,10 @@ async function startBot() {
         const decompressedData = zlib.gunzipSync(compressedData);
         if (!fs.existsSync(sessionFolder)) fs.mkdirSync(sessionFolder, { recursive: true });
         fs.writeFileSync(path.join(sessionFolder, 'creds.json'), decompressedData, 'utf8');
-        console.log('📡 Session : 🔑 Session chargée avec succès.');
+        console.log('📡 ꜱᴇꜱꜱɪᴏɴ : 🔑 ꜱᴇꜱꜱɪᴏɴ ᴄʜᴀʀɢᴇ́ᴇ ᴀᴠᴇᴄ ꜱᴜᴄᴄᴇ̀ꜱ.');
       }
     } catch (e) {
-      console.error('📡 Session : ❌ Erreur sessionID:', e.message);
+      console.error('📡 ꜱᴇꜱꜱɪᴏɴ : ❌ ᴇʀʀᴇᴜʀ ꜱᴇꜱꜱɪᴏɴɪᴅ:', e.message);
     }
   }
 
@@ -110,8 +105,8 @@ async function startBot() {
 
   const sock = makeWASocket({
     version,
-    logger: createSuppressedLogger('silent'),
-    printQRInTerminal: false, // Forcer le mode Pairing
+    logger: pino({ level: 'silent' }),
+    printQRInTerminal: false,
     browser: Browsers.ubuntu("Chrome"),
     auth: state,
     syncFullHistory: false,
@@ -119,27 +114,32 @@ async function startBot() {
     getMessage: async () => undefined 
   });
 
-  // --- LOGIQUE PAIRING CODE (FORCÉE) ---
+  // --- LOGIQUE PAIRING CODE (CORRIGÉE) ---
   if (!sock.authState.creds.registered) {
-    // Si un numéro est fourni dans la config, on demande le code
-    const phoneNumber = config.OWNER_NUMBER || config.ownerNumber?.[0];
+    let rawNumber = config.OWNER_NUMBER || config.ownerNumber;
     
-    if (phoneNumber) {
-        console.log(`\n⏳ Génération du code de jumelage pour : ${phoneNumber}...`);
+    // Si c'est un tableau, on prend le premier élément
+    if (Array.isArray(rawNumber)) rawNumber = rawNumber[0];
+
+    // Force la conversion en String pour éviter l'erreur .replace
+    const cleanNumber = String(rawNumber).replace(/[^0-9]/g, '');
+
+    if (cleanNumber) {
+        console.log(`\n⏳ ɢᴇɴᴇʀᴀᴛɪɴɢ ᴘᴀɪʀɪɴɢ ᴄᴏᴅᴇ ꜰᴏʀ : ${cleanNumber}...`);
         setTimeout(async () => {
             try {
-                let code = await sock.requestPairingCode(phoneNumber.replace(/[^0-9]/g, ''));
+                let code = await sock.requestPairingCode(cleanNumber);
                 code = code?.match(/.{1,4}/g)?.join("-") || code;
                 console.log(`\n╔════════════════════════════════════╗`);
-                console.log(`║      VOTRE CODE DE JUMELAGE :      ║`);
+                console.log(`║      ᴠᴏᴛʀᴇ ᴄᴏᴅᴇ ᴅᴇ ᴊᴜᴍᴇʟᴀɢᴇ :      ║`);
                 console.log(`║          ${code}          ║`);
                 console.log(`╚════════════════════════════════════╝\n`);
             } catch (err) {
-                console.error('❌ Erreur Pairing:', err.message);
+                console.error('❌ ᴇʀʀᴇᴜʀ ᴘᴀɪʀɪɴɢ:', err.message);
             }
         }, 3000);
     } else {
-        console.log("⚠️ OWNER_NUMBER manquant dans config.js. Impossible de générer le Pairing Code.");
+        console.log("⚠️ ᴏᴡɴᴇʀ_ɴᴜᴍʙᴇʀ ᴍᴀɴǫᴜᴀɴᴛ ᴅᴀɴꜱ ᴄᴏɴꜰɪɢ.ᴊꜱ");
     }
   }
 
@@ -148,19 +148,18 @@ async function startBot() {
   sock.ev.on('connection.update', async (update) => {
     const { connection, lastDisconnect, qr } = update;
 
-    // Affiche le QR seulement si aucun numéro n'est configuré
     if (qr && !config.OWNER_NUMBER) {
-      console.log('\n📱 Scan ce QR code (Pairing non configuré) :\n');
+      console.log('\n📱 ꜱᴄᴀɴ ᴄᴇ Qʀ ᴄᴏᴅᴇ :\n');
       qrcode.generate(qr, { small: true });
     }
 
     if (connection === 'close') {
       const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
-      console.log(`📡 Connexion perdue. Reconnexion : ${shouldReconnect}`);
+      console.log(`📡 ᴄᴏɴɴᴇxɪᴏɴ ᴘᴇʀᴅᴜᴇ. ʀᴇᴄᴏɴɴᴇxɪᴏɴ : ${shouldReconnect}`);
       if (shouldReconnect) startBot();
     } else if (connection === 'open') {
-      console.log('\n✅ GhostG-X Connecté avec succès !');
-      console.log(`📱 Bot : ${sock.user.id.split(':')[0]}`);
+      console.log('\n✅ ɢʜᴏꜱᴛɢ-x ᴄᴏɴɴᴇᴄᴛᴇ́ ᴀᴠᴇᴄ ꜱᴜᴄᴄᴇ̀ꜱ !');
+      console.log(`📱 ʙᴏᴛ : ${sock.user.id.split(':')[0]}`);
       handler.initializeAntiCall(sock);
     }
   });
@@ -184,9 +183,9 @@ async function startBot() {
 }
 
 // Lancement
-console.log('🚀 Démarrage de GhostG-X Bot...\n');
+console.log('🚀 ᴅᴇ́ᴍᴀʀʀᴀɢᴇ ᴅᴇ ɢʜᴏꜱᴛɢ-x ʙᴏᴛ...\n');
 cleanupPuppeteerCache();
-startBot().catch(err => console.error('Erreur Critique:', err));
+startBot().catch(err => console.error('ᴇʀʀᴇᴜʀ ᴄʀɪᴛɪǫᴜᴇ:', err));
 
 process.on('uncaughtException', (err) => {
     if (!err.message.includes('ENOSPC')) console.error(err);
