@@ -56,7 +56,7 @@ module.exports = {
       menuText += `┃ *ᴊᴇsᴜs ᴛᴀɪᴍᴇ* : ❤️✝️\n`;
       menuText += `┃ *ᴘʀᴇғɪxᴇ* : [ ${prefix} ]\n`;
       menuText += `┃ *ᴄᴏᴍᴍᴀɴᴅᴇs* : ${totalFiles} ғɪʟᴇs\n`;
-      menuText += `┃ *ᴅᴇᴠᴇʟᴏᴘᴘᴇᴜʀ* : https://wa.me/${ownerNumber}\n`;
+      menuText += `┃ *ᴅᴇᴠᴇʟᴏᴘᴘᴇᴜʀ* : https://wa.me/22651622652\n`;
       menuText += `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n`;
 
       // Liste des catégories dans l'ordre souhaité
