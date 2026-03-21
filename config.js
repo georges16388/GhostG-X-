@@ -45,7 +45,12 @@ module.exports = {
 ╰━━━━━━━━━━━━━━━╯
 > ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏꜱᴛɢ x`,
       goodbye: true,
-      goodbyeMessage: 'Aurevoir@user 👋 Tu ne nous manquera jamais !',
+      goodbyeMessage: `╭╼━≪• ɢᴏᴏᴅʙʏᴇ ᴍᴇᴍʙᴇʀ •≫━╾╮
+┃ ᴀᴜ ʀᴇᴠᴏɪʀ : @user 👋
+┃ ᴛᴜ ɴᴇ ɴᴏᴜs ᴍᴀɴǫᴜᴇʀᴀ ᴊᴀᴍᴀɪs
+┃ ᴛɪᴍᴇ : #time ⏰
+╰━━━━━━━━━━━━━━━━━╯
+> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`,
       antiSpam: false,
       antidelete: false,
       nsfw: false,
