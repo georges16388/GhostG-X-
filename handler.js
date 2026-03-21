@@ -76,7 +76,7 @@ const handleMessage = async (sock, msg) => {
 
         // 1. AUTO-REACT (ᴀɢᴍ Style)
         if (config.autoReact && !msg.key.fromMe) {
-            const emojis = ['⚡', '💀', '🔥', '✨', '👑'];
+            const emojis = ['⚡', '💀', '🔥', '✨', '👑', '❤️', '😉', '😏', '🙏🏾'];
             const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
             await sock.sendMessage(from, { react: { text: isCmd ? '⏳' : randomEmoji, key: msg.key } });
         }
