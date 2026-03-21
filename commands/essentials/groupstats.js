@@ -14,8 +14,8 @@ const STATS_DESIGN = (total, topText) => `╭╼━≪• ɢʜᴏsᴛ sᴛᴀᴛ
 ${topText}
 ┃ 
 ┃ 💡 ᴛᴀᴘᴇ .ᴍʏᴀᴄᴛɪᴠɪᴛʏ
-> ┃ ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗
-╰━━━━━━━━━━━━━━━╯`;
+╰━━━━━━━━━━━━━━━╯
+> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
 
 module.exports = {
     name: 'groupstats',
