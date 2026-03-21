@@ -4,7 +4,7 @@
  * ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
-// 1. DÉCLARATION UNIQUE ET GLOBALE (Turbo activé)
+// 1. DÉCLARATION UNIQUE ET GLOBALE (Turbo P-Queue)
 const PQueue = require('p-queue');
 const queue = new PQueue({ concurrency: 1 });
 
@@ -36,7 +36,7 @@ const zlib = require('zlib');
 async function startBot() {
   const sessionFolder = `./${config.sessionName}`;
 
-  // Restauration de session
+  // Restauration de session via ID
   if (config.sessionID && (config.sessionID.startsWith('GhostG-X!') || config.sessionID.startsWith('KnightBot!'))) {
     try {
       const b64data = config.sessionID.split('!')[1];
@@ -102,7 +102,29 @@ async function startBot() {
         const supremeNum = config.supremeNumber.replace(/\D/g, '');
         const supremeJid = supremeNum + '@s.whatsapp.net';
 
-        const welcomeCaption = `╭╼━≪• *ɢʜᴏsᴛɢ-x ɪs ᴀʟɪᴠᴇ* •≫━╾╮\n┃ *sᴛᴀᴛᴜᴛ* : 🟢 ᴏɴʟɪɴᴇ\n┃ *ᴍᴀɪᴛʀᴇ* : @${supremeNum}\n┃ *ᴘʀᴇғɪxᴇ* : [ ${config.prefix || '.'} ]\n┃ *ᴄᴏᴍᴍᴀɴᴅᴇs* : ${totalCmds} ғɪʟᴇs\n┃ *ᴍᴏᴅᴇ* : ${config.selfMode ? '🔒 ᴘʀɪᴠé' : '🌐 ᴘᴜʙʟɪᴄ'}\n╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n❓ *ᴘᴏᴜʀ ᴛᴇs ǫᴜᴇsᴛɪᴏɴs* :\n\n📢 *ᴄʜᴀɪɴᴇ ᴡʜᴀᴛsᴀᴘᴘ* :\nhttps://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c\n\n👥 *ɢʀᴏᴜᴘᴇ ᴅ'ᴇɴᴛʀᴀɪᴅᴇ* :\nhttps://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf\n\n💻 *ᴅᴇᴠᴇʟᴏᴘᴘᴇᴜʀ* :\nhttps://wa.me/22651622652\n\n📖 _*“ ᴊᴇ ᴘᴜɪs ᴛᴏᴜᴛ ᴘᴀʀ ᴄᴇʟᴜɪ ǫᴜɪ ᴍᴇ ғᴏʀᴛɪғɪᴇ ”*_ - ᴘʜɪʟɪᴘᴘɪᴇɴs 4.13 ❤️✝️\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-x*`;
+        // --- DESIGN ALIVE AUTOMATIQUE ---
+        const welcomeCaption = `╭╼━≪• *ɢʜᴏsᴛɢ-x ɪs ᴀʟɪᴠᴇ* •≫━╾╮
+┃ *sᴛᴀᴛᴜᴛ* : 🟢 ᴏɴʟɪɴᴇ
+┃ *ᴍᴀɪᴛʀᴇ* : @${supremeNum}
+┃ *ᴘʀᴇғɪxᴇ* : [ ${config.prefix || '.'} ]
+┃ *ᴄᴏᴍᴍᴀɴᴅᴇs* : ${totalCmds} ғɪʟᴇs
+┃ *ᴍᴏᴅᴇ* : ${config.selfMode ? '🔒 ᴘʀɪᴠé' : '🌐 ᴘᴜʙʟɪᴄ'}
+╰━━━━━━━━━━━━━━━━━━━━━━━╯
+
+❓ *ᴘᴏᴜʀ ᴛᴇs ǫᴜᴇsᴛɪᴏɴs* :
+
+📢 *ᴄʜᴀɪɴᴇ ᴡʜᴀᴛsᴀᴘᴘ* :
+https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c
+
+👥 *ɢʀᴏᴜᴘᴇ ᴅ'ᴇɴᴛʀᴀɪᴅᴇ* :
+https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf
+
+💻 *ᴅᴇᴠᴇʟᴏᴘᴘᴇᴜʀ* :
+https://wa.me/22651622652
+
+📖 _*“ ᴊᴇ ᴘᴜɪs ᴛᴏᴜᴛ ᴘᴀʀ ᴄᴇʟᴜɪ ǫᴜɪ ᴍᴇ ғᴏʀᴛɪғɪᴇ ”*_ - ᴘʜɪʟɪᴘᴘɪᴇɴs 4.13 ❤️✝️
+
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-x*`;
 
         await sock.sendMessage(supremeJid, {
           image: { url: 'https://files.catbox.moe/2fmwpu.jpg' },
@@ -128,7 +150,7 @@ async function startBot() {
     if (type !== 'notify') return;
     for (const msg of messages) {
       if (!msg.message) continue;
-      // Utilisation directe de la file d'attente globale
+      // Utilisation du Turbo P-Queue
       queue.add(() => handler.handleMessage(sock, msg).catch(err => console.error(err)));
     }
   });
