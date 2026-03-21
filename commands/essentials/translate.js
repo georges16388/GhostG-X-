@@ -15,8 +15,8 @@ const AGM_DESIGN = (lang, original, translated) => {
 ┃ ғʀᴏᴍ : ${shortOriginal}
 ┃ ᴛᴏ : ${shortTranslated} 🔄
 ┃ ʟᴀɴɢ : ${lang.toUpperCase()} 🌍
->┃ ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗
-╰━━━━━━━━━━━━━━━╯`;
+╰━━━━━━━━━━━━━━━╯
+> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
 };
 
 module.exports = {
