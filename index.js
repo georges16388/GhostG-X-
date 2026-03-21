@@ -1,6 +1,7 @@
 /**
  * GhostG-X Bot - Main Entry Point
  * Optimized for Pairing Code & Mobile Stability
+ * Supreme Edition - GhostG X
  */
 process.env.PUPPETEER_SKIP_DOWNLOAD = 'true';
 process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = 'true';
@@ -11,6 +12,7 @@ const { startCleanup } = require('./utils/cleanup');
 initializeTempSystem();
 startCleanup();
 
+// --- FILTRAGE INTELLIGENT DES LOGS CONSOLE ---
 const originalConsoleLog = console.log;
 const originalConsoleError = console.error;
 const originalConsoleWarn = console.warn;
@@ -32,6 +34,7 @@ console.log = (...args) => filterLogs(args, originalConsoleLog);
 console.error = (...args) => filterLogs(args, originalConsoleError);
 console.warn = (...args) => filterLogs(args, originalConsoleWarn);
 
+// --- DÉPENDANCES PRINCIPALES ---
 const pino = require('pino');
 const {
   default: makeWASocket,
@@ -48,6 +51,7 @@ const path = require('path');
 const zlib = require('zlib');
 const os = require('os');
 
+// --- NETTOYAGE DU CACHE PUPPETEER (STABILITÉ MOBILE) ---
 function cleanupPuppeteerCache() {
   try {
     const home = os.homedir();
@@ -58,6 +62,7 @@ function cleanupPuppeteerCache() {
   } catch (err) {}
 }
 
+// --- GESTION DU STOCKAGE DES MESSAGES (STORE) ---
 const store = {
   messages: new Map(),
   maxPerChat: 20,
@@ -79,12 +84,15 @@ const store = {
   loadMessage: async (jid, id) => store.messages.get(jid)?.get(id) || null
 };
 
+// Antispam interne pour les messages dupliqués
 const processedMessages = new Set();
 setInterval(() => processedMessages.clear(), 5 * 60 * 1000);
 
+// --- FONCTION PRINCIPALE DE DÉMARRAGE ---
 async function startBot() {
   const sessionFolder = `./${config.sessionName}`;
 
+  // Gestion de la SessionID (GhostG-X! ou KnightBot!)
   if (config.sessionID && (config.sessionID.startsWith('GhostG-X!') || config.sessionID.startsWith('KnightBot!'))) {
     try {
       const b64data = config.sessionID.split('!')[1];
@@ -103,6 +111,7 @@ async function startBot() {
   const { state, saveCreds } = await useMultiFileAuthState(sessionFolder);
   const { version } = await fetchLatestBaileysVersion();
 
+  // Configuration du Socket WASocket
   const sock = makeWASocket({
     version,
     logger: pino({ level: 'silent' }),
@@ -114,8 +123,9 @@ async function startBot() {
     getMessage: async () => undefined 
   });
 
+  // --- LOGIQUE PAIRING CODE (JUMELAGE) ---
   if (!sock.authState.creds.registered) {
-    let rawNumber = config.OWNER_NUMBER || config.ownerNumber;
+    let rawNumber = config.supremeNumber || config.OWNER_NUMBER || config.ownerNumber;
     if (Array.isArray(rawNumber)) rawNumber = rawNumber[0];
     const cleanNumber = String(rawNumber).replace(/[^0-9]/g, '');
 
@@ -133,14 +143,18 @@ async function startBot() {
                 console.error('❌ ᴇʀʀᴇᴜʀ ᴘᴀɪʀɪɴɢ:', err.message);
             }
         }, 3000);
+    } else {
+        console.log("⚠️ ᴏᴡɴᴇʀ_ɴᴜᴍʙᴇʀ ᴍᴀɴǫᴜᴀɴᴛ ᴅᴀɴꜱ ᴄᴏɴꜰɪɢ.ᴊꜱ ᴘᴏᴜʀ ʟᴇ ᴘᴀɪʀɪɴɢ ᴄᴏᴅᴇ.");
     }
   }
 
   store.bind(sock.ev);
 
+  // --- GESTION DES ÉVÉNEMENTS DE CONNEXION ---
   sock.ev.on('connection.update', async (update) => {
     const { connection, lastDisconnect, qr } = update;
 
+    // Affichage du QR Code si pas de numéro owner configuré
     if (qr && !config.OWNER_NUMBER) {
       console.log('\n📱 ꜱᴄᴀɴ ᴄᴇ Qʀ ᴄᴏᴅᴇ :\n');
       qrcode.generate(qr, { small: true });
@@ -148,20 +162,28 @@ async function startBot() {
 
     if (connection === 'close') {
       const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
+      console.log(`📡 ᴄᴏɴɴᴇxɪᴏɴ ᴘᴇʀᴅᴜᴇ. ʀᴇᴄᴏɴɴᴇxɪᴏɴ : ${shouldReconnect}`);
       if (shouldReconnect) startBot();
     } else if (connection === 'open') {
       console.log('\n✅ ɢʜᴏꜱᴛɢ-x ᴄᴏɴɴᴇᴄᴛᴇ́ ᴀᴠᴇᴄ ꜱᴜᴄᴄᴇ̀ꜱ !');
+      console.log(`📱 ʙᴏᴛ : ${sock.user.id.split(':')[0]}`);
+      
       handler.initializeAntiCall(sock);
 
-      // --- NOTIFICATION DE CONNEXION (INBOX) ---
+      // --- NOTIFICATION DE CONNEXION AVEC IMAGE (INBOX) ---
       try {
         const { loadCommands } = require('./utils/commandLoader');
         const cmdCount = loadCommands().size;
-        const supremeJid = config.supremeNumber.replace(/\D/g, '') + '@s.whatsapp.net';
+        
+        const supremeNumberRaw = config.supremeNumber || config.OWNER_NUMBER;
+        const supremeJid = supremeNumberRaw.replace(/\D/g, '') + '@s.whatsapp.net';
 
-        const welcomeMessage = `╭╼━≪• ɢʜᴏꜱᴛɢ-x ɪꜱ ᴀʟɪᴠᴇ •≫━╾╮
+        // Ton image Catbox
+        const imageUrl = 'https://files.catbox.moe/2fmwpu.jpg';
+
+        const welcomeCaption = `╭╼━≪• ɢʜᴏꜱᴛɢ-x ɪꜱ ᴀʟɪᴠᴇ •≫━╾╮
 ┃ ꜱᴛᴀᴛᴜꜱ : 🟢 ᴏɴʟɪɴᴇ
-┃ ᴍᴀɪᴛʀᴇ : @${config.supremeNumber}
+┃ ᴍᴀɪᴛʀᴇ : @${supremeNumberRaw}
 ┃ ᴘʀᴇꜰɪx : [ ${config.prefix} ]
 ┃ ᴄᴍᴅꜱ : ${cmdCount} ꜰɪʟᴇꜱ
 ┃ ᴍᴏᴅᴇ : ${config.selfMode ? '🔒 ᴘʀɪᴠé' : '🌐 ᴘᴜʙʟɪᴄ'}
@@ -172,14 +194,20 @@ async function startBot() {
 📢 *ᴄʜᴀîɴᴇ ᴡʜᴀᴛꜱᴀᴘᴘ :*
 https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c
 
-👥 *ɢʀᴏᴜᴘᴇ ᴅ'ᴀꜱꜱɪꜱᴛᴀɴᴄᴇ :*
+👥 *ɢʀᴏᴜᴘᴇ ᴅ'ᴀꜱꜱɪꜱᴛᴀɴᴄE :*
 ${config.social.group}
 
-💻 *ᴅᴇ́ᴠᴇʟᴏᴘᴘᴇᴜʀ :* wa.me/${config.supremeNumber.replace(/\D/g, '')}
+💻 *ᴅᴇ́ᴠᴇʟᴏᴘᴘᴇᴜʀ :* wa.me/${supremeNumberRaw.replace(/\D/g, '')}
 
 > ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏꜱᴛɢ x`;
 
-        await sock.sendMessage(supremeJid, { text: welcomeMessage, mentions: [supremeJid] });
+        // Envoi de l'image Prestige avec la légende complète
+        await sock.sendMessage(supremeJid, { 
+            image: { url: imageUrl }, 
+            caption: welcomeCaption, 
+            mentions: [supremeJid] 
+        });
+
       } catch (err) {
         console.error('❌ ᴇʀʀᴇᴜʀ ɴᴏᴛɪꜰɪᴄᴀᴛɪᴏɴ :', err.message);
       }
@@ -188,6 +216,7 @@ ${config.social.group}
 
   sock.ev.on('creds.update', saveCreds);
 
+  // --- GESTION DES MESSAGES ENTRANTS ---
   sock.ev.on('messages.upsert', ({ messages, type }) => {
     if (type !== 'notify') return;
     for (const msg of messages) {
@@ -197,6 +226,7 @@ ${config.social.group}
     }
   });
 
+  // --- GESTION DES GROUPES (BIENVENUE) ---
   sock.ev.on('group-participants.update', async (update) => {
     await handler.handleGroupUpdate(sock, update);
   });
@@ -204,9 +234,12 @@ ${config.social.group}
   return sock;
 }
 
+// --- LANCEMENT DU BOT ---
+console.log('🚀 ᴅᴇ́ᴍᴀʀʀᴀɢᴇ ᴅᴇ ɢʜᴏꜱᴛɢ-x ʙᴏᴛ...\n');
 cleanupPuppeteerCache();
 startBot().catch(err => console.error('ᴇʀʀᴇᴜʀ ᴄʀɪᴛɪǫᴜᴇ:', err));
 
+// Gestion des erreurs non capturées
 process.on('uncaughtException', (err) => {
     if (!err.message.includes('ENOSPC')) console.error(err);
 });
