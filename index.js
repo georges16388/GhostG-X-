@@ -129,7 +129,8 @@ async function startBot() {
       handler.initializeAntiCall(sock);
 
       try {
-        const { loadCommands } = require('./utils/commandLoader');
+        ┃ ᴄᴍᴅꜱ : ${global.commands ? global.commands.size : require('./utils/commandLoader').loadCommands().size} ꜰɪʟᴇꜱ
+
         const supremeJid = config.supremeNumber.replace(/\D/g, '') + '@s.whatsapp.net';
 
         // Message ALIVE avec témoignage de foi
