@@ -16,67 +16,85 @@ const AGM_MODE = (mode) => `╭╼━≪• ᴀɢᴍ sʏsᴛᴇᴍ ᴍᴏᴅᴇ 
 
 module.exports = {
   name: 'mode',
-  aliases: ['botmode', 'selfmode'],
+  aliases: ['botmode', 'selfmode', 'public', 'private'],
   category: 'owner',
-  description: 'Basculer le bot entre mode privé et public',
+  description: 'Basculer le bot entre mode privé (Owner) et public (Tous).',
   usage: '.mode public/private',
   ownerOnly: true,
-  
+
   async execute(sock, msg, args, extra) {
     try {
+      const from = extra.from;
+      // Rechargement frais de la config
+      delete require.cache[require.resolve('../../config')];
       const config = require('../../config');
-      const input = args[0]?.toLowerCase();
+      
+      let input = args[0]?.toLowerCase();
 
+      // Si pas d'argument, on affiche l'état actuel
       if (!input) {
         const current = config.selfMode ? 'private' : 'public';
-        return extra.reply(
-          `╭╼━≪• ʙᴏᴛ ᴍᴏᴅᴇ •≫━╾╮\n` +
-          `┃ ᴄᴜʀʀᴇɴᴛ : ${current.toUpperCase()}\n` +
-          `┃ ᴜsᴀɢᴇ : .ᴍᴏᴅᴇ ᴘᴜʙ/ᴘʀɪᴠ\n` +
-          `╰━━━━━━━━━━━━━━━╯`
-        );
+        return sock.sendMessage(from, { 
+          text: `╭╼━≪• ʙᴏᴛ ᴍᴏᴅᴇ •≫━╾╮\n┃ ᴄᴜʀʀᴇɴᴛ : ${current.toUpperCase()}\n┃ ᴜsᴀɢᴇ : .ᴍᴏᴅᴇ ᴘᴜʙ/ᴘʀɪᴠ\n╰━━━━━━━━━━━━━━━╯` 
+        }, { quoted: msg });
       }
 
-      await sock.sendMessage(extra.from, { react: { text: '⚙️', key: msg.key } });
+      await sock.sendMessage(from, { react: { text: '⚙️', key: msg.key } });
 
-      if (input === 'private' || input === 'priv') {
-        if (config.selfMode) return extra.reply('🔒 *ʟᴇ ʙᴏᴛ ᴇsᴛ ᴅéᴊà ᴇɴ ᴍᴏᴅᴇ ᴘʀɪᴠé.*');
-        
-        updateConfig('selfMode', true);
-        config.selfMode = true;
-        return extra.reply(AGM_MODE('private'));
+      let targetMode;
+      if (['private', 'priv', 'self'].includes(input)) {
+        targetMode = true;
+      } else if (['public', 'pub'].includes(input)) {
+        targetMode = false;
+      } else {
+        return sock.sendMessage(from, { text: '❌ *ᴏᴘᴛɪᴏɴ ɪɴᴠᴀʟɪᴅᴇ (ᴘᴜʙ/ᴘʀɪᴠ)*' }, { quoted: msg });
       }
+
+      // Vérification si déjà dans ce mode
+      if (config.selfMode === targetMode) {
+        return sock.sendMessage(from, { 
+          text: `ℹ️ *ʟᴇ ʙᴏᴛ ᴇsᴛ ᴅéᴊà ᴇɴ ᴍᴏᴅᴇ ${targetMode ? 'ᴘʀɪᴠé' : 'ᴘᴜʙʟɪᴄ'}.*` 
+        }, { quoted: msg });
+      }
+
+      // Mise à jour Physique et Mémoire
+      updateConfig('selfMode', targetMode);
+      config.selfMode = targetMode;
       
-      if (input === 'public' || input === 'pub') {
-        if (!config.selfMode) return extra.reply('🌐 *ʟᴇ ʙᴏᴛ ᴇsᴛ ᴅéᴊà ᴇɴ ᴍᴏᴅᴇ ᴘᴜʙʟɪᴄ.*');
-        
-        updateConfig('selfMode', false);
-        config.selfMode = false;
-        return extra.reply(AGM_MODE('public'));
-      }
+      // Sécurité : mise à jour d'une éventuelle variable globale utilisée par le handler
+      if (global.config) global.config.selfMode = targetMode;
 
-      return extra.reply('❌ *ᴏᴘᴛɪᴏɴ ɪɴᴠᴀʟɪᴅᴇ (ᴘᴜʙ/ᴘʀɪᴠ)*');
+      await sock.sendMessage(from, { 
+        text: AGM_MODE(targetMode ? 'private' : 'public') 
+      }, { quoted: msg });
+
+      await sock.sendMessage(from, { react: { text: '✅', key: msg.key } });
 
     } catch (error) {
       console.error('Mode error:', error);
-      await extra.reply('❌ *ᴇʀʀᴇᴜʀ sʏsᴛᴇ̀ᴍᴇ ʟᴏʀs ᴅᴜ ᴄʜᴀɴɢᴇᴍᴇɴᴛ ᴅᴇ ᴍᴏᴅᴇ.*');
+      await sock.sendMessage(extra.from, { text: '❌ *ᴇʀʀᴇᴜʀ sʏsᴛᴇ̀ᴍᴇ ʟᴏʀs ᴅᴜ ᴄʜᴀɴɢᴇᴍᴇɴᴛ.*' }, { quoted: msg });
     }
   }
 };
 
+/**
+ * Met à jour le fichier config.js de manière sécurisée
+ */
 function updateConfig(key, value) {
   try {
     const configPath = path.join(__dirname, '../../config.js');
+    if (!fs.existsSync(configPath)) return;
+
     let content = fs.readFileSync(configPath, 'utf8');
+
+    // Regex qui supporte les espaces, les tabulations et les commentaires en fin de ligne
+    const regex = new RegExp(`(${key}\\s*:\\s*)(true|false)`, 'g');
     
-    // Regex précise pour cibler la clé même si elle est entourée d'espaces
-    const regex = new RegExp(`(${key}:\\s*)(true|false)`, 'g');
-    content = content.replace(regex, `$1${value}`);
-    
-    fs.writeFileSync(configPath, content, 'utf8');
-    
-    // Nettoyage du cache pour que le changement soit immédiat
-    delete require.cache[require.resolve('../../config')];
+    if (regex.test(content)) {
+      content = content.replace(regex, `$1${value}`);
+      fs.writeFileSync(configPath, content, 'utf8');
+      delete require.cache[require.resolve('../../config')];
+    }
   } catch (e) {
     console.error('Config write error:', e);
   }
