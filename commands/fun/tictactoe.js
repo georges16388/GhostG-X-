@@ -1,79 +1,78 @@
 /**
  * TicTacToe Game - Two player game
- * Custom Design by -ɢʜᴏsᴛɢ 𝐗
+ * Full Logic by -ɢʜᴏsᴛɢ 𝐗
  */
 
 const TicTacToe = require('../../utils/tictactoe');
 
-// Store games globally
-const games = {};
+// Stockage temporaire des parties
+if (!global.games) global.games = {};
 
-// Design pour l'interface de jeu
-const TTT_DESIGN = (status, board, players) => `╭╼━≪• ɢʜᴏsᴛ ᴛɪᴄᴛᴀᴄᴛᴏᴇ •≫━╾╮
+const TTT_DESIGN = (status, board, players) => `╭╼━≪• ɢʜᴏꜱᴛ ᴛɪᴄᴛᴀᴄᴛᴏᴇ •≫━╾╮
 ┃ 
-┃ sᴛᴀᴛᴜs : ${status}
+┃ ꜱᴛᴀᴛᴜꜱ : ${status}
 ┃ 
-┃ ${board.slice(0, 3).join('')}
-┃ ${board.slice(3, 6).join('')}
-┃ ${board.slice(6).join('')}
+┃ ${board[0]} | ${board[1]} | ${board[2]}
+┃ ──┼───┼──
+┃ ${board[3]} | ${board[4]} | ${board[5]}
+┃ ──┼───┼──
+┃ ${board[6]} | ${board[7]} | ${board[8]}
 ┃ 
 ┃ ❎ : @${players.x.split('@')[0]}
 ┃ ⭕ : @${players.o.split('@')[0]}
 ┃ 
-> ┃ ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗
-╰━━━━━━━━━━━━━━━╯`;
+╰━━━━━━━━━━━━━━━╯
+> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏꜱᴛɢ x`;
 
 module.exports = {
-  games,
   name: 'tictactoe',
   aliases: ['ttt', 'xo', 'morpion'],
   category: 'fun',
-  description: 'Play TicTacToe with another player',
-  usage: '.ttt [room name]',
-  
+  description: 'Jouer au Morpion avec un ami.',
+  usage: '.ttt [nom_salle]',
+
   async execute(sock, msg, args, extra) {
-    try {
-      const sender = extra.sender;
-      const from = extra.from;
-      const text = args.join(' ').trim();
-      
-      const existingRoom = Object.values(games).find(room => 
-        room.id.startsWith('tictactoe') && 
-        [room.game.playerX, room.game.playerO].includes(sender)
-      );
-      
-      if (existingRoom && existingRoom.state === 'PLAYING') {
-        return await extra.reply('⚠️ *Tu es déjà dans une partie !* Tape *surrender* pour abandonner.');
-      }
-      
-      let room = Object.values(games).find(room => 
-        room.state === 'WAITING' && 
-        room.id.startsWith('tictactoe') &&
-        (text ? room.name === text : !room.name)
-      );
-      
-      if (room) {
-        room.o = from;
-        room.game.playerO = sender;
-        room.state = 'PLAYING';
-        
-        const board = renderBoard(room.game.render());
-        const status = `Au tour de @${room.game.currentTurn.split('@')[0]} 🎮`;
-        
-        await sock.sendMessage(from, { 
-          text: TTT_DESIGN(status, board, { x: room.game.playerX, o: room.game.playerO }),
-          mentions: [room.game.currentTurn, room.game.playerX, room.game.playerO]
-        });
-        
-      } else {
-        room = {
-          id: 'tictactoe-' + (+new Date),
-          x: from,
-          o: '',
-          game: new TicTacToe(sender, 'o'),
-          state: 'WAITING',
-          name: text || null
-        };
-        
-        await sock.sendMessage(from, { 
-          text: `╭╼━≪• ᴛᴛᴛ ᴡᴀɪᴛɪɴɢ •≫━╾╮\n┃ ᴇɴ ᴀᴛᴛᴇɴᴛᴇ ᴅ'ᴜɴ ᴀᴅᴠᴇʀ
+    const { from, sender, prefix } = extra;
+    const text = args.join(' ').trim();
+
+    // Vérifier si le joueur est déjà dans une partie
+    if (Object.values(global.games).find(r => r.state === 'PLAYING' && [r.playerX, r.playerO].includes(sender))) {
+      return extra.reply("⚠️ *Tu es déjà en train de jouer !*");
+    }
+
+    // Chercher une salle en attente
+    let room = Object.values(global.games).find(r => r.state === 'WAITING' && (text ? r.name === text : true));
+
+    if (room) {
+      // Rejoindre la partie
+      room.playerO = sender;
+      room.state = 'PLAYING';
+      room.game = new TicTacToe(room.playerX, sender);
+
+      const board = room.game.render().map(v => v === 'x' ? '❎' : v === 'o' ? '⭕' : '⬜');
+      const status = `ᴀᴜ ᴛᴏᴜʀ ᴅᴇ @${room.game.currentTurn.split('@')[0]} 🎮`;
+
+      await sock.sendMessage(from, { 
+        text: TTT_DESIGN(status, board, { x: room.playerX, o: room.playerO }),
+        mentions: [room.playerX, room.playerO]
+      });
+    } else {
+      // Créer une nouvelle salle
+      const id = 'ttt-' + Date.now();
+      global.games[id] = {
+        id,
+        name: text || 'GhostRoom',
+        playerX: sender,
+        playerO: '',
+        state: 'WAITING',
+        timeout: setTimeout(() => {
+          if (global.games[id] && global.games[id].state === 'WAITING') {
+            delete global.games[id];
+          }
+        }, 60000) // Expire après 1 min
+      };
+
+      await extra.reply(`╭╼━≪• ᴛᴛᴛ ᴡᴀɪᴛɪɴɢ •≫━╾╮\n┃ ᴇɴ ᴀᴛᴛᴇɴᴛᴇ ᴅ'ᴜɴ ᴀᴅᴠᴇʀꜱᴀɪʀᴇ...\n┃ ᴛᴀᴘᴇ : *${prefix}ttt ${text || 'GhostRoom'}*\n╰━━━━━━━━━━━━━━━╯`);
+    }
+  }
+};
