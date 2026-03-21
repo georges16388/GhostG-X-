@@ -1,5 +1,5 @@
 /**
- * ɢʜᴏꜱᴛɢ-x ᴍᴅ - Main Message Handler (Humanized Edition)
+ * ɢʜᴏꜱᴛɢ-x ᴍᴅ - Main Message Handler (Anti-Ban & Speed Optimized)
  * Powered by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
@@ -12,7 +12,6 @@ const autoReactUtil = require('./utils/autoReact');
 const fs = require('fs');
 const path = require('path');
 
-// Chargement initial
 let commands = loadCommands();
 
 const normalizeJid = (jid) => {
@@ -56,7 +55,6 @@ const handleMessage = async (sock, msg) => {
         const body = content.trim();
         const prefix = config.prefix || '.';
 
-        // --- DÉTECTION INTELLIGENTE DE COMMANDE ---
         const isCmd = body.startsWith(prefix);
         const args = isCmd ? body.slice(prefix.length).trim().split(/\s+/) : [];
         const commandName = isCmd ? args.shift().toLowerCase() : null;
@@ -74,12 +72,13 @@ const handleMessage = async (sock, msg) => {
             }
         }
 
-        // --- 2. AUTO-REACT DYNAMIQUE (AVEC LÉGER DÉLAI) ---
+        // --- 2. AUTO-REACT (LÉGER & ALÉATOIRE) ---
         delete require.cache[require.resolve('./config')];
         const currentCfg = require('./config');
 
         if (currentCfg.autoReact && !msg.key.fromMe) {
-            await delay(1000); // Délai d'une seconde pour ne pas réagir instantanément
+            // Entre 500ms et 1200ms (naturel)
+            await delay(Math.floor(Math.random() * 700) + 500); 
             if (ownerStatus) {
                 await sock.sendMessage(from, { react: { text: '👑', key: msg.key } });
             } else if (currentCfg.autoReactMode === 'all' || (currentCfg.autoReactMode === 'bot' && isCmd)) {
@@ -89,42 +88,38 @@ const handleMessage = async (sock, msg) => {
             }
         }
 
-        // --- 3. EXÉCUTION COMMANDES (VERSION RALENTIE & HUMAINE) ---
+        // --- 3. EXÉCUTION COMMANDES ---
         if (isCmd && commandName) {
             const command = commands.get(commandName) || [...commands.values()].find(c => c.aliases?.includes(commandName));
-
             if (!command) return;
 
-            // Protection Mode Privé (SelfMode)
             if (currentCfg.selfMode && !ownerStatus) return;
 
             const adminStatus = isGroup ? await isAdmin(sock, sender, from) : false;
 
-            // Permissions
             if (command.ownerOnly && !ownerStatus) return sock.sendMessage(from, { text: config.messages.ownerOnly });
             if (command.groupOnly && !isGroup) return sock.sendMessage(from, { text: config.messages.groupOnly });
             if (command.adminOnly && !adminStatus && !ownerStatus) return sock.sendMessage(from, { text: config.messages.adminOnly });
 
-            // --- SIMULATION HUMAINE AVANT RÉPONSE ---
-            // 1. Marquer comme lu
+            // --- PROTECTION ANTI-BAN (HUMAN SIMULATION) ---
+            // Marquer comme "Vu"
             await sock.readMessages([msg.key]);
-            
-            // 2. Simuler l'écriture ou l'enregistrement (aléatoire entre 1.5s et 3.5s)
+
             if (config.autoTyping) {
-                const action = Math.random() > 0.5 ? 'composing' : 'recording';
-                await sock.sendPresenceUpdate(action, from);
-                await delay(Math.floor(Math.random() * 2000) + 1500); 
+                // Simule l'écriture pendant un temps court et variable (0.7s à 1.5s)
+                await sock.sendPresenceUpdate('composing', from);
+                await delay(Math.floor(Math.random() * 800) + 700); 
                 await sock.sendPresenceUpdate('paused', from);
             }
 
             await command.execute(sock, msg, args, {
                 from, sender, isGroup, isOwner: ownerStatus, isAdmin: adminStatus, prefix, pushName: msg.pushName || 'User',
                 reply: async (text) => {
-                    await delay(500); // Petit répit avant le message
+                    await delay(300); // Petit délai avant l'envoi
                     return sock.sendMessage(from, { text }, { quoted: msg });
                 },
                 react: async (emoji) => {
-                    await delay(300);
+                    await delay(200);
                     return sock.sendMessage(from, { react: { text: emoji, key: msg.key } });
                 }
             });
@@ -144,7 +139,7 @@ const handleGroupUpdate = async (sock, update) => {
 
     for (const user of participants) {
         if (action === 'add' && settings.welcome) {
-            await delay(2000); // Ne pas souhaiter la bienvenue instantanément
+            await delay(1500); 
             const welcomeText = `╭╼━≪• ɴᴇᴡ ᴍᴇᴍʙᴇʀ •≫━╾╮\n┃ ᴡᴇʟᴄᴏᴍᴇ: @${user.split('@')[0]} 👋\n┃ ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏꜱᴛɢ-x\n╰━━━━━━━━━━━━━━━╯`;
             await sock.sendMessage(id, { text: welcomeText, mentions: [user] });
         }
@@ -154,7 +149,7 @@ const handleGroupUpdate = async (sock, update) => {
 const initializeAntiCall = (sock) => {
     sock.ev.on('call', async (node) => {
         if (node[0].status === 'offer') {
-            await delay(1000);
+            await delay(500);
             await sock.rejectCall(node[0].id, node[0].from);
             await sock.sendMessage(node[0].from, { text: "🚫 *ʟᴇꜱ ᴀᴘᴘᴇʟꜱ ꜱᴏɴᴛ ɪɴᴛᴇʀᴅɪᴛꜱ.*" });
         }
