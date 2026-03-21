@@ -132,7 +132,7 @@ async function startBot() {
         const { loadCommands } = require('./utils/commandLoader');
         const supremeJid = config.supremeNumber.replace(/\D/g, '') + '@s.whatsapp.net';
 
-        // Mise à jour du nom du maître vers Truth Devices
+        // Message ALIVE avec témoignage de foi
         const welcomeCaption = `╭╼━≪• ɢʜᴏꜱᴛɢ-x ɪꜱ ᴀʟɪᴠᴇ •≫━╾╮
 ┃ ꜱᴛᴀᴛᴜꜱ : 🟢 ᴏɴʟɪɴᴇ
 ┃ ᴍᴀɪᴛʀᴇ : @${config.supremeNumber}
@@ -151,6 +151,8 @@ ${config.social.group}
 
 💻 *ᴅᴇ́ᴠᴇʟᴏᴘᴘᴇᴜʀ :* wa.me/22651622652
 
+📖 _*“ ᴊᴇ ᴘᴜɪs ᴛᴏᴜᴛ ᴘᴀʀ ᴄᴇʟᴜɪ ǫᴜɪ ᴍᴇ ғᴏʀᴛɪғɪᴇ. ”*_ - ᴘʜɪʟɪᴘᴘɪᴇɴs 4.13 ❤️✝️
+
 > ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏꜱᴛɢ x`;
 
         await sock.sendMessage(supremeJid, { 
@@ -164,15 +166,11 @@ ${config.social.group}
 
   sock.ev.on('creds.update', saveCreds);
 
-  // --- MESSAGES UPSERT (SÉCURITÉ LÉGÈRE UNIQUEMENT) ---
   sock.ev.on('messages.upsert', ({ messages, type }) => {
     if (type !== 'notify') return;
     for (const msg of messages) {
-      // On ignore uniquement si le message n'a pas de contenu ou s'il a déjà été traité
       if (!msg.message || processedMessages.has(msg.key.id)) continue;
       processedMessages.add(msg.key.id);
-
-      // LA SÉCURITÉ TIMESTAMP A ÉTÉ RETIRÉE ICI POUR ÉVITER LE BLOCAGE
       handler.handleMessage(sock, msg).catch(() => {});
     }
   });
