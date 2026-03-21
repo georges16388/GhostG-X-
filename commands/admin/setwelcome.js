@@ -9,8 +9,8 @@ const SETWELCOME_DESIGN = (preview) => `╭╼━≪• ᴡᴇʟᴄᴏᴍᴇ s�
 ┃ sᴛᴀᴛᴜs : ᴜᴘᴅᴀᴛᴇᴅ ✅
 ┃ ᴛʏᴘᴇ : ᴄᴜsᴛᴏᴍ ᴛᴇxᴛ 📝
 ┃ ᴘʀᴇᴠɪᴇᴡ : ${preview}
-> ┃ ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗
-╰━━━━━━━━━━━━━━━╯`;
+╰━━━━━━━━━━━━━━━╯
+> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
 
 module.exports = {
   name: 'setwelcome',
