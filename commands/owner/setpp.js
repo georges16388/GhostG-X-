@@ -16,8 +16,8 @@ const AGM_PP = (status) => `╭╼━≪• ᴀɢᴍ ɪᴅᴇɴᴛɪᴛʏ •≫
 ╰━━━━━━━━━━━━━━━╯`;
 
 module.exports = {
-  name: 'setbotpp',
-  aliases: ['setppbot', 'setpp'],
+  name: 'setpp',
+  aliases: ['setppbot', 'setpic', 'setpp'],
   category: 'owner',
   description: 'Changer la photo de profil du bot',
   usage: '.setbotpp (répondre à une image/sticker)',
