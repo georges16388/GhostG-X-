@@ -8,5 +8,8 @@
 
 github: []
 custom: 
-  - 'https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c' # Canal Officiel
-  - 'https://wa.me/22651622652?text=Salut+Professeur,+j%27utilise+GhostG-X' # Contact Développeur
+  -
+# Canal Officiel: 'https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c' # Canal Officiel
+  -
+# Contacter le Développeur
+ 'https://wa.me/22651622652?text=Salut+Professeur,+j%27utilise+GhostG-X' 
