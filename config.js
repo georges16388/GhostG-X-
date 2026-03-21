@@ -38,18 +38,19 @@ module.exports = {
       antigroupmention: false,
       antigroupmentionAction: 'delete',
       welcome: true,
-      welcomeMessage: `╭╼━≪• ɴᴇᴡ ᴍᴇᴍʙᴇʀ •≫━╾╮
-┃ ᴡᴇʟᴄᴏᴍᴇ : @user 👋
-┃ ᴍᴇᴍʙᴇʀ ᴄᴏᴜɴᴛ : #memberCount
-┃ ᴛɪᴍᴇ : #time ⏰
+      welcomeMessage: `╭╼━≪• *ɴᴇᴡ ᴍᴇᴍʙᴇʀ* •≫━╾╮
+┃ *ᴡᴇʟᴄᴏᴍᴇ* : @user 👋🏾
+┃ *ɴᴏᴜs sᴏᴍᴍᴇs ʜᴇᴜʀᴇᴜx ᴅᴇ ᴛ'ᴀᴠᴏɪʀ ᴘᴀʀᴍɪ ɴᴏᴜs*
+┃ ᴍᴇᴍʙᴇʀ ᴄᴏᴜɴᴛ* : #memberCount
+┃ *ᴛɪᴍᴇ* : #time ⏰
 ╰━━━━━━━━━━━━━━━╯
 > ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏꜱᴛɢ x`,
       goodbye: true,
-      goodbyeMessage: `╭╼━≪• ɢᴏᴏᴅʙʏᴇ ᴍᴇᴍʙᴇʀ •≫━╾╮
-┃ ᴀᴜ ʀᴇᴠᴏɪʀ : @user 👋
-┃ ᴛᴜ ɴᴇ ɴᴏᴜs ᴍᴀɴǫᴜᴇʀᴀ ᴊᴀᴍᴀɪs
-┃ ᴍᴇᴍʙʀᴇs ʀᴇsᴛᴀɴᴛs : #memberCount
-┃ ᴛɪᴍᴇ : #time ⏰
+      goodbyeMessage: `╭╼━≪• *ɢᴏᴏᴅʙʏᴇ ᴍᴇᴍʙᴇʀ* •≫━╾╮
+┃ *ᴀᴜ ʀᴇᴠᴏɪʀ* : @user 👋
+┃ *ᴛᴜ ɴᴇ ɴᴏᴜs ᴍᴀɴǫᴜᴇʀᴀ ᴊᴀᴍᴀɪs*
+┃ *ᴍᴇᴍʙʀᴇs ʀᴇsᴛᴀɴᴛs* : #memberCount
+┃ *ᴛɪᴍᴇ* : #time ⏰
 ╰━━━━━━━━━━━━━━━━━╯
 > ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`,
       antiSpam: false,
