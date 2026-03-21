@@ -2,7 +2,7 @@
  * Promote Command - Make member admin
  */
 
-const { findParticipant } = require('../../utils/jidHelper');
+const { findParticipant } = require('../../utils/jidHelpers');
 
 // Design pour la promotion d'admin
 const PROMOTE_DESIGN = (user) => `╭╼━≪• ᴀᴅᴍɪɴ ᴘʀᴏᴍᴏᴛᴇᴅ •≫━╾╮
