@@ -2,6 +2,11 @@
  * ɢʜᴏꜱᴛɢ-x ᴍᴅ - ᴍᴀɪɴ ᴍᴇssᴀɢᴇ ʜᴀɴᴅʟᴇʀ (ᴘʀᴇsᴛɪɢᴇ ᴇᴅɪᴛɪᴏɴ)
  * ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
+// Ne pas utiliser "const commands = loadCommands()" tout seul
+global.commands = global.commands || loadCommands();
+// Ensuite, dans l'exécution :
+const command = global.commands.get(commandName) || 
+              [...global.commands.values()].find(c => c.aliases && c.aliases.includes(commandName));
 
 const config = require('./config');
 const database = require('./database'); 
