@@ -8,13 +8,20 @@ const { loadCommands } = require('../../utils/commandLoader');
 const fs = require('fs');
 const path = require('path');
 
-// Fonction pour convertir en SmallCaps
+// Fonction sécurisée pour convertir en SmallCaps
 const toSmallCaps = (text) => {
+  if (!text) return ""; 
+  
+  // Si c'est un tableau (Array), on prend le premier élément et on le transforme en String
+  const str = Array.isArray(text) ? String(text[0]) : String(text);
+
   const fonts = {
     'a': 'ᴀ', 'b': 'ʙ', 'c': 'ᴄ', 'd': 'ᴅ', 'e': 'ᴇ', 'f': 'ғ', 'g': 'ɢ', 'h': 'ʜ', 'i': 'ɪ', 'j': 'ᴊ', 'k': 'ᴋ', 'l': 'ʟ', 'm': 'ᴍ', 'n': 'ɴ', 'o': 'ᴏ', 'p': 'ᴘ', 'q': 'ǫ', 'r': 'ʀ', 's': 's', 't': 'ᴛ', 'u': 'ᴜ', 'v': 'ᴠ', 'w': 'ᴡ', 'x': 'x', 'y': 'ʏ', 'z': 'ᴢ'
   };
-  return text.toLowerCase().split('').map(c => fonts[c] || c).join('');
+
+  return str.toLowerCase().split('').map(c => fonts[c] || c).join('');
 };
+
 
 module.exports = {
   name: 'menu',
