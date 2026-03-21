@@ -1,7 +1,7 @@
 /**
  * GhostG-X Bot - Main Entry Point
  * Optimized for Pairing Code & Mobile Stability
- * Supreme Edition - GhostG X
+ * Supreme Edition - GhostG X (Newsletter Prestige V5 Integrated)
  */
 process.env.PUPPETEER_SKIP_DOWNLOAD = 'true';
 process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = 'true';
@@ -148,85 +148,64 @@ async function startBot() {
 
       try {
         const { loadCommands } = require('./utils/commandLoader');
-        const totalCmds = global.commands ? global.commands.size : loadCommands().size;
+        const totalCmds = loadCommands().size;
 
         const cleanNumber = String(config.supremeNumber || "22651622652").replace(/\D/g, '');
         const supremeJid = cleanNumber + '@s.whatsapp.net';
 
-        // Construction du message Alive
-        const welcomeCaption = `╭╼━≪• *ɢʜᴏsᴛɢ-x ɪs ᴀʟɪᴠᴇ* •≫━╾╮
+        // --- CONSTRUCTION DU TEXTE ALIVE (MODÈLE PRESTIGE) ---
+        const welcomeCaption = `╭╼━≪• *ɢʜᴏsᴛɢ-x* •≫━╾╮
 ┃ *sᴛᴀᴛᴜᴛ* : 🟢 ᴏɴʟɪɴᴇ
-┃ *ᴍᴀɪᴛʀᴇ* : @22651622652
 ┃ *ᴜᴛɪʟɪsᴀᴛᴇᴜʀ* : @${cleanNumber}
-┃ *ᴘʀᴇғɪxᴇ* : [ ${config.prefix} ]
+┃ *ᴊᴇsᴜs ᴛᴀɪᴍᴇ* : ❤️✝️
+┃ *ᴘʀᴇғɪxᴇ* : [ ${config.prefix || '.'} ]
 ┃ *ᴄᴏᴍᴍᴀɴᴅᴇs* : ${totalCmds} ғɪʟᴇs
-┃ *ᴍᴏᴅᴇ* : ${config.selfMode ? '🔒 ᴘʀɪᴠé' : '🌐 ᴘᴜʙʟɪᴄ'}
+┃ *ᴅᴇᴠᴇʟᴏᴘᴘᴇᴜʀ* : https://wa.me/22651622652
 ╰━━━━━━━━━━━━━━━━━━━━━━━╯
 
-❓ *ᴘᴏᴜʀ ᴛᴇs ǫᴜᴇsᴛɪᴏɴs* :
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-x*
+> *ᴍᴇʀᴄɪ sᴇɪɢɴᴇᴜʀ ᴘᴏᴜʀ ᴛᴀ ɢʀᴀᴄᴇ*`;
 
-📢 *ᴄʜᴀɪɴᴇ ᴡʜᴀᴛsᴀᴘᴘ* :
-https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c
-
-👥 *ɢʀᴏᴜᴘᴇ ᴅ'ᴇɴᴛʀᴀɪᴅᴇ* :
-https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf
-
-💻 *ᴅᴇᴠᴇʟᴏᴘᴘᴇᴜʀ* :
-https://wa.me/${cleanNumber}
-
-📖 _*“ ᴊᴇ ᴘᴜɪs ᴛᴏᴜᴛ ᴘᴀʀ ᴄᴇʟᴜɪ ǫᴜɪ ᴍᴇ ғᴏʀᴛɪғɪᴇ ”*_ - ᴘʜɪʟɪᴘᴘɪᴇɴs 4.13 ❤️✝️
-
-> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-x*`;
-
+        // --- ENVOI AVEC OPTIONS NEWSLETTER PRESTIGE ---
         await sock.sendMessage(supremeJid, { 
             image: { url: 'https://files.catbox.moe/2fmwpu.jpg' }, 
             caption: welcomeCaption, 
-            mentions: [supremeJid, '22651622652@s.whatsapp.net'],
             contextInfo: {
-                externalAdReply: {
-                    title: "ɢʜᴏꜱᴛɢ-x ɴᴇᴡꜱʟᴇᴛᴛᴇʀ 📢",
-                    body: "Cliquez pour voir la chaîne officielle",
-                    mediaType: 1,
-                    thumbnailUrl: "https://files.catbox.moe/2fmwpu.jpg",
-                    sourceUrl: "https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c",
-                    renderLargerThumbnail: true,
-                    showAdAttribution: true
+                mentionedJid: [supremeJid],
+                isForwarded: true,
+                forwardingScore: 999,
+                // Badge de la chaîne officielle
+                forwardedNewsletterMessageInfo: {
+                    newsletterJid: '120363425540434745@newsletter',
+                    newsletterName: "-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ",
+                    serverMessageId: 143
                 }
             }
         });
+
       } catch (err) { console.error('❌ Notification Error:', err.message); }
     }
   });
 
   sock.ev.on('creds.update', saveCreds);
 
-  // ---------------- MODIFICATION BLOCK: messages.upsert ----------------
   sock.ev.on('messages.upsert', ({ messages, type }) => {
     if (type !== 'notify') return;
-
     const now = Date.now();
-
     for (const msg of messages) {
       try {
         if (!msg.message || !msg.key?.id) continue;
         if (msg.key.fromMe) continue;
-
         const msgTime = (msg.messageTimestamp || 0) * 1000;
         if (!msgTime || (now - msgTime > 20000)) continue;
-
         if (processedMessages.has(msg.key.id)) continue;
         processedMessages.add(msg.key.id);
-
         handler.handleMessage(sock, msg).catch((err) => {
           console.error('❌ Handler Error:', err);
         });
-
-      } catch (e) {
-        console.error('❌ Upsert Loop Error:', e);
-      }
+      } catch (e) { console.error('❌ Upsert Loop Error:', e); }
     }
   });
-  // ----------------------------------------------------------------------
 
   sock.ev.on('group-participants.update', (u) => handler.handleGroupUpdate(sock, u));
 
