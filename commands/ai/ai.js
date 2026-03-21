@@ -8,9 +8,8 @@ const APIs = require('../../utils/api');
 const AI_DESIGN = (answer) => `╭╼━≪• ɢʜᴏsᴛ ᴀɪ ʀᴇsᴘᴏɴsᴇ •≫━╾╮
 ┃ 
 ┃ ${answer.replace(/\n/g, '\n┃ ')}
-┃ 
-> ┃ ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗
-╰━━━━━━━━━━━━━━━╯`;
+╰━━━━━━━━━━━━━━━╯
+> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
 
 module.exports = {
   name: 'ai',
