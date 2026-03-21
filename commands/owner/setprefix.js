@@ -12,8 +12,8 @@ const AGM_CORE = (oldP, newP, type) => `╭╼━≪• ᴀɢᴍ sʏsᴛᴇᴍ �
 ┃ ᴛʏᴘᴇ : ${type.toUpperCase()} ⚡
 ┃ ᴏʟᴅ : [ ${oldP} ]
 ┃ ɴᴇᴡ : [ ${newP} ]
->┃ ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗
-╰━━━━━━━━━━━━━━━╯`;
+╰━━━━━━━━━━━━━━━╯
+> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
 
 module.exports = {
   name: 'setprefix',
