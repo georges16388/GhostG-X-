@@ -29,7 +29,7 @@ module.exports = {
           text += `  ${index + 1}. @${participant.split('@')[0]}\n`;
         });
         
-        text += `\n> ┃ ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
+        text += `\n> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
         
         await sock.sendMessage(extra.from, {
           text,
