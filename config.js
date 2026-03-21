@@ -12,7 +12,7 @@ module.exports = {
     botName: 'ɢʜᴏꜱᴛɢ-x',
     prefix: process.env.PREFIX || '.',
     sessionName: 'session',
-    sessionID: process.env.SESSION_ID || '',
+    sessionID:'',
     
     // --- BOT BEHAVIOR & AUTOMATIONS ---
     selfMode: true, 
