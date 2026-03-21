@@ -10,7 +10,6 @@ const { webp2png } = require('../../utils/webp2mp4');
 const config = require('../../config');
 
 const VISION_DESIGN = (prompt) => `╭╼━≪• ɢʜᴏꜱᴛ ᴠɪꜱɪᴏɴ •≫━╾╮
-┃ 
 ┃ ᴘʀᴏᴍᴘᴛ : ${prompt}
 ┃ ꜱᴛᴀᴛᴜꜱ : ᴘʀᴏᴄᴇꜱꜱᴇᴅ ✨
 ┃ ᴛʏᴘᴇ : ᴀɪ ᴀɴᴀʟʏꜱɪꜱ
