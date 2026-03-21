@@ -2,6 +2,8 @@
  * ɢʜᴏꜱᴛɢ-x ᴍᴅ - ᴍᴀɪɴ ᴍᴇssᴀɢᴇ ʜᴀɴᴅʟᴇʀ (ᴘʀᴇsᴛɪɢᴇ ᴇᴅɪᴛɪᴏɴ)
  * ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
+console.log(`📩 [DEBUG] Message de ${sender} : ${body} | Commande détectée : ${isCmd}`);
+
 // Ne pas utiliser "const commands = loadCommands()" tout seul
 global.commands = global.commands || loadCommands();
 // Ensuite, dans l'exécution :
