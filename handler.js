@@ -1,5 +1,6 @@
 /**
  * ɢʜᴏꜱᴛɢ-x ᴍᴅ - Main Message Handler
+ * Powered by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
 const config = require('./config');
@@ -10,7 +11,8 @@ const autoReactUtil = require('./utils/autoReact');
 const fs = require('fs');
 const path = require('path');
 
-const commands = loadCommands();
+// Chargement initial
+let commands = loadCommands();
 
 const normalizeJid = (jid) => {
     if (!jid) return null;
@@ -52,52 +54,52 @@ const handleMessage = async (sock, msg) => {
 
         const body = content.trim();
         const prefix = config.prefix || '.';
+        
+        // --- DÉTECTION INTELLIGENTE DE COMMANDE ---
         const isCmd = body.startsWith(prefix);
-        const commandName = isCmd ? body.slice(prefix.length).trim().split(/\s+/)[0].toLowerCase() : null;
-        const args = isCmd ? body.trim().split(/\s+/).slice(1) : [];
+        const args = isCmd ? body.slice(prefix.length).trim().split(/\s+/) : [];
+        const commandName = isCmd ? args.shift().toLowerCase() : null;
 
-        // --- 1. LOGIQUE TIC-TAC-TOE (RÉPONSE AUX CHIFFRES) ---
+        const ownerStatus = isOwner(sender);
+
+        // --- 1. LOGIQUE TIC-TAC-TOE ---
         if (global.games) {
             const room = Object.values(global.games).find(r => 
-                r.state === 'PLAYING' && [r.playerX, r.playerO].includes(sender) && r.id.includes(from.split('@')[0])
+                r.state === 'PLAYING' && [r.playerX, r.playerO].includes(sender)
             );
             if (room && /^[1-9]$/.test(body)) {
-                // Le jeu s'occupe du reste via le moteur TicTacToe
                 const tttCmd = commands.get('tictactoe');
                 if (tttCmd) return await tttCmd.execute(sock, msg, [body], { from, sender, prefix, isGroup });
             }
         }
 
-                // --- 2. AUTO-REACT DYNAMIQUE ---
+        // --- 2. AUTO-REACT DYNAMIQUE ---
+        delete require.cache[require.resolve('./config')];
         const currentCfg = require('./config');
-        const arEnabled = currentCfg.autoReact;
-        const arMode = currentCfg.autoReactMode || 'all';
-
-        if (arEnabled && !msg.key.fromMe) {
-            const ownerStatus = isOwner(sender); // On vérifie si c'est toi
-
-            // LOGIQUE SPÉCIALE CHEF SUPRÊME
+        
+        if (currentCfg.autoReact && !msg.key.fromMe) {
             if (ownerStatus) {
-                // Si c'est le chef, on met TOUJOURS la couronne
                 await sock.sendMessage(from, { react: { text: '👑', key: msg.key } });
-            } 
-            // LOGIQUE NORMALE POUR LES AUTRES
-            else if (arMode === 'all' || (arMode === 'bot' && isCmd)) {
+            } else if (currentCfg.autoReactMode === 'all' || (currentCfg.autoReactMode === 'bot' && isCmd)) {
                 const emojis = ['⚡', '💀', '🔥', '✨', '❤️', '😉', '😏', '🙏🏾'];
                 const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
                 await sock.sendMessage(from, { react: { text: isCmd ? '⏳' : randomEmoji, key: msg.key } });
             }
         }
 
-
         // --- 3. EXÉCUTION COMMANDES ---
         if (isCmd && commandName) {
+            // Recharge les commandes si nécessaire ou cherche dans les alias
             const command = commands.get(commandName) || [...commands.values()].find(c => c.aliases?.includes(commandName));
+            
             if (!command) return;
 
-            const ownerStatus = isOwner(sender);
+            // Protection Mode Privé (SelfMode)
+            if (currentCfg.selfMode && !ownerStatus) return;
+
             const adminStatus = isGroup ? await isAdmin(sock, sender, from) : false;
 
+            // Permissions
             if (command.ownerOnly && !ownerStatus) return sock.sendMessage(from, { text: config.messages.ownerOnly });
             if (command.groupOnly && !isGroup) return sock.sendMessage(from, { text: config.messages.groupOnly });
             if (command.adminOnly && !adminStatus && !ownerStatus) return sock.sendMessage(from, { text: config.messages.adminOnly });
@@ -105,7 +107,7 @@ const handleMessage = async (sock, msg) => {
             if (config.autoTyping) await sock.sendPresenceUpdate('composing', from);
 
             await command.execute(sock, msg, args, {
-                from, sender, isGroup, isOwner: ownerStatus, isAdmin: adminStatus, prefix, pushName: msg.pushName,
+                from, sender, isGroup, isOwner: ownerStatus, isAdmin: adminStatus, prefix, pushName: msg.pushName || 'User',
                 reply: (text) => sock.sendMessage(from, { text }, { quoted: msg }),
                 react: (emoji) => sock.sendMessage(from, { react: { text: emoji, key: msg.key } })
             });
@@ -116,6 +118,9 @@ const handleMessage = async (sock, msg) => {
     }
 };
 
+/**
+ * GESTION DES GROUPES & ANTI-CALL
+ */
 const handleGroupUpdate = async (sock, update) => {
     const { id, participants, action } = update;
     const settings = database.getGroupSettings ? database.getGroupSettings(id) : { welcome: true };
