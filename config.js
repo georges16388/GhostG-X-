@@ -85,7 +85,7 @@ module.exports = {
     maxWarnings: 3,
     social: {
       github: 'https://github.com/georges16388/GhostG-X-/',
-      group: 'https://chat.whatsapp.com/BEYGvU5LnR13lVBpU9ypgK?mode=gi_t',
+      group: 'https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf?mode=gi_t',
       channel: 'https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c'
     }
 };
