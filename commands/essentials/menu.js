@@ -1,6 +1,6 @@
 /**
  * Menu Command - GhostG-X Prestige Edition V5 (Gratitude Edition)
- * Design Pur & Stylisé par -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
+ * Focus: Clean Design + Native WhatsApp Channel Button
  */
 
 const config = require('../../config');
@@ -43,7 +43,6 @@ module.exports = {
       const ownerNumber = "22651622652";
       const ownerName = toStyledCaps(config.ownerName || "Truth Devices"); 
 
-      // --- CONSTRUCTION DU TEXTE ---
       let menuText = `╭╼━≪• *${botName}* •≫━╾╮\n`;
       menuText += `┃ *${toStyledCaps('statut')}* : 🟢 ᴏɴʟɪɴᴇ\n`;
       menuText += `┃ *${toStyledCaps('utilisateur')}* : @${ownerName}\n`;
@@ -69,29 +68,21 @@ module.exports = {
       menuText += `> *${toStyledCaps('powered by ghostg-x')}*\n`;
       menuText += `> *${toStyledCaps('merci seigneur pour ta grace')}*`;
 
-      // --- CONFIGURATION POUR LE BOUTON NATIF "VOIR LA CHAÎNE" ---
+      // --- CONFIGURATION SANS LIEN GOOGLE ---
       const messageOptions = {
         image: { url: "https://files.catbox.moe/2fmwpu.jpg" },
         caption: menuText,
         mentions: [extra.sender],
         contextInfo: {
-          // Ceci active le bouton "Voir la chaîne" en bas du message
+          // Affiche le badge en haut et active le bouton "Voir la chaîne" en bas
           forwardedNewsletterMessageInfo: {
             newsletterJid: '120363425540434745@newsletter',
             newsletterName: "-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ",
-            serverMessageId: 1 // On met 1 ou un ID réel pour forcer l'affichage
+            serverMessageId: 100 
           },
           isForwarded: true,
-          forwardingScore: 1,
-          externalAdReply: {
-            title: botName,
-            body: toStyledCaps("jesus taime - truth devices"),
-            mediaType: 1,
-            sourceUrl: "https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c",
-            thumbnailUrl: "https://files.catbox.moe/2fmwpu.jpg",
-            renderLargerThumbnail: true,
-            showAdAttribution: true
-          }
+          forwardingScore: 1 
+          // J'ai supprimé externalAdReply pour enlever le lien Google/Catbox au-dessus
         }
       };
 
