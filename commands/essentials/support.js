@@ -11,7 +11,7 @@ const AGM_SUPPORT = () => `╭╼━≪• ᴀɢᴍ ꜱᴜᴘᴘᴏʀᴛ •≫�
 ╰━━━━━━━━━━━━━━━╯
 
 *ʀᴇᴊᴏɪɢɴᴇᴢ ɴᴏᴛʀᴇ ᴄᴏᴍᴍᴜɴᴀᴜᴛᴇ́ :*
-https://chat.whatsapp.com/BEYGvU5LnR13lVBpU9ypgK
+https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf?mode=gi_t
 
 _ʙᴇꜱᴏɪɴ ᴅ'ᴀɪᴅᴇ ᴏᴜ ᴅᴇ ɴᴏᴜᴠᴇᴀᴜx ᴇꜰꜰᴇᴛꜱ ? ᴏɴ ᴠᴏᴜꜱ ᴀᴛᴛᴇɴᴅ !_
 
