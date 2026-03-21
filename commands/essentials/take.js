@@ -12,8 +12,8 @@ const AGM_DESIGN = (newPack) => `╭╼━≪• sᴛɪᴄᴋᴇʀ sᴛᴇᴀʟ�
 ┃ sᴛᴀᴛᴜs : 🟢 ʀᴇ-ᴘᴀᴄᴋᴇᴅ
 ┃ ᴏᴡɴᴇʀ : ${newPack.length > 15 ? newPack.substring(0, 12) + '...' : newPack}
 ┃ ᴍᴏᴅᴇ : ɪᴅ-ᴘʀᴏᴛᴇᴄᴛ ⚡
->┃ ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗
-╰━━━━━━━━━━━━━━━╯`;
+╰━━━━━━━━━━━━━━━╯
+> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
 
 module.exports = {
   name: 'take',
