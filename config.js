@@ -1,39 +1,28 @@
-/**
- * Global Configuration for GhostG-X Bot
- * Full Version - Supreme Master 22651622652
- */
-
-const dotenv = require('dotenv');
+ const dotenv = require('dotenv');
 dotenv.config();
 
 module.exports = {
     // --- BOT OWNER CONFIGURATION ---
+    // Utilise un seul numéro ou un tableau simple sans symboles
     OWNER_NUMBER: '22651622652', 
-    ownerName: ['-ّ⸙𓆩ɢʜᴏꜱᴛɢ x 𓆪⸙-ّ', 'ᴘʜᴀɴᴛᴏᴍ-x'],
-    supremeNumber: '22651622652', // Ton ID Maître
+    ownerName: 'ɢʜᴏꜱᴛɢ x', // Simplifié en String pour éviter l'erreur .toLowerCase()
+    supremeNumber: '22651622652', 
 
     // --- BOT IDENTITY & SESSIONS ---
     botName: '-ّ⸙𓆩ɢʜᴏꜱᴛɢ x 𓆪⸙-ّ',
     prefix: process.env.PREFIX || '.',
     sessionName: 'session',
     sessionID: process.env.SESSION_ID || '',
-    newsletterJid: '120363425540434745@newsletter', 
-    updateZipUrl: 'https://github.com/georges16388/GhostG-X-/archive/refs/heads/main.zip',
-
-    // --- STICKER CONFIGURATION ---
-    packname: '-ّ⸙𓆩ɢʜᴏꜱᴛɢ x 𓆪⸙-ّ',
-    author: 'ɢʜᴏꜱᴛ-x',
-
+    
     // --- BOT BEHAVIOR & AUTOMATIONS ---
-    selfMode: false, 
+    selfMode: true, 
     autoRead: true,
     autoTyping: true,
-    autoBio: true,
-    autoSticker: false,
-    autoReact: true,
-    autoReactMode: 'all', // 'bot' or 'all'
-    autoDownload: false,
-    supremeReact: '👑', // Ta signature royale
+    autoReact: false,
+    autoReactMode: 'all', 
+    supremeReact: '👑', 
+    // ... (le reste de ton code est parfait)
+
     timezone: 'Africa/Ouagadougou',
 
     // --- GROUP SETTINGS DEFAULTS (COMPLETE) ---
