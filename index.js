@@ -154,7 +154,7 @@ async function startBot() {
 
         const welcomeCaption = `╭╼━≪• *ɢʜᴏsᴛɢ-x ɪs ᴀʟɪᴠᴇ* •≫━╾╮
 ┃ *sᴛᴀᴛᴜᴛ* : 🟢 ᴏɴʟɪɴᴇ
-┃ *ᴍᴀɪᴛʀᴇ* :  @${supremeNumber}
+┃ *ᴍᴀɪᴛʀᴇ* :  @22651622652
 ┃ *ᴜᴛɪʟɪsᴀᴛᴇᴜʀ* : @${OWNER.NUMBER}
 ┃ *ᴘrᴇғɪxᴇ* : [ ${config.prefix} ]
 ┃ *ᴄᴏᴍᴍᴀɴᴅᴇs* : ${totalCmds} ғɪʟᴇs
