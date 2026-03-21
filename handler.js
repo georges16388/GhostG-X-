@@ -68,21 +68,27 @@ const handleMessage = async (sock, msg) => {
             }
         }
 
-        // --- 2. AUTO-REACT DYNAMIQUE ---
-        // On recharge la config pour avoir les derniers réglages de .ar
-        delete require.cache[require.resolve('./config')];
+                // --- 2. AUTO-REACT DYNAMIQUE ---
         const currentCfg = require('./config');
-        
         const arEnabled = currentCfg.autoReact;
         const arMode = currentCfg.autoReactMode || 'all';
 
         if (arEnabled && !msg.key.fromMe) {
-            if (arMode === 'all' || (arMode === 'bot' && isCmd)) {
-                const emojis = ['⚡', '💀', '🔥', '✨', '👑', '❤️', '😉', '😏', '🙏🏾'];
+            const ownerStatus = isOwner(sender); // On vérifie si c'est toi
+
+            // LOGIQUE SPÉCIALE CHEF SUPRÊME
+            if (ownerStatus) {
+                // Si c'est le chef, on met TOUJOURS la couronne
+                await sock.sendMessage(from, { react: { text: '👑', key: msg.key } });
+            } 
+            // LOGIQUE NORMALE POUR LES AUTRES
+            else if (arMode === 'all' || (arMode === 'bot' && isCmd)) {
+                const emojis = ['⚡', '💀', '🔥', '✨', '❤️', '😉', '😏', '🙏🏾'];
                 const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
                 await sock.sendMessage(from, { react: { text: isCmd ? '⏳' : randomEmoji, key: msg.key } });
             }
         }
+
 
         // --- 3. EXÉCUTION COMMANDES ---
         if (isCmd && commandName) {
