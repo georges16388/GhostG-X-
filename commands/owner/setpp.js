@@ -1,10 +1,8 @@
 /**
- * Bot Avatar Controller - AGM Identity Core
+ * Bot Avatar Controller - AGM Identity Core (Fixed Edition)
  * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
-const fs = require('fs');
-const path = require('path');
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 
 // --- FONCTION DE DESIGN AGM (AVATAR STYLE) ---
@@ -17,40 +15,47 @@ const AGM_PP = (status) => `╭╼━≪• ᴀɢᴍ ɪᴅᴇɴᴛɪᴛʏ •≫
 
 module.exports = {
   name: 'setpp',
-  aliases: ['setppbot', 'setpic', 'setpp'],
+  aliases: ['setppbot', 'setpic', 'botpp'],
   category: 'owner',
   description: 'Changer la photo de profil du bot',
-  usage: '.setbotpp (répondre à une image/sticker)',
+  usage: '.setpp (répondre à une image)',
   ownerOnly: true,
 
   async execute(sock, msg, args, extra) {
     try {
+      const from = extra.from;
+      // Extraction sécurisée du message cité (Quoted)
       const quoted = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage;
-      if (!quoted) return extra.reply('⚠️ *ᴠᴇᴜɪʟʟᴇᴢ ʀéᴘᴏɴᴅʀᴇ à ᴜɴᴇ ɪᴍᴀɢᴇ ᴏᴜ sᴛɪᴄᴋᴇʀ.*');
+      
+      // On cible l'image ou le sticker
+      const imageMessage = quoted?.imageMessage || quoted?.viewOnceMessageV2?.message?.imageMessage;
+      
+      if (!imageMessage) {
+        return sock.sendMessage(from, { text: '⚠️ *ᴠᴇᴜɪʟʟᴇᴢ ʀéᴘᴏɴᴅʀᴇ à ᴜɴᴇ ɪᴍᴀɢᴇ.*' }, { quoted: msg });
+      }
 
-      const mime = quoted.imageMessage || quoted.stickerMessage;
-      if (!mime) return extra.reply('❌ *ᴍéᴅɪᴀ ɪɴᴠᴀʟɪᴅᴇ (ɪᴍᴀɢᴇ/sᴛɪᴄᴋᴇʀ ᴜɴɪǫᴜᴇᴍᴇɴᴛ).*');
-
-      await sock.sendMessage(extra.from, { react: { text: '📸', key: msg.key } });
-      await extra.reply(AGM_PP('🟠 ɪɴ ᴘʀᴏɢʀᴇss'));
-
-      // Téléchargement
-      const stream = await downloadContentFromMessage(mime, 'image');
+      await sock.sendMessage(from, { react: { text: '📸', key: msg.key } });
+      
+      // Téléchargement du flux
+      const stream = await downloadContentFromMessage(imageMessage, 'image');
       let buffer = Buffer.from([]);
       for await (const chunk of stream) {
         buffer = Buffer.concat([buffer, chunk]);
       }
 
-      // Mise à jour de la PP
+      // Mise à jour de la Photo de Profil (PP)
+      // Note: Baileys gère mieux le JID simple du bot
       const botJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
+      
       await sock.updateProfilePicture(botJid, buffer);
 
-      await extra.reply(AGM_PP('✅ sᴜᴄᴄᴇssғᴜʟʟʏ ᴜᴘᴅᴀᴛᴇᴅ'));
-      await sock.sendMessage(extra.from, { react: { text: '✅', key: msg.key } });
+      // Réponse de succès
+      await sock.sendMessage(from, { text: AGM_PP('✅ sᴜᴄᴄᴇssғᴜʟʟʏ ᴜᴘᴅᴀᴛᴇᴅ') }, { quoted: msg });
+      await sock.sendMessage(from, { react: { text: '✅', key: msg.key } });
 
     } catch (error) {
       console.error('SetPP Error:', error);
-      await extra.reply('❌ *éᴄʜᴇᴄ ᴅᴇ ʟᴀ ᴍɪsᴇ à ᴊᴏᴜʀ ᴅᴇ ʟ\'ᴀᴠᴀᴛᴀʀ.*');
+      await sock.sendMessage(extra.from, { text: '❌ *éᴄʜᴇᴄ : L\'image est peut-être trop lourde ou invalide.*' }, { quoted: msg });
     }
   }
 };
