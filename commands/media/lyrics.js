@@ -10,8 +10,8 @@ const AGM_DESIGN = (title, artist) => `╭╼━≪• ʟʏʀɪᴄs ғɪɴᴅᴇ
 ┃ sᴏɴɢ : ${title.length > 15 ? title.substring(0, 12) + '...' : title} 🎵
 ┃ ᴀʀᴛɪsᴛ : ${artist.length > 15 ? artist.substring(0, 12) + '...' : artist} 👤
 ┃ sᴛᴀᴛᴜs : 🟢 ғᴏᴜɴᴅ
->┃ ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗
-╰━━━━━━━━━━━━━━━╯`;
+╰━━━━━━━━━━━━━━━╯
+> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
 
 module.exports = {
   name: 'lyrics',
