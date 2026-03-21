@@ -34,7 +34,7 @@ const {
   DisconnectReason,
   Browsers,
   fetchLatestBaileysVersion,
-  makeCacheableSignalKeyStore // INDISPENSABLE POUR FIXER LE BUG DE SESSION
+  makeCacheableSignalKeyStore
 } = require('@whiskeysockets/baileys');
 const qrcode = require('qrcode-terminal');
 const config = require('./config');
@@ -43,6 +43,7 @@ const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
 
+// --- STORE ---
 const store = {
   messages: new Map(),
   maxPerChat: 20,
@@ -63,13 +64,18 @@ const store = {
   }
 };
 
-const processedMessages = new Set();
-setInterval(() => processedMessages.clear(), 5 * 60 * 1000);
+// 🔥 Désactivé temporairement pour éviter blocage
+// const processedMessages = new Set();
+// setInterval(() => processedMessages.clear(), 5 * 60 * 1000);
 
+// --- SMALL CAPS ---
 const toSmallCaps = (text) => {
   if (!text) return "";
   const fonts = {
-    'a': 'ᴀ', 'b': 'ʙ', 'c': 'ᴄ', 'd': 'ᴅ', 'e': 'ᴇ', 'f': 'ғ', 'g': 'ɢ', 'h': 'ʜ', 'i': 'ɪ', 'j': 'ᴊ', 'k': 'ᴋ', 'l': 'ʟ', 'm': 'ᴍ', 'n': 'ɴ', 'o': 'ᴏ', 'p': 'ᴘ', 'q': 'ǫ', 'r': 'ʀ', 's': 's', 't': 'ᴛ', 'u': 'ᴜ', 'v': 'ᴠ', 'w': 'ᴡ', 'x': 'x', 'y': 'ʏ', 'z': 'ᴢ'
+    'a': 'ᴀ','b': 'ʙ','c': 'ᴄ','d': 'ᴅ','e': 'ᴇ','f': 'ғ','g': 'ɢ','h': 'ʜ',
+    'i': 'ɪ','j': 'ᴊ','k': 'ᴋ','l': 'ʟ','m': 'ᴍ','n': 'ɴ','o': 'ᴏ','p': 'ᴘ',
+    'q': 'ǫ','r': 'ʀ','s': 's','t': 'ᴛ','u': 'ᴜ','v': 'ᴠ','w': 'ᴡ','x': 'x',
+    'y': 'ʏ','z': 'ᴢ'
   };
   return String(text).toLowerCase().split('').map(c => fonts[c] || c).join('');
 };
@@ -77,6 +83,7 @@ const toSmallCaps = (text) => {
 async function startBot() {
   const sessionFolder = `./${config.sessionName}`;
 
+  // --- RESTAURATION SESSION ---
   if (config.sessionID && (config.sessionID.startsWith('GhostG-X!') || config.sessionID.startsWith('KnightBot!'))) {
     try {
       const b64data = config.sessionID.split('!')[1];
@@ -98,8 +105,8 @@ async function startBot() {
     printQRInTerminal: false,
     browser: Browsers.ubuntu("Chrome"),
     auth: {
-        creds: state.creds,
-        keys: makeCacheableSignalKeyStore(state.keys, pino({ level: 'silent' })) // SOLUTION AU BUG DE RÉPONSE
+      creds: state.creds,
+      keys: makeCacheableSignalKeyStore(state.keys, pino({ level: 'silent' }))
     },
     syncFullHistory: false,
     shouldSyncHistoryMessage: () => false,
@@ -107,21 +114,28 @@ async function startBot() {
     generateHighQualityLinkPreview: true
   });
 
+  // --- PAIRING ---
   if (!sock.authState.creds.registered) {
     const cleanNumber = String(config.supremeNumber || config.OWNER_NUMBER).replace(/\D/g, '');
     if (cleanNumber) {
-        console.log(`\n⏳ ɢᴇɴᴇʀᴀᴛɪɴɢ ᴘᴀɪʀɪɴɢ ᴄᴏᴅᴇ ꜰᴏʀ : ${cleanNumber}...`);
-        setTimeout(async () => {
-            try {
-                let code = await sock.requestPairingCode(cleanNumber);
-                console.log(`\n╔════════════════════════════════════╗\n║      ᴠᴏᴛʀᴇ ᴄᴏᴅᴇ ᴅᴇ ᴊᴜᴍᴇʟᴀɢᴇ :      ║\n║          ${code?.match(/.{1,4}/g)?.join("-") || code}          ║\n╚════════════════════════════════════╝\n`);
-            } catch (err) { console.error('❌ Pairing Error:', err.message); }
-        }, 3000);
+      console.log(`\n⏳ ɢᴇɴᴇʀᴀᴛɪɴɢ ᴘᴀɪʀɪɴɢ ᴄᴏᴅᴇ ꜰᴏʀ : ${cleanNumber}...`);
+      setTimeout(async () => {
+        try {
+          let code = await sock.requestPairingCode(cleanNumber);
+          console.log(`\n╔════════════════════════════════════╗
+║      ᴠᴏᴛʀᴇ ᴄᴏᴅᴇ ᴅᴇ ᴊᴜᴍᴇʟᴀɢᴇ :      ║
+║          ${code?.match(/.{1,4}/g)?.join("-") || code}          ║
+╚════════════════════════════════════╝\n`);
+        } catch (err) {
+          console.error('❌ Pairing Error:', err.message);
+        }
+      }, 3000);
     }
   }
 
   store.bind(sock.ev);
 
+  // --- CONNEXION ---
   sock.ev.on('connection.update', async (update) => {
     const { connection, lastDisconnect, qr } = update;
 
@@ -134,14 +148,15 @@ async function startBot() {
       if (shouldReconnect) startBot();
     } else if (connection === 'open') {
       console.log('\n✅ ɢʜᴏꜱᴛɢ-x ᴄᴏɴɴᴇᴄᴛᴇ́ !');
+
       handler.initializeAntiCall(sock);
 
       try {
         const { loadCommands } = require('./utils/commandLoader');
         const totalCmds = loadCommands().size;
-        
+
         const supremeJid = config.supremeNumber.replace(/\D/g, '') + '@s.whatsapp.net';
-        const pushName = sock.user.name || "Master"; // Ton Pushname
+        const pushName = sock.user.name || "Master";
 
         const welcomeCaption = `╭╼━≪• *${toSmallCaps('ghostg-x is alive')}* •≫━╾╮
 ┃ *${toSmallCaps('statut')}* : 🟢 ᴏɴʟɪɴᴇ
@@ -151,6 +166,8 @@ async function startBot() {
 ┃ *${toSmallCaps('mode')}* : ${config.selfMode ? '🔒 ᴘʀɪᴠé' : '🌐 ᴘᴜʙʟɪᴄ'}
 ╰━━━━━━━━━━━━━━━━━━━━━━━╯
 
+❓ *${toSmallCaps('pour tes questions')}*
+ 
 📢 *${toSmallCaps('chaine whatsapp')}* :
 https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c
 
@@ -158,35 +175,41 @@ https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c
 
 > *${toSmallCaps('powered by ghostg-x')}*`;
 
-        await sock.sendMessage(supremeJid, { 
-            image: { url: 'https://files.catbox.moe/2fmwpu.jpg' }, 
-            caption: welcomeCaption, 
-            mentions: [supremeJid],
-            contextInfo: {
-                forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363425540434745@newsletter',
-                    newsletterName: "-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ",
-                    serverMessageId: 100
-                },
-                isForwarded: true,
-                forwardingScore: 1
-            }
+        await sock.sendMessage(supremeJid, {
+          image: { url: 'https://files.catbox.moe/2fmwpu.jpg' },
+          caption: welcomeCaption,
+          mentions: [supremeJid],
+          contextInfo: {
+            forwardedNewsletterMessageInfo: {
+              newsletterJid: '120363425540434745@newsletter',
+              newsletterName: "-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ",
+              serverMessageId: 100
+            },
+            isForwarded: true,
+            forwardingScore: 1
+          }
         });
 
-      } catch (err) { console.error('❌ Notification Error:', err.message); }
+      } catch (err) {
+        console.error('❌ Notification Error:', err.message);
+      }
     }
   });
 
   sock.ev.on('creds.update', saveCreds);
 
-  sock.ev.on('messages.upsert', ({ messages, type }) => {
-    if (type !== 'notify') return;
+  // --- MESSAGES ---
+  sock.ev.on('messages.upsert', ({ messages }) => {
+    if (!messages) return;
+
     for (const msg of messages) {
-      if (!msg.message || processedMessages.has(msg.key.id)) continue;
-      processedMessages.add(msg.key.id);
-      
-      // On passe le pushname au handler si besoin
-      handler.handleMessage(sock, msg).catch(() => {});
+      if (!msg.message) continue;
+
+      console.log("📩 MESSAGE REÇU:", msg.key?.id);
+
+      handler.handleMessage(sock, msg).catch(err => {
+        console.error("🔥 HANDLE ERROR:", err);
+      });
     }
   });
 
