@@ -1,32 +1,18 @@
 /**
- * GhostG-X Bot - Main Entry Point
- * Fix: Decrypted message with closed session & Pushname Mentions
- * Prestige Edition - GhostG X
+ * ɢʜᴏꜱᴛɢ-x ᴍᴅ - ᴍᴀɪɴ ᴇɴᴛʀʏ ᴘᴏɪɴᴛ (ᴘʀᴇsᴛɪɢᴇ ᴇᴅɪᴛɪᴏɴ)
+ * Final Version: Anti-Loop Pairing + Session Fix + SmallCaps + Support Links
+ * ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
+
 process.env.PUPPETEER_SKIP_DOWNLOAD = 'true';
 process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = 'true';
-process.env.PUPPETEER_CACHE_DIR = process.env.PUPPETEER_CACHE_DIR || '/tmp/puppeteer_cache_disabled';
+process.env.PUPPETEER_CACHE_DIR = '/tmp/puppeteer_cache_disabled';
 
 const { initializeTempSystem } = require('./utils/tempManager');
 const { startCleanup } = require('./utils/cleanup');
 initializeTempSystem();
 startCleanup();
 
-// --- FILTRAGE DES LOGS CONSOLE ---
-const originalConsoleLog = console.log;
-const forbiddenPatternsConsole = [
-  'closing session', 'sessionentry', 'prekey bundle', 'pendingprekey', 
-  'currentratchet', 'chainkey', 'ratchet', 'signal protocol', 'ephemeralkeypair'
-];
-
-console.log = (...args) => {
-  const message = args.map(a => String(a)).join(' ').toLowerCase();
-  if (!forbiddenPatternsConsole.some(p => message.includes(p))) {
-    originalConsoleLog.apply(console, args);
-  }
-};
-
-// --- DÉPENDANCES ---
 const pino = require('pino');
 const {
   default: makeWASocket,
@@ -43,7 +29,7 @@ const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
 
-// --- STORE ---
+// --- SYSTÈME DE GESTION DES MESSAGES ---
 const store = {
   messages: new Map(),
   maxPerChat: 20,
@@ -64,11 +50,6 @@ const store = {
   }
 };
 
-// 🔥 Désactivé temporairement pour éviter blocage
-// const processedMessages = new Set();
-// setInterval(() => processedMessages.clear(), 5 * 60 * 1000);
-
-// --- SMALL CAPS ---
 const toSmallCaps = (text) => {
   if (!text) return "";
   const fonts = {
@@ -80,10 +61,12 @@ const toSmallCaps = (text) => {
   return String(text).toLowerCase().split('').map(c => fonts[c] || c).join('');
 };
 
+let isReconnecting = false; 
+
 async function startBot() {
   const sessionFolder = `./${config.sessionName}`;
 
-  // --- RESTAURATION SESSION ---
+  // Restauration de session via ID (Base64)
   if (config.sessionID && (config.sessionID.startsWith('GhostG-X!') || config.sessionID.startsWith('KnightBot!'))) {
     try {
       const b64data = config.sessionID.split('!')[1];
@@ -106,58 +89,54 @@ async function startBot() {
     browser: Browsers.ubuntu("Chrome"),
     auth: {
       creds: state.creds,
-      keys: makeCacheableSignalKeyStore(state.keys, pino({ level: 'silent' }))
+      keys: makeCacheableSignalKeyStore(state.keys, pino({ level: 'silent' })) 
     },
     syncFullHistory: false,
     shouldSyncHistoryMessage: () => false,
-    keepAliveIntervalMs: 30000,
-    generateHighQualityLinkPreview: true
+    keepAliveIntervalMs: 30000
   });
 
-  // --- PAIRING ---
+  // --- LOGIQUE DE PAIRAGE SÉCURISÉE ---
   if (!sock.authState.creds.registered) {
     const cleanNumber = String(config.supremeNumber || config.OWNER_NUMBER).replace(/\D/g, '');
-    if (cleanNumber) {
+    if (cleanNumber && !isReconnecting) {
       console.log(`\n⏳ ɢᴇɴᴇʀᴀᴛɪɴɢ ᴘᴀɪʀɪɴɢ ᴄᴏᴅᴇ ꜰᴏʀ : ${cleanNumber}...`);
       setTimeout(async () => {
         try {
           let code = await sock.requestPairingCode(cleanNumber);
-          console.log(`\n╔════════════════════════════════════╗
-║      ᴠᴏᴛʀᴇ ᴄᴏᴅᴇ ᴅᴇ ᴊᴜᴍᴇʟᴀɢᴇ :      ║
-║          ${code?.match(/.{1,4}/g)?.join("-") || code}          ║
-╚════════════════════════════════════╝\n`);
-        } catch (err) {
-          console.error('❌ Pairing Error:', err.message);
-        }
-      }, 3000);
+          console.log(`\n╔════════════════════════════════════╗\n║      ᴠᴏᴛʀᴇ ᴄᴏᴅᴇ ᴅᴇ ᴊᴜᴍᴇʟᴀɢᴇ :      ║\n║          ${code?.match(/.{1,4}/g)?.join("-") || code}          ║\n╚════════════════════════════════════╝\n`);
+        } catch (err) { console.error('❌ Pairing Error:', err.message); }
+      }, 5000);
     }
   }
 
   store.bind(sock.ev);
 
-  // --- CONNEXION ---
   sock.ev.on('connection.update', async (update) => {
     const { connection, lastDisconnect, qr } = update;
 
-    if (qr && !config.supremeNumber) {
-      qrcode.generate(qr, { small: true });
-    }
+    if (qr && !config.supremeNumber) qrcode.generate(qr, { small: true });
 
     if (connection === 'close') {
-      const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
-      if (shouldReconnect) startBot();
+      const statusCode = lastDisconnect?.error?.output?.statusCode;
+      const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
+      
+      if (shouldReconnect && !isReconnecting) {
+        isReconnecting = true;
+        console.log(`🔄 Reconnexion dans 5s (Status: ${statusCode})`);
+        setTimeout(() => { startBot(); isReconnecting = false; }, 5000);
+      }
     } else if (connection === 'open') {
       console.log('\n✅ ɢʜᴏꜱᴛɢ-x ᴄᴏɴɴᴇᴄᴛᴇ́ !');
-
       handler.initializeAntiCall(sock);
 
       try {
         const { loadCommands } = require('./utils/commandLoader');
         const totalCmds = loadCommands().size;
-
         const supremeJid = config.supremeNumber.replace(/\D/g, '') + '@s.whatsapp.net';
         const pushName = sock.user.name || "Master";
 
+        // --- MESSAGE ALIVE AVEC DESIGN PRESTIGE & LIENS ---
         const welcomeCaption = `╭╼━≪• *${toSmallCaps('ghostg-x is alive')}* •≫━╾╮
 ┃ *${toSmallCaps('statut')}* : 🟢 ᴏɴʟɪɴᴇ
 ┃ *${toSmallCaps('maitre')}* : @${pushName}
@@ -166,10 +145,16 @@ async function startBot() {
 ┃ *${toSmallCaps('mode')}* : ${config.selfMode ? '🔒 ᴘʀɪᴠé' : '🌐 ᴘᴜʙʟɪᴄ'}
 ╰━━━━━━━━━━━━━━━━━━━━━━━╯
 
-❓ *${toSmallCaps('pour tes questions')}*
- 
+❓ *${toSmallCaps('pour tes questions')}* 
+
+👥*${toSmallCaps('groupe d'entraide')}* :
+https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf
+
 📢 *${toSmallCaps('chaine whatsapp')}* :
 https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c
+
+💻 *${toSmallCaps('developpeur')}* :
+https://wa.me/22651622652
 
 📖 _*“ ${toSmallCaps('je puis tout par celui qui me fortifie')} ”*_ - ᴘʜɪʟɪᴘᴘɪᴇɴs 4.13 ❤️✝️
 
@@ -189,27 +174,19 @@ https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c
             forwardingScore: 1
           }
         });
-
-      } catch (err) {
-        console.error('❌ Notification Error:', err.message);
-      }
+      } catch (err) { console.error('❌ Notification Error:', err.message); }
     }
   });
 
   sock.ev.on('creds.update', saveCreds);
 
-  // --- MESSAGES ---
-  sock.ev.on('messages.upsert', ({ messages }) => {
-    if (!messages) return;
-
+  sock.ev.on('messages.upsert', ({ messages, type }) => {
+    if (type !== 'notify') return;
     for (const msg of messages) {
       if (!msg.message) continue;
-
-      console.log("📩 MESSAGE REÇU:", msg.key?.id);
-
-      handler.handleMessage(sock, msg).catch(err => {
-        console.error("🔥 HANDLE ERROR:", err);
-      });
+      // Log console pour vérifier la réception
+      console.log(`📩 Message de [${msg.pushName || 'User'}]: ${msg.key.id}`);
+      handler.handleMessage(sock, msg).catch(err => console.error("🔥 Error:", err));
     }
   });
 
