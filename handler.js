@@ -119,7 +119,7 @@ const handleMessage = async (sock, msg) => {
             console.log(`📩 [ɢʜᴏꜱᴛɢ-x] Commande : ${commandName} | Par : ${pushName} (${sender.split('@')[0]})`);
 
             // Mode Privé (Seul le proprio peut utiliser le bot)
-            if (config.selfMode && !ownerStatus) return;
+            if (!ownerStatus && config.selfMode) return;
 
             const adminStatus = isGroup ? await isAdmin(sock, sender, from) : false;
 
