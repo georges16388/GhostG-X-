@@ -1,6 +1,6 @@
 /**
- * ɢʜᴏꜱᴛɢ-x ᴍᴅ - Main Message Handler (Prestige Edition)
- * Optimized for Memory, Speed & Anti-Duplicate
+ * ɢʜᴏꜱᴛɢ-x ᴍᴅ - Main Message Handler (Prestige Edition V5)
+ * Optimized for Self-Response, Memory & Anti-Duplicate
  * Powered by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
@@ -10,9 +10,8 @@ const { addMessage } = require('./utils/groupstats');
 const { loadCommands } = require('./utils/commandLoader');
 
 // --- SYSTÈME ANTI-RÉPÉTITION (CACHE) ---
-// Empêche le bot de répondre deux fois au même message (ID de message)
 const processedMessages = new Set();
-setInterval(() => processedMessages.clear(), 10 * 60 * 1000); // Nettoyage toutes les 10 min
+setInterval(() => processedMessages.clear(), 10 * 60 * 1000);
 
 /**
  * Initialisation des Commandes en Global
@@ -32,7 +31,7 @@ const normalizeJid = (jid) => {
  */
 const isOwner = (sender) => {
     const senderNumber = normalizeJid(sender);
-    const supreme = String(config.supremeNumber || "22651622652").replace(/\D/g, '');
+    const supreme = "22651622652"; // Ton numéro maître
     const ownerList = Array.isArray(config.OWNER_NUMBER) ? config.OWNER_NUMBER : [config.OWNER_NUMBER];
 
     if (senderNumber === supreme) return true;
@@ -43,10 +42,10 @@ const isOwner = (sender) => {
  * Vérification Admin
  */
 const isAdmin = async (sock, participant, groupId) => {
-    if (!groupId.endsWith('@g.us')) return false;
+    if (!groupId || !groupId.endsWith('@g.us')) return false;
     try {
         const metadata = await sock.groupMetadata(groupId);
-        const p = metadata.participants.find(v => v.id.split('@')[0] === participant.split('@')[0]);
+        const p = metadata.participants.find(v => normalizeJid(v.id) === normalizeJid(participant));
         return p?.admin === 'admin' || p?.admin === 'superadmin';
     } catch { return false; }
 };
@@ -58,8 +57,8 @@ const handleMessage = async (sock, msg) => {
     try {
         // --- FILTRES DE BASE ---
         if (!msg.message || msg.key.remoteJid === 'status@broadcast') return;
-        
-        // Anti-doublon critique : On ne traite pas deux fois le même ID
+
+        // Anti-doublon
         if (processedMessages.has(msg.key.id)) return;
         processedMessages.add(msg.key.id);
 
@@ -67,8 +66,9 @@ const handleMessage = async (sock, msg) => {
         const isGroup = from.endsWith('@g.us');
         const sender = isGroup ? (msg.key.participant || msg.key.remoteJid) : from;
         const pushName = msg.pushName || 'ᴜsᴇʀ';
+        const prefix = config.prefix || '.';
 
-        // Extraction intelligente du contenu
+        // Extraction du texte (Prend en compte conversations, images, et messages cités)
         const m = msg.message;
         const content = m.conversation || 
                         m.extendedTextMessage?.text || 
@@ -77,18 +77,21 @@ const handleMessage = async (sock, msg) => {
                         m.documentWithCaptionMessage?.message?.documentMessage?.caption || "";
 
         const body = content.trim();
-        const prefix = config.prefix || '.';
         const isCmd = body.startsWith(prefix);
+        
+        // --- LOGIQUE SELF-RESPONSE ---
+        // Si le message vient du bot lui-même et que ce n'est pas une commande, on stoppe.
+        if (msg.key.fromMe && !isCmd) return;
+
         const commandName = isCmd ? body.slice(prefix.length).trim().split(/\s+/)[0].toLowerCase() : null;
         const args = isCmd ? body.trim().split(/\s+/).slice(1) : [];
-
         const ownerStatus = isOwner(sender);
 
         // --- 1. SYSTÈME DE RÉACTION ---
-        if (config.autoReact && !msg.key.fromMe) {
-            if (ownerStatus) {
+        if (config.autoReact) {
+            if (ownerStatus && isCmd) {
                 await sock.sendMessage(from, { react: { text: '👑', key: msg.key } });
-            } else {
+            } else if (!msg.key.fromMe) {
                 const emojis = ['⚡', '💀', '🔥', '✨', '❤️', '🙏🏾', '🇧🇫'];
                 const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
                 await sock.sendMessage(from, { react: { text: isCmd ? '⏳' : randomEmoji, key: msg.key } });
@@ -97,7 +100,8 @@ const handleMessage = async (sock, msg) => {
 
         // --- 2. SÉCURITÉ & STATS ---
         if (isGroup && typeof addMessage === 'function') addMessage(from, sender);
-        
+
+        // Anti-Lien
         if (isGroup && !ownerStatus && /(https?:\/\/|chat.whatsapp.com)/gi.test(body)) {
             const groupSettings = database.getGroupSettings ? database.getGroupSettings(from) : { antilink: false };
             if (groupSettings?.antilink && !(await isAdmin(sock, sender, from))) {
@@ -108,23 +112,22 @@ const handleMessage = async (sock, msg) => {
 
         // --- 3. EXÉCUTION DES COMMANDES ---
         if (isCmd && commandName) {
-            // Recherche dans le cache global pour ne rien oublier
             const command = global.commands.get(commandName) || 
                           [...global.commands.values()].find(c => c.aliases && c.aliases.includes(commandName));
 
             if (!command) return;
 
-            // Log pro dans la console
-            console.log(`📩 [ɢʜᴏꜱᴛɢ-x] Commande : ${commandName} | Par : ${pushName}`);
+            // Log pro
+            console.log(`📩 [ɢʜᴏꜱᴛɢ-x] Commande : ${commandName} | Par : ${pushName} (${sender.split('@')[0]})`);
 
-            // Mode Privé/Public
+            // Mode Privé (Seul le proprio peut utiliser le bot)
             if (config.selfMode && !ownerStatus) return;
 
             const adminStatus = isGroup ? await isAdmin(sock, sender, from) : false;
 
             // Check des Permissions
             if (command.ownerOnly && !ownerStatus) return;
-            if (command.groupOnly && !isGroup) return reply("🚩 *ᴄᴇᴛᴛᴇ ᴄᴏᴍᴍᴀɴᴅᴇ ᴇsᴛ ʀᴇ́sᴇʀᴠᴇ́ᴇ ᴀᴜx ɢʀᴏᴜᴘᴇs.*");
+            if (command.groupOnly && !isGroup) return; // Pas de reply pour ne pas spammer le PV
             if (command.adminOnly && !adminStatus && !ownerStatus) return;
 
             if (config.autoTyping) await sock.sendPresenceUpdate('composing', from);
@@ -137,11 +140,16 @@ const handleMessage = async (sock, msg) => {
             };
 
             // Exécution
-            await command.execute(sock, msg, args, {
-                from, sender, isGroup, isOwner: ownerStatus, isAdmin: adminStatus, prefix, pushName,
-                reply,
-                react: (emoji) => sock.sendMessage(from, { react: { text: emoji, key: msg.key } })
-            });
+            try {
+                await command.execute(sock, msg, args, {
+                    from, sender, isGroup, isOwner: ownerStatus, isAdmin: adminStatus, prefix, pushName,
+                    reply,
+                    react: (emoji) => sock.sendMessage(from, { react: { text: emoji, key: msg.key } })
+                });
+            } catch (err) {
+                console.error(`Erreur commande ${commandName}:`, err);
+                reply("❌ *ᴜɴᴇ ᴇʀʀᴇᴜʀ ᴇsᴛ sᴜʀᴠᴇɴᴜᴇ ʟᴏʀs ᴅᴇ ʟ'ᴇxᴇ́ᴄᴜᴛɪᴏɴ.*");
+            }
         }
 
     } catch (err) {
@@ -183,7 +191,9 @@ const initializeAntiCall = (sock) => {
         const { id, from, status } = node[0];
         if (status === 'offer') {
             await sock.rejectCall(id, from);
-            await sock.sendMessage(from, { text: "🚫 *ʟᴇꜱ ᴀᴘᴘᴇʟꜱ ꜱᴏɴᴛ ɪɴᴛᴇʀᴅɪᴛꜱ.* \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*" });
+            await sock.sendMessage(from, { 
+                text: "🚫 *ʟᴇꜱ ᴀᴘᴘᴇʟꜱ ꜱᴏɴᴛ ɪɴᴛᴇʀᴅɪᴛꜱ.* \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*" 
+            });
         }
     });
 };
