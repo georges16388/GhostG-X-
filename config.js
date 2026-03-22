@@ -15,7 +15,7 @@ module.exports = {
     sessionID:'',
     
     // --- BOT BEHAVIOR & AUTOMATIONS ---
-    selfMode: true, 
+    selfMode: false, 
     autoRead: true,
     autoTyping: true,
     autoReact: false,
