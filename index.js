@@ -193,7 +193,19 @@ https://wa.me/${ownerNumber}
         if (!msg.message || !msg.key?.id) continue;
 
         // On récupère le texte du message
-        const text = msg.message.conversation || msg.message.extendedTextMessage?.text || "";
+        const getText = (msg) => {
+  return msg?.conversation ||
+         msg?.extendedTextMessage?.text ||
+         msg?.imageMessage?.caption ||
+         msg?.videoMessage?.caption ||
+         msg?.buttonsResponseMessage?.selectedButtonId ||
+         msg?.listResponseMessage?.singleSelectReply?.selectedRowId ||
+         msg?.templateButtonReplyMessage?.selectedId ||
+         "";
+};
+
+const text = getText(msg.message);
+
         const isCommand = text.startsWith(config.prefix);
 
         // RÉPARATION CRITIQUE : Autorise tes propres commandes mais ignore tes discussions normales
