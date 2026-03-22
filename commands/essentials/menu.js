@@ -1,12 +1,10 @@
 /**
  * ɢʜᴏꜱᴛɢ-x ᴍᴅ - ᴍᴇɴᴜ ᴘʀᴇsᴛɪɢᴇ ᴠ5 (ɢʀᴀᴛɪᴛᴜᴅᴇ ᴇᴅɪᴛɪᴏɴ)
- * Optimisé pour le Pushname cliquable et le bouton Newsletter
+ * Fix : Syntaxe & Mentions dynamiques
  */
 
 const config = require('../../config');
 const { loadCommands } = require('../../utils/commandLoader');
-const fs = require('fs');
-const path = require('path');
 
 const toStyledCaps = (text) => {
   if (!text) return "";
@@ -25,7 +23,7 @@ module.exports = {
 
   async execute(sock, msg, args, extra) {
     try {
-      // 1. CALCUL DU NOMBRE RÉEL DE COMMANDES
+      // 1. CALCUL DES COMMANDES
       const commands = loadCommands();
       const categories = {};
       let totalFiles = 0;
@@ -39,27 +37,23 @@ module.exports = {
         }
       });
 
-      // 2. RÉCUPÉRATION DES INFOS UTILISATEUR
-      const pushName = msg.pushName || 'ᴜsᴇʀ';
-      const senderJid = extra.sender;
-      const senderNumber = senderJid.split('@')[0];
-
-      const prefix = config.prefix || '.';
+      // 2. RÉCUPÉRATION DES INFOS (BOT ID)
+      const botJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
+      const botNumber = botJid.split('@')[0];
       const botName = "ɢʜᴏsᴛɢ-x";
-      const ownerNumber = "22651622652";
+      const prefix = config.prefix || '.';
 
-      // 3. CONSTRUCTION DU TEXTE (DESIGN PRÉCIS)
+      // 3. CONSTRUCTION DU TEXTE
       let menuText = `╭╼━≪• *${botName}* •≫━╾╮\n`;
       menuText += `┃ *sᴛᴀᴛᴜᴛ* : 🟢 ᴏɴʟɪɴᴇ\n`;
-      // La mention magique : @numéro (Nom)
-      menuText += `┃ *ᴜᴛɪʟɪsᴀᴛᴇᴜʀ* : @${botNumber} (${sock.user.name || botName})\n`;\n`;
+      // Correction de la ligne Utilisateur
+      menuText += `┃ *ᴜᴛɪʟɪsᴀᴛᴇᴜʀ* : @${botNumber} (${sock.user.name || botName})\n`;
       menuText += `┃ *ᴊᴇsᴜs ᴛᴀɪᴍᴇ* : ❤️✝️\n`;
       menuText += `┃ *ᴘʀᴇғɪxᴇ* : [ ${prefix} ]\n`;
       menuText += `┃ *ᴄᴏᴍᴍᴀɴᴅᴇs* : ${totalFiles} ғɪʟᴇs\n`;
       menuText += `┃ *ᴅᴇᴠᴇʟᴏᴘᴘᴇᴜʀ* : https://wa.me/22651622652\n`;
       menuText += `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n`;
 
-      // Liste des catégories dans l'ordre souhaité
       const catOrder = ['essentials', 'ai', 'admin', 'fun', 'media', 'owner', 'utility', 'faith', 'textmaker'];
       const allCats = Object.keys(categories).sort();
       const finalOrder = [...new Set([...catOrder.filter(c => allCats.includes(c)), ...allCats])];
@@ -76,29 +70,26 @@ module.exports = {
       menuText += `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-x*\n`;
       menuText += `> *ᴍᴇʀᴄɪ sᴇɪɢɴᴇᴜʀ ᴘᴏᴜʀ ᴛᴀ ɢʀᴀᴄᴇ*`;
 
-      // 4. ENVOI DU MESSAGE AVEC OPTIONS NEWSLETTER
-      const messageOptions = {
+      // 4. ENVOI
+      await sock.sendMessage(extra.from, {
         image: { url: 'https://files.catbox.moe/2fmwpu.jpg' },
         caption: menuText,
         contextInfo: {
-          mentionedJid: [senderJid], // Active le lien bleu sur le @numéro
+          mentionedJid: [botJid], // IMPORTANT: botJid pour que le @numéro soit cliquable
           isForwarded: true,
           forwardingScore: 999,
-          // Badge "Voir la chaîne" et Infos Newsletter
           forwardedNewsletterMessageInfo: {
             newsletterJid: '120363425540434745@newsletter',
             newsletterName: "-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ",
             serverMessageId: 143
           }
         }
-      };
+      }, { quoted: msg });
 
-      await sock.sendMessage(extra.from, messageOptions, { quoted: msg });
       await sock.sendMessage(extra.from, { react: { text: "⚡", key: msg.key } });
 
     } catch (error) {
       console.error('Menu Error:', error);
-      await extra.reply(`❌ ᴇʀʀᴇᴜʀ : ${error.message}`);
     }
   }
 };
