@@ -123,11 +123,13 @@ const isCmd = body.startsWith(prefix);
             // Log pro
             console.log(`📩 [ɢʜᴏꜱᴛɢ-x] Commande : ${commandName} | Par : ${pushName} (${sender.split('@')[0]})`);
 
-            // Mode Privé (Seul le proprio peut utiliser le bot)
-            if (!ownerStatus && config.selfMode) return;
+            // Mode privé : seul le propriétaire peut exécuter des commandes
+if (config.selfMode && !ownerStatus) return;
 
-            const adminStatus = isGroup ? await isAdmin(sock, sender, from) : false;
+// Vérification ownerOnly (toujours bloquant si pas owner)
+if (command.ownerOnly && !ownerStatus) return;
 
+const adminStatus = isGroup ? await isAdmin(sock, sender, from) : false;
             // Check des Permissions
             if (command.ownerOnly && !ownerStatus) return;
             if (command.groupOnly && !isGroup) return; // Pas de reply pour ne pas spammer le PV
