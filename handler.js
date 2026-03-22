@@ -16,7 +16,7 @@ setInterval(() => processedMessages.clear(), 10 * 60 * 1000);
 /**
  * Initialisation des Commandes en Global
  */
-global.commands = global.commands || loadCommands();
+global.commands = loadCommands();
 
 /**
  * Normalisation des JIDs
