@@ -70,14 +70,19 @@ const handleMessage = async (sock, msg) => {
 
         // Extraction du texte (Prend en compte conversations, images, et messages cités)
         const m = msg.message;
-        const content = m.conversation || 
-                        m.extendedTextMessage?.text || 
-                        m.imageMessage?.caption || 
-                        m.videoMessage?.caption || 
-                        m.documentWithCaptionMessage?.message?.documentMessage?.caption || "";
+        const getText = (msg) => {
+  return msg?.conversation ||
+         msg?.extendedTextMessage?.text ||
+         msg?.imageMessage?.caption ||
+         msg?.videoMessage?.caption ||
+         msg?.buttonsResponseMessage?.selectedButtonId ||
+         msg?.listResponseMessage?.singleSelectReply?.selectedRowId ||
+         msg?.templateButtonReplyMessage?.selectedId ||
+         "";
+};
 
-        const body = content.trim();
-        const isCmd = body.startsWith(prefix);
+const body = getText(msg.message).trim();
+const isCmd = body.startsWith(prefix);
         
         
 
