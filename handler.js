@@ -122,21 +122,13 @@ const isCmd = body.startsWith(prefix);
 
             // Log pro
             console.log(`📩 [ɢʜᴏꜱᴛɢ-x] Commande : ${commandName} | Par : ${pushName} (${sender.split('@')[0]})`);
+// --- Permissions et mode privé ---
+if (config.selfMode && !ownerStatus) return; // Mode privé global : seul le proprio peut exécuter
+const adminStatus = isGroup ? await isAdmin(sock, sender, from) : false; // Vérification admin
 
-            // Mode privé global : seul le proprio peut exécuter quoi que ce soit
-if (config.selfMode && !ownerStatus) return;
-
-// Permissions spécifiques
-const adminStatus = isGroup ? await isAdmin(sock, sender, from) : false;
-if (command.ownerOnly && !ownerStatus) return;
-if (command.groupOnly && !isGroup) return;
-if (command.adminOnly && !adminStatus && !ownerStatus) return;
-await command.execute(sock, msg, args, { ... });
-const adminStatus = isGroup ? await isAdmin(sock, sender, from) : false;
-            // Check des Permissions
-            if (command.ownerOnly && !ownerStatus) return;
-            if (command.groupOnly && !isGroup) return; // Pas de reply pour ne pas spammer le PV
-            if (command.adminOnly && !adminStatus && !ownerStatus) return;
+if (command.ownerOnly && !ownerStatus) return; // Commandes ownerOnly
+if (command.groupOnly && !isGroup) return;     // Commandes groupOnly
+if (command.adminOnly && !adminStatus && !ownerStatus) return; // Commandes adminOnly
 
             if (config.autoTyping) await sock.sendPresenceUpdate('composing', from);
 
