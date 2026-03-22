@@ -123,12 +123,15 @@ const isCmd = body.startsWith(prefix);
             // Log pro
             console.log(`📩 [ɢʜᴏꜱᴛɢ-x] Commande : ${commandName} | Par : ${pushName} (${sender.split('@')[0]})`);
 
-            // Mode privé : seul le propriétaire peut exécuter des commandes
+            // Mode privé global : seul le proprio peut exécuter quoi que ce soit
 if (config.selfMode && !ownerStatus) return;
 
-// Vérification ownerOnly (toujours bloquant si pas owner)
+// Permissions spécifiques
+const adminStatus = isGroup ? await isAdmin(sock, sender, from) : false;
 if (command.ownerOnly && !ownerStatus) return;
-
+if (command.groupOnly && !isGroup) return;
+if (command.adminOnly && !adminStatus && !ownerStatus) return;
+await command.execute(sock, msg, args, { ... });
 const adminStatus = isGroup ? await isAdmin(sock, sender, from) : false;
             // Check des Permissions
             if (command.ownerOnly && !ownerStatus) return;
