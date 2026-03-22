@@ -79,9 +79,7 @@ const handleMessage = async (sock, msg) => {
         const body = content.trim();
         const isCmd = body.startsWith(prefix);
         
-        // --- LOGIQUE SELF-RESPONSE ---
-        // Si le message vient du bot lui-même et que ce n'est pas une commande, on stoppe.
-        if (msg.key.fromMe && !isCmd) return;
+        
 
         const commandName = isCmd ? body.slice(prefix.length).trim().split(/\s+/)[0].toLowerCase() : null;
         const args = isCmd ? body.trim().split(/\s+/).slice(1) : [];
