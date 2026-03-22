@@ -1,8 +1,9 @@
 /**
- * GhostG-X Bot - Main Entry Point
- * Optimized for Pairing Code & Mobile Stability
- * Supreme Edition - GhostG X (Full Alive Message & Newsletter V5)
+ * ɢʜᴏꜱᴛɢ-x ᴍᴅ - ᴍᴀɪɴ ᴇɴᴛʀʏ ᴘᴏɪɴᴛ
+ * Optimized for Pairing Code, Self-Response & Newsletter V5
+ * Edition : Supreme GhostG-X
  */
+
 process.env.PUPPETEER_SKIP_DOWNLOAD = 'true';
 process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = 'true';
 process.env.PUPPETEER_CACHE_DIR = process.env.PUPPETEER_CACHE_DIR || '/tmp/puppeteer_cache_disabled';
@@ -12,20 +13,18 @@ const { startCleanup } = require('./utils/cleanup');
 initializeTempSystem();
 startCleanup();
 
-// --- FILTRAGE INTELLIGENT DES LOGS CONSOLE ---
+// --- FILTRAGE INTELLIGENT DES LOGS ---
 const originalConsoleLog = console.log;
 const originalConsoleError = console.error;
 const originalConsoleWarn = console.warn;
 
-const forbiddenPatternsConsole = [
-  'closing session', 'closing open session', 'sessionentry', 'prekey bundle',
-  'pendingprekey', '_chains', 'registrationid', 'currentratchet', 'chainkey',
-  'ratchet', 'signal protocol', 'ephemeralkeypair', 'indexinfo', 'basekey'
+const forbiddenPatterns = [
+  'closing session', 'sessionentry', 'prekey bundle', 'ratchet', 'signal protocol', 'ephemeralkeypair'
 ];
 
 const filterLogs = (args, originalFn) => {
-  const message = args.map(a => typeof a === 'string' ? a : typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ').toLowerCase();
-  if (!forbiddenPatternsConsole.some(pattern => message.includes(pattern))) {
+  const message = args.map(a => typeof a === 'string' ? a : JSON.stringify(a)).join(' ').toLowerCase();
+  if (!forbiddenPatterns.some(pattern => message.includes(pattern))) {
     originalFn.apply(console, args);
   }
 };
@@ -53,11 +52,8 @@ const os = require('os');
 
 function cleanupPuppeteerCache() {
   try {
-    const home = os.homedir();
-    const cacheDir = path.join(home, '.cache', 'puppeteer');
-    if (fs.existsSync(cacheDir)) {
-      fs.rmSync(cacheDir, { recursive: true, force: true });
-    }
+    const cacheDir = path.join(os.homedir(), '.cache', 'puppeteer');
+    if (fs.existsSync(cacheDir)) fs.rmSync(cacheDir, { recursive: true, force: true });
   } catch (err) {}
 }
 
@@ -87,16 +83,14 @@ setInterval(() => processedMessages.clear(), 5 * 60 * 1000);
 async function startBot() {
   const sessionFolder = `./${config.sessionName}`;
 
-  if (config.sessionID && (config.sessionID.startsWith('GhostG-X!') || config.sessionID.startsWith('KnightBot!'))) {
+  if (config.sessionID && config.sessionID.includes('!')) {
     try {
       const b64data = config.sessionID.split('!')[1];
-      if (b64data) {
-        const decompressedData = zlib.gunzipSync(Buffer.from(b64data, 'base64'));
-        if (!fs.existsSync(sessionFolder)) fs.mkdirSync(sessionFolder, { recursive: true });
-        fs.writeFileSync(path.join(sessionFolder, 'creds.json'), decompressedData);
-        console.log('📡 ꜱᴇꜱꜱɪᴏɴ : 🔑 ꜱᴇꜱꜱɪᴏɴ ᴄʜᴀʀɢᴇ́ᴇ.');
-      }
-    } catch (e) { console.error('❌ Erreur SessionID:', e.message); }
+      const decompressedData = zlib.gunzipSync(Buffer.from(b64data, 'base64'));
+      if (!fs.existsSync(sessionFolder)) fs.mkdirSync(sessionFolder, { recursive: true });
+      fs.writeFileSync(path.join(sessionFolder, 'creds.json'), decompressedData);
+      console.log('📡 ꜱᴇꜱꜱɪᴏɴ : 🔑 ꜱᴇꜱꜱɪᴏɴ ᴄʜᴀʀɢᴇ́ᴇ.');
+    } catch (e) { console.error('❌ Session Error:', e.message); }
   }
 
   const { state, saveCreds } = await useMultiFileAuthState(sessionFolder);
@@ -112,10 +106,9 @@ async function startBot() {
     shouldSyncHistoryMessage: () => false
   });
 
+  // --- PAIRING CODE ---
   if (!sock.authState.creds.registered) {
-    const rawNumber = config.supremeNumber || "22651622652";
-    const cleanNumber = String(rawNumber).replace(/\D/g, '');
-
+    const cleanNumber = String(config.supremeNumber || "22651622652").replace(/\D/g, '');
     if (cleanNumber) {
         console.log(`\n⏳ ɢᴇɴᴇʀᴀᴛɪɴɢ ᴘᴀɪʀɪɴɢ ᴄᴏᴅᴇ ꜰᴏʀ : ${cleanNumber}...`);
         setTimeout(async () => {
@@ -132,10 +125,7 @@ async function startBot() {
 
   sock.ev.on('connection.update', async (update) => {
     const { connection, lastDisconnect, qr } = update;
-
-    if (qr && !config.supremeNumber) {
-      qrcode.generate(qr, { small: true });
-    }
+    if (qr && !config.supremeNumber) qrcode.generate(qr, { small: true });
 
     if (connection === 'close') {
       const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
@@ -147,16 +137,13 @@ async function startBot() {
       try {
         const { loadCommands } = require('./utils/commandLoader');
         const totalCmds = loadCommands().size;
-
         const botJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
-        const botNumber = botJid.split('@')[0];
-        const ownerJid = '22651622652@s.whatsapp.net';
+        const ownerNumber = "22651622652";
 
-        // --- NOUVEAU DESIGN ALIVE ---
         const welcomeCaption = `╭╼━≪• *ɢʜᴏsᴛɢ-x ɪs ᴀʟɪᴠᴇ* •≫━╾╮
 ┃ *sᴛᴀᴛᴜᴛ* : 🟢 ᴏɴʟɪɴᴇ
-┃ *ᴍᴀɪᴛʀᴇ* : @22651622652
-┃ *ᴜᴛɪʟɪsᴀᴛᴇᴜʀ* : @${botNumber}
+┃ *ᴍᴀɪᴛʀᴇ* : @${ownerNumber}
+┃ *ᴜᴛɪʟɪsᴀᴛᴇᴜʀ* : @${botJid.split('@')[0]}
 ┃ *ᴘʀᴇғɪxᴇ* : [ ${config.prefix || '.'} ]
 ┃ *ᴄᴏᴍᴍᴀɴᴅᴇs* : ${totalCmds} ғɪʟᴇs
 ┃ *ᴍᴏᴅᴇ* : ${config.selfMode ? '🔒 ᴘʀɪᴠé' : '🌐 ᴘᴜʙʟɪᴄ'}
@@ -171,7 +158,7 @@ https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c
 https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf
 
 💻 *ᴅᴇᴠᴇʟᴏᴘᴘᴇᴜʀ* :
-https://wa.me/22651622652
+https://wa.me/${ownerNumber}
 
 📖 _*“ ᴊᴇ ᴘᴜɪs ᴛᴏᴜᴛ ᴘᴀʀ ᴄᴇʟᴜɪ ǫᴜɪ ᴍᴇ ғᴏʀᴛɪғɪᴇ ”*_ - ᴘʜɪʟɪᴘᴘɪᴇɴs 4.13 ❤️✝️
 
@@ -181,7 +168,7 @@ https://wa.me/22651622652
             image: { url: 'https://files.catbox.moe/2fmwpu.jpg' }, 
             caption: welcomeCaption, 
             contextInfo: {
-                mentionedJid: [botJid, ownerJid],
+                mentionedJid: [botJid, ownerNumber + '@s.whatsapp.net'],
                 isForwarded: true,
                 forwardingScore: 999,
                 forwardedNewsletterMessageInfo: {
@@ -191,27 +178,33 @@ https://wa.me/22651622652
                 }
             }
         });
-
       } catch (err) { console.error('❌ Notification Error:', err.message); }
     }
   });
 
   sock.ev.on('creds.update', saveCreds);
 
+  // --- LOGIQUE DE RÉPONSE AMÉLIORÉE ---
   sock.ev.on('messages.upsert', ({ messages, type }) => {
     if (type !== 'notify') return;
     const now = Date.now();
     for (const msg of messages) {
       try {
         if (!msg.message || !msg.key?.id) continue;
+
+        // On récupère le texte du message
         const text = msg.message.conversation || msg.message.extendedTextMessage?.text || "";
         const isCommand = text.startsWith(config.prefix);
+
+        // RÉPARATION CRITIQUE : Autorise tes propres commandes mais ignore tes discussions normales
         if (msg.key.fromMe && !isCommand) continue;
 
         const msgTime = (msg.messageTimestamp || 0) * 1000;
-        if (!msgTime || (now - msgTime > 20000)) continue;
+        if (msgTime && (now - msgTime > 30000)) continue;
+
         if (processedMessages.has(msg.key.id)) continue;
         processedMessages.add(msg.key.id);
+
         handler.handleMessage(sock, msg).catch((err) => {
           console.error('❌ Handler Error:', err);
         });
@@ -220,7 +213,6 @@ https://wa.me/22651622652
   });
 
   sock.ev.on('group-participants.update', (u) => handler.handleGroupUpdate(sock, u));
-
   return sock;
 }
 
