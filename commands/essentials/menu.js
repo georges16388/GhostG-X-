@@ -16,7 +16,7 @@ const toStyledCaps = (text) => {
 
 module.exports = {
   name: 'menu',
-  aliases: ['help', 'h'],
+  aliases: ['help', 'h', 'm'],
   category: 'essentials',
   description: 'Menu GhostG-X avec Pushname et bouton Newsletter.',
   usage: '.menu',
