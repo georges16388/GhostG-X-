@@ -28,15 +28,14 @@ module.exports = {
         let text = `╭╼━≪• ɢʀᴏᴜᴘ ᴀɴɴᴏᴜɴᴄᴇᴍᴇɴᴛ •≫━╾╮\n`;
         text += `┃ ᴍsɢ : ${message}\n`;
         text += `┃ ᴛᴏᴛᴀʟ : ${participants.length} ᴍᴇᴍʙᴇʀs\n`;
-        text += `╰━━━━━━━━━━━━━━━╯\n
-                > *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
+        text += `╰━━━━━━━━━━━━━━━╯\n\n`;
 
         // 3. Construction de la liste avec mentions
         participants.forEach((mem, index) => {
           text += `  ${index + 1}. @${mem.id.split('@')[0]}\n`;
         });
 
-        text += `\n> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
+        text += `\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
 
         // 4. Envoi avec le tableau de mentions (crucial pour que les gens reçoivent la notif)
         await sock.sendMessage(from, {
