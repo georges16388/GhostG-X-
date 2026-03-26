@@ -16,7 +16,7 @@ setInterval(() => processedMessages.clear(), 10 * 60 * 1000);
 /**
  * Initialisation des Commandes en Global
  */
-global.commands = loadCommands();
+global.commands = global.commands || loadCommands();
 
 /**
  * Normalisation des JIDs
@@ -31,7 +31,7 @@ const normalizeJid = (jid) => {
  */
 const isOwner = (sender) => {
     const senderNumber = normalizeJid(sender);
-    const supreme = "22651622652"; // Ton numéro maître
+    const supreme = "22651622652"; 
     const ownerList = Array.isArray(config.OWNER_NUMBER) ? config.OWNER_NUMBER : [config.OWNER_NUMBER];
 
     if (senderNumber === supreme) return true;
@@ -55,42 +55,32 @@ const isAdmin = async (sock, participant, groupId) => {
  */
 const handleMessage = async (sock, msg) => {
     try {
-        // --- FILTRES DE BASE ---
+        // --- 1. FILTRES DE BASE & SÉCURITÉ ---
         if (!msg.message || msg.key.remoteJid === 'status@broadcast') return;
-
-        // Anti-doublon
         if (processedMessages.has(msg.key.id)) return;
         processedMessages.add(msg.key.id);
 
         const from = msg.key.remoteJid;
         const isGroup = from.endsWith('@g.us');
         const sender = isGroup ? (msg.key.participant || msg.key.remoteJid) : from;
+        const ownerStatus = isOwner(sender);
+
+        // --- SÉCURITÉ CRITIQUE : MODE PRIVÉ (SELFMODE) ---
+        // Si le mode privé est activé, on ignore TOTALEMENT les non-owners immédiatement
+        if (config.selfMode && !ownerStatus) return;
+
         const pushName = msg.pushName || 'ᴜsᴇʀ';
         const prefix = config.prefix || '.';
 
-        // Extraction du texte (Prend en compte conversations, images, et messages cités)
+        // Extraction du texte
         const m = msg.message;
-        const getText = (msg) => {
-  return msg?.conversation ||
-         msg?.extendedTextMessage?.text ||
-         msg?.imageMessage?.caption ||
-         msg?.videoMessage?.caption ||
-         msg?.buttonsResponseMessage?.selectedButtonId ||
-         msg?.listResponseMessage?.singleSelectReply?.selectedRowId ||
-         msg?.templateButtonReplyMessage?.selectedId ||
-         "";
-};
-
-const body = getText(msg.message).trim();
-const isCmd = body.startsWith(prefix);
+        const body = (m.conversation || m.extendedTextMessage?.text || m.imageMessage?.caption || m.videoMessage?.caption || m.buttonsResponseMessage?.selectedButtonId || m.listResponseMessage?.singleSelectReply?.selectedRowId || m.templateButtonReplyMessage?.selectedId || "").trim();
         
-        
-
+        const isCmd = body.startsWith(prefix);
         const commandName = isCmd ? body.slice(prefix.length).trim().split(/\s+/)[0].toLowerCase() : null;
         const args = isCmd ? body.trim().split(/\s+/).slice(1) : [];
-        const ownerStatus = isOwner(sender);
-console.log('OwnerStatus:', isOwner(sender), 'Sender:', sender);
-        // --- 1. SYSTÈME DE RÉACTION ---
+
+        // --- 2. SYSTÈME DE RÉACTION AUTOMATIQUE ---
         if (config.autoReact) {
             if (ownerStatus && isCmd) {
                 await sock.sendMessage(from, { react: { text: '👑', key: msg.key } });
@@ -101,45 +91,44 @@ console.log('OwnerStatus:', isOwner(sender), 'Sender:', sender);
             }
         }
 
-        // --- 2. SÉCURITÉ & STATS ---
-        if (isGroup && typeof addMessage === 'function') addMessage(from, sender);
+        // --- 3. GESTION DES GROUPES (ANTI-LIEN & STATS) ---
+        if (isGroup) {
+            if (typeof addMessage === 'function') addMessage(from, sender);
 
-        // Anti-Lien
-        if (isGroup && !ownerStatus && /(https?:\/\/|chat.whatsapp.com)/gi.test(body)) {
-            const groupSettings = database.getGroupSettings ? database.getGroupSettings(from) : { antilink: false };
-            if (groupSettings?.antilink && !(await isAdmin(sock, sender, from))) {
-                await sock.sendMessage(from, { delete: msg.key });
-                return;
+            // Anti-Lien
+            if (!ownerStatus && /(https?:\/\/|chat.whatsapp.com)/gi.test(body)) {
+                const groupSettings = database.getGroupSettings ? database.getGroupSettings(from) : { antilink: false };
+                if (groupSettings?.antilink && !(await isAdmin(sock, sender, from))) {
+                    await sock.sendMessage(from, { delete: msg.key });
+                    return;
+                }
             }
         }
 
-        // --- 3. EXÉCUTION DES COMMANDES ---
+        // --- 4. EXÉCUTION DES COMMANDES ---
         if (isCmd && commandName) {
             const command = global.commands.get(commandName) || 
                           [...global.commands.values()].find(c => c.aliases && c.aliases.includes(commandName));
 
             if (!command) return;
 
-            // Log pro
-            console.log(`📩 [ɢʜᴏꜱᴛɢ-x] Commande : ${commandName} | Par : ${pushName} (${sender.split('@')[0]})`);
-// --- Permissions et mode privé ---
-if (config.selfMode && !ownerStatus) return; // Mode privé global : seul le proprio peut exécuter
-const adminStatus = isGroup ? await isAdmin(sock, sender, from) : false; // Vérification admin
+            // Permissions fines
+            const adminStatus = isGroup ? await isAdmin(sock, sender, from) : false;
 
-if (command.ownerOnly && !ownerStatus) return; // Commandes ownerOnly
-if (command.groupOnly && !isGroup) return;     // Commandes groupOnly
-if (command.adminOnly && !adminStatus && !ownerStatus) return; // Commandes adminOnly
+            if (command.ownerOnly && !ownerStatus) return;
+            if (command.groupOnly && !isGroup) return;
+            if (command.adminOnly && !adminStatus && !ownerStatus) return;
 
             if (config.autoTyping) await sock.sendPresenceUpdate('composing', from);
 
-            // Fonction reply avec Signature Prestige
+            console.log(`📩 [ɢʜᴏꜱᴛɢ-x] Commande : ${commandName} | Par : ${pushName}`);
+
             const reply = (text) => {
                 return sock.sendMessage(from, { 
                     text: `${text}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*` 
                 }, { quoted: msg });
             };
 
-            // Exécution
             try {
                 await command.execute(sock, msg, args, {
                     from, sender, isGroup, isOwner: ownerStatus, isAdmin: adminStatus, prefix, pushName,
@@ -148,7 +137,7 @@ if (command.adminOnly && !adminStatus && !ownerStatus) return; // Commandes admi
                 });
             } catch (err) {
                 console.error(`Erreur commande ${commandName}:`, err);
-                reply("❌ *ᴜɴᴇ ᴇʀʀᴇᴜʀ ᴇsᴛ sᴜʀᴠᴇɴᴜᴇ ʟᴏʀs ᴅᴇ ʟ'ᴇxᴇ́ᴄᴜᴛɪᴏɴ.*");
+                reply("❌ *ᴜɴᴇ ᴇʀʀᴇᴜʀ ᴇsᴛ sᴜʀᴠᴇɴᴜᴇ.*");
             }
         }
 
@@ -164,22 +153,11 @@ const handleGroupUpdate = async (sock, update) => {
     const { id, participants, action } = update;
     try {
         const settings = database.getGroupSettings ? database.getGroupSettings(id) : { welcome: true };
-
         for (const user of participants) {
             if (action === 'add' && settings.welcome) {
-                const welcomeText = `╭╼━≪• ɴᴇᴡ ᴍᴇᴍʙᴇʀ •≫━╾╮\n┃ ᴡᴇʟᴄᴏᴍᴇ: @${user.split('@')[0]} 👋🏾\n┃ ᴊᴇsᴜs ᴛᴀɪᴍᴇ ❤️\n╰━━━━━━━━━━━━━━━╯\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
                 await sock.sendMessage(id, { 
-                    text: welcomeText, 
-                    mentions: [user],
-                    contextInfo: {
-                        externalAdReply: {
-                            title: "ɢʜᴏꜱᴛɢ-x ᴘʀᴇꜱᴛɪɢᴇ",
-                            body: "ᴊᴇsᴜs ᴛᴀɪᴍᴇ ❤️✝️",
-                            mediaType: 1,
-                            thumbnailUrl: "https://files.catbox.moe/2fmwpu.jpg",
-                            sourceUrl: "https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c"
-                        }
-                    }
+                    text: `╭╼━≪• ɴᴇᴡ ᴍᴇᴍʙᴇʀ •≫━╾╮\n┃ ᴡᴇʟᴄᴏᴍᴇ: @${user.split('@')[0]} 👋🏾\n┃ ᴊᴇsᴜs ᴛᴀɪᴍᴇ ❤️\n╰━━━━━━━━━━━━━━━╯\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`, 
+                    mentions: [user]
                 });
             }
         }
@@ -191,16 +169,9 @@ const initializeAntiCall = (sock) => {
         const { id, from, status } = node[0];
         if (status === 'offer') {
             await sock.rejectCall(id, from);
-            await sock.sendMessage(from, { 
-                text: "🚫 *ʟᴇꜱ ᴀᴘᴘᴇʟꜱ ꜱᴏɴᴛ ɪɴᴛᴇʀᴅɪᴛꜱ.* \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*" 
-            });
+            await sock.sendMessage(from, { text: "🚫 *ʟᴇꜱ ᴀᴘᴘᴇʟꜱ ꜱᴏɴᴛ ɪɴᴛᴇʀᴅɪᴛꜱ.* \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*" });
         }
     });
 };
 
-module.exports = { 
-    handleMessage, 
-    handleGroupUpdate, 
-    isOwner, 
-    initializeAntiCall 
-};
+module.exports = { handleMessage, handleGroupUpdate, isOwner, initializeAntiCall };
