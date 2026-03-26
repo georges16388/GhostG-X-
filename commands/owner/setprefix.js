@@ -12,7 +12,7 @@ const AGM_CORE = (oldP, newP) => `╭╼━≪• ᴀɢᴍ sʏsᴛᴇᴍ ᴄᴏ�
 ┃ ᴏʟᴅ : [ ${oldP} ]
 ┃ ɴᴇᴡ : [ ${newP} ]
 ╰━━━━━━━━━━━━━━━╯
-> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
 
 module.exports = {
   name: 'setprefix',
@@ -23,51 +23,57 @@ module.exports = {
   ownerOnly: true,
 
   async execute(sock, msg, args, extra) {
+    const from = msg.key.remoteJid;
+
     try {
-      const from = extra.from;
-      const configPath = path.resolve(__dirname, '../../config.js');
-      
-      // On recharge la config pour être sûr d'avoir la dernière valeur
-      delete require.cache[require.resolve('../../config')];
-      const config = require('../../config');
+      // 1. Localisation dynamique et robuste de config.js
+      let configPath = path.join(process.cwd(), 'config.js');
+      if (!fs.existsSync(configPath)) {
+          configPath = path.join(__dirname, '../../config.js');
+      }
+
+      // 2. Rechargement propre de la config
+      delete require.cache[require.resolve(configPath)];
+      const config = require(configPath);
 
       let newPrefix = args[0];
 
+      // Si pas d'argument : Afficher le préfixe actuel
       if (!newPrefix) {
         return sock.sendMessage(from, { 
           text: `📌 *ᴘʀᴇғɪxᴇ ᴀᴄᴛᴜᴇʟ :* [ ${config.prefix} ]\n\n*ᴜsᴀɢᴇ :* ${config.prefix}setprefix #` 
         }, { quoted: msg });
       }
 
-      // 1. Lecture du fichier config.js
+      // 3. Lecture et Modification du fichier
       let content = fs.readFileSync(configPath, 'utf8');
 
-      // 2. Regex ultra-flexible pour trouver "prefix: '...'" ou 'prefix: "..."'
-      // Elle cherche "prefix:" suivi de n'importe quel espace et n'importe quel type de guillemet
-      const prefixRegex = /prefix\s*:\s*['"`](.*?)['"`]/;
+      // Regex améliorée : capture "prefix", peu importe les espaces ou les guillemets
+      const prefixRegex = /(prefix\s*:\s*)(['"`])(.*?)(['"`])/;
 
       if (prefixRegex.test(content)) {
           const oldPrefix = config.prefix;
-          
-          // Remplacement physique dans le fichier
-          const newContent = content.replace(prefixRegex, `prefix: '${newPrefix}'`);
+
+          // Remplacement en gardant le même type de guillemets
+          const newContent = content.replace(prefixRegex, `$1$2${newPrefix}$4`);
           fs.writeFileSync(configPath, newContent, 'utf8');
 
-          // 3. Mise à jour immédiate de la mémoire (pour éviter le redémarrage)
+          // Mise à jour en mémoire
           config.prefix = newPrefix;
-          global.prefix = newPrefix; // Si ton handler utilise global.prefix
+          if (global.config) global.config.prefix = newPrefix;
 
           await sock.sendMessage(from, { react: { text: '⚙️', key: msg.key } });
           await sock.sendMessage(from, { text: AGM_CORE(oldPrefix, newPrefix) }, { quoted: msg });
+          await sock.sendMessage(from, { react: { text: '✅', key: msg.key } });
 
       } else {
-          throw new Error("Impossible de localiser la variable 'prefix' dans config.js");
+          throw new Error("Clé 'prefix' introuvable dans config.js");
       }
 
     } catch (error) {
-      console.error('Prefix Error:', error);
-      await sock.sendMessage(extra.from, { 
-        text: `❌ *ᴇʀʀᴇᴜʀ :* Le format de ton fichier config.js ne permet pas l'auto-modification.` 
+      console.error('[PREFIX ERROR]:', error);
+      await sock.sendMessage(from, { 
+        text: `❌ *ᴇʀʀᴇᴜʀ sʏsᴛᴇ̀ᴍᴇ :* ${error.message}` 
       }, { quoted: msg });
     }
   }
