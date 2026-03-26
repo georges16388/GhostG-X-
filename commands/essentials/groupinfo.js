@@ -45,7 +45,7 @@ module.exports = {
         });
         
         text += `╰━━━━━━━━━━━━━━━╯
-               > ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
+               > *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
 
         await sock.sendMessage(extra.from, {
           image: { url: ppUrl },
