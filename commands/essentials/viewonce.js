@@ -1,91 +1,90 @@
 /**
- * ViewOnce Command - AGM Ghost Stealth Edition
+ * ViewOnce Reveal - AGM Elite Edition
  * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
+ * Role : ᴅᴇᴠᴇʟᴏᴘᴘᴇʀ ⚡
  */
 
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 
-// --- FONCTION DE DESIGN AGM ADAPTÉE ---
-const AGM_DESIGN = (type) => `╭╼━≪• ɢʜᴏsᴛ ʀᴇᴠᴇᴀʟ •≫━╾╮
+// --- FONCTION DE DESIGN AGM ---
+const AGM_DESIGN = (type, caption) => `╭╼━≪• ᴠɪᴇᴡ-ᴏɴᴄᴇ ʀᴇᴠᴇᴀʟ •≫━╾╮
+┃ ᴛʏᴘᴇ : ${type} 👁️
 ┃ sᴛᴀᴛᴜs : 🟢 ᴜɴʟᴏᴄᴋᴇᴅ
-┃ ᴍᴇᴅɪᴀ : ${type.toUpperCase()} ⚡
-┃ ᴍᴏᴅᴇ : sᴛᴇᴀʟᴛʜ 📥
+┃ ᴍᴏᴅᴇ : ᴘʀᴇsᴛɪɢᴇ ⚡
+${caption ? `┃ ᴄᴀᴘᴛɪᴏɴ : ${caption.substring(0, 15)}...` : '┃ ɴᴏ ᴄᴀᴘᴛɪᴏɴ'}
 ╰━━━━━━━━━━━━━━━╯
-> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
 
 module.exports = {
   name: 'viewonce',
-  aliases: ['vv', 'vv2', 'readvo'],
-  category: 'utility',
-  description: 'Reveal view-once messages discreetly',
-  usage: '.vv (public) | .vv2 (private + auto-delete)',
-  
+  aliases: ['readvo', 'read', 'vv', 'readviewonce'],
+  category: 'general',
+  description: 'Révéler les messages à vue unique',
+  usage: '.vv (répondre à un message View-Once)',
+
   async execute(sock, msg, args, extra) {
+    const chatId = msg.key.remoteJid;
+
     try {
-      const chatId = extra.from;
-      const sender = extra.sender;
-      const isStealth = msg.body.toLowerCase().includes('vv2');
-
-      const ctx = msg.message?.extendedTextMessage?.contextInfo
-        || msg.message?.imageMessage?.contextInfo
-        || msg.message?.videoMessage?.contextInfo;
-
-      if (!ctx?.quotedMessage) return; // Discrétion : on ne répond même pas si c'est mal utilisé
-
-      const quotedMsg = ctx.quotedMessage;
-      let actualMsg = null;
-      let mtype = null;
-
-      // Détection du média ViewOnce
-      if (quotedMsg.viewOnceMessageV2?.message) {
-        actualMsg = quotedMsg.viewOnceMessageV2.message;
-        mtype = Object.keys(actualMsg)[0];
-      } else if (quotedMsg.viewOnceMessage?.message) {
-        actualMsg = quotedMsg.viewOnceMessage.message;
-        mtype = Object.keys(actualMsg)[0];
-      } else if (quotedMsg.imageMessage?.viewOnce) {
-        actualMsg = { imageMessage: quotedMsg.imageMessage };
-        mtype = 'imageMessage';
-      } else if (quotedMsg.videoMessage?.viewOnce) {
-        actualMsg = { videoMessage: quotedMsg.videoMessage };
-        mtype = 'videoMessage';
+      // 1. Extraction du contexte de réponse
+      const quoted = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+      
+      if (!quoted) {
+        return sock.sendMessage(chatId, { text: '🗑️ *ᴠᴇᴜɪʟʟᴇᴢ ʀéᴘᴏɴᴅʀᴇ à ᴜɴ ᴍᴇssᴀɢᴇ à ᴠᴜᴇ ᴜɴɪǫᴜᴇ.*' }, { quoted: msg });
       }
 
-      if (!actualMsg) return;
+      // 2. Identification du type de message ViewOnce
+      let viewOnceType = quoted.viewOnceMessageV2 || quoted.viewOnceMessageV2Extension || quoted.viewOnceMessage;
+      let actualMsg = viewOnceType ? viewOnceType.message : quoted;
 
-      // --- OPTION DISCRÈTE (vv2) ---
-      if (isStealth) {
-        try {
-          // Suppression immédiate du message de commande de l'utilisateur
-          await sock.sendMessage(chatId, { delete: msg.key });
-        } catch (e) {
-          // Si le bot n'est pas admin, il ne peut pas supprimer (on continue quand même)
-        }
+      const mtype = Object.keys(actualMsg)[0];
+      const media = actualMsg[mtype];
+
+      // Vérification si c'est bien un message ViewOnce
+      if (!media?.viewOnce && !viewOnceType) {
+        return sock.sendMessage(chatId, { text: '❌ *ᴄᴇ ɴ\'ᴇsᴛ ᴘᴀs ᴜɴ ᴍᴇssᴀɢᴇ à ᴠᴜᴇ ᴜɴɪǫᴜᴇ !*' }, { quoted: msg });
       }
 
+      await sock.sendMessage(chatId, { react: { text: '🔓', key: msg.key } });
+
+      // 3. Téléchargement du contenu
       const downloadType = mtype.replace('Message', '');
-      const mediaStream = await downloadContentFromMessage(actualMsg[mtype], downloadType);
-
+      const stream = await downloadContentFromMessage(media, downloadType);
+      
       let buffer = Buffer.from([]);
-      for await (const chunk of mediaStream) {
+      for await (const chunk of stream) {
         buffer = Buffer.concat([buffer, chunk]);
       }
 
-      const caption = (actualMsg[mtype]?.caption || '') + '\n\n' + AGM_DESIGN(downloadType);
-      
-      // Envoi du média
-      const targetJid = isStealth ? sender : chatId;
+      const caption = media.caption || '';
+      const displayType = mtype === 'imageMessage' ? '📸 IMAGE' : mtype === 'videoMessage' ? '🎬 VIDEO' : '🎵 AUDIO';
 
+      // 4. Renvoi du média sans la restriction ViewOnce
       if (/video/.test(mtype)) {
-        await sock.sendMessage(targetJid, { video: buffer, caption, mimetype: 'video/mp4' });
+        await sock.sendMessage(chatId, {
+          video: buffer,
+          caption: AGM_DESIGN(displayType, caption),
+          mimetype: 'video/mp4'
+        }, { quoted: msg });
       } else if (/image/.test(mtype)) {
-        await sock.sendMessage(targetJid, { image: buffer, caption, mimetype: 'image/jpeg' });
+        await sock.sendMessage(chatId, {
+          image: buffer,
+          caption: AGM_DESIGN(displayType, caption),
+          mimetype: 'image/jpeg'
+        }, { quoted: msg });
       } else if (/audio/.test(mtype)) {
-        await sock.sendMessage(targetJid, { audio: buffer, ptt: true, mimetype: 'audio/ogg; codecs=opus' });
+        await sock.sendMessage(chatId, {
+          audio: buffer,
+          ptt: true,
+          mimetype: 'audio/ogg; codecs=opus'
+        }, { quoted: msg });
       }
 
+      await sock.sendMessage(chatId, { react: { text: '✅', key: msg.key } });
+
     } catch (error) {
-      console.error('Stealth VV Error:', error);
+      console.error('[VIEWONCE ERROR]:', error);
+      await sock.sendMessage(chatId, { text: '❌ *éᴄʜᴇᴄ ᴅᴇ ʟᴀ ʀéᴠéʟᴀᴛɪᴏɴ.*' }, { quoted: msg });
     }
   }
 };
