@@ -1,6 +1,7 @@
 /**
  * Instagram Downloader - AGM Elite Edition
  * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
+ * Role : ᴅᴇᴠᴇʟᴏᴘᴘᴇʀ ⚡
  */
 
 const { igdl } = require('ruhend-scraper');
@@ -13,79 +14,72 @@ const AGM_DESIGN = (count, index) => `╭╼━≪• ɪɴsᴛᴀɢʀᴀᴍ ᴅ�
 ╰━━━━━━━━━━━━━━━╯
 > ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
 
-const processedMessages = new Set();
-
 module.exports = {
   name: 'instagram',
   aliases: ['ig', 'insta', 'igdl', 'reels'],
   category: 'media',
-  description: 'Download Instagram photos/videos/reels',
+  description: 'Télécharger des photos/vidéos/reels Instagram',
   usage: '.ig <URL>',
-  
+
   async execute(sock, msg, args, extra) {
+    const chatId = msg.key.remoteJid;
+    const url = args[0] || (msg.message?.extendedTextMessage?.text?.split(' ')[1]);
+
+    if (!url) {
+      return sock.sendMessage(chatId, { text: '⚠️ *ᴠᴇᴜɪʟʟᴇᴢ ғᴏᴜʀɴɪʀ ᴜɴ ʟɪᴇɴ ɪɴsᴛᴀɢʀᴀᴍ.*' }, { quoted: msg });
+    }
+
+    // Regex élargie pour inclure les nouveaux formats de partage (/share/, /s/, etc.)
+    const igPattern = /(https?:\/\/(?:www\.)?instagram\.com\/([a-zA-Z0-9_.]+\/)?(p|reel|tv|stories|share|s)\/|[a-zA-Z0-9_.]+\/)/;
+    
+    if (!igPattern.test(url)) {
+      return sock.sendMessage(chatId, { text: '❌ *ʟɪᴇɴ ɪɴsᴛᴀɢʀᴀᴍ ɪɴᴠᴀʟɪᴅᴇ.*' }, { quoted: msg });
+    }
+
+    await sock.sendMessage(chatId, { react: { text: '📥', key: msg.key } });
+
     try {
-      const chatId = extra.from;
-      if (processedMessages.has(msg.key.id)) return;
+      const downloadData = await igdl(url);
       
-      processedMessages.add(msg.key.id);
-      setTimeout(() => processedMessages.delete(msg.key.id), 5 * 60 * 1000);
-      
-      const text = args[0] || (msg.message?.extendedTextMessage?.text?.split(' ')[1]);
-      
-      if (!text) {
-        return extra.reply('⚠️ *ᴠᴇᴜɪʟʟᴇᴢ ғᴏᴜʀɴɪʀ ᴜɴ ʟɪᴇɴ ɪɴsᴛᴀɢʀᴀᴍ.*');
-      }
-      
-      const igPattern = /https?:\/\/(?:www\.)?(instagram\.com|instagr\.am)\/(p|reel|tv|stories)\//;
-      if (!igPattern.test(text)) {
-        return extra.reply('❌ *ʟɪᴇɴ ɪɴsᴛᴀɢʀᴀᴍ ɪɴᴠᴀʟɪᴅᴇ.*');
-      }
-      
-      await sock.sendMessage(chatId, { react: { text: '📥', key: msg.key } });
-      
-      const downloadData = await igdl(text);
       if (!downloadData || !downloadData.data || downloadData.data.length === 0) {
-        return extra.reply('❌ *ᴀᴜᴄᴜɴ ᴍéᴅɪᴀ ᴛʀᴏᴜvé. ʟᴇ ᴄᴏᴍᴘᴛᴇ ᴇsᴛ ᴘᴇᴜᴛ-êᴛʀᴇ ᴘʀɪvé.*');
+        throw new Error("Aucun média trouvé ou compte privé.");
       }
 
-      const mediaToDownload = downloadData.data.slice(0, 15); // Limite de sécurité
+      const mediaList = downloadData.data.slice(0, 10); // Limite à 10 pour éviter le spam
 
-      for (let i = 0; i < mediaToDownload.length; i++) {
-        try {
-          const media = mediaToDownload[i];
-          const mediaUrl = media.url || media.downloadUrl;
-          
-          const isVideo = media.type === 'video' || /\.(mp4|mov|avi)$/i.test(mediaUrl);
-          const caption = AGM_DESIGN(mediaToDownload.length, i);
-          
-          if (isVideo) {
-            await sock.sendMessage(chatId, {
-              video: { url: mediaUrl },
-              mimetype: 'video/mp4',
-              caption: caption
-            }, { quoted: msg });
-          } else {
-            await sock.sendMessage(chatId, {
-              image: { url: mediaUrl },
-              caption: caption
-            }, { quoted: msg });
-          }
-          
-          // Petit délai pour éviter le ban de session
-          if (i < mediaToDownload.length - 1) {
-            await new Promise(r => setTimeout(r, 1200));
-          }
-          
-        } catch (mediaError) {
-          console.error(`Error at item ${i}:`, mediaError);
+      for (let i = 0; i < mediaList.length; i++) {
+        const item = mediaList[i];
+        const mediaUrl = item.url || item.downloadUrl;
+        
+        // Détection intelligente du type de média
+        const isVideo = item.type === 'video' || /\.(mp4|mov|avi)$/i.test(mediaUrl);
+        const caption = AGM_DESIGN(mediaList.length, i);
+
+        if (isVideo) {
+          await sock.sendMessage(chatId, {
+            video: { url: mediaUrl },
+            mimetype: 'video/mp4',
+            caption: caption
+          }, { quoted: msg });
+        } else {
+          await sock.sendMessage(chatId, {
+            image: { url: mediaUrl },
+            caption: caption
+          }, { quoted: msg });
         }
+
+        // Délai de sécurité pour éviter le spam/ban
+        if (mediaList.length > 1) await new Promise(resolve => setTimeout(resolve, 1500));
       }
 
       await sock.sendMessage(chatId, { react: { text: '✅', key: msg.key } });
 
     } catch (error) {
       console.error('IG DL Error:', error);
-      await extra.reply('❌ *ᴜɴᴇ ᴇʀʀᴇᴜʀ ᴇsᴛ sᴜʀᴠᴇɴᴜᴇ ʟᴏʀs ᴅᴜ ᴛéʟéᴄʜᴀʀɢᴇᴍᴇɴᴛ.*');
+      await sock.sendMessage(chatId, { 
+        text: `❌ *ᴇʀʀᴇᴜʀ* : ${error.message.includes('privé') ? 'ʟᴇ ᴄᴏᴍᴘᴛᴇ ᴇsᴛ ᴘʀɪᴠé.' : 'ɪᴍᴘᴏssɪʙʟᴇ ᴅᴇ ᴛéʟéᴄʜᴀʀɢᴇʀ ᴄᴇ ᴍéᴅɪᴀ.'}` 
+      }, { quoted: msg });
+      await sock.sendMessage(chatId, { react: { text: '❌', key: msg.key } });
     }
   }
 };
