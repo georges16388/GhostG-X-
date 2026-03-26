@@ -1,58 +1,44 @@
 /**
  * ɢʜᴏꜱᴛɢ-x ᴍᴅ - ᴍᴀɪɴ ᴇɴᴛʀʏ ᴘᴏɪɴᴛ
- * Optimized for Pairing Code, Self-Response & Anti-Encryption Bug
- * Edition : Supreme GhostG-X
+ * Edition : Supreme GhostG-X (Baileys ^6.7.15 Optimized)
  */
 
-process.env.PUPPETEER_SKIP_DOWNLOAD = 'true';
-process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = 'true';
-
-const { initializeTempSystem } = require('./utils/tempManager');
-const { startCleanup } = require('./utils/cleanup');
-initializeTempSystem();
-startCleanup();
-
-// --- FILTRAGE DES LOGS ---
-const originalConsoleLog = console.log;
-const forbiddenPatterns = ['closing session', 'sessionentry', 'prekey bundle', 'ratchet', 'signal protocol', 'ephemeralkeypair'];
-console.log = (...args) => {
-    const message = args.map(a => typeof a === 'string' ? a : JSON.stringify(a)).join(' ').toLowerCase();
-    if (!forbiddenPatterns.some(pattern => message.includes(pattern))) originalConsoleLog.apply(console, args);
-};
-
-// --- DÉPENDANCES ---
-const pino = require('pino');
 const {
     default: makeWASocket,
     useMultiFileAuthState,
     DisconnectReason,
     Browsers,
     fetchLatestBaileysVersion,
-    makeInMemoryStore
+    makeInMemoryStore,
+    jidDecode
 } = require('@whiskeysockets/baileys');
-const qrcode = require('qrcode-terminal');
-const config = require('./config');
-const handler = require('./handler');
+
+const pino = require('pino');
 const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
+const qrcode = require('qrcode-terminal');
+const config = require('./config');
+const handler = require('./handler');
 
-// --- INITIALISATION DU STORE (Anti-Waiting for Message) ---
+// --- INITIALISATION DU STORE (Anti-Waiting Message) ---
 const store = makeInMemoryStore({ logger: pino().child({ level: 'silent', stream: 'store' }) });
 
+// --- GESTIONNAIRE DE MÉMOIRE (Anti-Doublons) ---
 const processedMessages = new Set();
 setInterval(() => processedMessages.clear(), 5 * 60 * 1000);
 
 async function startBot() {
     const sessionFolder = `./${config.sessionName || 'session'}`;
 
+    // 1. Restauration de session via ID (Base64/Zlib)
     if (config.sessionID && config.sessionID.includes('!')) {
         try {
             const b64data = config.sessionID.split('!')[1];
             const decompressedData = zlib.gunzipSync(Buffer.from(b64data, 'base64'));
             if (!fs.existsSync(sessionFolder)) fs.mkdirSync(sessionFolder, { recursive: true });
             fs.writeFileSync(path.join(sessionFolder, 'creds.json'), decompressedData);
-            console.log('📡 ꜱᴇꜱꜱɪᴏɴ : 🔑 ꜱᴇꜱꜱɪᴏɴ ᴄʜᴀʀɢᴇ́ᴇ.');
+            console.log('📡 ꜱᴇꜱꜱɪᴏɴ : 🔑 ꜱᴇꜱꜱɪᴏɴ ᴄʜᴀʀɢᴇ́ᴇ ᴀᴠᴇᴄ ꜱᴜᴄᴄᴇ̀ꜱ.');
         } catch (e) { console.error('❌ Session ID Error:', e.message); }
     }
 
@@ -62,11 +48,11 @@ async function startBot() {
     const sock = makeWASocket({
         version,
         logger: pino({ level: 'silent' }),
-        printQRInTerminal: false, 
-        browser: Browsers.ubuntu("Chrome"),
+        printQRInTerminal: false, // Forcer le Pairing Code
+        browser: Browsers.ubuntu("Chrome"), // Important pour le Pairing
         auth: state,
         syncFullHistory: false,
-        shouldSyncHistoryMessage: () => false,
+        // Correction critique du "Waiting for message"
         getMessage: async (key) => {
             if (store) {
                 const msg = await store.loadMessage(key.remoteJid, key.id);
@@ -78,18 +64,18 @@ async function startBot() {
 
     store.bind(sock.ev);
 
-    // --- LOGIQUE PAIRING CODE ---
+    // --- LOGIQUE DU PAIRING CODE (6.7.15) ---
     if (!sock.authState.creds.registered) {
         const cleanNumber = String(config.supremeNumber || "22651622652").replace(/\D/g, '');
         if (cleanNumber) {
-            console.log(`\n[ ɢʜᴏꜱᴛɢ-x ] 🚀 ɢᴇɴᴇʀᴀᴛɪɴɢ ᴘᴀɪʀɪɴɢ ᴄᴏᴅᴇ ꜰᴏʀ : ${cleanNumber}...`);
+            console.log(`\n[ ɢʜᴏꜱᴛɢ-x ] 🚀 ɢᴇɴᴇʀᴀᴛɪɴɢ ᴘᴀɪʀɪɴɢ ᴄᴏᴅᴇ...`);
             setTimeout(async () => {
                 try {
                     let code = await sock.requestPairingCode(cleanNumber);
                     code = code?.match(/.{1,4}/g)?.join("-") || code;
                     console.log(`\n╔════════════════════════════════════╗\n║      ᴠᴏᴛʀᴇ ᴄᴏᴅᴇ ᴅᴇ ᴊᴜᴍᴇʟᴀɢᴇ :      ║\n║          ${code}          ║\n╚════════════════════════════════════╝\n`);
                 } catch (err) { console.error('❌ Pairing Error:', err.message); }
-            }, 5000);
+            }, 6000); 
         }
     }
 
@@ -122,14 +108,12 @@ async function startBot() {
 
 ❓ *ᴘᴏᴜʀ ᴛᴇs ǫᴜᴇsᴛɪᴏɴs* :
 
-📢 *ᴄʜᴀɪɴᴇ ᴡʜᴀᴛsᴀᴘᴘ* :
-https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c
+📢 *ᴄʜᴀɪɴᴇ* : https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c
 
-👥 *ɢʀᴏᴜᴘᴇ ᴅ'ᴇɴᴛʀᴀɪᴅᴇ* :
-https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf
+👥 *ɢʀᴏᴜᴘᴇ* : https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf
 
-💻 *ᴅᴇᴠᴇʟᴏᴘᴘᴇᴜʀ* :
-https://wa.me/${ownerNumber}
+💻 *ᴅᴇᴠ* : https://wa.me/${ownerNumber}
+
 
 📖 _*“ ᴊᴇ ᴘᴜɪs ᴛᴏᴜᴛ ᴘᴀʀ ᴄᴇʟᴜɪ ǫᴜɪ ᴍᴇ ғᴏʀᴛɪғɪᴇ ”*_ - ᴘʜɪʟɪᴘᴘɪᴇɴs 4.13 ❤️✝️
 
@@ -140,12 +124,11 @@ https://wa.me/${ownerNumber}
                     caption: welcomeCaption, 
                     contextInfo: {
                         mentionedJid: [botJid, ownerNumber + '@s.whatsapp.net'],
-                        isForwarded: true,
                         forwardingScore: 999,
+                        isForwarded: true,
                         forwardedNewsletterMessageInfo: {
                             newsletterJid: '120363425540434745@newsletter',
-                            newsletterName: "-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ",
-                            serverMessageId: 143
+                            newsletterName: "-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ"
                         }
                     }
                 });
@@ -161,16 +144,20 @@ https://wa.me/${ownerNumber}
         for (const msg of messages) {
             try {
                 if (!msg.message || !msg.key?.id) continue;
+                
+                // Filtrage anti-spam au démarrage (30 sec max)
                 const msgTime = (msg.messageTimestamp || 0) * 1000;
-                if (msgTime && (now - msgTime > 40000)) continue;
+                if (msgTime && (now - msgTime > 30000)) continue;
+
                 if (processedMessages.has(msg.key.id)) continue;
                 processedMessages.add(msg.key.id);
 
+                // Autoriser ses propres commandes (pour le mode Public/Private)
                 const body = msg.message.conversation || msg.message.extendedTextMessage?.text || "";
                 if (msg.key.fromMe && !body.startsWith(config.prefix)) continue;
 
                 await handler.handleMessage(sock, msg);
-            } catch (e) { console.error('❌ Message Loop Error:', e); }
+            } catch (e) { console.error('❌ Upsert Loop Error:', e); }
         }
     });
 
