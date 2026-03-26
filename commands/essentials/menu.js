@@ -52,7 +52,7 @@ module.exports = {
       const senderJid = msg.key.participant || msg.key.remoteJid;
 const senderNumber = senderJid.split('@')[0];
 
-      menuText += `┃ *ᴜᴛɪʟɪsᴀᴛᴇᴜʀ* :      @${senderNumber}\n`;
+      menuText += `┃ *ᴜᴛɪʟɪsᴀᴛᴇᴜʀ* : @${senderNumber}\n`;
       menuText += `┃ *ᴊᴇsᴜs ᴛᴀɪᴍᴇ* : ❤️✝️\n`;
       menuText += `┃ *ᴘʀᴇғɪxᴇ* : [ ${prefix} ]\n`;
       menuText += `┃ *ᴄᴏᴍᴍᴀɴᴅᴇs* : ${totalFiles} ғɪʟᴇs\n`;
