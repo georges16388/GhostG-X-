@@ -1,6 +1,7 @@
 /**
  * YouTube Video Downloader - AGM Elite Edition
  * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
+ *
  */
 
 const yts = require('yt-search');
@@ -12,60 +13,80 @@ const AGM_DESIGN = (title, status) => `╭╼━≪• ʏᴏᴜᴛᴜʙᴇ ᴠɪ
 ┃ sᴛᴀᴛᴜs : ${status}
 ┃ ᴍᴏᴅᴇ : ʜɪɢʜ-ǫᴜᴀʟɪᴛʏ ⚡
 ╰━━━━━━━━━━━━━━━╯
-> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
 
 module.exports = {
   name: 'ytvideo',
-  aliases: ['ytv', 'ytmp4', 'ytvid', 'video'],
+  aliases: ['ytv', 'ytmp4', 'ytvid', 'video', 'shorts'],
   category: 'media',
-  description: 'Download video from YouTube',
-  usage: '.video <name/url>',
+  description: 'Télécharger des vidéos ou Shorts YouTube',
+  usage: '.video <nom/url>',
 
   async execute(sock, msg, args, extra) {
-    try {
-      const text = args.join(' ');
-      const chatId = extra.from;
+    const chatId = msg.key.remoteJid;
+    const text = args.join(' ');
 
+    try {
       if (!text) {
-        return extra.reply('⚠️ *ᴠᴇᴜɪʟʟᴇᴢ ᴇɴᴛʀᴇʀ ᴜɴ ɴᴏᴍ ᴏᴜ ᴜɴ ʟɪᴇɴ ʏᴏᴜᴛᴜʙᴇ.*');
+        return sock.sendMessage(chatId, { text: '⚠️ *ᴠᴇᴜɪʟʟᴇᴢ ᴇɴᴛʀᴇʀ ᴜɴ ɴᴏᴍ ᴏᴜ ᴜɴ ʟɪᴇɴ ʏᴏᴜᴛᴜʙᴇ.*' }, { quoted: msg });
       }
 
       await sock.sendMessage(chatId, { react: { text: '🎥', key: msg.key } });
 
       let video;
-      if (text.startsWith('http://') || text.startsWith('https://')) {
-        const videoId = text.match(/(?:youtu\.be\/|v=)([a-zA-Z0-9_-]{11})/)?.[1];
-        if (!videoId) return extra.reply('❌ *ʟɪᴇɴ ʏᴏᴜᴛᴜʙᴇ ɪɴᴠᴀʟɪᴅᴇ.*');
-        video = { url: text, title: 'YouTube Video', thumbnail: `https://i.ytimg.com/vi/${videoId}/sddefault.jpg` };
+      // Regex améliorée pour détecter : Shorts, v/, embed/, youtu.be/, etc.
+      const ytUrlPattern = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/;
+
+      if (ytUrlPattern.test(text)) {
+        // Extraction précise de l'ID pour les Shorts et vidéos classiques
+        const videoId = text.match(/(?:youtu\.be\/|v=|embed\/|shorts\/|watch\?v=)([a-zA-Z0-9_-]{11})/)?.[1];
+        
+        if (!videoId) {
+            return sock.sendMessage(chatId, { text: '❌ *ʟɪᴇɴ ʏᴏᴜᴛᴜʙᴇ ɪɴᴠᴀʟɪᴅᴇ (sʜᴏʀᴛs ɴᴏɴ ᴅᴇᴛᴇᴄᴛᴇ).*' }, { quoted: msg });
+        }
+
+        video = { 
+          url: text, 
+          title: 'ʏᴏᴜᴛᴜʙᴇ ᴄᴏɴᴛᴇɴᴛ', 
+          thumbnail: `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg` 
+        };
       } else {
+        // Recherche par mots-clés
         const search = await yts(text);
-        if (!search || !search.videos.length) return extra.reply('❌ *ᴀᴜᴄᴜɴᴇ ᴠɪᴅéᴏ ᴛʀᴏᴜᴠéᴇ.*');
+        if (!search || !search.videos.length) {
+          return sock.sendMessage(chatId, { text: '❌ *ᴀᴜᴄᴜɴᴇ ᴠɪᴅéᴏ ᴛʀᴏᴜᴠéᴇ.*' }, { quoted: msg });
+        }
         video = search.videos[0];
       }
 
-      // Envoi de l'aperçu avec Design AGM
+      // 1. Envoi de l'aperçu
       await sock.sendMessage(chatId, {
         image: { url: video.thumbnail },
         caption: AGM_DESIGN(video.title || text, '🟢 ᴅᴏᴡɴʟᴏᴀᴅɪɴɢ...')
       }, { quoted: msg });
 
-      // --- SYSTÈME DE FALLBACK MULTI-API (Elite > Yupra > Okatsu) ---
-      let videoData;
-      try {
-        videoData = await APIs.getEliteProTechVideoByUrl(video.url);
-      } catch (e1) {
+      // 2. Système de Fallback Multi-API (Elite > Yupra > Okatsu)
+      let videoData = null;
+      const methods = [
+        APIs.getEliteProTechVideoByUrl,
+        APIs.getYupraVideoByUrl,
+        APIs.getOkatsuVideoByUrl
+      ];
+
+      for (const method of methods) {
         try {
-          videoData = await APIs.getYupraVideoByUrl(video.url);
-        } catch (e2) {
-          videoData = await APIs.getOkatsuVideoByUrl(video.url);
-        }
+          if (typeof method === 'function') {
+            videoData = await method(video.url);
+            if (videoData && videoData.download) break;
+          }
+        } catch (e) { continue; }
       }
 
       if (!videoData || !videoData.download) {
         throw new Error('No download URL found');
       }
 
-      // Envoi de la vidéo finale
+      // 3. Envoi de la vidéo/Short final
       await sock.sendMessage(chatId, {
         video: { url: videoData.download },
         mimetype: 'video/mp4',
@@ -77,7 +98,9 @@ module.exports = {
 
     } catch (error) {
       console.error('[VIDEO ERROR]:', error);
-      await extra.reply('❌ *éᴄʜᴇᴄ ᴅᴜ ᴛéʟéᴄʜᴀʀɢᴇᴍᴇɴᴛ. ᴄᴏɴᴛᴇɴᴜ ᴘᴇᴜᴛ-êᴛʀᴇ ᴛʀᴏᴘ ʟᴏᴜʀᴅ ᴏᴜ ʙʟᴏǫᴜé.*');
+      const errMsg = '❌ *éᴄʜᴇᴄ ᴅᴜ ᴛéʟéᴄʜᴀʀɢᴇᴍᴇɴᴛ.*\n_ʟᴇ ᴄᴏɴᴛᴇɴᴜ ᴇsᴛ ᴘᴇᴜᴛ-êᴛʀᴇ ᴛʀᴏᴘ ʟᴏᴜʀᴅ ᴏᴜ ʟɪᴍɪᴛé._';
+      await sock.sendMessage(chatId, { text: errMsg }, { quoted: msg });
+      await sock.sendMessage(chatId, { react: { text: '❌', key: msg.key } });
     }
   }
 };
