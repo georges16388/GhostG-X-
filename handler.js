@@ -3,8 +3,10 @@
  * Optimized for Self-Response, Memory & Anti-Duplicate
  * Powered by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
-
-const config = require('./config');
+const getConfig = () => {
+    delete require.cache[require.resolve('./config')];
+    return require('./config');
+};
 const database = require('./database'); 
 const { addMessage } = require('./utils/groupstats');
 const { loadCommands } = require('./utils/commandLoader');
