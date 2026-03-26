@@ -81,7 +81,7 @@ function updateConfigFile(filePath, key, value) {
     // CETTE REGEX EST LA SOLUTION :
     // Elle cherche la clé (ex: selfMode) et remplace TOUT ce qui suit 
     // jusqu'à la virgule ou la fin de la ligne.
-    const regex = new RegExp(`(${key}\\s*:\\s*)([^,\\n]+)`, 'i');
+    const regex = new RegExp(`(${key}\\s*:\\s*)(true|false)`, 'i');
 
     if (regex.test(content)) {
       // On remplace la valeur trouvée par la nouvelle (true ou false)
