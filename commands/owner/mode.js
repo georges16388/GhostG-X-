@@ -1,12 +1,6 @@
-/**
- * Bot Mode Controller - AGM System Core
- * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
- */
-
 const fs = require('fs');
 const path = require('path');
 
-// --- FONCTION DE DESIGN AGM (SYSTEM CORE) ---
 const AGM_MODE = (mode) => `╭╼━≪• ᴀɢᴍ sʏsᴛᴇᴍ ᴍᴏᴅᴇ •≫━╾╮
 ┃ sᴛᴀᴛᴜs : 🟢 ᴜᴘᴅᴀᴛᴇᴅ
 ┃ ᴍᴏᴅᴇ : ${mode === 'private' ? '🔒 ᴘʀɪᴠᴀᴛᴇ' : '🌐 ᴘᴜʙʟɪᴄ'}
@@ -23,15 +17,24 @@ module.exports = {
   ownerOnly: true,
 
   async execute(sock, msg, args, extra) {
+    const from = msg.key.remoteJid;
+    console.log(`[MODE] Commande lancée par ${msg.pushName}`);
+
     try {
-      const from = extra.from;
-      // Rechargement frais de la config
-      delete require.cache[require.resolve('../../config')];
-      const config = require('../../config');
-      
+      // 1. Localisation dynamique du fichier config.js
+      // On teste deux chemins courants : racine ou dossier parent
+      let configPath = path.join(process.cwd(), 'config.js');
+      if (!fs.existsSync(configPath)) {
+          configPath = path.join(__dirname, '../../config.js');
+      }
+
+      // 2. Rechargement manuel de la config
+      delete require.cache[require.resolve(configPath)];
+      const config = require(configPath);
+
       let input = args[0]?.toLowerCase();
 
-      // Si pas d'argument, on affiche l'état actuel
+      // Si pas d'argument : afficher l'état
       if (!input) {
         const current = config.selfMode ? 'private' : 'public';
         return sock.sendMessage(from, { 
@@ -42,69 +45,52 @@ module.exports = {
       await sock.sendMessage(from, { react: { text: '⚙️', key: msg.key } });
 
       let targetMode;
-      if (['private', 'priv', 'self'].includes(input)) {
-        targetMode = true;
-      } else if (['public', 'pub'].includes(input)) {
-        targetMode = false;
+      if (['private', 'priv', 'self'].includes(input)) targetMode = true;
+      else if (['public', 'pub'].includes(input)) targetMode = false;
+      else return sock.sendMessage(from, { text: '❌ *ᴏᴘᴛɪᴏɴ ɪɴᴠᴀʟɪᴅᴇ (ᴘᴜʙ/ᴘʀɪᴠ)*' }, { quoted: msg });
+
+      // 3. Mise à jour du fichier physique
+      const success = updateConfigFile(configPath, 'selfMode', targetMode);
+
+      if (success) {
+        // Mise à jour en mémoire immédiate
+        config.selfMode = targetMode;
+        if (global.config) global.config.selfMode = targetMode;
+
+        await sock.sendMessage(from, { text: AGM_MODE(targetMode ? 'private' : 'public') }, { quoted: msg });
+        await sock.sendMessage(from, { react: { text: '✅', key: msg.key } });
       } else {
-        return sock.sendMessage(from, { text: '❌ *ᴏᴘᴛɪᴏɴ ɪɴᴠᴀʟɪᴅᴇ (ᴘᴜʙ/ᴘʀɪᴠ)*' }, { quoted: msg });
+          throw new Error("Échec de l'écriture dans config.js");
       }
-
-      // Vérification si déjà dans ce mode
-      if (config.selfMode === targetMode) {
-        return sock.sendMessage(from, { 
-          text: `ℹ️ *ʟᴇ ʙᴏᴛ ᴇsᴛ ᴅéᴊà ᴇɴ ᴍᴏᴅᴇ ${targetMode ? 'ᴘʀɪᴠé' : 'ᴘᴜʙʟɪᴄ'}.*` 
-        }, { quoted: msg });
-      }
-
-      // Mise à jour Physique et Mémoire
-      updateConfig('selfMode', targetMode);
-      config.selfMode = targetMode;
-      
-      // Sécurité : mise à jour d'une éventuelle variable globale utilisée par le handler
-      if (global.config) global.config.selfMode = targetMode;
-
-      await sock.sendMessage(from, { 
-        text: AGM_MODE(targetMode ? 'private' : 'public') 
-      }, { quoted: msg });
-
-      await sock.sendMessage(from, { react: { text: '✅', key: msg.key } });
 
     } catch (error) {
-      console.error('Mode error:', error);
-      await sock.sendMessage(extra.from, { text: '❌ *ᴇʀʀᴇᴜʀ sʏsᴛᴇ̀ᴍᴇ ʟᴏʀs ᴅᴜ ᴄʜᴀɴɢᴇᴍᴇɴᴛ.*' }, { quoted: msg });
+      console.error('[MODE ERROR]:', error);
+      await sock.sendMessage(from, { text: `❌ *ᴇʀʀᴇᴜʀ sʏsᴛᴇ̀ᴍᴇ* : ${error.message}` }, { quoted: msg });
     }
   }
 };
 
 /**
- * Met à jour le fichier config.js de manière sécurisée
+ * Fonction d'écriture ultra-robuste
  */
-function updateConfig(key, value) {
+function updateConfigFile(filePath, key, value) {
   try {
-    // Vérifie bien que le chemin remonte au bon niveau (dépend de ton architecture)
-    const configPath = path.join(__dirname, '../../config.js'); 
-    if (!fs.existsSync(configPath)) {
-        console.error("❌ Fichier config.js introuvable à :", configPath);
-        return;
-    }
+    if (!fs.existsSync(filePath)) return false;
+    let content = fs.readFileSync(filePath, 'utf8');
 
-    let content = fs.readFileSync(configPath, 'utf8');
-
-    // Cette Regex est plus flexible pour capturer la valeur avant la virgule
-    const regex = new RegExp(`(${key}\\s*:\\s*)(true|false|['"].*?['"]|[0-9]+)`, 'g');
+    // Cette Regex gère : la clé, les espaces, les deux-points, et la valeur avec ou sans virgule
+    const regex = new RegExp(`(${key}\\s*:\\s*)(true|false)`, 'i');
 
     if (regex.test(content)) {
-      content = content.replace(regex, `$1${value}`);
-      fs.writeFileSync(configPath, content, 'utf8');
-      
-      // Nettoyage critique du cache pour que le bot "voit" le changement immédiatement
-      delete require.cache[require.resolve('../../config.js')];
-      console.log(`✅ Config mise à jour : ${key} -> ${value}`);
-    } else {
-      console.error(`❌ Impossible de trouver la clé "${key}" dans config.js`);
+      const newContent = content.replace(regex, `$1${value}`);
+      fs.writeFileSync(filePath, newContent, 'utf8');
+      console.log(`[CONFIG] ${key} mis à jour vers ${value}`);
+      return true;
     }
+    console.error(`[CONFIG] Clé ${key} non trouvée dans le fichier.`);
+    return false;
   } catch (e) {
-    console.error('Config write error:', e);
+    console.error(`[CONFIG WRITE ERROR]:`, e);
+    return false;
   }
 }
