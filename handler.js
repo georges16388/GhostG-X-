@@ -3,6 +3,9 @@
  * Optimized for Self-Response, Memory & Anti-Duplicate
  * Powered by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
+const handleMessage = async (sock, msg) => {
+    const config = getConfig(); // ← recharge config à chaque message
+    try {
 const getConfig = () => {
     delete require.cache[require.resolve('./config')];
     return require('./config');
