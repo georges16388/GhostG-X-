@@ -1,14 +1,14 @@
 /**
  * System Updater - AGM Global Core (Ultra-Stable Edition)
- * Source: https://github.com/georges16388/GhostG-X-
+ * Source: https://github.com/georges16388/GhostG-X- 
  * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
-
 const { exec } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
 const http = require('http');
+const AdmZip = require('adm-zip');
 const config = require('../../config');
 
 // --- DESIGN AGM ---
@@ -17,7 +17,7 @@ const AGM_UPDATE = (status, info = "") => `╭╼━≪• ᴀɢᴍ sʏsᴛᴇ�
 ┃ ɪɴғᴏ : ${info} 📁
 ┃ sᴏᴜʀᴄᴇ : ɢɪᴛʜᴜʙ/ᴍᴀɪɴ 🌐
 ╰━━━━━━━━━━━━━━━╯
-> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
 
 // --- UTILS : RUN COMMAND ---
 function run(cmd) {
@@ -67,19 +67,15 @@ module.exports = {
   description: 'Mise à jour complète avec installation des dépendances.',
   usage: '.update',
   ownerOnly: true,
-
   async execute(sock, msg, args, extra) {
     const zipUrl = args[0] || config.updateZipUrl || "https://github.com/georges16388/GhostG-X-/archive/refs/heads/main.zip";
     const from = extra.from;
-
     try {
       await sock.sendMessage(from, { react: { text: '📡', key: msg.key } });
       await extra.reply(AGM_UPDATE('🟠 ᴅᴏᴡɴʟᴏᴀᴅɪɴɢ...'));
-
       const tmpDir = path.join(process.cwd(), 'temp_update');
       if (fs.existsSync(tmpDir)) fs.rmSync(tmpDir, { recursive: true, force: true });
       fs.mkdirSync(tmpDir);
-
       const zipPath = path.join(tmpDir, 'update.zip');
       const extractTo = path.join(tmpDir, 'extract');
 
@@ -87,12 +83,10 @@ module.exports = {
       await downloadFile(zipUrl, zipPath);
 
       // 2. Extraction
-      await run(process.platform === 'win32' 
-        ? `powershell -Command "Expand-Archive -Path '${zipPath}' -DestinationPath '${extractTo}' -Force"`
-        : `unzip -o '${zipPath}' -d '${extractTo}'`
-      );
+      const zip = new AdmZip(zipPath);
+      zip.extractAllTo(extractTo, true);
 
-      // 3. Identification du dossier GitHub (souvent GhostG-X-main)
+      // 3. Identification du dossier GitHub
       const entries = fs.readdirSync(extractTo).filter(e => !e.startsWith('.'));
       const srcRoot = entries.length === 1 ? path.join(extractTo, entries[0]) : extractTo;
 
@@ -100,13 +94,12 @@ module.exports = {
       const ignore = ['node_modules', '.git', 'session', 'GhostG-X-Session', 'database', 'config.js', '.env'];
       copyRecursive(srcRoot, process.cwd(), ignore);
 
-      // 5. CRITIQUE : Installation des nouvelles dépendances (npm install)
+      // 5. Installation des nouvelles dépendances
       await extra.reply(AGM_UPDATE('🔵 ɪɴsᴛᴀʟʟɪɴɢ...', 'ɴᴘᴍ ᴘᴀᴄᴋᴀɢᴇs'));
       await run('npm install');
 
       // 6. Nettoyage
       fs.rmSync(tmpDir, { recursive: true, force: true });
-
       await sock.sendMessage(from, { react: { text: '✅', key: msg.key } });
       await extra.reply(AGM_UPDATE('🟢 sᴜᴄᴄᴇss', 'ʀᴇsᴛᴀʀᴛɪɴɢ...'));
 
@@ -118,10 +111,9 @@ module.exports = {
           process.exit(0);
         }
       }, 3000);
-
     } catch (error) {
       console.error('Update Error:', error);
-      await extra.reply(AGM_UPDATE('🔴 ᴇʀʀᴏʀ', error.message.substring(0, 100)));
+      await extra.reply(AGM_UPDATE('🔴 ᴇʀʀᴏʀ', error.message));
     }
   }
 };
