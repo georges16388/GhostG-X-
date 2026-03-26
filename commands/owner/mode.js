@@ -82,18 +82,27 @@ module.exports = {
  */
 function updateConfig(key, value) {
   try {
-    const configPath = path.join(__dirname, '../../config.js');
-    if (!fs.existsSync(configPath)) return;
+    // Vérifie bien que le chemin remonte au bon niveau (dépend de ton architecture)
+    const configPath = path.join(__dirname, '../../config.js'); 
+    if (!fs.existsSync(configPath)) {
+        console.error("❌ Fichier config.js introuvable à :", configPath);
+        return;
+    }
 
     let content = fs.readFileSync(configPath, 'utf8');
 
-    // Regex qui supporte les espaces, les tabulations et les commentaires en fin de ligne
-    const regex = new RegExp(`(${key}\\s*:\\s*)(true|false)`, 'g');
-    
+    // Cette Regex est plus flexible pour capturer la valeur avant la virgule
+    const regex = new RegExp(`(${key}\\s*:\\s*)(true|false|['"].*?['"]|[0-9]+)`, 'g');
+
     if (regex.test(content)) {
       content = content.replace(regex, `$1${value}`);
       fs.writeFileSync(configPath, content, 'utf8');
-      delete require.cache[require.resolve('../../config')];
+      
+      // Nettoyage critique du cache pour que le bot "voit" le changement immédiatement
+      delete require.cache[require.resolve('../../config.js')];
+      console.log(`✅ Config mise à jour : ${key} -> ${value}`);
+    } else {
+      console.error(`❌ Impossible de trouver la clé "${key}" dans config.js`);
     }
   } catch (e) {
     console.error('Config write error:', e);
