@@ -57,7 +57,7 @@ module.exports = {
       // 🔹 4. MENU HEADER
       let menuText = `╭╼━≪• *${botName}* •≫━╾╮\n`;
       menuText += `┃ *sᴛᴀᴛᴜᴛ* : 🟢 ᴏɴʟɪɴᴇ\n`;
-      menuText += `┃ *ᴜᴛɪʟɪsᴀᴛᴇᴜʀ* : ${pushName} (@${senderNumber})\n`;
+      menuText += `┃ *ᴜᴛɪʟɪsᴀᴛᴇᴜʀ* : (@${senderNumber})\n`;
       menuText += `┃ *ᴊᴇsᴜs ᴛᴀɪᴍᴇ* : ❤️✝️\n`;
       menuText += `┃ *ᴘʀᴇғɪxᴇ* : [ ${prefix} ]\n`;
       menuText += `┃ *ᴄᴏᴍᴍᴀɴᴅᴇs* : ${totalFiles} ғɪʟᴇs\n`;
