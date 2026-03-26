@@ -80,7 +80,7 @@ const senderNumber = senderJid.split('@')[0];
         image: { url: 'https://files.catbox.moe/2fmwpu.jpg' },
         caption: menuText,
         contextInfo: {
-          mentionedJid: [botJid], // IMPORTANT: botJid pour que le @numéro soit cliquable
+          mentionedJid: [senderJid], // IMPORTANT: botJid pour que le @numéro soit cliquable
           isForwarded: true,
           forwardingScore: 999,
           forwardedNewsletterMessageInfo: {
