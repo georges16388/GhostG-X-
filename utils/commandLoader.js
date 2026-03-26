@@ -1,5 +1,5 @@
-*
- * Command Loader - Separate module to avoid circular dependencies
+
+/* Command Loader - Separate module to avoid circular dependencies
  */
 
 const fs = require('fs');
