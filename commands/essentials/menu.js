@@ -47,7 +47,10 @@ module.exports = {
       let menuText = `╭╼━≪• *${botName}* •≫━╾╮\n`;
       menuText += `┃ *sᴛᴀᴛᴜᴛ* : 🟢 ᴏɴʟɪɴᴇ\n`;
       // Correction de la ligne Utilisateur
-      menuText += `┃ *ᴜᴛɪʟɪsᴀᴛᴇᴜʀ* : @${botNumber} (${sock.user.name || botName})\n`;
+      const senderJid = msg.key.participant || msg.key.remoteJid;
+const senderNumber = senderJid.split('@')[0];
+
+      menuText += `┃ *ᴜᴛɪʟɪsᴀᴛᴇᴜʀ* :      @${senderNumber}\n`;
       menuText += `┃ *ᴊᴇsᴜs ᴛᴀɪᴍᴇ* : ❤️✝️\n`;
       menuText += `┃ *ᴘʀᴇғɪxᴇ* : [ ${prefix} ]\n`;
       menuText += `┃ *ᴄᴏᴍᴍᴀɴᴅᴇs* : ${totalFiles} ғɪʟᴇs\n`;
