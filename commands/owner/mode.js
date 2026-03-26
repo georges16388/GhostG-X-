@@ -78,19 +78,20 @@ function updateConfigFile(filePath, key, value) {
     if (!fs.existsSync(filePath)) return false;
     let content = fs.readFileSync(filePath, 'utf8');
 
-    // Cette Regex gère : la clé, les espaces, les deux-points, et la valeur avec ou sans virgule
-    const regex = new RegExp(`(${key}\\s*:\\s*)(true|false)`, 'i');
+    // CETTE REGEX EST LA SOLUTION :
+    // Elle cherche la clé (ex: selfMode) et remplace TOUT ce qui suit 
+    // jusqu'à la virgule ou la fin de la ligne.
+    const regex = new RegExp(`(${key}\\s*:\\s*)([^,\\n]+)`, 'i');
 
     if (regex.test(content)) {
+      // On remplace la valeur trouvée par la nouvelle (true ou false)
       const newContent = content.replace(regex, `$1${value}`);
       fs.writeFileSync(filePath, newContent, 'utf8');
-      console.log(`[CONFIG] ${key} mis à jour vers ${value}`);
       return true;
     }
-    console.error(`[CONFIG] Clé ${key} non trouvée dans le fichier.`);
     return false;
   } catch (e) {
-    console.error(`[CONFIG WRITE ERROR]:`, e);
     return false;
   }
 }
+
