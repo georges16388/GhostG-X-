@@ -2,6 +2,8 @@
  * ɢʜᴏꜱᴛɢ-x ᴍᴅ - ᴍᴇɴᴜ ᴘʀᴇsᴛɪɢᴇ ᴠ5 (ɢʀᴀᴛɪᴛᴜᴅᴇ ᴇᴅɪᴛɪᴏɴ)
  * Fix : Syntaxe & Mentions dynamiques
  */
+const senderJid = msg.key.participant || msg.key.remoteJid;
+const senderNumber = senderJid.split('@')[0];
 
 const config = require('../../config');
 const { loadCommands } = require('../../utils/commandLoader');
