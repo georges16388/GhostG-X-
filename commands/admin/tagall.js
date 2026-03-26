@@ -25,9 +25,9 @@ module.exports = {
         const message = args.join(' ') || 'ᴀᴛᴛᴇɴᴛɪᴏɴ ᴛᴏᴜᴛ ʟᴇ ᴍᴏɴᴅᴇ !';
 
         // 2. Design AGM System
-        let text = `╭╼━≪• ɢʀᴏᴜᴘ ᴀɴɴᴏᴜɴᴄᴇᴍᴇɴᴛ •≫━╾╮\n`;
-        text += `┃ ᴍsɢ : ${message}\n`;
-        text += `┃ ᴛᴏᴛᴀʟ : ${participants.length} ᴍᴇᴍʙᴇʀs\n`;
+        let text = `╭╼━≪• *ɢʀᴏᴜᴘ ᴀɴɴᴏᴜɴᴄᴇᴍᴇɴᴛ* •≫━╾╮\n`;
+        text += `┃ *ᴍsɢ* : ${message}\n`;
+        text += `┃ *ᴛᴏᴛᴀʟ* : ${participants.length} ᴍᴇᴍʙᴇʀs\n`;
         text += `╰━━━━━━━━━━━━━━━╯\n\n`;
 
         // 3. Construction de la liste avec mentions
