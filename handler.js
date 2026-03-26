@@ -3,13 +3,13 @@
  * Optimized for Self-Response, Memory & Anti-Duplicate
  * Powered by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
-const handleMessage = async (sock, msg) => {
-    const config = getConfig(); // ← recharge config à chaque message
-    try {
+
+// ✅ getConfig EN HAUT, AVANT TOUT
 const getConfig = () => {
     delete require.cache[require.resolve('./config')];
     return require('./config');
 };
+
 const database = require('./database'); 
 const { addMessage } = require('./utils/groupstats');
 const { loadCommands } = require('./utils/commandLoader');
@@ -18,34 +18,21 @@ const { loadCommands } = require('./utils/commandLoader');
 const processedMessages = new Set();
 setInterval(() => processedMessages.clear(), 10 * 60 * 1000);
 
-/**
- * Initialisation des Commandes en Global
- */
 global.commands = global.commands || loadCommands();
 
-/**
- * Normalisation des JIDs
- */
 const normalizeJid = (jid) => {
     if (!jid) return null;
     return jid.split(':')[0].split('@')[0].replace(/\D/g, '');
 };
 
-/**
- * Vérification Propriétaire
- */
-const isOwner = (sender) => {
+const isOwner = (sender, config) => {
     const senderNumber = normalizeJid(sender);
     const supreme = "22651622652"; 
     const ownerList = Array.isArray(config.OWNER_NUMBER) ? config.OWNER_NUMBER : [config.OWNER_NUMBER];
-
     if (senderNumber === supreme) return true;
     return ownerList.some(owner => String(owner).replace(/\D/g, '') === senderNumber);
 };
 
-/**
- * Vérification Admin
- */
 const isAdmin = async (sock, participant, groupId) => {
     if (!groupId || !groupId.endsWith('@g.us')) return false;
     try {
@@ -59,8 +46,8 @@ const isAdmin = async (sock, participant, groupId) => {
  * GESTIONNAIRE PRINCIPAL
  */
 const handleMessage = async (sock, msg) => {
+    const config = getConfig(); // ✅ Recharge config à chaque message
     try {
-        // --- 1. FILTRES DE BASE & SÉCURITÉ ---
         if (!msg.message || msg.key.remoteJid === 'status@broadcast') return;
         if (processedMessages.has(msg.key.id)) return;
         processedMessages.add(msg.key.id);
@@ -68,24 +55,22 @@ const handleMessage = async (sock, msg) => {
         const from = msg.key.remoteJid;
         const isGroup = from.endsWith('@g.us');
         const sender = isGroup ? (msg.key.participant || msg.key.remoteJid) : from;
-        const ownerStatus = isOwner(sender);
+        const ownerStatus = isOwner(sender, config); // ✅ on passe config en paramètre
 
-        // --- SÉCURITÉ CRITIQUE : MODE PRIVÉ (SELFMODE) ---
-        // Si le mode privé est activé, on ignore TOTALEMENT les non-owners immédiatement
+        // --- MODE PRIVÉ (SELFMODE) ---
         if (config.selfMode && !ownerStatus) return;
 
         const pushName = msg.pushName || 'ᴜsᴇʀ';
         const prefix = config.prefix || '.';
 
-        // Extraction du texte
         const m = msg.message;
         const body = (m.conversation || m.extendedTextMessage?.text || m.imageMessage?.caption || m.videoMessage?.caption || m.buttonsResponseMessage?.selectedButtonId || m.listResponseMessage?.singleSelectReply?.selectedRowId || m.templateButtonReplyMessage?.selectedId || "").trim();
-        
+
         const isCmd = body.startsWith(prefix);
         const commandName = isCmd ? body.slice(prefix.length).trim().split(/\s+/)[0].toLowerCase() : null;
         const args = isCmd ? body.trim().split(/\s+/).slice(1) : [];
 
-        // --- 2. SYSTÈME DE RÉACTION AUTOMATIQUE ---
+        // --- RÉACTION AUTOMATIQUE ---
         if (config.autoReact) {
             if (ownerStatus && isCmd) {
                 await sock.sendMessage(from, { react: { text: '👑', key: msg.key } });
@@ -96,11 +81,9 @@ const handleMessage = async (sock, msg) => {
             }
         }
 
-        // --- 3. GESTION DES GROUPES (ANTI-LIEN & STATS) ---
+        // --- GROUPES ---
         if (isGroup) {
             if (typeof addMessage === 'function') addMessage(from, sender);
-
-            // Anti-Lien
             if (!ownerStatus && /(https?:\/\/|chat.whatsapp.com)/gi.test(body)) {
                 const groupSettings = database.getGroupSettings ? database.getGroupSettings(from) : { antilink: false };
                 if (groupSettings?.antilink && !(await isAdmin(sock, sender, from))) {
@@ -110,14 +93,13 @@ const handleMessage = async (sock, msg) => {
             }
         }
 
-        // --- 4. EXÉCUTION DES COMMANDES ---
+        // --- COMMANDES ---
         if (isCmd && commandName) {
             const command = global.commands.get(commandName) || 
                           [...global.commands.values()].find(c => c.aliases && c.aliases.includes(commandName));
 
             if (!command) return;
 
-            // Permissions fines
             const adminStatus = isGroup ? await isAdmin(sock, sender, from) : false;
 
             if (command.ownerOnly && !ownerStatus) return;
@@ -178,5 +160,3 @@ const initializeAntiCall = (sock) => {
         }
     });
 };
-
-module.exports = { handleMessage, handleGroupUpdate, isOwner, initializeAntiCall };
