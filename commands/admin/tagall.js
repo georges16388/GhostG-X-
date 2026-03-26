@@ -1,43 +1,56 @@
 /**
  * Tag All Command - Mention all group members
+ * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
 module.exports = {
     name: 'tagall',
-    aliases: ['mentionall', 'everyone'],
+    aliases: ['mentionall', 'everyone', 'all'],
     category: 'admin',
-    description: 'Tag all group members',
+    description: 'Taguer tous les membres du groupe',
     usage: '.tagall <message>',
     groupOnly: true,
     adminOnly: true,
     botAdminNeeded: true,
-    
+
     async execute(sock, msg, args, extra) {
       try {
-        const message = args.join(' ') || 'Attention everyone!';
-        const participants = extra.groupMetadata.participants.map(p => p.id);
+        const from = msg.key.remoteJid;
         
-        // Design d'en-tête pour l'annonce
+        // 1. Récupération dynamique des métadonnées (plus fiable)
+        const metadata = await sock.groupMetadata(from);
+        const participants = metadata.participants;
+        const participantIds = participants.map(p => p.id);
+
+        const message = args.join(' ') || 'ᴀᴛᴛᴇɴᴛɪᴏɴ ᴛᴏᴜᴛ ʟᴇ ᴍᴏɴᴅᴇ !';
+
+        // 2. Design AGM System
         let text = `╭╼━≪• ɢʀᴏᴜᴘ ᴀɴɴᴏᴜɴᴄᴇᴍᴇɴᴛ •≫━╾╮\n`;
         text += `┃ ᴍsɢ : ${message}\n`;
-        text += `┃ ᴛᴀɢ : ᴀʟʟ ᴍᴇᴍʙᴇʀs 👥\n`;
-        text += `╰━━━━━━━━━━━━━━━╯\n\n`;
-        
-        text += `📢 *List of Members:*\n`;
-        
-        participants.forEach((participant, index) => {
-          text += `  ${index + 1}. @${participant.split('@')[0]}\n`;
+        text += `┃ ᴛᴏᴛᴀʟ : ${participants.length} ᴍᴇᴍʙᴇʀs\n`;
+        text += `╰━━━━━━━━━━━━━━━╯\n
+                > *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
+
+        // 3. Construction de la liste avec mentions
+        participants.forEach((mem, index) => {
+          text += `  ${index + 1}. @${mem.id.split('@')[0]}\n`;
         });
-        
+
         text += `\n> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
-        
-        await sock.sendMessage(extra.from, {
-          text,
-          mentions: participants
+
+        // 4. Envoi avec le tableau de mentions (crucial pour que les gens reçoivent la notif)
+        await sock.sendMessage(from, {
+          text: text,
+          mentions: participantIds
         }, { quoted: msg });
-        
+
+        // Petit emoji de confirmation
+        await sock.sendMessage(from, { react: { text: '📢', key: msg.key } });
+
       } catch (error) {
-        await extra.reply(`❌ Error: ${error.message}`);
+        console.error('TagAll Error:', error);
+        // Utilisation de sock.sendMessage si extra.reply n'est pas défini
+        await sock.sendMessage(msg.key.remoteJid, { text: `❌ *ᴇʀʀᴇᴜʀ sʏsᴛᴇ̀ᴍᴇ* : ${error.message}` }, { quoted: msg });
       }
     }
   };
