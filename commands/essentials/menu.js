@@ -61,7 +61,7 @@ module.exports = {
       menuText += `┃ *ᴊᴇsᴜs ᴛᴀɪᴍᴇ* : ❤️✝️\n`;
       menuText += `┃ *ᴘʀᴇғɪxᴇ* : [ ${prefix} ]\n`;
       menuText += `┃ *ᴄᴏᴍᴍᴀɴᴅᴇs* : ${totalFiles} ғɪʟᴇs\n`;
-      menuText += `┃ *ᴅᴇᴠᴇʟᴏᴘᴘᴇᴜʀ* : wa.me/22651622652 (ɢʜᴏsᴛɢ)\n`;
+      menuText += `┃ *ᴅᴇᴠᴇʟᴏᴘᴘᴇᴜʀ* : wa.me/22651622652 \n`;
       menuText += `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n`;
 
       // 🔹 5. CATÉGORIES
