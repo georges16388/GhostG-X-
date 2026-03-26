@@ -19,7 +19,7 @@ https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf?mode=gi_t
 
 module.exports = {
   name: 'support',
-  aliases: ['group', 'owner', 'aide'],
+  aliases: ['group', 'aide'],
   category: 'essentials',
   description: 'Affiche le lien du groupe de support officiel',
   usage: '.support',
