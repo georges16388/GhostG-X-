@@ -82,8 +82,8 @@ module.exports = {
       }
 
       // 🔹 6. FOOTER
-      menuText += `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-x*\n`;
-      menuText += `> *ᴍᴇʀᴄɪ sᴇɪɢɴᴇᴜʀ ᴘᴏᴜʀ ᴛᴀ ɢʀᴀᴄᴇ*`;
+      menuText += `*_ᴍᴇʀᴄɪ sᴇɪɢɴᴇᴜʀ ᴘᴏᴜʀ ᴛᴀ ɢʀᴀᴄᴇ_*\n`;
+      menuText += `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-x*`;
 
       // 🔹 7. ENVOI
       await sock.sendMessage(extra.from, {
