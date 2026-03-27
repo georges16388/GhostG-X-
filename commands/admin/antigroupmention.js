@@ -1,89 +1,81 @@
 /**
- * Anti-Group Mention Command - Toggle antigroupmention protection with delete/kick options
+ * ᴀɴᴛɪ-ɢʀᴏᴜᴘ ᴍᴇɴᴛɪᴏɴ ᴄᴏᴍᴍᴀɴᴅ - ᴀɢᴍ sʏsᴛᴇᴍ ᴄᴏʀᴇ
+ * ᴄᴏɴꜰɪɢᴜʀᴇ ᴘʀᴏᴛᴇᴄᴛɪᴏɴ ᴀɢᴀɪɴsᴛ ᴍᴀss ᴍᴇɴᴛɪᴏɴs (@ᴇᴠᴇʀʏᴏɴᴇ/@ᴀʟʟ)
+ * sᴛʏʟᴇ ʙʏ -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
-const database = require('../../database');
+const ᴅᴀᴛᴀʙᴀsᴇ = require('../../database');
 
-// Design pour l'affichage du statut AGM
-const AGM_DESIGN = (status, action) => `╭╼━≪• ᴀɴᴛɪ-ɢʀᴏᴜᴘ ᴍᴇɴᴛɪᴏɴ •≫━╾╮
-┃ sᴛᴀᴛᴜs : ${status === 'ON' ? '🟢 ᴀᴄᴛɪᴠᴀᴛᴇᴅ' : '🔴 ᴅᴇᴀᴄᴛɪᴠᴀᴛᴇᴅ'}
-┃ ᴀᴄᴛɪᴏɴ : ${action} ⚡
-┃ ɢᴜᴀʀᴅ : 🛡️ ᴀᴄᴛɪᴠᴇ
+// --- ᴅᴇsɪɢɴ ᴀɢᴍ ---
+const ᴀɢᴍ_sᴛᴀᴛᴜs = (sᴛᴀᴛᴜs, ᴀᴄᴛɪᴏɴ) => `╭╼━≪• ᴀɢᴍ ᴘʀᴏᴛᴇᴄᴛɪᴏɴ •≫━╾╮
+┃ sᴛᴀᴛᴜs : ${sᴛᴀᴛᴜs === 'ᴏɴ' ? '🟢 ᴀᴄᴛɪᴠᴇ' : '🔴 ᴅɪsᴀʙʟᴇᴅ'}
+┃ ᴀᴄᴛɪᴏɴ : 🛡️ ${ᴀᴄᴛɪᴏɴ.ᴛᴏᴜᴘᴘᴇʀᴄᴀsᴇ()}
+┃ sᴄᴏᴘᴇ : ɢʀᴏᴜᴘ ᴏɴʟʏ
 ╰━━━━━━━━━━━━━━━╯
 > *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
 
 module.exports = {
   name: 'antigroupmention',
-  aliases: ['agm'],
+  aliases: ['agm', 'antitag'],
   category: 'admin',
-  description: 'Configure antigroupmention protection (delete/kick)',
-  usage: '.antigroupmention <on/off/set/get>',
+  description: 'ᴄᴏɴꜰɪɢᴜʀᴇ ʟᴀ ᴘʀᴏᴛᴇᴄᴛɪᴏɴ ᴄᴏɴᴛʀᴇ ʟᴇs ᴍᴇɴᴛɪᴏɴs ᴅᴇ ɢʀᴏᴜᴘᴇ.',
+  usage: '.ᴀɢᴍ ᴏɴ/ᴏꜰꜰ | .ᴀɢᴍ sᴇᴛ ᴅᴇʟᴇᴛᴇ/ᴋɪᴄᴋ',
   groupOnly: true,
   adminOnly: true,
   botAdminNeeded: true,
-
-  async execute(sock, msg, args, extra) {
+  
+  async execute(sock, msg, args, { from, reply, react }) {
     try {
+      const sᴇᴛᴛɪɴɢs = ᴅᴀᴛᴀʙᴀsᴇ.ɢᴇᴛɢʀᴏᴜᴘsᴇᴛᴛɪɴɢs(from) || {};
+      const ᴄᴜʀʀᴇɴᴛsᴛᴀᴛᴜs = sᴇᴛᴛɪɴɢs.ᴀɴᴛɪɢʀᴏᴜᴘᴍᴇɴᴛɪᴏɴ ? 'ᴏɴ' : 'ᴏꜰꜰ';
+      const ᴄᴜʀʀᴇɴᴛᴀᴄᴛɪᴏɴ = sᴇᴛᴛɪɴɢs.ᴀɴᴛɪɢʀᴏᴜᴘᴍᴇɴᴛɪᴏɴᴀᴄᴛɪᴏɴ || 'ᴅᴇʟᴇᴛᴇ';
+
+      // --- ᴀꜰꜰɪᴄʜᴀɢᴇ ᴅᴜ sᴛᴀᴛᴜs ---
       if (!args[0]) {
-        const settings = database.getGroupSettings(extra.from);
-        const status = settings.antigroupmention ? 'ON' : 'OFF';
-        const action = settings.antigroupmentionAction || 'delete';
+        await react('🛡️');
+        return reply(ᴀɢᴍ_sᴛᴀᴛᴜs(ᴄᴜʀʀᴇɴᴛsᴛᴀᴛᴜs, ᴄᴜʀʀᴇɴᴛᴀᴄᴛɪᴏɴ));
+      }
+      
+      const ᴏᴘᴛ = args[0].ᴛᴏʟᴏᴡᴇʀᴄᴀsᴇ();
+      
+      // --- ᴀᴄᴛɪᴠᴀᴛɪᴏɴ / ᴅᴇ́sᴀᴄᴛɪᴠᴀᴛɪᴏɴ ---
+      if (ᴏᴘᴛ === 'ᴏɴ') {
+        await react('✅');
+        ᴅᴀᴛᴀʙᴀsᴇ.ᴜᴘᴅᴀᴛᴇɢʀᴏᴜᴘsᴇᴛᴛɪɴɢs(from, { ᴀɴᴛɪɢʀᴏᴜᴘᴍᴇɴᴛɪᴏɴ: true });
+        return reply(ᴀɢᴍ_sᴛᴀᴛᴜs('ᴏɴ', ᴄᴜʀʀᴇɴᴛᴀᴄᴛɪᴏɴ));
+      }
+      
+      if (ᴏᴘᴛ === 'ᴏꜰꜰ') {
+        await react('⚠️');
+        ᴅᴀᴛᴀʙᴀsᴇ.ᴜᴘᴅᴀᴛᴇɢʀᴏᴜᴘsᴇᴛᴛɪɴɢs(from, { ᴀɴᴛɪɢʀᴏᴜᴘᴍᴇɴᴛɪᴏɴ: false });
+        return reply(ᴀɢᴍ_sᴛᴀᴛᴜs('ᴏꜰꜰ', ᴄᴜʀʀᴇɴᴛᴀᴄᴛɪᴏɴ));
+      }
+      
+      // --- ᴄᴏɴꜰɪɢᴜʀᴀᴛɪᴏɴ ᴅᴇ ʟ'ᴀᴄᴛɪᴏɴ ---
+      if (ᴏᴘᴛ === 'sᴇᴛ') {
+        const sᴇᴛᴀᴄᴛɪᴏɴ = args[1]?.ᴛᴏʟᴏᴡᴇʀᴄᴀsᴇ();
+        if (!['ᴅᴇʟᴇᴛᴇ', 'ᴋɪᴄᴋ'].includes(sᴇᴛᴀᴄᴛɪᴏɴ)) {
+          return reply('❌ *ᴀᴄᴛɪᴏɴ ɪɴᴠᴀʟɪᴅᴇ. ᴄʜᴏɪsɪs sᴇᴢ : ᴅᴇʟᴇᴛᴇ ᴏᴜ ᴋɪᴄᴋ.*');
+        }
         
-        return extra.reply(
-          `${AGM_DESIGN(status, action)}\n\n` +
-          `💡 *Usage:*\n` +
-          `  > .agm on\n` +
-          `  > .agm off\n` +
-          `  > .agm set delete | kick\n` +
-          `  > .agm get`
-        );
-      }
-
-      const opt = args[0].toLowerCase();
-
-      if (opt === 'on') {
-        const settings = database.getGroupSettings(extra.from);
-        if (settings.antigroupmention) {
-          return extra.reply('*Antigroupmention is already ON*');
-        }
-        database.updateGroupSettings(extra.from, { antigroupmention: true });
-        return extra.reply(`✅ *Antigroupmention has been turned ON*\nAction: ${settings.antigroupmentionAction || 'delete'}`);
-      }
-
-      if (opt === 'off') {
-        database.updateGroupSettings(extra.from, { antigroupmention: false });
-        return extra.reply('*Antigroupmention has been turned OFF*');
-      }
-
-      if (opt === 'set') {
-        if (args.length < 2) {
-          return extra.reply('*Please specify an action: .agm set delete | kick*');
-        }
-
-        const setAction = args[1].toLowerCase();
-        if (!['delete', 'kick'].includes(setAction)) {
-          return extra.reply('*Invalid action. Choose delete or kick.*');
-        }
-
-        database.updateGroupSettings(extra.from, { 
-          antigroupmentionAction: setAction,
-          antigroupmention: true // Auto-enable when setting action
+        await react('⚙️');
+        ᴅᴀᴛᴀʙᴀsᴇ.ᴜᴘᴅᴀᴛᴇɢʀᴏᴜᴘsᴇᴛᴛɪɴɢs(from, { 
+          ᴀɴᴛɪɢʀᴏᴜᴘᴍᴇɴᴛɪᴏɴᴀᴄᴛɪᴏɴ: sᴇᴛᴀᴄᴛɪᴏɴ,
+          ᴀɴᴛɪɢʀᴏᴜᴘᴍᴇɴᴛɪᴏɴ: true 
         });
         
-        return extra.reply(`${AGM_DESIGN('ON', setAction)}\n\n✅ *Action updated successfully!*`);
+        return reply(`✅ *ᴀᴄᴛɪᴏɴ ᴀɢᴍ ᴅᴇ́ꜰɪɴɪᴇ sᴜʀ :* ${sᴇᴛᴀᴄᴛɪᴏɴ.ᴛᴏᴜᴘᴘᴇʀᴄᴀsᴇ()}`);
       }
-
-      if (opt === 'get') {
-        const settings = database.getGroupSettings(extra.from);
-        const status = settings.antigroupmention ? 'ON' : 'OFF';
-        const action = settings.antigroupmentionAction || 'delete';
-        return extra.reply(AGM_DESIGN(status, action));
+      
+      if (ᴏᴘᴛ === 'ɢᴇᴛ' || ᴏᴘᴛ === 'ɪɴꜰᴏ') {
+        return reply(ᴀɢᴍ_sᴛᴀᴛᴜs(ᴄᴜʀʀᴇɴᴛsᴛᴀᴛᴜs, ᴄᴜʀʀᴇɴᴛᴀᴄᴛɪᴏɴ));
       }
-
-      return extra.reply('*Use .antigroupmention for usage.*');
-
-    } catch (error) {
-      await extra.reply(`❌ Error: ${error.message}`);
+      
+      return reply('⚠️ *ᴜsᴀɢᴇ : .ᴀɢᴍ ᴏɴ | ᴏꜰꜰ | sᴇᴛ ᴅᴇʟᴇᴛᴇ/ᴋɪᴄᴋ*');
+      
+    } catch (ᴇʀʀᴏʀ) {
+      console.error('[ᴀɢᴍ ᴄᴍᴅ ᴇʀʀᴏʀ]:', ᴇʀʀᴏʀ);
+      reply(`❌ *ᴇʀʀᴇᴜʀ sʏsᴛᴇ̀ᴍᴇ :* ${ᴇʀʀᴏʀ.ᴍᴇssᴀɢᴇ}`);
     }
   }
 };
