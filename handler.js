@@ -8,11 +8,11 @@ const database = require('./database');
 const { addMessage } = require('./utils/groupstats');
 const { loadCommands } = require('./utils/commandLoader');
 
-// --- SYSTÈME ANTI-RÉPÉTITION & COOLDOWN ---
+// --- sʏsᴛᴇ̀ᴍᴇ ᴀɴᴛɪ-ʀᴇ́ᴘᴇ́ᴛɪᴛɪᴏɴ & ᴄᴏᴏʟᴅᴏᴡɴ ---
 const processedMessages = new Set();
 const reactionCooldown = new Map();
 
-// Nettoyage automatique du cache des messages toutes les 10 min
+// ɴᴇᴛᴛᴏʏᴀɢᴇ ᴀᴜᴛᴏᴍᴀᴛɪǫᴜᴇ ᴅᴜ ᴄᴀᴄʜᴇ ᴅᴇs ᴍᴇssᴀɢᴇs ᴛᴏᴜᴛᴇs ʟᴇs 10 ᴍɪɴ
 setInterval(() => processedMessages.clear(), 10 * 60 * 1000);
 
 const canReact = (jid) => {
@@ -24,12 +24,12 @@ const canReact = (jid) => {
 };
 
 /**
- * Initialisation des Commandes
+ * ɪɴɪᴛɪᴀʟɪsᴀᴛɪᴏɴ ᴅᴇs ᴄᴏᴍᴍᴀɴᴅᴇs
  */
 global.commands = loadCommands();
 
 /**
- * Utilitaires de vérification
+ * ᴜᴛɪʟɪᴛᴀɪʀᴇs ᴅᴇ ᴠᴇ́ʀɪꜰɪᴄᴀᴛɪᴏɴ
  */
 const normalizeJid = (jid) => {
     if (!jid) return null;
@@ -54,7 +54,7 @@ const isAdmin = async (sock, participant, groupId) => {
 };
 
 /**
- * GESTIONNAIRE DE MESSAGES
+ * ɢᴇsᴛɪᴏɴɴᴀɪʀᴇ ᴅᴇ ᴍᴇssᴀɢᴇs
  */
 const handleMessage = async (sock, msg) => {
     try {
@@ -81,20 +81,25 @@ const handleMessage = async (sock, msg) => {
         const args = isCmd ? body.trim().split(/\s+/).slice(1) : [];
         const ownerStatus = isOwner(sender);
 
-        // --- REACTIONS ---
+        // --- sʏsᴛᴇ̀ᴍᴇ ᴅᴇ ʀᴇ́ᴀᴄᴛɪᴏɴs (sᴜᴘʀᴇᴍᴇ & ᴀᴜᴛᴏ) ---
         if (config.autoReact && canReact(from)) {
-            if (ownerStatus && isCmd) {
-                await sock.sendMessage(from, { react: { text: '👑', key: msg.key } });
-            } else if (!msg.key.fromMe) {
+            // 1. sᴜᴘʀᴇᴍᴇ ʀᴇᴀᴄᴛ (ᴘʀɪᴏʀɪᴛᴇ́ ᴀᴜ ᴍᴀɪ̂ᴛʀᴇ)
+            if (ownerStatus) {
+                const sReact = config.supremeReact || '👑';
+                await sock.sendMessage(from, { react: { text: sReact, key: msg.key } });
+            } 
+            // 2. ʀᴇ́ᴀᴄᴛɪᴏɴ ᴀᴜᴛᴏᴍᴀᴛɪǫᴜᴇ ᴘᴏᴜʀ ʟᴇs ᴀᴜᴛʀᴇs
+            else if (!msg.key.fromMe) {
                 const emojis = ['⚡', '💀', '🔥', '✨', '❤️', '🙏🏾', '🇧🇫'];
                 const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+                // sɪ ᴄ'ᴇsᴛ ᴜɴᴇ ᴄᴏᴍᴍᴀɴᴅᴇ, ᴏɴ ᴍᴇᴛ ᴜɴ sᴀʙʟɪᴇʀ, sɪɴᴏɴ ᴜɴ ᴇᴍᴏᴊɪ ᴀʟᴇ́ᴀᴛᴏɪʀᴇ
                 await sock.sendMessage(from, { react: { text: isCmd ? '⏳' : randomEmoji, key: msg.key } });
             }
         }
 
         if (isGroup && typeof addMessage === 'function') addMessage(from, sender);
 
-        // Anti-Lien
+        // ᴀɴᴛɪ-ʟɪᴇɴ
         if (isGroup && !ownerStatus && /(https?:\/\/|chat.whatsapp.com)/gi.test(body)) {
             const groupSettings = database.getGroupSettings ? database.getGroupSettings(from) : { antilink: false };
             if (groupSettings?.antilink && !(await isAdmin(sock, sender, from))) {
@@ -103,7 +108,7 @@ const handleMessage = async (sock, msg) => {
             }
         }
 
-        // --- EXÉCUTION COMMANDES ---
+        // --- ᴇxᴇ́ᴄᴜᴛɪᴏɴ ᴄᴏᴍᴍᴀɴᴅᴇs ---
         if (isCmd && commandName) {
             const command = global.commands.get(commandName) || 
                           [...global.commands.values()].find(c => c.aliases && c.aliases.includes(commandName));
@@ -112,11 +117,13 @@ const handleMessage = async (sock, msg) => {
             if (config.selfMode && !ownerStatus) return;
 
             const adminStatus = isGroup ? await isAdmin(sock, sender, from) : false;
-            if (command.ownerOnly && !ownerStatus) return;
-            if (command.groupOnly && !isGroup) return;
-            if (command.adminOnly && !adminStatus && !ownerStatus) return;
+            
+            // ᴠᴇ́ʀɪꜰɪᴄᴀᴛɪᴏɴ ᴅᴇs ᴘᴇʀᴍɪssɪᴏɴs (ᴍᴇssᴀɢᴇs ᴇɴ sᴍᴀʟʟᴄᴀᴘs ᴅᴇᴘᴜɪs config.js)
+            if (command.ownerOnly && !ownerStatus) return reply(config.messages.ownerOnly);
+            if (command.groupOnly && !isGroup) return reply(config.messages.groupOnly);
+            if (command.adminOnly && !adminStatus && !ownerStatus) return reply(config.messages.adminOnly);
 
-            console.log(`📩 [ɢʜᴏꜱᴛɢ-x] Commande : ${commandName} | Par : ${pushName}`);
+            console.log(`📩 [ɢʜᴏꜱᴛɢ-x] ᴄᴏᴍᴍᴀɴᴅᴇ : ${commandName} | ᴘᴀʀ : ${pushName}`);
             if (config.autoTyping) await sock.sendPresenceUpdate('composing', from);
 
             const reply = (text) => {
@@ -129,18 +136,19 @@ const handleMessage = async (sock, msg) => {
                 await command.execute(sock, msg, args, {
                     from, sender, isGroup, isOwner: ownerStatus, isAdmin: adminStatus, prefix, pushName,
                     reply,
-                    react: (emoji) => sock.sendMessage(from, { react: { text: emoji, key: msg.key } })
+                    react: (emoji) => sock.sendMessage(from, { react: { text: emoji, key: msg.key } }),
+                    groupMetadata: isGroup ? await sock.groupMetadata(from) : null
                 });
             } catch (err) {
                 console.error(err);
-                reply("❌ *ᴜɴᴇ ᴇʀʀᴇᴜʀ ᴇsᴛ sᴜʀᴠᴇɴᴜᴇ.*");
+                reply(config.messages.error);
             }
         }
     } catch (err) { console.error('Handler Error:', err); }
 };
 
 /**
- * GESTIONNAIRE DE GROUPES (DESIGN RESTAURÉ)
+ * ɢᴇsᴛɪᴏɴɴᴀɪʀᴇ ᴅᴇ ɢʀᴏᴜᴘᴇs (ᴅᴇsɪɢɴ ʀᴇsᴛᴀᴜʀᴇ́)
  */
 const handleGroupUpdate = async (sock, update) => {
     const { id, participants, action } = update;
@@ -151,9 +159,9 @@ const handleGroupUpdate = async (sock, update) => {
 
         for (const user of participants) {
             const userTag = `@${user.split('@')[0]}`;
-            
+
             if (action === 'add' && settings.welcome) {
-                const welcomeText = `╭╼━≪• *ɴᴇᴡ ᴍᴇᴍʙᴇʀ* •≫━╾╮\n┃ *ᴡᴇʟᴄᴏᴍᴇ* : ${userTag} 👋🏾\n┃ *ɴᴏᴜs sᴏᴍᴍᴇs ʜᴇᴜʀᴇᴜx\n┃ ᴅᴇ ᴛ'ᴀᴠᴏɪʀ ᴘᴀʀᴍɪ ɴᴏᴜs*\n┃ *ᴍᴇᴍʙʀᴇs* : ${metadata.participants.length}\n┃ *ᴛɪᴍᴇ* : ${time} ⏰\n┃ *ᴊᴇsᴜs ᴛᴀɪᴍᴇ ❤️*\n╰━━━━━━━━━━━━━━━╯\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏꜱᴛɢ x*`;
+                const welcomeText = `╭╼━≪• *ɴᴇᴡ ᴍᴇᴍʙᴇʀ* •≫━╾╮\n┃ *ᴡᴇʟᴄᴏᴍᴇ* : ${userTag} 👋🏾\n┃ *ɴᴏᴜs sᴏᴍᴍᴇs ʜᴇᴜʀᴇᴜx\n┃ ᴅᴇ ᴛ'ᴀᴠᴏɪʀ ᴘᴀʀᴍɪ ɴᴏᴜs*\n┃ *ᴍᴇᴍʙʀᴇs* : ${metadata.participants.length}\n┃ *ᴛɪᴍᴇ* : ${time} ⏰\n┃ *ᴊᴇsᴜs ᴛᴀɪᴍᴇ ❤️*\n╰━━━━━━━━━━━━━━━╯\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
                 await sock.sendMessage(id, { text: welcomeText, mentions: [user], contextInfo: {
                     externalAdReply: { title: "ɢʜᴏꜱᴛɢ-x ᴘʀᴇꜱᴛɪɢᴇ", body: "ᴊᴇsᴜs ᴛᴀɪᴍᴇ ❤️✝️", mediaType: 1, thumbnailUrl: "https://files.catbox.moe/2fmwpu.jpg", sourceUrl: "https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c" }
                 }});
@@ -168,7 +176,7 @@ const handleGroupUpdate = async (sock, update) => {
 };
 
 /**
- * SYSTÈME ANTI-APPEL
+ * sʏsᴛᴇ̀ᴍᴇ ᴀɴᴛɪ-ᴀᴘᴘᴇʟ
  */
 const initializeAntiCall = (sock) => {
     sock.ev.on('call', async (calls) => {
