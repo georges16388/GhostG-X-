@@ -1,60 +1,61 @@
 /**
- * User Blocking System - AGM Security Edition
+ * Block Command - AGM System Core
  * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
-// --- FONCTION DE DESIGN AGM (BAN STYLE) ---
-const AGM_BAN = (user) => `╭╼━≪• ᴀɢᴍ ʙʟᴏᴄᴋ sʏsᴛᴇᴍ •≫━╾╮
+// --- DESIGN AGM ---
+const AGM_BLOCK = (user) => `╭╼━≪• sʏsᴛᴇᴍ ʙʟᴏᴄᴋ •≫━╾╮
+┃ sᴛᴀᴛᴜs : 🚫 ʀᴇsᴛʀɪᴄᴛᴇᴅ
 ┃ ᴛᴀʀɢᴇᴛ : @${user.split('@')[0]}
-┃ sᴛᴀᴛᴜs : 🔴 ʙʟᴏᴄᴋᴇᴅ
-┃ ᴀᴄᴄᴇss : ᴅᴇɴɪᴇᴅ ❌
->┃ ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗
-╰━━━━━━━━━━━━━━━╯`;
+┃ sᴄᴏᴘᴇ : ɢʟᴏʙᴀʟ ʙᴀɴ
+╰━━━━━━━━━━━━━━━╯
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
 
 module.exports = {
   name: 'block',
-  aliases: ['banuser', 'ban'],
+  aliases: ['banuser'],
   category: 'owner',
-  description: 'Bloquer un utilisateur définitivement',
+  description: 'Bloquer un utilisateur pour qu\'il ne puisse plus interagir avec le bot.',
   usage: '.block @user ou répondre à son message',
   ownerOnly: true,
-  
-  async execute(sock, msg, args, extra) {
+
+  async execute(sock, msg, args, { from, reply, react }) {
     try {
       let target;
-      
-      const ctx = msg.message?.extendedTextMessage?.contextInfo;
-      const mentioned = ctx?.mentionedJid || [];
-      
-      // Détection de la cible (mention ou réponse)
-      if (mentioned && mentioned.length > 0) {
-        target = mentioned[0];
-      } else if (ctx?.participant) {
-        target = ctx.participant;
-      } else {
-        return extra.reply('⚠️ *ᴠᴇᴜɪʟʟᴇᴢ ᴍᴇɴᴛɪᴏɴɴᴇʀ ᴏᴜ ʀéᴘᴏɴᴅʀᴇ à ᴜɴ ᴜᴛɪʟɪsᴀᴛᴇᴜʀ.*');
+
+      // 1. Extraction du JID (depuis un reply ou une mention)
+      const quoted = msg.message?.extendedTextMessage?.contextInfo;
+      if (quoted?.participant) {
+        target = quoted.participant;
+      } else if (quoted?.mentionedJid && quoted.mentionedJid.length > 0) {
+        target = quoted.mentionedJid[0];
+      } else if (args[0] && args[0].includes('@')) {
+        target = args[0].replace('@', '') + '@s.whatsapp.net';
       }
 
-      // Sécurité : Ne pas se bloquer soi-même ou le bot
-      const botId = sock.user.id.split(':')[0] + '@s.whatsapp.net';
-      if (target === botId) {
-        return extra.reply('🚫 *ᴊᴇ ɴᴇ ᴘᴇᴜx ᴘᴀs ᴍᴇ ʙʟᴏǫᴜᴇʀ ᴍᴏɪ-ᴍêᴍᴇ.*');
+      if (!target) {
+        return reply('⚠️ *Veuillez mentionner un utilisateur ou répondre à son message.*');
       }
 
-      await sock.sendMessage(extra.from, { react: { text: '🚫', key: msg.key } });
+      // 2. Sécurité : Ne pas bloquer le bot ou le propriétaire
+      if (target.includes(sock.user.id.split(':')[0])) {
+        return reply('❌ *Erreur : Tu ne peux pas bloquer le bot lui-même.*');
+      }
 
-      // Action de blocage
+      await react('🚫');
+
+      // 3. Exécution du blocage via Baileys
       await sock.updateBlockStatus(target, 'block');
-      
-      // Message final avec Design AGM et mentions
-      await sock.sendMessage(extra.from, {
-        text: AGM_BAN(target),
+
+      // 4. Confirmation avec mentions
+      return sock.sendMessage(from, {
+        text: AGM_BLOCK(target),
         mentions: [target]
       }, { quoted: msg });
-      
+
     } catch (error) {
-      console.error('Block Error:', error);
-      await extra.reply(`❌ *ᴇʀʀᴇᴜʀ sʏsᴛᴇ̀ᴍᴇ : ${error.message}*`);
+      console.error('[BLOCK ERROR]:', error);
+      reply(`❌ *ᴇʀʀᴇᴜʀ sʏsᴛᴇ̀ᴍᴇ :* ${error.message}`);
     }
   }
 };
