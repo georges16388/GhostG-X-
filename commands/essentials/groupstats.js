@@ -1,81 +1,71 @@
 /**
- * Group Stats Command - Monitor Daily Activity
- * Custom Design by -ɢʜᴏsᴛɢ 𝐗
+ * Group Stats Command - GhostG-X MD
+ * Style requested by User (Ghost Prestige)
+ * Powered by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
 const { getStats } = require('../../utils/groupstats');
 
-const STATS_DESIGN = (total, topText) => `╭╼━≪• ɢʜᴏsᴛ sᴛᴀᴛs •≫━╾╮
-┃ 📊 sᴛᴀᴛɪsᴛɪǫᴜᴇs ᴅᴜ ᴊᴏᴜʀ
-┃ 📌 ᴛᴏᴛᴀʟ ᴍᴇssᴀɢᴇs : ${total}
-┃ 👥 ᴛᴏᴘ ᴍᴇᴍʙʀᴇs ᴀᴄᴛɪғs :
-${topText}
-┃ 💡 ᴛᴀᴘᴇ .ᴍʏᴀᴄᴛɪᴠɪᴛʏ
-╰━━━━━━━━━━━━━━━╯
-> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
-
 module.exports = {
     name: 'groupstats',
-    aliases: ['stats', 'leaderboard', 'gstats', 'topmembers', 'msgs'],
-    category: 'essentials',
-    description: 'Affiche les statistiques d\'activité du groupe aujourd\'hui.',
+    aliases: ['stats', 'leaderboard', 'gstats', 'top', 'msgs'],
+    category: 'general',
+    description: 'Affiche les statistiques d\'activité du groupe (Top 5).',
     usage: '.groupstats',
     groupOnly: true,
 
-    async execute(sock, msg, args, extra) {
-        const from = msg.key.remoteJid;
-
+    async execute(sock, msg, args, { from, reply, react }) {
         try {
-            await sock.sendMessage(from, { react: { text: "📊", key: msg.key } });
-
             const stats = getStats(from);
 
-            // Vérification stricte de l'existence des données
-            if (!stats || !stats.users || Object.keys(stats.users).length === 0) {
-                const emptyMsg = `╭╼━≪• ɢʜᴏsᴛ sᴛᴀᴛs •≫━╾╮\n┃ ᴀᴜᴄᴜɴᴇ ᴀᴄᴛɪᴠɪᴛᴇ ᴇɴʀᴇɢɪsᴛʀᴇᴇ\n┃ ᴘᴏᴜʀ ʟᴇ ᴍᴏᴍᴇɴᴛ. 🌌\n╰━━━━━━━━━━━━━━━╯\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
-                return sock.sendMessage(from, { text: emptyMsg }, { quoted: msg });
+            if (!stats || stats.total === 0) {
+                return reply('📊 *Aucune activité enregistrée pour le moment.*');
             }
 
-            // Tri des utilisateurs par nombre de messages
-            const sortedUsers = Object.entries(stats.users)
-                .filter(([_, count]) => typeof count === 'number' && count > 0) 
+            await react('📊');
+
+            const { total, users } = stats;
+
+            // Tri des membres par nombre de messages (Top 5)
+            const sortedUsers = Object.entries(users)
                 .sort((a, b) => b[1] - a[1])
                 .slice(0, 5);
 
-            // Calcul du total réel (au cas où stats.total est désynchronisé)
-            const total = Object.values(stats.users).reduce((a, b) => a + b, 0);
+            // --- CONSTRUCTION DU DESIGN GHOST ---
+            let text = `╭╼━≪• *ɢʜᴏsᴛ ɢʀᴏᴜᴘ sᴛᴀᴛs* •≫━╾╮\n`;
+            text += `┃ 📌 *ᴛᴏᴛᴀʟ ᴍsɢs :* ${total}\n`;
+            text += `┃ 📅 *ᴘᴇʀɪᴏᴅᴇ :* Aujourd'hui\n`;
+            text += `┃ 👥 *ᴍᴇᴍʙʀᴇs ᴀᴄᴛɪғs :* ${Object.keys(users).length}\n\n`;
 
-            const medals = ['🥇', '🥈', '🥉', '👤', '👤'];
+            text += `┃ 🏆 *ᴛᴏᴘ 5 ᴅᴇs ᴅᴏᴍɪɴᴀɴᴛs :*\n`;
+            
+            sortedUsers.forEach(([id, count], index) => {
+                const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '👤';
+                text += `┃ ${medal} @${id.split('@')[0]} : *${count}* msgs\n`;
+            });
 
-            // Construction du texte du classement
-            let topText = sortedUsers.length > 0 
-                ? sortedUsers.map(([id, count], i) => {
-                    const medal = medals[i] || '👤';
-                    return `┃ ${medal} @${id.split('@')[0]} : *${count}* ᴍsɢs`;
-                }).join('\n')
-                : "┃ ᴀᴜᴄᴜɴ ᴍᴇᴍʙʀᴇ ᴀᴄᴛɪғ";
+            text += `╰━━━━━━━━━━━━━━━╯\n`;
+            text += `> Utilisez *.myactivity* pour vos stats.\n`;
+            text += `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
 
-            // Envoi final avec les mentions pour le lien bleu
+            // Envoi avec mentions des leaders
             await sock.sendMessage(from, {
-                text: STATS_DESIGN(total, topText),
-                mentions: sortedUsers.map(u => u[0]), 
+                text: text,
+                mentions: sortedUsers.map(u => u[0]),
                 contextInfo: {
                     externalAdReply: {
-                        title: "ɢʜᴏsᴛ ᴀᴄᴛɪᴠɪᴛʏ ᴍᴏɴɪᴛᴏʀ",
-                        body: "Analyse des messages en temps réel",
+                        title: "ɢʜᴏꜱᴛɢ-x ᴀᴄᴛɪᴠɪᴛʏ ᴛʀᴀᴄᴋᴇʀ",
+                        body: `Total messages du jour : ${total}`,
                         mediaType: 1,
                         thumbnailUrl: "https://files.catbox.moe/2fmwpu.jpg",
-                        renderLargerThumbnail: false,
-                        sourceUrl: "https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c"
+                        sourceUrl: "https://github.com/georges16388/GhostG-X-"
                     }
                 }
             }, { quoted: msg });
 
-            await sock.sendMessage(from, { react: { text: "📈", key: msg.key } });
-
         } catch (err) {
-            console.error('[groupstats error]:', err);
-            await sock.sendMessage(from, { text: '❌ *ᴇʀʀᴇᴜʀ ɪɴᴛᴇʀɴᴇ* : Impossible de générer le rapport.' }, { quoted: msg });
+            console.error('[GROUPSTATS ERROR]:', err);
+            reply('❌ *ᴇʀʀᴇᴜʀ ʟᴏʀs ᴅᴜ ᴄʜᴀʀɢᴇᴍᴇɴᴛ ᴅᴇs sᴛᴀᴛs.*');
         }
     }
 };
