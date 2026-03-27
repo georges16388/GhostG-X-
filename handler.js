@@ -63,9 +63,7 @@ const handleMessage = async (sock, msg) => {
         // --- FILTRES DE BASE ---
         if (!msg.message || msg.key.remoteJid === 'status@broadcast') return;
 
-        // Anti-doublon
-        if (processedMessages.has(msg.key.id)) return;
-        processedMessages.add(msg.key.id);
+    
 
         const from = msg.key.remoteJid;
         const isGroup = from.endsWith('@g.us');
