@@ -100,7 +100,18 @@ console.log('OwnerStatus:', isOwner(sender), 'Sender:', sender);
             } else if (!msg.key.fromMe) {
                 const emojis = ['⚡', '💀', '🔥', '✨', '❤️', '🙏🏾', '🇧🇫'];
                 const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
-                await sock.sendMessage(from, { react: { text: isCmd ? '⏳' : randomEmoji, key: msg.key } });
+              const reactionCooldown = new Map();
+
+const canReact = (jid) => {
+    const now = Date.now();
+    const last = reactionCooldown.get(jid) || 0;
+
+    if (now - last < 3000) return false;
+
+    reactionCooldown.set(jid, now);
+    return true;
+}; 
+ await sock.sendMessage(from, { react: { text: isCmd ? '⏳' : randomEmoji, key: msg.key } });
             }
         }
 
