@@ -10,7 +10,7 @@ const AGM_DESIGN = (status, action) => `╭╼━≪• ᴀɴᴛɪ-ɢʀᴏᴜᴘ
 ┃ ᴀᴄᴛɪᴏɴ : ${action.toUpperCase()} ⚡
 ┃ ɢᴜᴀʀᴅ : 🛡️ ᴀᴄᴛɪᴠᴇ
 ╰━━━━━━━━━━━━━━━╯
-> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
 
 module.exports = {
   name: 'antigroupmention',
