@@ -60,7 +60,7 @@ module.exports = {
       menuText += `┃ *ᴜᴛɪʟɪsᴀᴛᴇᴜʀ* : @${senderNumber}\n`;
       menuText += `┃ *ᴊᴇsᴜs ᴛᴀɪᴍᴇ* : ❤️✝️\n`;
       menuText += `┃ *ᴘʀᴇғɪxᴇ* : [ ${prefix} ]\n`;
-      menuText += `┃ *ᴄᴏᴍᴍᴀɴᴅᴇs* : ${totalFiles} ғɪʟᴇs\n`;
+      menuText += `┃ *ᴄᴏᴍᴍᴀɴᴅᴇs* : ${totalFiles} \n`;
       menuText += `┃ *ᴅᴇᴠᴇʟᴏᴘᴘᴇᴜʀ* : wa.me/22651622652 \n`;
       menuText += `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n`;
 
