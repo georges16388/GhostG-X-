@@ -167,7 +167,13 @@ const handleGroupUpdate = async (sock, update) => {
 
         for (const user of participants) {
             if (action === 'add' && settings.welcome) {
-                const welcomeText = `╭╼━≪• ɴᴇᴡ ᴍᴇᴍʙᴇʀ •≫━╾╮\n┃ ᴡᴇʟᴄᴏᴍᴇ: @${user.split('@')[0]} 👋🏾\n┃ ᴊᴇsᴜs ᴛᴀɪᴍᴇ ❤️\n╰━━━━━━━━━━━━━━━╯\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
+                const welcomeText = `╭╼━≪• *ɴᴇᴡ ᴍᴇᴍʙᴇʀ* •≫━╾╮
+┃ *ᴡᴇʟᴄᴏᴍᴇ* : @user.split('@')[0] 👋🏾
+┃ *ɴᴏᴜs sᴏᴍᴍᴇs ʜᴇᴜʀᴇᴜx ᴅᴇ ᴛ'ᴀᴠᴏɪʀ ᴘᴀʀᴍɪ ɴᴏᴜs*
+┃ *ᴍᴇᴍʙʀᴇs ᴀᴄᴛᴜᴇʟs* : #memberCount
+┃ *ᴛɪᴍᴇ* : #time ⏰
+╰━━━━━━━━━━━━━━━╯
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏꜱᴛɢ x*`;
                 await sock.sendMessage(id, { 
                     text: welcomeText, 
                     mentions: [user],
