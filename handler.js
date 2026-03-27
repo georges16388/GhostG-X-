@@ -100,7 +100,7 @@ const isCmd = body.startsWith(prefix);
         const commandName = isCmd ? body.slice(prefix.length).trim().split(/\s+/)[0].toLowerCase() : null;
         const args = isCmd ? body.trim().split(/\s+/).slice(1) : [];
         const ownerStatus = isOwner(sender);
-console.log('OwnerStatus:', isOwner(sender), 'Sender:', sender);
+console.log('OwnerStatus:', ownerStatus, 'Sender:', sender);
         // --- 1. SYSTÈME DE RÉACTION ---
  if (config.autoReact && canReact(from)) {
     if (ownerStatus && isCmd) {
