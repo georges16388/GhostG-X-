@@ -7,7 +7,7 @@
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 
 // --- FONCTION DE DESIGN AGM ---
-const AGM_DESIGN = (type, caption) => `╭╼━≪• ᴠɪᴇᴡ-ᴏɴᴄᴇ ʀᴇᴠᴇᴀʟ •≫━╾╮
+const AGM_DESIGN = (type, caption) => `╭╼━≪• *ᴠɪᴇᴡ-ᴏɴᴄᴇ ʀᴇᴠᴇᴀʟ* •≫━╾╮
 ┃ ᴛʏᴘᴇ : ${type} 👁️
 ┃ sᴛᴀᴛᴜs : 🟢 ᴜɴʟᴏᴄᴋᴇᴅ
 ┃ ᴍᴏᴅᴇ : ᴘʀᴇsᴛɪɢᴇ ⚡
