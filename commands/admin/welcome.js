@@ -1,12 +1,13 @@
 /**
- * Welcome - Enable/disable welcome messages
+ * ᴡᴇʟᴄᴏᴍᴇ ᴄᴏᴍᴍᴀɴᴅ - ᴀɢᴍ sʏsᴛᴇᴍ ᴄᴏʀᴇ
+ * ᴇɴᴀʙʟᴇ/ᴅɪsᴀʙʟᴇ ᴀᴜᴛᴏ-ɢʀᴇᴇᴛ sʏsᴛᴇᴍ
+ * sᴛʏʟᴇ ʙʏ -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
-const db = require('../../database');
+const ᴅʙ = require('../../database');
 
-// Design pour l'affichage du statut Welcome
-const WELCOME_STATUS_DESIGN = (status) => `╭╼━≪• *ᴡᴇʟᴄᴏᴍᴇ sʏsᴛᴇᴍ* •≫━╾╮
-┃ *sᴛᴀᴛᴜs* : ${status === 'on' ? '🟢 ᴀᴄᴛɪᴠᴀᴛᴇᴅ' : '🔴 ᴅᴇᴀᴄᴛɪᴠᴀᴛᴇᴅ'}
+const ᴡᴇʟᴄᴏᴍᴇ_sᴛᴀᴛᴜs_ᴅᴇsɪɢɴ = (sᴛᴀᴛᴜs) => `╭╼━≪• *ᴡᴇʟᴄᴏᴍᴇ sʏsᴛᴇᴍ* •≫━╾╮
+┃ *sᴛᴀᴛᴜs* : ${sᴛᴀᴛᴜs === 'ᴏɴ' ? '🟢 ᴀᴄᴛɪᴠᴀᴛᴇᴅ' : '🔴 ᴅᴇᴀᴄᴛɪᴠᴀᴛᴇᴅ'}
 ┃ *ᴛᴀʀɢᴇᴛ* : ɴᴇᴡ ᴍᴇᴍʙᴇʀs 👥
 ┃ *ᴀᴄᴛɪᴏɴ* : ᴀᴜᴛᴏ-ɢʀᴇᴇᴛ 👋
 ╰━━━━━━━━━━━━━━━╯
@@ -16,42 +17,42 @@ module.exports = {
   name: 'welcome',
   aliases: ['welcomeon', 'welcomeoff'],
   category: 'admin',
-  desc: 'Enable/disable welcome messages',
-  usage: 'welcome on/off',
+  description: 'ᴀᴄᴛɪᴠᴇʀ ᴏᴜ ᴅᴇ́sᴀᴄᴛɪᴠᴇʀ ʟᴇs ᴍᴇssᴀɢᴇs ᴅᴇ ʙɪᴇɴᴠᴇɴᴜᴇ.',
+  usage: '.ᴡᴇʟᴄᴏᴍᴇ ᴏɴ/ᴏꜰꜰ',
   groupOnly: true,
   adminOnly: true,
   botAdminNeeded: true,
-  execute: async (sock, msg, args) => {
+
+  execute: async (sock, msg, args, { from, reply, react }) => {
     try {
-      const groupId = msg.key.remoteJid;
-      const action = args[0]?.toLowerCase();
-      
-      if (!action || !['on', 'off'].includes(action)) {
-        const groupSettings = db.getGroupSettings(groupId);
-        const statusStr = groupSettings.welcome ? 'on' : 'off';
-        
-        return await sock.sendMessage(groupId, {
-          text: `${WELCOME_STATUS_DESIGN(statusStr)}\n\n` +
-                `📝 *Current Message:*\n${groupSettings.welcomeMessage}\n\n` +
-                `💡 *Usage:*\n` +
-                `  > .welcome on\n` +
-                `  > .welcome off\n` +
-                `  > .setwelcome <text>`
-        }, { quoted: msg });
+      const ᴀᴄᴛɪᴏɴ = args[0]?.ᴛᴏʟᴏᴡᴇʀᴄᴀsᴇ();
+      const sᴇᴛᴛɪɴɢs = ᴅʙ.getGroupSettings(from);
+
+      if (!ᴀᴄᴛɪᴏɴ || !['ᴏɴ', 'ᴏꜰꜰ'].includes(ᴀᴄᴛɪᴏɴ)) {
+        const sᴛᴀᴛᴜssᴛʀ = sᴇᴛᴛɪɴɢs.welcome ? 'ᴏɴ' : 'ᴏꜰꜰ';
+        await react('ℹ️');
+        return reply(
+          `${ᴡᴇʟᴄᴏᴍᴇ_sᴛᴀᴛᴜs_ᴅᴇsɪɢɴ(sᴛᴀᴛᴜssᴛʀ)}\n\n` +
+          `📝 *ᴍᴇssᴀɢᴇ ᴀᴄᴛᴜᴇʟ :*\n${sᴇᴛᴛɪɴɢs.welcomeMessage}\n\n` +
+          `💡 *ᴜsᴀɢᴇ :*\n` +
+          `  > .ᴡᴇʟᴄᴏᴍᴇ ᴏɴ\n` +
+          `  > .ᴡᴇʟᴄᴏᴍᴇ ᴏꜰꜰ\n` +
+          `  > .sᴇᴛᴡᴇʟᴄᴏᴍᴇ <ᴛᴇxᴛᴇ>`
+        );
       }
-      
-      const enable = action === 'on';
-      db.updateGroupSettings(groupId, { welcome: enable });
-      
-      await sock.sendMessage(groupId, {
-        text: WELCOME_STATUS_DESIGN(action) + `\n\n✅ Welcome messages have been ${enable ? 'enabled' : 'disabled'}!`
-      }, { quoted: msg });
-      
-    } catch (error) {
-      console.error('Welcome Error:', error);
-      await sock.sendMessage(msg.key.remoteJid, {
-        text: `❌ Error: ${error.message}`
-      }, { quoted: msg });
+
+      const ᴇɴᴀʙʟᴇ = ᴀᴄᴛɪᴏɴ === 'ᴏɴ';
+      ᴅʙ.updateGroupSettings(from, { welcome: ᴇɴᴀʙʟᴇ });
+      await react(ᴇɴᴀʙʟᴇ ? '✅' : '⚠️');
+
+      return reply(
+        `${ᴡᴇʟᴄᴏᴍᴇ_sᴛᴀᴛᴜs_ᴅᴇsɪɢɴ(ᴀᴄᴛɪᴏɴ.ᴛᴏᴜᴘᴘᴇʀᴄᴀsᴇ())}\n\n` +
+        `✅ *ʟᴇ sʏsᴛᴇ̀ᴍᴇ ᴅᴇ ʙɪᴇɴᴠᴇɴᴜᴇ ᴇsᴛ ᴍᴀɪɴᴛᴇɴᴀɴᴛ* ${ᴇɴᴀʙʟᴇ ? 'ᴀᴄᴛɪᴠᴇ́' : 'ᴅᴇ́sᴀᴄᴛɪᴠᴇ́'} !`
+      );
+
+    } catch (ᴇʀʀᴏʀ) {
+      console.error('[ᴡᴇʟᴄᴏᴍᴇ ᴇʀʀᴏʀ]:', ᴇʀʀᴏʀ);
+      reply(`❌ *ᴇʀʀᴇᴜʀ :* ${ᴇʀʀᴏʀ.ᴍᴇssᴀɢᴇ}`);
     }
   }
 };
