@@ -13,7 +13,7 @@ const AGM_RESTART = (status) => `╭╼━≪• ᴀɢᴍ sʏsᴛᴇᴍ ᴄᴏʀ
 ┃ ᴛᴀsᴋ : ʀᴇʙᴏᴏᴛɪɴɢ...
 ┃ ᴀᴜᴛʜᴏʀ : @${sender.split('@')[0]}
 ╰━━━━━━━━━━━━━━━╯
-> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
 
 module.exports = {
   name: 'restart',
