@@ -7,9 +7,9 @@ const config = require('../../config');
 
 // --- FONCTION DE DESIGN AGM ADAPTÉE ---
 const AGM_DESIGN = (name) => `╭╼━≪• *ᴅᴇᴠᴇʟᴏᴘᴘᴇʀ ᴄᴏɴᴛᴀᴄᴛ* •≫━╾╮
-┃ *ɴᴀᴍᴇ* : ${name}
-┃ *sᴛᴀᴛᴜs* : 🟢 ᴏɴʟɪɴᴇ
-┃ *ʀᴏʟᴇ* : ᴅᴇᴠᴇʟᴏᴘᴇʀ ⚡
+┃ *ɴᴀᴍᴇ* : *${name}*
+┃ *sᴛᴀᴛᴜs* : 🟢 *ᴏɴʟɪɴᴇ*
+┃ *ʀᴏʟᴇ* : *ᴅᴇᴠᴇʟᴏᴘᴇʀ* ⚡
 ╰━━━━━━━━━━━━━━━╯
 > *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
 
@@ -27,7 +27,7 @@ module.exports = {
         try {
             // Récupération dynamique depuis la config ou valeur par défaut
             const myNumber = "22651622652"; 
-            const myName = config.ownerName || "ɢʜᴏsᴛɢ 𝐗";
+            const myName = config.ownerName || "ᴛʀᴜᴛʜ ᴅᴇᴠɪᴄᴇs";
 
             // --- GÉNÉRATION DE LA VCARD (Format Baileys ^6.0+) ---
             const vcard = 'BEGIN:VCARD\n' +
