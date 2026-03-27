@@ -1,76 +1,81 @@
 /**
- * Warn Command - Warn a user
+ * ᴡᴀʀɴ ᴄᴏᴍᴍᴀɴᴅ - ᴀɢᴍ sʏsᴛᴇᴍ ᴄᴏʀᴇ
+ * ᴍᴀɴᴀɢᴇ ᴜsᴇʀ ᴅɪsᴄɪᴘʟɪɴᴇ ᴡɪᴛʜ ᴀᴜᴛᴏ-ᴋɪᴄᴋ
+ * sᴛʏʟᴇ ʙʏ -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
-const database = require('../../database');
-const config = require('../../config');
+const ᴅᴀᴛᴀʙᴀsᴇ = require('../../database');
+const ᴄᴏɴꜰɪɢ = require('../../config');
 
-// Design pour l'avertissement
-const WARN_DESIGN = (user, count, max, reason) => `╭╼━≪• ᴜsᴇʀ ᴡᴀʀɴᴇᴅ •≫━╾╮
-┃ ᴜsᴇʀ : @${user.split('@')[0]} 👤
-┃ ʀᴇᴀsᴏɴ : ${reason} 📝
-┃ ᴡᴀʀɴs : ${count}/${max} ⚠️
-┃ sᴛᴀᴛᴜs : ${count >= max ? 'ᴇxᴘᴜʟsɪᴏɴ 🚨' : 'ᴡᴀʀɴɪɴɢ ᴘᴏsᴛᴇᴅ'}
+// --- ᴅᴇsɪɢɴ ᴀɢᴍ ---
+const ᴀɢᴍ_ᴡᴀʀɴ = (ᴜsᴇʀ, ʀᴇᴀsᴏɴ, ᴄᴏᴜɴᴛ, ᴍᴀx) => `╭╼━≪• *ɢʜᴏsᴛ sʏsᴛᴇᴍ ᴡᴀʀɴ* •≫━╾╮
+┃ 👤 *ᴜᴛɪʟɪsᴀᴛᴇᴜʀ :* @${ᴜsᴇʀ.sᴘʟɪᴛ('@')[0]}
+┃ 📝 *ʀᴀɪsᴏɴ :* ${ʀᴇᴀsᴏɴ}
+┃ ⚠️ *ᴡᴀʀɴɪɴɢs :* ${ᴄᴏᴜɴᴛ} / ${ᴍᴀx}
+┃ 🛡️ *sᴛᴀᴛᴜs :* ${ᴄᴏᴜɴᴛ >= ᴍᴀx ? '🚫 ᴇxᴘᴜʟsɪᴏɴ' : '🟡 ᴀᴠᴇʀᴛɪssᴇᴍᴇɴᴛ'}
 ╰━━━━━━━━━━━━━━━╯
-> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
 
 module.exports = {
   name: 'warn',
-  aliases: ['warning'],
+  aliases: ['warning', 'avertir'],
   category: 'admin',
-  description: 'Warn a user',
-  usage: '.warn @user <reason>',
+  description: 'ᴀᴠᴇʀᴛɪʀ ᴜɴ ᴜᴛɪʟɪsᴀᴛᴇᴜʀ. ʟ\'ᴇxᴘᴜʟsᴇ ᴀᴘʀᴇ̀s ʟᴀ ʟɪᴍɪᴛᴇ.',
+  usage: '.ᴡᴀʀɴ @ᴜsᴇʀ <ʀᴀɪsᴏɴ>',
   groupOnly: true,
   adminOnly: true,
   botAdminNeeded: true,
-  async execute(sock, msg, args, extra) {
+
+  async execute(sock, msg, args, { from, reply, react, groupMetadata, isBotAdmin }) {
     try {
-      let target;
-      const ctx = msg.message?.extendedTextMessage?.contextInfo;
-      const mentioned = ctx?.mentionedJid || [];
+      let ᴛᴀʀɢᴇᴛ;
+      const ǫᴜᴏᴛᴇᴅ = msg.message?.extendedTextMessage?.contextInfo;
       
-      if (mentioned && mentioned.length > 0) {
-        target = mentioned[0];
-      } else if (ctx?.participant && ctx.stanzaId && ctx.quotedMessage) {
-        target = ctx.participant;
-      } else {
-        return extra.reply('❌ Please mention or reply to the user to warn!\n\nExample: .warn @user Breaking rules');
+      // 1. ᴇxᴛʀᴀᴄᴛɪᴏɴ ᴅᴜ ᴊɪᴅ (ᴍᴇɴᴛɪᴏɴ ᴏᴜ ʀᴇᴘʟʏ)
+      if (ǫᴜᴏᴛᴇᴅ?.participant) {
+        ᴛᴀʀɢᴇᴛ = ǫᴜᴏᴛᴇᴅ.participant;
+      } else if (ǫᴜᴏᴛᴇᴅ?.mentionedJid && ǫᴜᴏᴛᴇᴅ.mentionedJid.length > 0) {
+        ᴛᴀʀɢᴇᴛ = ǫᴜᴏᴛᴇᴅ.mentionedJid[0];
       }
-      
-      const reason = args.slice(mentioned.length > 0 ? 1 : 0).join(' ') || 'No reason specified';
-      
-      // Sécurité : Impossible de warn les admins
-      const foundParticipant = extra.groupMetadata.participants.find(
-        p => (p.id === target || p.lid === target) && (p.admin === 'admin' || p.admin === 'superadmin')
-      );
-      
-      if (foundParticipant) {
-        return extra.reply('❌ Cannot warn an admin!');
+
+      if (!ᴛᴀʀɢᴇᴛ) {
+        return reply('⚠️ *ᴠᴇᴜɪʟʟᴇᴢ ᴍᴇɴᴛɪᴏɴɴᴇʀ ᴏᴜ ʀᴇ́ᴘᴏɴᴅʀᴇ ᴀ̀ ᴜɴ ᴜᴛɪʟɪsᴀᴛᴇᴜʀ.*');
       }
+
+      // 2. sᴇ́ᴄᴜʀɪᴛᴇ́ : ɪᴍᴘᴏssɪʙʟᴇ ᴅ'ᴀᴠᴇʀᴛɪʀ ᴜɴ ᴀᴅᴍɪɴ
+      const ɪsᴀᴅᴍɪɴ = groupMetadata.participants.find(p => p.id === ᴛᴀʀɢᴇᴛ && (p.admin === 'admin' || p.admin === 'superadmin'));
+      if (ɪsᴀᴅᴍɪɴ) {
+        return reply('❌ *ɪᴍᴘᴏssɪʙʟᴇ ᴅ\'ᴀᴠᴇʀᴛɪʀ ᴜɴ ᴀᴅᴍɪɴɪsᴛʀᴀᴛᴇᴜʀ.*');
+      }
+
+      await react('⚠️');
       
-      // Ajout du warn en DB
-      const warnings = database.addWarning(extra.from, target, reason);
-      const maxWarns = config.maxWarnings || 3;
+      const ʀᴇᴀsᴏɴ = args.join(' ') || 'ᴀᴜᴄᴜɴᴇ ʀᴀɪsᴏɴ sᴘᴇ́ᴄɪꜰɪᴇ́ᴇ';
+      const ᴍᴀxᴡᴀʀɴs = ᴄᴏɴꜰɪɢ.maxWarnings || 3;
       
-      // Envoi du design
-      await sock.sendMessage(extra.from, {
-        text: WARN_DESIGN(target, warnings.count, maxWarns, reason),
-        mentions: [target]
+      // 3. ᴍɪsᴇ ᴀ̀ ᴊᴏᴜʀ ᴅᴀɴs ʟᴀ ʙᴀsᴇ ᴅᴇ ᴅᴏɴɴᴇ́ᴇs
+      const ᴡᴀʀɴɪɴɢs = ᴅᴀᴛᴀʙᴀsᴇ.addWarning(from, ᴛᴀʀɢᴇᴛ, ʀᴇᴀsᴏɴ);
+
+      // 4. ᴇɴᴠᴏɪ ᴅᴜ ʀᴀᴘᴘᴏʀᴛ
+      await sock.sendMessage(from, {
+        text: ᴀɢᴍ_ᴡᴀʀɴ(ᴛᴀʀɢᴇᴛ, ʀᴇᴀsᴏɴ, ᴡᴀʀɴɪɴɢs.count, ᴍᴀxᴡᴀʀɴs),
+        mentions: [ᴛᴀʀɢᴇᴛ]
       }, { quoted: msg });
-      
-      // Logique d'expulsion si le max est atteint
-      if (warnings.count >= maxWarns) {
-        if (extra.isBotAdmin) {
-          await sock.groupParticipantsUpdate(extra.from, [target], 'remove');
-          database.clearWarnings(extra.from, target);
+
+      // 5. ɢᴇsᴛɪᴏɴ ᴅᴇ ʟ'ᴇxᴘᴜʟsɪᴏɴ (ᴋɪᴄᴋ)
+      if (ᴡᴀʀɴɪɴɢs.count >= ᴍᴀxᴡᴀʀɴs) {
+        if (isBotAdmin) {
+          await sock.sendMessage(from, { text: `🚫 *ʟɪᴍɪᴛᴇ ᴀᴛᴛᴇɪɴᴛᴇ ᴘᴏᴜʀ @${ᴛᴀʀɢᴇᴛ.sᴘʟɪᴛ('@')[0]}. ᴇxᴘᴜʟsɪᴏɴ ᴇɴ ᴄᴏᴜʀs...*`, mentions: [ᴛᴀʀɢᴇᴛ] });
+          await sock.groupParticipantsUpdate(from, [ᴛᴀʀɢᴇᴛ], 'remove');
+          ᴅᴀᴛᴀʙᴀsᴇ.clearWarnings(from, ᴛᴀʀɢᴇᴛ);
         } else {
-          await extra.reply('⚠️ Max warnings reached, but I need admin to kick the user.');
+          await reply('⚠️ *ʟɪᴍɪᴛᴇ ᴀᴛᴛᴇɪɴᴛᴇ, ᴍᴀɪs ᴊᴇ ɴᴇ sᴜɪs ᴘᴀs ᴀᴅᴍɪɴ ᴘᴏᴜʀ ᴇxᴘᴜʟsᴇʀ.*');
         }
       }
-      
-    } catch (error) {
-      console.error('Warn error:', error);
-      await extra.reply(`❌ Error: ${error.message}`);
+
+    } catch (ᴇʀʀᴏʀ) {
+      console.error('[ᴡᴀʀɴ ᴇʀʀᴏʀ]:', ᴇʀʀᴏʀ);
+      reply(`❌ *ᴇʀʀᴇᴜʀ sʏsᴛᴇ̀ᴍᴇ :* ${ᴇʀʀᴏʀ.ᴍᴇssᴀɢᴇ}`);
     }
   }
 };
