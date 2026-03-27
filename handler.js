@@ -21,14 +21,7 @@ const initializeAntiCall = (sock) => {
         }
     });
 };
-// --- SYSTÈME ANTI-RÉPÉTITION (CACHE) ---
-const processedMessages = new Set();
-setInterval(() => processedMessages.clear(), 10 * 60 * 1000);
 
-/**
- * Initialisation des Commandes en Global
- */
-global.commands = loadCommands();
 
 /**
  * Normalisation des JIDs
