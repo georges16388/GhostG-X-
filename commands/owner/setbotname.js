@@ -11,8 +11,8 @@ const AGM_NAME = (oldName, newName) => `╭╼━≪• ᴀɢᴍ ɪᴅᴇɴᴛɪ
 ┃ ᴏʟᴅ : ${oldName}
 ┃ ɴᴇᴡ : ${newName} ✨
 ┃ sᴛᴀᴛᴜs : 🟢 ʀᴇʙʀᴀɴᴅᴇᴅ
->┃ ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗
-╰━━━━━━━━━━━━━━━╯`;
+╰━━━━━━━━━━━━━━━╯
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
 
 module.exports = {
   name: 'setbotname',
