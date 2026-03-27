@@ -9,12 +9,12 @@ const { downloadMediaMessage } = require('@whiskeysockets/baileys');
 const { webp2png } = require('../../utils/webp2mp4');
 const config = require('../../config');
 
-const VISION_DESIGN = (prompt) => `╭╼━≪• ɢʜᴏꜱᴛ ᴠɪꜱɪᴏɴ •≫━╾╮
-┃ ᴘʀᴏᴍᴘᴛ : ${prompt}
-┃ ꜱᴛᴀᴛᴜꜱ : ᴘʀᴏᴄᴇꜱꜱᴇᴅ ✨
-┃ ᴛʏᴘᴇ : ᴀɪ ᴀɴᴀʟʏꜱɪꜱ
+const VISION_DESIGN = (prompt) => `╭╼━≪• *ɢʜᴏꜱᴛ ᴠɪꜱɪᴏɴ* •≫━╾╮
+┃ *ᴘʀᴏᴍᴘᴛ* : ${prompt}
+┃ *ꜱᴛᴀᴛᴜꜱ* : ᴘʀᴏᴄᴇꜱꜱᴇᴅ ✨
+┃ *ᴛʏᴘᴇ* : ᴀɪ ᴀɴᴀʟʏꜱɪꜱ
 ╰━━━━━━━━━━━━━━━╯
-> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏꜱᴛɢ x`;
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
 module.exports = {
   name: 'gptimage',
