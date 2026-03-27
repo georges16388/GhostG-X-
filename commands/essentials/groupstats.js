@@ -63,7 +63,7 @@ module.exports = {
                         title: "GHOST ACTIVITY MONITOR",
                         body: "Analyse des messages en temps réel",
                         mediaType: 1,
-                        thumbnailUrl: "https://telegra.ph/file/b3138928493e78b55526f.jpg", // Optionnel : ton logo
+                        thumbnailUrl: "https://files.catbox.moe/2fmwpu.jpg", // Optionnel : ton logo
                         renderLargerThumbnail: false
                     }
                 }
