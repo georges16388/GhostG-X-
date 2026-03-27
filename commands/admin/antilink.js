@@ -6,12 +6,12 @@
 const database = require('../../database');
 
 // --- FONCTION DE DESIGN AGM ---
-const AGM_DESIGN = (status, action) => `╭╼━≪• ᴀɴᴛɪ-ʟɪɴᴋ sʏsᴛᴇᴍ •≫━╾╮
-┃ sᴛᴀᴛᴜs : ${status === 'ON' ? '🟢 ᴀᴄᴛɪᴠᴀᴛᴇᴅ' : '🔴 ᴅᴇᴀᴄᴛɪᴠᴀᴛᴇᴅ'}
-┃ ᴀᴄᴛɪᴏɴ : ${action.toUpperCase()} ⚡
-┃ ɢᴜᴀʀᴅ : 🛡️ ᴀᴄᴛɪᴠᴇ
+const AGM_DESIGN = (status, action) => `╭╼━≪• *ᴀɴᴛɪ-ʟɪɴᴋ sʏsᴛᴇᴍ* •≫━╾╮
+┃ *sᴛᴀᴛᴜs* : ${status === 'ON' ? '🟢             *ᴀᴄᴛɪᴠᴀᴛᴇᴅ* : '🔴 ᴅᴇᴀᴄᴛɪᴠᴀᴛᴇᴅ'}
+┃ *ᴀᴄᴛɪᴏɴ* : ${action.toUpperCase()} ⚡
+┃ *ɢᴜᴀʀᴅ* : 🛡️ ᴀᴄᴛɪᴠᴇ
 ╰━━━━━━━━━━━━━━━╯
-> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
 
 module.exports = {
   name: 'antilink',
