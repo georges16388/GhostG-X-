@@ -29,7 +29,8 @@ module.exports = {
       const prompt = args.join(' ').trim();
 
       if (!quoted || (!quoted.imageMessage && !quoted.stickerMessage)) {
-        return extra.reply(`⚠️ *Répondez à une image ou un sticker !*\nEx: ${prefix}gi décrit cette image`);
+        return extra.reply(`⚠️ *ʀᴇ́ᴘᴏɴᴅᴇᴢ ᴀ̀ ᴜɴᴇ ɪᴍᴀɢᴇ ᴏᴜ ᴜɴ sᴛɪᴄᴋᴇʀ !*
+*ᴇx: ${ᴘʀᴇꜰɪx}ɢɪ ᴅᴇ́ᴄʀɪᴛ ᴄᴇᴛᴛᴇ ɪᴍᴀɢᴇ*`);
       }
 
       if (!prompt) return extra.reply("❌ *Veuillez préciser ce que l'IA doit faire !*");
