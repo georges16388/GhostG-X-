@@ -7,10 +7,10 @@
 const fetch = require('node-fetch');
 
 // --- FONCTION DE DESIGN AGM (TRANSLATE STYLE) ---
-const AGM_TR = (text, lang) => `╭╼━≪• ᴀɢᴍ ᴛʀᴀɴꜱʟᴀᴛᴏʀ •≫━╾╮
-┃ ᴛᴏ ʟᴀɴɢ : ${lang.toUpperCase()} 🌐
-┃ ᴛᴇxᴛ : ${text}
-┃ ꜱᴛᴀᴛᴜꜱ : 🟢 ᴛʀᴀɴꜱʟᴀᴛᴇᴅ
+const AGM_TR = (text, lang) => `╭╼━≪• * ɢʜᴏsᴛɢ-𝐗 ᴛʀᴀɴꜱʟᴀᴛᴏʀ* •≫━╾╮
+┃ *ᴛᴏ ʟᴀɴɢ* : ${lang.toUpperCase()} 🌐
+┃ *ᴛᴇxᴛ* : ${text}
+┃ *ꜱᴛᴀᴛᴜꜱ* : 🟢 ᴛʀᴀɴꜱʟᴀᴛᴇᴅ
 ╰━━━━━━━━━━━━━━━╯
 > *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
 
@@ -37,9 +37,9 @@ module.exports = {
         lang = args[0] || 'fr'; // Par défaut en français si non spécifié
       } else {
         if (args.length < 2) {
-          return await extra.reply(`╭╼━≪• ᴀɢᴍ ᴛʀᴀɴꜱʟᴀᴛᴏʀ •≫━╾╮
-┃ ᴜꜱᴀɢᴇ : .ᴛʀ <ᴛᴇxᴛᴇ> <ʟᴀɴɢ>
-┃ ᴇxᴇᴍᴘʟᴇ : .ᴛʀ ʜᴇʟʟᴏ ꜰʀ
+          return await extra.reply(`╭╼━≪• *ᴀɢᴍ ᴛʀᴀɴꜱʟᴀᴛᴏʀ* •≫━╾╮
+┃ *ᴜꜱᴀɢᴇ* : .ᴛʀ <ᴛᴇxᴛᴇ> <ʟᴀɴɢ>
+┃ *ᴇxᴇᴍᴘʟᴇ* : .ᴛʀ ʜᴇʟʟᴏ ꜰʀ
 ╰━━━━━━━━━━━━━━━╯
 *ᴄᴏᴅᴇꜱ :* ꜰʀ, ᴇɴ, ᴇꜱ, ᴀʀ, ᴊᴀ, ʀᴜ...`);
         }
