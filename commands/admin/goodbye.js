@@ -10,7 +10,7 @@ const DEFAULT_DESIGN = `╭╼━≪• 𝙻𝙴𝙰𝚅𝙴 ᴍᴇᴍʙᴇʀ �
 ┃ ʀᴇᴍᴀɪɴɪɴɢ ᴍᴇᴍʙᴇʀs : #memberCount
 ┃ ᴛɪᴍᴇ : time ⏰
 ╰━━━━━━━━━━━━━━━╯
-> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
 
 module.exports = {
   name: 'goodbye',
