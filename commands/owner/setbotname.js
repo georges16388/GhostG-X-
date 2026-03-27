@@ -1,12 +1,6 @@
-/**
- * Bot Name Controller - AGM System Identity
- * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
- */
-
 const fs = require('fs');
 const path = require('path');
 
-// --- FONCTION DE DESIGN AGM (IDENTITY STYLE) ---
 const AGM_NAME = (oldName, newName) => `╭╼━≪• ᴀɢᴍ ɪᴅᴇɴᴛɪᴛʏ •≫━╾╮
 ┃ ᴏʟᴅ : ${oldName}
 ┃ ɴᴇᴡ : ${newName} ✨
@@ -19,20 +13,23 @@ module.exports = {
   aliases: ['setname', 'botname'],
   category: 'owner',
   description: 'Changer le nom du bot dynamiquement',
-  usage: '.setbotname <nom> ou répondre à un texte',
+  usage: '.setbotname <nom>',
   ownerOnly: true,
-  
+
   async execute(sock, msg, args, extra) {
     try {
-      const config = require('../../config');
+      // On recharge la config actuelle
+      const configPath = path.resolve(process.cwd(), 'config.js');
+      let config = require(configPath);
+
       let newName = args.join(' ').trim();
-      
-      // Check si c'est une réponse à un message
+
+      // Gestion du message cité (Quoted)
       const quoted = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage;
       if (quoted && !newName) {
-        newName = quoted.conversation || quoted.extendedTextMessage?.text || "";
+        newName = quoted.conversation || quoted.extendedTextMessage?.text || quoted.imageMessage?.caption || "";
       }
-      
+
       if (!newName) {
         return extra.reply(`📝 *ᴄᴜʀʀᴇɴᴛ ɴᴀᴍᴇ :* ${config.botName}\n\n*ᴜsᴀɢᴇ :* .sᴇᴛɴᴀᴍᴇ <ɴᴏᴜᴠᴇᴀᴜ ɴᴏᴍ>`);
       }
@@ -40,25 +37,34 @@ module.exports = {
       if (newName.length > 30) return extra.reply('❌ *ɴᴏᴍ ᴛʀᴏᴘ ʟᴏɴɢ (ᴍᴀx 30 ᴄʜᴀʀ).*');
 
       const oldName = config.botName;
-      const configPath = path.join(__dirname, '../../config.js');
-      
-      // --- MISE À JOUR DU FICHIER CONFIG ---
-      let content = fs.readFileSync(configPath, 'utf8');
-      const regex = /botName:\s*['"`]([^'"`]*)['"`]/;
-      content = content.replace(regex, `botName: '${newName.replace(/'/g, "\\'")}'`);
-      
-      fs.writeFileSync(configPath, content, 'utf8');
-      
-      // Update en temps réel + Flush Cache
-      config.botName = newName;
-      delete require.cache[require.resolve('../../config')];
 
-      await sock.sendMessage(extra.from, { react: { text: '✍️', key: msg.key } });
-      await extra.reply(AGM_NAME(oldName, newName));
+      // --- MISE À JOUR PHYSIQUE DU FICHIER ---
+      let content = fs.readFileSync(configPath, 'utf8');
+      
+      // Regex améliorée pour capturer botName peu importe le format
+      const nameRegex = /(\bbotName\s*:\s*)(['"`])(.*?)\2/i;
+      
+      if (nameRegex.test(content)) {
+          content = content.replace(nameRegex, `$1'${newName.replace(/'/g, "\\ text'")}'`);
+          fs.writeFileSync(configPath, content, 'utf8');
+
+          // --- MISE À JOUR MÉMOIRE ---
+          // On met à jour l'objet config chargé et la globale
+          config.botName = newName;
+          if (global.config) global.config.botName = newName;
+          
+          // Nettoyage du cache Node.js
+          delete require.cache[require.resolve(configPath)];
+
+          await extra.react('✍️');
+          await extra.reply(AGM_NAME(oldName, newName));
+      } else {
+          throw new Error("Clé 'botName' non trouvée dans config.js");
+      }
 
     } catch (error) {
       console.error('SetName Error:', error);
-      await extra.reply('❌ *ᴇʀʀᴇᴜʀ ʟᴏʀs ᴅᴜ ʀᴇʙʀᴀɴᴅɪɴɢ.*');
+      await extra.reply(`❌ *ᴇʀʀᴇᴜʀ :* ${error.message}`);
     }
   }
 };
