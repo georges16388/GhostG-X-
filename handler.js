@@ -102,27 +102,19 @@ const isCmd = body.startsWith(prefix);
         const ownerStatus = isOwner(sender);
 console.log('OwnerStatus:', isOwner(sender), 'Sender:', sender);
         // --- 1. SYSTÈME DE RÉACTION ---
-        if (config.autoReact) {
-            if (ownerStatus && isCmd) {
-                await sock.sendMessage(from, { react: { text: '👑', key: msg.key } });
-            } else if (!msg.key.fromMe) {
-                const emojis = ['⚡', '💀', '🔥', '✨', '❤️', '🙏🏾', '🇧🇫'];
-                const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
-              const reactionCooldown = new Map();
+ if (config.autoReact && canReact(from)) {
+    if (ownerStatus && isCmd) {
+        await sock.sendMessage(from, { react: { text: '👑', key: msg.key } });
+    } else if (!msg.key.fromMe) {
+        const emojis = ['⚡', '💀', '🔥', '✨', '❤️', '🙏🏾', '🇧🇫'];
+        const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
 
-const canReact = (jid) => {
-    const now = Date.now();
-    const last = reactionCooldown.get(jid) || 0;
+        await sock.sendMessage(from, {
+            react: { text: isCmd ? '⏳' : randomEmoji, key: msg.key }
+        });
+    }
+}
 
-    if (now - last < 3000) return false;
-
-    reactionCooldown.set(jid, now);
-    return true;
-}; 
-if (config.autoReact && canReact(from)) {
- await sock.sendMessage(from, { react: { text: isCmd ? '⏳' : randomEmoji, key: msg.key } });
-            }
-        }
 
         // --- 2. SÉCURITÉ & STATS ---
         if (isGroup && typeof addMessage === 'function') addMessage(from, sender);
