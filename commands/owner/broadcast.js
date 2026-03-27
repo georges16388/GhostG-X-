@@ -14,7 +14,7 @@ const AGM_BC = (message, sender) => `╭╼━≪• ᴀɢᴍ ʙʀᴏᴀᴅᴄ�
 ┃ sʏsᴛᴇᴍ : ɢʜᴏsᴛɢ-x ᴍᴅ ⚡
 ┃ ᴍᴇssᴀɢᴇ : ${message}
 ╰━━━━━━━━━━━━━━━╯
-> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
 
 module.exports = {
   name: 'broadcast',
