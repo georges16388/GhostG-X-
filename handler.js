@@ -232,3 +232,8 @@ const handleGroupUpdate = async (sock, update) => {
         console.error('Group Update Error:', e); 
     }
 };
+
+module.exports = {
+    handleMessage,
+    handleGroupUpdate
+};
