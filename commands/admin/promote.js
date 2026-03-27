@@ -5,12 +5,12 @@
 const { findParticipant } = require('../../utils/jidHelpers');
 
 // Design pour la promotion d'admin
-const PROMOTE_DESIGN = (user) => `╭╼━≪• ᴀᴅᴍɪɴ ᴘʀᴏᴍᴏᴛᴇᴅ •≫━╾╮
-┃ ᴜsᴇʀ : @${user.split('@')[0]} 👑
-┃ sᴛᴀᴛᴜs : ɴᴇᴡ ᴀᴅᴍɪɴ 🛡️
-┃ ᴀᴄᴛɪᴏɴ : sᴜᴄᴄᴇssғᴜʟ ✅
+const PROMOTE_DESIGN = (user) => `╭╼━≪• *ᴀᴅᴍɪɴ ᴘʀᴏᴍᴏᴛᴇᴅ* •≫━╾╮
+┃ *ᴜsᴇʀ* : @${user.split('@')[0]} 👑
+┃ *sᴛᴀᴛᴜs* : ɴᴇᴡ ᴀᴅᴍɪɴ 🛡️
+┃ *ᴀᴄᴛɪᴏɴ* : *sᴜᴄᴄᴇssғᴜʟ* ✅
 ╰━━━━━━━━━━━━━━━╯
-> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
 
 module.exports = {
   name: 'promote',
