@@ -6,16 +6,13 @@
 const { getStats } = require('../../utils/groupstats');
 
 const STATS_DESIGN = (total, topText) => `╭╼━≪• ɢʜᴏsᴛ sᴛᴀᴛs •≫━╾╮
-┃ 
 ┃ 📊 sᴛᴀᴛɪsᴛɪǫᴜᴇs ᴅᴜ ᴊᴏᴜʀ
 ┃ 📌 ᴛᴏᴛᴀʟ ᴍᴇssᴀɢᴇs : ${total}
-┃ 
 ┃ 👥 ᴛᴏᴘ ᴍᴇᴍʙʀᴇs ᴀᴄᴛɪғs :
 ${topText}
-┃ 
 ┃ 💡 ᴛᴀᴘᴇ .ᴍʏᴀᴄᴛɪᴠɪᴛʏ
 ╰━━━━━━━━━━━━━━━╯
-> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
 
 module.exports = {
     name: 'groupstats',
