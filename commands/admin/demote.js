@@ -5,12 +5,12 @@
 const { findParticipant } = require('../../utils/jidHelpers');
 
 // Design pour l'annonce de la destitution
-const DEMOTE_DESIGN = (user) => `╭╼━≪• ᴀᴅᴍɪɴ ᴅᴇᴍᴏᴛᴇᴅ •≫━╾╮
-┃ ᴜsᴇʀ : @${user.split('@')[0]}
-┃ sᴛᴀᴛᴜs : ɴᴏ ʟᴏɴɢᴇʀ ᴀᴅᴍɪɴ
-┃ ᴀᴄᴛɪᴏɴ : sᴜᴄᴄᴇssғᴜʟ ✅
+const DEMOTE_DESIGN = (user) => `╭╼━≪• *ᴀᴅᴍɪɴ ᴅᴇᴍᴏᴛᴇᴅ* •≫━╾╮
+┃ *ᴜsᴇʀ* : @${user.split('@')[0]}
+┃ *sᴛᴀᴛᴜs* : *ɴᴏ ʟᴏɴɢᴇʀ ᴀᴅᴍɪɴ*
+┃ *ᴀᴄᴛɪᴏɴ* : *sᴜᴄᴄᴇssғᴜʟ* ✅
 ╰━━━━━━━━━━━━━━━╯
-> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
 
 module.exports = {
   name: 'demote',
