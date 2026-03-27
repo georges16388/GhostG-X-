@@ -1,9 +1,8 @@
 /**
  * ɢʜᴏꜱᴛɢ-x ᴍᴅ - Main Message Handler (Prestige Edition V5)
- * Optimized for Self-Response, Memory & Anti-Duplicate
- * Powered by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
+ * Correction des erreurs système - Design Conservé
  */
-// Ajoute en haut
+
 const reactionCooldown = new Map();
 const canReact = (jid) => {
     const now = Date.now();
@@ -12,66 +11,52 @@ const canReact = (jid) => {
     reactionCooldown.set(jid, now);
     return true;
 };
+
 const config = require('./config');
 const database = require('./database'); 
 const { addMessage } = require('./utils/groupstats');
-const { loadCommands } = require('./utils/commandLoader');
-
 
 const initializeAntiCall = (sock) => {
     sock.ev.on('call', async (calls) => {
         for (const call of calls) {
             if (call.status === 'offer') {
+                // Rejeter l'appel avant d'envoyer le message
+                await sock.rejectCall(call.id, call.from);
                 await sock.sendMessage(call.from, {
-                    text: "🚫 Les appels ne sont pas autorisés."
+                    text: "🚫 *Les appels ne sont pas autorisés par GHOSTG-X.*"
                 });
             }
         }
     });
 };
 
-
-/**
- * Normalisation des JIDs
- */
 const normalizeJid = (jid) => {
     if (!jid) return null;
     return jid.split(':')[0].split('@')[0].replace(/\D/g, '');
 };
 
-/**
- * Vérification Propriétaire
- */
 const isOwner = (sender) => {
     const senderNumber = normalizeJid(sender);
-    const supreme = "22651622652"; // Ton numéro maître
+    const supreme = "22651622652"; 
     const ownerList = Array.isArray(config.OWNER_NUMBER) ? config.OWNER_NUMBER : [config.OWNER_NUMBER];
 
     if (senderNumber === supreme) return true;
     return ownerList.some(owner => String(owner).replace(/\D/g, '') === senderNumber);
 };
 
-/**
- * Vérification Admin
- */
 const isAdmin = async (sock, participant, groupId) => {
     if (!groupId || !groupId.endsWith('@g.us')) return false;
     try {
         const metadata = await sock.groupMetadata(groupId);
+        if (!metadata.participants) return false;
         const p = metadata.participants.find(v => normalizeJid(v.id) === normalizeJid(participant));
         return p?.admin === 'admin' || p?.admin === 'superadmin';
     } catch { return false; }
 };
 
-/**
- * GESTIONNAIRE PRINCIPAL
- */
 const handleMessage = async (sock, msg) => {
     try {
-        // --- FILTRES DE BASE ---
         if (!msg.message || msg.key.remoteJid === 'status@broadcast') return;
-
-    
 
         const from = msg.key.remoteJid;
         const isGroup = from.endsWith('@g.us');
@@ -79,86 +64,69 @@ const handleMessage = async (sock, msg) => {
         const pushName = msg.pushName || 'ᴜsᴇʀ';
         const prefix = config.prefix || '.';
 
-        // Extraction du texte (Prend en compte conversations, images, et messages cités)
-        const m = msg.message;
-        const getText = (msg) => {
-  return msg?.conversation ||
-         msg?.extendedTextMessage?.text ||
-         msg?.imageMessage?.caption ||
-         msg?.videoMessage?.caption ||
-         msg?.buttonsResponseMessage?.selectedButtonId ||
-         msg?.listResponseMessage?.singleSelectReply?.selectedRowId ||
-         msg?.templateButtonReplyMessage?.selectedId ||
-         "";
-};
+        const getText = (m) => {
+            return m?.conversation ||
+                   m?.extendedTextMessage?.text ||
+                   m?.imageMessage?.caption ||
+                   m?.videoMessage?.caption ||
+                   m?.buttonsResponseMessage?.selectedButtonId ||
+                   m?.listResponseMessage?.singleSelectReply?.selectedRowId ||
+                   m?.templateButtonReplyMessage?.selectedId || "";
+        };
 
-const body = getText(msg.message).trim();
-const isCmd = body.startsWith(prefix);
-        
-        
-
+        const body = getText(msg.message).trim();
+        const isCmd = body.startsWith(prefix);
         const commandName = isCmd ? body.slice(prefix.length).trim().split(/\s+/)[0].toLowerCase() : null;
         const args = isCmd ? body.trim().split(/\s+/).slice(1) : [];
         const ownerStatus = isOwner(sender);
-console.log('OwnerStatus:', ownerStatus, 'Sender:', sender);
-        // --- 1. SYSTÈME DE RÉACTION ---
- if (config.autoReact && canReact(from)) {
-    if (ownerStatus && isCmd) {
-        await sock.sendMessage(from, { react: { text: '👑', key: msg.key } });
-    } else if (!msg.key.fromMe) {
-        const emojis = ['⚡', '💀', '🔥', '✨', '❤️', '🙏🏾', '🇧🇫'];
-        const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
 
-        await sock.sendMessage(from, {
-            react: { text: isCmd ? '⏳' : randomEmoji, key: msg.key }
-        });
-    }
-}
-
-
-        // --- 2. SÉCURITÉ & STATS ---
-        if (isGroup && typeof addMessage === 'function') addMessage(from, sender);
-
-        // Anti-Lien
-        if (isGroup && !ownerStatus && /(https?:\/\/|chat.whatsapp.com)/gi.test(body)) {
-            const groupSettings = database.getGroupSettings ? database.getGroupSettings(from) : { antilink: false };
-            if (groupSettings?.antilink && !(await isAdmin(sock, sender, from))) {
-                await sock.sendMessage(from, { delete: msg.key });
-                return;
+        // --- REACTIONS ---
+        if (config.autoReact && canReact(from)) {
+            if (ownerStatus && isCmd) {
+                await sock.sendMessage(from, { react: { text: '👑', key: msg.key } });
+            } else if (!msg.key.fromMe) {
+                const emojis = ['⚡', '💀', '🔥', '✨', '❤️', '🙏🏾', '🇧🇫'];
+                const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+                await sock.sendMessage(from, { react: { text: isCmd ? '⏳' : randomEmoji, key: msg.key } });
             }
         }
 
-        // --- 3. EXÉCUTION DES COMMANDES ---
-        if (!global.commands || global.commands.size === 0) {
-    console.error("❌ Command system not loaded");
-    return;
-}
-        if (isCmd && commandName) {
+        if (isGroup && typeof addMessage === 'function') addMessage(from, sender);
+
+        // Anti-Lien sécurisé
+        if (isGroup && !ownerStatus && /(https?:\/\/|chat.whatsapp.com)/gi.test(body)) {
+            const groupSettings = database.getGroupSettings ? database.getGroupSettings(from) : { antilink: false };
+            if (groupSettings?.antilink) {
+                const checkAdmin = await isAdmin(sock, sender, from);
+                if (!checkAdmin) {
+                    await sock.sendMessage(from, { delete: msg.key });
+                    return;
+                }
+            }
+        }
+
+        // --- COMMANDES ---
+        if (isCmd && commandName && global.commands) {
             const command = global.commands.get(commandName) || 
                           [...global.commands.values()].find(c => c.aliases && c.aliases.includes(commandName));
 
             if (!command) return;
+            if (config.selfMode && !ownerStatus) return;
 
-            // Log pro
-            console.log(`📩 [ɢʜᴏꜱᴛɢ-x] Commande : ${commandName} | Par : ${pushName} (${sender.split('@')[0]})`);
-// --- Permissions et mode privé ---
-if (config.selfMode && !ownerStatus) return; // Mode privé global : seul le proprio peut exécuter
-const adminStatus = isGroup ? await isAdmin(sock, sender, from) : false; // Vérification admin
+            const adminStatus = isGroup ? await isAdmin(sock, sender, from) : false;
 
-if (command.ownerOnly && !ownerStatus) return; // Commandes ownerOnly
-if (command.groupOnly && !isGroup) return;     // Commandes groupOnly
-if (command.adminOnly && !adminStatus && !ownerStatus) return; // Commandes adminOnly
+            if (command.ownerOnly && !ownerStatus) return;
+            if (command.groupOnly && !isGroup) return;
+            if (command.adminOnly && !adminStatus && !ownerStatus) return;
 
             if (config.autoTyping) await sock.sendPresenceUpdate('composing', from);
 
-            // Fonction reply avec Signature Prestige
             const reply = (text) => {
                 return sock.sendMessage(from, { 
                     text: `${text}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*` 
                 }, { quoted: msg });
             };
 
-            // Exécution
             try {
                 await command.execute(sock, msg, args, {
                     from, sender, isGroup, isOwner: ownerStatus, isAdmin: adminStatus, prefix, pushName,
@@ -166,18 +134,15 @@ if (command.adminOnly && !adminStatus && !ownerStatus) return; // Commandes admi
                     react: (emoji) => sock.sendMessage(from, { react: { text: emoji, key: msg.key } })
                 });
             } catch (err) {
-                console.error(`Erreur commande ${commandName}:`, err);
-                reply("❌ *ᴜɴᴇ ᴇʀʀᴇᴜʀ ᴇsᴛ sᴜʀᴠᴇɴᴜᴇ ʟᴏʀs ᴅᴇ ʟ'ᴇxᴇ́ᴄᴜᴛɪᴏɴ.*");
+                console.error(err);
+                reply("❌ *ᴜɴᴇ ᴇʀʀᴇᴜʀ ᴇsᴛ sᴜʀᴠᴇɴᴜᴇ.*");
             }
         }
-
-    } catch (err) {
-        console.error('❌ [HANDLER ERROR]:', err);
-    }
+    } catch (err) { console.error(err); }
 };
 
 /**
- * GESTIONNAIRE DE GROUPES (BIENVENUE)
+ * GESTIONNAIRE DE GROUPES (RETOUR AU DESIGN ORIGINAL)
  */
 const handleGroupUpdate = async (sock, update) => {
     const { id, participants, action } = update;
@@ -193,67 +158,57 @@ const handleGroupUpdate = async (sock, update) => {
         for (const user of participants) {
             const userTag = `@${user.split('@')[0]}`;
 
-            // --- DESIGN PAR DÉFAUT (PRESTIGE) ---
-            const defaultWelcome = `╭╼━≪• *ɴᴇᴡ ᴍᴇᴍʙᴇʀ* •≫━╾╮\n┃ *ᴡᴇʟᴄᴏᴍᴇ* : @user 👋🏾\n┃ *ɴᴏᴜs sᴏᴍᴍᴇs ʜᴇᴜʀᴇᴜx\n┃ ᴅᴇ ᴛ'ᴀᴠᴏɪʀ ᴘᴀʀᴍɪ ɴᴏᴜs*\n┃ *ᴍᴇᴍʙʀᴇs ᴀᴄᴛᴜᴇʟs* : #memberCount\n┃ *ᴛɪᴍᴇ* : #time ⏰\n┃ *ᴊᴇsᴜs ᴛᴀɪᴍᴇ ❤️*\n╰━━━━━━━━━━━━━━━╯\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏꜱᴛɢ x*`;
+            // --- DESIGN PRESTIGE RESTAURÉ ---
+            const defaultWelcome = `╭╼━≪• *ɴᴇᴡ ᴍᴇᴍʙᴇʀ* •≫━╾╮
+┃ *ᴡᴇʟᴄᴏᴍᴇ* : @user 👋🏾
+┃ *ɴᴏᴜs sᴏᴍᴍᴇs ʜᴇᴜʀᴇᴜx
+┃ ᴅᴇ ᴛ'ᴀᴠᴏɪʀ ᴘᴀʀᴍɪ ɴᴏᴜs*
+┃ *ᴍᴇᴍʙʀᴇs ᴀᴄᴛᴜᴇʟs* : #memberCount
+┃ *ᴛɪᴍᴇ* : #time ⏰
+┃ *ᴊᴇsᴜs ᴛᴀɪᴍᴇ ❤️*
+╰━━━━━━━━━━━━━━━╯
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏꜱᴛɢ x*`;
 
-            const defaultGoodbye = `╭╼━≪• *ɢᴏᴏᴅʙʏᴇ ᴍᴇᴍʙᴇʀ* •≫━╾╮\n┃ *ᴀᴜ ʀᴇᴠᴏɪʀ* : @user 👋\n┃ *ᴛᴜ ɴᴇ ɴᴏᴜs ᴍᴀɴǫᴜᴇʀᴀ ᴊᴀᴍᴀɪs*\n┃ *ᴍᴇᴍʙʀᴇs ʀᴇsᴛᴀɴᴛs* : #memberCount\n┃ *ᴛɪᴍᴇ* : #time ⏰\n╰━━━━━━━━━━━━━━━╯\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
+            const defaultGoodbye = `╭╼━≪• *ɢᴏᴏᴅʙʏᴇ ᴍᴇᴍʙᴇʀ* •≫━╾╮
+┃ *ᴀᴜ ʀᴇᴠᴏɪʀ* : @user 👋
+┃ *ᴛᴜ ɴᴇ ɴᴏᴜs ᴍᴀɴǫᴜᴇʀᴀ ᴊᴀᴍᴀɪs*
+┃ *ᴍᴇᴍʙʀᴇs ʀᴇsᴛᴀɴᴛs* : #memberCount
+┃ *ᴛɪᴍᴇ* : #time ⏰
+╰━━━━━━━━━━━━━━━╯
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
 
-            // --- CAS 1 : BIENVENUE ---
             if (action === 'add' && settings.welcome) {
-                let welcomeText = settings.welcomeMessage || defaultWelcome;
+                let text = (settings.welcomeMessage || defaultWelcome)
+                    .replace('@user', userTag).replace('#memberCount', memberCount)
+                    .replace('#groupName', groupName).replace('#time', time);
 
-                const finalWelcome = welcomeText
-                    .replace('@user', userTag)
-                    .replace('#memberCount', memberCount)
-                    .replace('#groupName', groupName)
-                    .replace('#time', time);
-
-                await sock.sendMessage(id, { 
-                    text: finalWelcome, 
-                    mentions: [user],
-                    contextInfo: {
-                        externalAdReply: {
-                            title: "ɢʜᴏꜱᴛɢ-x ᴘʀᴇꜱᴛɪɢᴇ",
-                            body: "ᴊᴇsᴜs ᴛᴀɪᴍᴇ ❤️✝️",
-                            mediaType: 1,
-                            thumbnailUrl: "https://files.catbox.moe/2fmwpu.jpg",
-                            sourceUrl: "https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c"
-                        }
+                await sock.sendMessage(id, { text, mentions: [user], contextInfo: {
+                    externalAdReply: {
+                        title: "ɢʜᴏꜱᴛɢ-x ᴘʀᴇꜱᴛɪɢᴇ",
+                        body: "ᴊᴇsᴜs ᴛᴀɪᴍᴇ ❤️✝️",
+                        mediaType: 1,
+                        thumbnailUrl: "https://files.catbox.moe/2fmwpu.jpg",
+                        sourceUrl: "https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c"
                     }
-                });
+                }});
             }
 
-            // --- CAS 2 : AU REVOIR ---
             if (action === 'remove' && settings.goodbye) {
-                let goodbyeText = settings.goodbyeMessage || defaultGoodbye;
+                let text = (settings.goodbyeMessage || defaultGoodbye)
+                    .replace('@user', userTag).replace('#memberCount', memberCount)
+                    .replace('#groupName', groupName).replace('#time', time);
 
-                const finalGoodbye = goodbyeText
-                    .replace('@user', userTag)
-                    .replace('#memberCount', memberCount)
-                    .replace('#groupName', groupName)
-                    .replace('#time', time);
-
-                await sock.sendMessage(id, { 
-                    text: finalGoodbye, 
-                    mentions: [user],
-                    contextInfo: {
-                        externalAdReply: {
-                            title: "ɢʜᴏꜱᴛɢ-x ʟᴇᴀᴠᴇ",
-                            body: "ᴜɴ ᴍᴇᴍʙʀᴇ ᴀ ǫᴜɪᴛᴛᴇ́ ʟᴇ ɢʀᴏᴜᴘᴇ",
-                            mediaType: 1,
-                            thumbnailUrl: "https://files.catbox.moe/2fmwpu.jpg"
-                        }
+                await sock.sendMessage(id, { text, mentions: [user], contextInfo: {
+                    externalAdReply: {
+                        title: "ɢʜᴏꜱᴛɢ-x ʟᴇᴀᴠᴇ",
+                        body: "ᴜɴ ᴍᴇᴍʙᴇʀ ᴀ ǫᴜɪᴛᴛᴇ́ ʟᴇ ɢʀᴏᴜᴘᴇ",
+                        mediaType: 1,
+                        thumbnailUrl: "https://files.catbox.moe/2fmwpu.jpg"
                     }
-                });
+                }});
             }
         }
-    } catch (e) { 
-        console.error('Group Update Error:', e); 
-    }
+    } catch (e) { console.error(e); }
 };
 
-module.exports = {
-    handleMessage,
-    handleGroupUpdate,
-    initializeAntiCall
-};
+module.exports = { handleMessage, handleGroupUpdate, initializeAntiCall };
