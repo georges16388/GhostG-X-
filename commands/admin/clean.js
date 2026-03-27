@@ -3,16 +3,16 @@
  * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
-const AGM_DESIGN = (deleted, total) => `╭╼━≪• ᴘᴜʀɢᴇ sʏsᴛᴇᴍ •≫━╾╮
-┃ sᴛᴀᴛᴜs : 🟢 ᴄᴏᴍᴘʟᴇᴛᴇᴅ
-┃ ᴅᴇʟᴇᴛᴇᴅ : ${deleted} / ${total} 🗑️
-┃ sᴄᴏᴘᴇ : 🛡️ ᴀᴄᴛɪᴠᴇ
+const AGM_DESIGN = (deleted, total) => `╭╼━≪• *ᴘᴜʀɢᴇ sʏsᴛᴇᴍ* •≫━╾╮
+┃ *sᴛᴀᴛᴜs* : 🟢 ᴄᴏᴍᴘʟᴇᴛᴇᴅ
+┃ *ᴅᴇʟᴇᴛᴇᴅ* : ${deleted} / ${total} 🗑️
+┃ *sᴄᴏᴘᴇ* : 🛡️ ᴀᴄᴛɪᴠᴇ
 ╰━━━━━━━━━━━━━━━╯
 > *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
 
 module.exports = {
   name: 'clean',
-  aliases: ['purge', 'clear', 'del'],
+  aliases: ['purge', 'clear'],
   category: 'admin',
   description: 'Supprime les messages du groupe ou d\'un utilisateur spécifique.',
   usage: '.clean <nombre> (ou répondre à un message)',
