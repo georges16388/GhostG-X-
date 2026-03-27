@@ -1,85 +1,91 @@
 /**
- * Bot Prefix Controller - AGM System Core
+ * Set Prefix Command - AGM System Core
  * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
- * Role : ᴅᴇᴠᴇʟᴏᴘᴘᴇʀ ⚡
  */
 
 const fs = require('fs');
 const path = require('path');
 
-// --- FONCTION DE DESIGN AGM ---
-const AGM_CORE = (oldP, newP) => `╭╼━≪• ᴀɢᴍ sʏsᴛᴇᴍ ᴄᴏʀᴇ •≫━╾╮
-┃ sᴛᴀᴛᴜs : 🟢 ᴘʀᴇғɪx ᴜᴘᴅᴀᴛᴇᴅ
-┃ ᴛʏᴘᴇ : TEXT ⚡
+// --- DESIGN AGM ---
+const AGM_PREFIX = (oldP, newP) => `╭╼━≪• ᴘʀᴇꜰɪx sʏsᴛᴇᴍ •≫━╾╮
+┃ sᴛᴀᴛᴜs : 🟢 ᴜᴘᴅᴀᴛᴇᴅ
 ┃ ᴏʟᴅ : [ ${oldP} ]
-┃ ɴᴇᴡ : [ ${newP} ]
+┃ ɴᴇᴡ : [ ${newP} ] ⚡
 ╰━━━━━━━━━━━━━━━╯
 > *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
 
 module.exports = {
   name: 'setprefix',
-  aliases: ['prefix', 'setpref'],
+  aliases: ['prefix', 'changeprefix'],
   category: 'owner',
-  description: 'Changer le préfixe du bot de façon permanente.',
-  usage: '.setprefix <nouveau_prefixe>',
+  description: 'Changer le préfixe des commandes du bot.',
+  usage: '.setprefix <nouveau_prefix>',
   ownerOnly: true,
 
-  async execute(sock, msg, args, extra) {
-    const from = msg.key.remoteJid;
+  async execute(sock, msg, args, { reply, react, prefix }) {
+    const config = require('../../config');
+    const configPath = path.join(process.cwd(), 'config.js');
 
     try {
-      // 1. Localisation dynamique du fichier config.js
-      let configPath = path.join(process.cwd(), 'config.js');
-      if (!fs.existsSync(configPath)) {
-          configPath = path.join(__dirname, '../../config.js');
-      }
+      const newPrefix = args[0];
 
-      // 2. Rechargement de la config
-      delete require.cache[require.resolve(configPath)];
-      const config = require(configPath);
-
-      let newPrefix = args[0];
-
-      // Si pas d'argument : Afficher le préfixe actuel
+      // --- AFFICHAGE ÉTAT ACTUEL ---
       if (!newPrefix) {
-        return sock.sendMessage(from, { 
-          text: `📌 *ᴘʀᴇғɪxᴇ ᴀᴄᴛᴜᴇʟ :* [ ${config.prefix} ]\n\n*ᴜsᴀɢᴇ :* ${config.prefix}setprefix #` 
-        }, { quoted: msg });
+        return reply(`📌 *ᴘʀᴇ́ꜰɪxᴇ ᴀᴄᴛᴜᴇʟ :* [ ${config.prefix || prefix} ]\n\n*ᴜsᴀɢᴇ :* .setprefix <symbole>`);
       }
 
+      // Sécurité : Limite de longueur
       if (newPrefix.length > 3) {
-        return sock.sendMessage(from, { text: '❌ *ʟᴇ ᴘʀéғɪxᴇ ᴅᴏɪᴛ ғᴀɪʀᴇ ᴇɴᴛʀᴇ 1 ᴇᴛ 3 ᴄᴀʀᴀᴄᴛèʀᴇs !*' }, { quoted: msg });
+        return reply('❌ *Le préfixe doit faire entre 1 et 3 caractères !*');
       }
 
-      // 3. Lecture et Modification du fichier (Support process.env inclus)
-      let content = fs.readFileSync(configPath, 'utf8');
-      const oldPrefix = config.prefix;
+      await react('⚙️');
 
-      // Regex "Elite" : Remplace la valeur peu importe si c'est process.env ou du texte brut
-      const prefixRegex = /(prefix\s*:\s*)(process\.env\.PREFIX\s*\|\|\s*)?(['"`])(.*?)(['"`])/;
+      const oldPrefix = config.prefix || prefix;
 
-      if (prefixRegex.test(content)) {
-          // On reconstruit la ligne en injectant le nouveau préfixe dans les guillemets
-          const newContent = content.replace(prefixRegex, `$1$2$3${newPrefix}$5`);
-          fs.writeFileSync(configPath, newContent, 'utf8');
+      // --- MISE À JOUR PHYSIQUE (config.js) ---
+      const success = updatePrefixFile(configPath, newPrefix);
 
-          // Mise à jour immédiate en mémoire
-          config.prefix = newPrefix;
-          if (global.config) global.config.prefix = newPrefix;
+      if (success) {
+        // Mise à jour de la mémoire vive (Runtime)
+        config.prefix = newPrefix;
+        if (global.config) global.config.prefix = newPrefix;
 
-          await sock.sendMessage(from, { react: { text: '⚙️', key: msg.key } });
-          await sock.sendMessage(from, { text: AGM_CORE(oldPrefix, newPrefix) }, { quoted: msg });
-          await sock.sendMessage(from, { react: { text: '✅', key: msg.key } });
-
+        await react('✅');
+        return reply(AGM_PREFIX(oldPrefix, newPrefix));
       } else {
-          throw new Error("Format de la clé 'prefix' non reconnu dans config.js");
+        throw new Error("Clé 'prefix' introuvable dans config.js");
       }
 
     } catch (error) {
       console.error('[PREFIX ERROR]:', error);
-      await sock.sendMessage(from, { 
-        text: `❌ *ᴇʀʀᴇᴜʀ sʏsᴛᴇ̀ᴍᴇ :* ${error.message}` 
-      }, { quoted: msg });
+      reply(`❌ *ᴇʀʀᴇᴜʀ sʏsᴛᴇ̀ᴍᴇ :* ${error.message}`);
     }
   }
 };
+
+/**
+ * Fonction d'écriture sécurisée pour le préfixe
+ */
+function updatePrefixFile(filePath, newPrefix) {
+  try {
+    if (!fs.existsSync(filePath)) return false;
+    let content = fs.readFileSync(filePath, 'utf8');
+
+    // Regex qui capture prefix: '...' ou prefix: "..." ou prefix: `...`
+    const regex = /(prefix\s*:\s*)(['"`])(.*)(['"`])/i;
+
+    if (regex.test(content)) {
+      // On remplace en conservant le type de guillemets d'origine
+      const newContent = content.replace(regex, `$1$2${newPrefix}$4`);
+      fs.writeFileSync(filePath, newContent, 'utf8');
+      
+      // Nettoyage du cache pour synchroniser le prochain require
+      delete require.cache[require.resolve(filePath)];
+      return true;
+    }
+    return false;
+  } catch (e) {
+    return false;
+  }
+}
