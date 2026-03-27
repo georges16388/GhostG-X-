@@ -7,7 +7,7 @@ const database = require('../../database');
 // Design pour l'affichage du statut AGM
 const AGM_DESIGN = (status, action) => `╭╼━≪• ᴀɴᴛɪ-ɢʀᴏᴜᴘ ᴍᴇɴᴛɪᴏɴ •≫━╾╮
 ┃ sᴛᴀᴛᴜs : ${status === 'ON' ? '🟢 ᴀᴄᴛɪᴠᴀᴛᴇᴅ' : '🔴 ᴅᴇᴀᴄᴛɪᴠᴀᴛᴇᴅ'}
-┃ ᴀᴄᴛɪᴏɴ : ${action.toUpperCase()} ⚡
+┃ ᴀᴄᴛɪᴏɴ : ${action} ⚡
 ┃ ɢᴜᴀʀᴅ : 🛡️ ᴀᴄᴛɪᴠᴇ
 ╰━━━━━━━━━━━━━━━╯
 > *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
