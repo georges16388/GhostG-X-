@@ -1,61 +1,69 @@
 /**
- * Bot Avatar Controller - AGM Identity Core (Fixed Edition)
+ * Bot Profile Picture Controller - AGM System Core
  * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
+ * Role : ᴅᴇᴠᴇʟᴏᴘᴘᴇʀ ⚡
  */
 
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 
-// --- FONCTION DE DESIGN AGM (AVATAR STYLE) ---
-const AGM_PP = (status) => `╭╼━≪• ᴀɢᴍ ɪᴅᴇɴᴛɪᴛʏ •≫━╾╮
-┃ sʏsᴛᴇᴍ : ᴘʀᴏғɪʟᴇ ᴘɪᴄ 🖼️
-┃ sᴛᴀᴛᴜs : ${status}
-┃ ᴀᴄᴛɪᴏɴ : ᴜᴘᴅᴀᴛɪɴɢ...
+// --- FONCTION DE DESIGN AGM ---
+const AGM_PP = (status) => `╭╼━≪• ᴀɢᴍ sʏsᴛᴇᴍ ᴘᴘ •≫━╾╮
+┃ sᴛᴀᴛᴜs : ${status} 🖼️
+┃ ᴜᴘᴅᴀᴛᴇ : 🟢 sᴜᴄᴄᴇss
+┃ ᴛᴀsᴋ : ᴘʀᴏғɪʟᴇ ᴜᴘᴅᴀᴛᴇ ⚡
 ╰━━━━━━━━━━━━━━━╯
-> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
 
 module.exports = {
-  name: 'setpp',
-  aliases: ['setppbot', 'setpic', 'botpp'],
+  name: 'setbotpp',
+  aliases: ['setppbot', 'setpp', 'botpp'],
   category: 'owner',
-  description: 'Changer la photo de profil du bot',
-  usage: '.setpp (répondre à une image)',
+  description: 'Changer la photo de profil du bot.',
+  usage: '.setbotpp (répondre à une image ou un sticker)',
   ownerOnly: true,
 
   async execute(sock, msg, args, extra) {
+    const from = msg.key.remoteJid;
+
     try {
-      const from = extra.from;
-      // Extraction sécurisée du message cité (Quoted)
+      // 1. Extraction du message cité (Image ou Sticker)
       const quoted = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage;
       
-      // On cible l'image ou le sticker
-      const imageMessage = quoted?.imageMessage || quoted?.viewOnceMessageV2?.message?.imageMessage;
-      
-      if (!imageMessage) {
-        return sock.sendMessage(from, { text: '⚠️ *ᴠᴇᴜɪʟʟᴇᴢ ʀéᴘᴏɴᴅʀᴇ à ᴜɴᴇ ɪᴍᴀɢᴇ.*' }, { quoted: msg });
+      if (!quoted) {
+        return extra.reply('⚠️ *ᴠᴇᴜɪʟʟᴇᴢ ʀéᴘᴏɴᴅʀᴇ à ᴜɴᴇ ɪᴍᴀɢᴇ ᴏᴜ ᴜɴ sᴛɪᴄᴋᴇʀ.*');
       }
 
+      const isImage = quoted.imageMessage;
+      const isSticker = quoted.stickerMessage;
+
+      if (!isImage && !isSticker) {
+        return extra.reply('❌ *ʟᴇ ᴍᴇssᴀɢᴇ ᴅᴏɪᴛ êᴛʀᴇ ᴜɴᴇ ɪᴍᴀɢᴇ ᴏᴜ ᴜɴ sᴛɪᴄᴋᴇʀ !*');
+      }
+
+      const media = isImage || isSticker;
+
       await sock.sendMessage(from, { react: { text: '📸', key: msg.key } });
-      
-      // Téléchargement du flux
-      const stream = await downloadContentFromMessage(imageMessage, 'image');
+
+      // 2. Téléchargement du média en Buffer
+      const stream = await downloadContentFromMessage(media, isImage ? 'image' : 'sticker');
       let buffer = Buffer.from([]);
       for await (const chunk of stream) {
         buffer = Buffer.concat([buffer, chunk]);
       }
 
-      // Mise à jour de la Photo de Profil (PP)
-      // Note: Baileys gère mieux le JID simple du bot
+      // 3. Mise à jour de la photo de profil
+      // Note : Baileys accepte directement un Buffer pour updateProfilePicture
       const botJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
       
       await sock.updateProfilePicture(botJid, buffer);
 
-      // Réponse de succès
-      await sock.sendMessage(from, { text: AGM_PP('✅ sᴜᴄᴄᴇssғᴜʟʟʏ ᴜᴘᴅᴀᴛᴇᴅ') }, { quoted: msg });
+      // 4. Feedback avec design AGM
       await sock.sendMessage(from, { react: { text: '✅', key: msg.key } });
+      await extra.reply(AGM_PP('ᴜᴘᴅᴀᴛᴇᴅ'));
 
     } catch (error) {
-      console.error('SetPP Error:', error);
-      await sock.sendMessage(extra.from, { text: '❌ *éᴄʜᴇᴄ : L\'image est peut-être trop lourde ou invalide.*' }, { quoted: msg });
+      console.error('[SETBOTPP ERROR]:', error);
+      await extra.reply('❌ *éᴄʜᴇᴄ ᴅᴇ ʟᴀ ᴍɪsᴇ à ᴊᴏᴜʀ ᴅᴇ ʟᴀ ᴘʜᴏᴛᴏ ᴅᴇ ᴘʀᴏғɪʟ.*');
     }
   }
 };
