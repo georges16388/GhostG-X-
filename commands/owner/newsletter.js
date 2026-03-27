@@ -9,7 +9,7 @@ const AGM_NL = (name, subs, id) => `╭╼━≪• ᴀɢᴍ ɴᴇᴡsʟᴇᴛ�
 ┃ sᴜʙs : ${subs.toLocaleString()} 👥
 ┃ ɪᴅ : ${id} 🆔
 ╰━━━━━━━━━━━━━━━╯
-> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
 
 // --- EXTRACTION DU CODE D'INVITATION ---
 function getChannelInviteCode(link) {
@@ -27,7 +27,7 @@ function getChannelInviteCode(link) {
 
 module.exports = {
   name: 'newsletter',
-  aliases: ['nl', 'channel', 'info-ch', 'channelid'],
+  aliases: ['nl'],
   category: 'owner',
   description: 'Obtenir les infos d\'un canal WhatsApp',
   usage: '.nl <lien>',
