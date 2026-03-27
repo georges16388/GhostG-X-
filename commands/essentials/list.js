@@ -1,7 +1,7 @@
 /**
- * List/Help Command - GhostG-X- Control Panel
- * Custom Design by -ɢʜᴏsᴛɢ 𝐗
- * Role : ᴅᴇᴠᴇʟᴏᴘᴘᴇʀ ⚡
+ * List Command - AGM System Core
+ * Style requested by User (Ghost Menu)
+ * Powered by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
 const config = require('../../config');
@@ -10,79 +10,78 @@ const { sendButtons } = require('gifted-btns');
 
 module.exports = {
   name: 'list',
-  aliases: ['help', 'menu', 'aide', 'h'],
-  description: 'Affiche le panneau de contrôle et la liste des commandes.',
+  aliases: ['menu', 'help', 'commands', 'all'],
+  category: 'general',
+  description: 'Afficher la liste complète des commandes disponibles.',
   usage: '.list',
-  category: 'essentials',
 
-  async execute(sock, msg, args, extra) {
-    const chatId = msg.key.remoteJid;
-    
+  async execute(sock, msg, args, { from, prefix, react }) {
     try {
-      const prefix = config.prefix || '.';
+      await react('📜');
+      
       const commands = loadCommands();
       const categories = {};
 
-      // Groupement des commandes par catégorie
-      commands.forEach((cmd, name) => {
-        if (cmd.name === name) {
-          const category = (cmd.category || 'Autres').toLowerCase();
-          if (!categories[category]) categories[category] = [];
-          categories[category].push(cmd);
+      // Organisation des commandes par catégorie
+      commands.forEach((cmd) => {
+        // On ne traite que la commande principale, pas les alias
+        if (!categories[cmd.category]) {
+          categories[cmd.category] = new Set();
         }
+        categories[cmd.category].add(cmd);
       });
 
-      // --- DESIGN PRESTIGE GHOSTG 𝐗 ---
-      let menu = `╭╼━≪• ɢʜᴏsᴛɢ-x- ᴘᴀɴᴇʟ •≫━╾╮\n`;
-      menu += `┃ 👤 ᴜᴛɪʟɪsᴀᴛᴇᴜʀ : ${msg.pushName || 'ᴜsᴇʀ'}\n`;
-      menu += `┃ ⚡ ᴘʀᴇғɪxᴇ : [ ${prefix} ]\n`;
-      menu += `┃ 📂 ᴄᴀᴛᴇɢᴏʀɪᴇs : ${Object.keys(categories).length}\n`;
+      // --- CONSTRUCTION DU DESIGN GHOST ---
+      let menu = `╭╼━≪• *ɢʜᴏsᴛɢ 𝐗 - ᴍᴇɴᴜ* •≫━╾╮\n`;
+      menu += `┃ 👤 *ᴜᴛɪʟɪsᴀᴛᴇᴜʀ :* @${msg.key.participant ? msg.key.participant.split('@')[0] : from.split('@')[0]}\n`;
+      menu += `┃ ⚡ *ᴘʀᴇ́ꜰɪxᴇ :* [ ${prefix} ]\n`;
+      menu += `┃ 📁 *ᴄᴀᴛᴇ́ɢᴏʀɪᴇs :* ${Object.keys(categories).length}\n`;
+      menu += `┃ 🤖 *ᴠᴇʀsɪᴏɴ :* 3.0.0 (MD)\n`;
       menu += `╰━━━━━━━━━━━━━━━╯\n\n`;
 
-      const orderedCats = Object.keys(categories).sort();
+      const sortedCats = Object.keys(categories).sort();
 
-      for (const cat of orderedCats) {
-        // Design des sections avec l'esthétique AGM
-        menu += `┏━━≪ *${cat.toUpperCase()}* ≫━━┓\n`;
-        for (const cmd of categories[cat]) {
-          menu += `┃ ❯ ${prefix}${cmd.name}\n`;
-        }
-        menu += `┗━━━━━━━━━━━━━┛\n\n`;
+      for (const cat of sortedCats) {
+        menu += `╭╼━≪• *${cat.toUpperCase()}* •≫━╾╮\n`;
+        const catCmds = Array.from(categories[cat]);
+        
+        catCmds.forEach((cmd) => {
+          menu += `┃ ❯ \`${prefix}${cmd.name}\`\n`;
+        });
+        menu += `╰━━━━━━━━━━━━━━━╯\n\n`;
       }
 
-      menu += `📖 _“ ᴊᴇ ᴘᴜɪs ᴛᴏᴜᴛ ᴘᴀʀ ᴄᴇʟᴜɪ ǫᴜɪ ᴍᴇ ғᴏʀᴛɪғɪᴇ ”_\n`;
       menu += `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
 
-      // --- ENVOI AVEC BOUTONS INTERACTIFS (GIFTED-BTNS) ---
-      await sendButtons(sock, chatId, {
-        title: 'ɢʜᴏsᴛɢ 𝐗 ᴘʀᴇsᴛɪɢᴇ',
-        text: menu.trim(),
-        footer: 'ᴅᴇᴠᴇʟᴏᴘᴘᴇʀ : ɢʜᴏsᴛɢ 𝐗 ⚡',
+      // Envoi du menu avec Boutons Interactifs
+      await sendButtons(sock, from, {
+        title: '',
+        text: menu,
+        footer: `© 2026 -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ`,
         buttons: [
           {
             name: 'cta_url',
             buttonParamsJson: JSON.stringify({
-              display_text: 'ɢɪᴛʜᴜʙ sᴏᴜʀᴄᴇ 📂',
-              url: 'https://github.com/georges16388/GhostG-X-'
+              display_text: 'Suivre la Chaîne 💎',
+              url: 'https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c'
             })
           },
           {
             name: 'cta_url',
             buttonParamsJson: JSON.stringify({
-              display_text: 'ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ 📢',
-              url: 'https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c'
+              display_text: 'GhostG GitHub 💻',
+              url: 'https://github.com/georges16388/GhostG-X-'
             })
           }
         ]
-      }, { quoted: msg });
-
-      // Réaction de succès
-      await sock.sendMessage(chatId, { react: { text: "📜", key: msg.key } });
+      }, { 
+        quoted: msg,
+        mentions: [msg.key.participant || from]
+      });
 
     } catch (err) {
-      console.error('list.js error:', err);
-      // Fallback si les boutons échouent
-      await sock.sendMessage(chatId, { text: '❌ *ᴇʀʀᴇᴜʀ sʏsᴛᴇ̀ᴍᴇ* : Impossible de générer le menu.' }, { quoted: msg });
+      console.error('[LIST ERROR]:', err);
+      sock.sendMessage(from, { text: '❌ *ᴇʀʀᴇᴜʀ ʟᴏʀs ᴅᴜ ᴄʜᴀʀɢᴇᴍᴇɴᴛ ᴅᴜ ᴍᴇɴᴜ.*' });
     }
   }
 };
