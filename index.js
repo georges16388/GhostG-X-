@@ -96,43 +96,57 @@ async function startBot() {
   const { state, saveCreds } = await useMultiFileAuthState(sessionFolder);
   const { version } = await fetchLatestBaileysVersion();
 
-  const sock = makeWASocket({
+      const sock = makeWASocket({
     version,
     logger: pino({ level: 'silent' }),
-    printQRInTerminal: false,
-    browser: Browsers.ubuntu("Chrome"),
+    printQRInTerminal: false, // Désactivé
+    browser: ["Ubuntu", "Chrome", "20.0.04"], // Format recommandé pour le pairing
     auth: state,
     syncFullHistory: false,
     shouldSyncHistoryMessage: () => false
   });
 
-  // --- PAIRING CODE ---
+  // --- LOGIQUE PAIRING CODE UNIQUEMENT ---
   if (!sock.authState.creds.registered) {
-    const cleanNumber = String(config.supremeNumber || "22651622652").replace(/\D/g, '');
+    // On récupère le numéro depuis la config (ex: 22651622652)
+    const cleanNumber = String(config.supremeNumber || config.OWNER_NUMBER || "22651622652").replace(/\D/g, '');
+    
     if (cleanNumber) {
-        console.log(`\n⏳ ɢᴇɴᴇʀᴀᴛɪɴɢ ᴘᴀɪʀɪɴɢ ᴄᴏᴅᴇ ꜰᴏʀ : ${cleanNumber}...`);
+        console.log(`\n[ ⚡ GHOSTG-X ]`);
+        console.log(`⏳ GÉNÉRATION DU CODE POUR : ${cleanNumber}...`);
+        
         setTimeout(async () => {
             try {
                 let code = await sock.requestPairingCode(cleanNumber);
                 code = code?.match(/.{1,4}/g)?.join("-") || code;
-                console.log(`\n╔════════════════════════════════════╗\n║      ᴠᴏᴛʀᴇ ᴄᴏᴅᴇ ᴅᴇ ᴊᴜᴍᴇʟᴀɢᴇ :      ║\n║          ${code}          ║\n╚════════════════════════════════════╝\n`);
-            } catch (err) { console.error('❌ Pairing Error:', err.message); }
-        }, 3000);
+                console.log(`\n╔════════════════════════════════════╗`);
+                console.log(`║      VOTRE CODE DE JUMELAGE :      ║`);
+                console.log(`║          > ${code} <          ║`);
+                console.log(`╚════════════════════════════════════╝\n`);
+                console.log(`👉 Entrez ce code sur votre WhatsApp (Appareils connectés > Jumeler avec un numéro)\n`);
+            } catch (err) { 
+                console.error('❌ Erreur Pairing:', err.message); 
+            }
+        }, 3000); // Délai de 3s pour laisser la socket s'initialiser
+    } else {
+        console.log("❌ Erreur : Aucun numéro configuré pour le pairing code.");
     }
   }
 
-  store.bind(sock.ev);
-
+  // --- MISE À JOUR DE LA CONNEXION ---
   sock.ev.on('connection.update', async (update) => {
-    const { connection, lastDisconnect, qr } = update;
-    if (qr && !config.supremeNumber) qrcode.generate(qr, { small: true });
+    const { connection, lastDisconnect } = update;
+    // Note : On a retiré la vérification "if (qr)" ici pour ne pas polluer le terminal
 
     if (connection === 'close') {
       const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
       if (shouldReconnect) startBot();
     } else if (connection === 'open') {
-      console.log('\n✅ ɢʜᴏꜱᴛɢ-x ᴄᴏɴɴᴇᴄᴛᴇ́ !');
-      handler.initializeAntiCall(sock);
+      console.log('\n✅ ɢʜᴏꜱᴛɢ-x CONNECTÉ AVEC SUCCÈS !');
+      // ... reste de ton code ...
+    }
+  });
+
 
       try {
         const { loadCommands } = require('./utils/commandLoader');
