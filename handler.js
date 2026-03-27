@@ -3,7 +3,15 @@
  * Optimized for Self-Response, Memory & Anti-Duplicate
  * Powered by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
-
+// Ajoute en haut
+const reactionCooldown = new Map();
+const canReact = (jid) => {
+    const now = Date.now();
+    const last = reactionCooldown.get(jid) || 0;
+    if (now - last < 3000) return false;
+    reactionCooldown.set(jid, now);
+    return true;
+};
 const config = require('./config');
 const database = require('./database'); 
 const { addMessage } = require('./utils/groupstats');
