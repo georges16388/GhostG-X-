@@ -1,62 +1,51 @@
 /**
- * Set Welcome - Customize welcome message
+ * sᴇᴛᴡᴇʟᴄᴏᴍᴇ ᴄᴏᴍᴍᴀɴᴅ - ᴀɢᴍ sʏsᴛᴇᴍ ᴄᴏʀᴇ
+ * ᴄᴜsᴛᴏᴍɪᴢᴇ ᴡᴇʟᴄᴏᴍᴇ ᴍᴇssᴀɢᴇ ᴛᴇxᴛ
+ * sᴛʏʟᴇ ʙʏ -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
-const db = require('../../database');
-
-// Design pour la confirmation de mise à jour du Welcome
-const SETWELCOME_DESIGN = (preview) => `╭╼━≪• ᴡᴇʟᴄᴏᴍᴇ sᴇᴛᴛɪɴɢ •≫━╾╮
-┃ sᴛᴀᴛᴜs : ᴜᴘᴅᴀᴛᴇᴅ ✅
-┃ ᴛʏᴘᴇ : ᴄᴜsᴛᴏᴍ ᴛᴇxᴛ 📝
-┃ ᴘʀᴇᴠɪᴇᴡ : ${preview}
-╰━━━━━━━━━━━━━━━╯
-> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
+const ᴅʙ = require('../../database');
 
 module.exports = {
   name: 'setwelcome',
-  aliases: ['welcometext'],
+  aliases: ['changewelcome'],
   category: 'admin',
-  desc: 'Set custom welcome message',
-  usage: 'setwelcome <message> (use @user for member mention)',
+  description: 'ᴍᴏᴅɪꜰɪᴇʀ ʟᴇ ᴍᴇssᴀɢᴇ ᴅᴇ ʙɪᴇɴᴠᴇɴᴜᴇ ᴅᴜ ɢʀᴏᴜᴘᴇ.',
+  usage: '.sᴇᴛᴡᴇʟᴄᴏᴍᴇ <ᴛᴇxᴛᴇ>',
   groupOnly: true,
   adminOnly: true,
-  botAdminNeeded: true,
-  execute: async (sock, msg, args) => {
+
+  execute: async (sock, msg, args, { from, reply, react }) => {
     try {
-      const groupId = msg.key.remoteJid;
-      const participant = msg.key.participant || msg.participant;
-      
-      if (!args.length) {
-        const groupSettings = db.getGroupSettings(groupId);
-        return await sock.sendMessage(groupId, {
-          text: `📝 *Current Welcome Message*\n\n${groupSettings.welcomeMessage}\n\n*Usage:* .setwelcome <message>\n\n*Tip:* Use @user to mention the new member`
-        }, { quoted: msg });
+      const ɴᴇᴡᴛᴇxᴛ = args.join(' ');
+
+      if (!ɴᴇᴡᴛᴇxᴛ) {
+        return reply(
+          `❌ *ᴠᴇᴜɪʟʟᴇᴢ ᴇɴᴛʀᴇʀ ᴜɴ ᴍᴇssᴀɢᴇ.* \n\n` +
+          `💡 *ᴠᴀʀɪᴀʙʟᴇs ᴅɪsᴘᴏɴɪʙʟᴇs :*\n` +
+          `  > @user : ᴄɪᴛᴇ ʟᴇ ᴍᴇᴍʙʀᴇ\n` +
+          `  > #memberCount : ɴᴏᴍʙʀᴇ ᴅᴇ ᴍᴇᴍʙʀᴇs\n` +
+          `  > #time : ʜᴇᴜʀᴇ ᴀᴄᴛᴜᴇʟʟᴇ`
+        );
       }
-      
-      const welcomeMessage = args.join(' ');
-      
-      if (welcomeMessage.length > 500) {
-        return await sock.sendMessage(groupId, {
-          text: '❌ Welcome message is too long! Maximum 500 characters.'
-        }, { quoted: msg });
-      }
-      
-      // Mise à jour de la base de données
-      db.updateGroupSettings(groupId, { welcomeMessage });
-      
-      // Préparation de l'aperçu dynamique
-      const previewText = welcomeMessage.replace('@user', '@' + participant.split('@')[0]);
-      
-      await sock.sendMessage(groupId, {
-        text: SETWELCOME_DESIGN(previewText),
-        mentions: [participant]
-      }, { quoted: msg });
-      
-    } catch (error) {
-      console.error('Set Welcome Error:', error);
-      await sock.sendMessage(msg.key.remoteJid, {
-        text: `❌ Error: ${error.message}`
-      }, { quoted: msg });
+
+      await react('✍️');
+      ᴅʙ.updateGroupSettings(from, { 
+        welcomeMessage: ɴᴇᴡᴛᴇxᴛ,
+        welcome: true // ᴀᴄᴛɪᴠᴇ ᴀᴜᴛᴏᴍᴀᴛɪǫᴜᴇᴍᴇɴᴛ
+      });
+
+      return reply(
+        `╭╼━≪• *ᴡᴇʟᴄᴏᴍᴇ ᴜᴘᴅᴀᴛᴇᴅ* •≫━╾╮\n` +
+        `┃ ✅ *ɴᴏᴜᴠᴇᴀᴜ ᴍᴇssᴀɢᴇ ᴇɴʀᴇɢɪsᴛʀᴇ́ !*\n` +
+        `╰━━━━━━━━━━━━━━━╯\n\n` +
+        `📝 *ᴀᴘᴇʀᴄ̧ᴜ :*\n${ɴᴇᴡᴛᴇxᴛ}\n\n` +
+        `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`
+      );
+
+    } catch (ᴇʀʀᴏʀ) {
+      console.error('[sᴇᴛᴡᴇʟᴄᴏᴍᴇ ᴇʀʀᴏʀ]:', ᴇʀʀᴏʀ);
+      reply(`❌ *ᴇʀʀᴇᴜʀ :* ${ᴇʀʀᴏʀ.ᴍᴇssᴀɢᴇ}`);
     }
   }
 };
