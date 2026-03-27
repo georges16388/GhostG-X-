@@ -163,45 +163,66 @@ if (command.adminOnly && !adminStatus && !ownerStatus) return; // Commandes admi
 const handleGroupUpdate = async (sock, update) => {
     const { id, participants, action } = update;
     try {
-        // Récupération des paramètres du groupe depuis la DB
         const settings = database.getGroupSettings ? database.getGroupSettings(id) : null;
-        
-        // Si les réglages n'existent pas ou si le welcome est désactivé, on arrête
-        if (!settings || !settings.welcome) return;
+        if (!settings) return;
+
+        const metadata = await sock.groupMetadata(id);
+        const groupName = metadata.subject;
+        const memberCount = metadata.participants.length;
+        const time = new Date().toLocaleTimeString('fr-FR', { timeZone: 'Africa/Ouagadougou' });
 
         for (const user of participants) {
-            if (action === 'add') {
-                const metadata = await sock.groupMetadata(id);
-                
-                // --- LOGIQUE DU MESSAGE DYNAMIQUE ---
-                // On utilise le message de la DB, sinon un message par défaut
-                let welcomeText = settings.welcomeMessage || 
-                    "╭╼━≪• *ɴᴇᴡ ᴍᴇᴍʙᴇʀ* •≫━╾╮
-┃ *ᴡᴇʟᴄᴏᴍᴇ* : @${user.split('@')[0]} 👋🏾
-┃ *ɴᴏᴜs sᴏᴍᴍᴇs ʜᴇᴜʀᴇᴜx\n ᴅᴇ ᴛ'ᴀᴠᴏɪʀ ᴘᴀʀᴍɪ ɴᴏᴜs*
-┃ *ᴍᴇᴍʙʀᴇs ᴀᴄᴛᴜᴇʟs* : #memberCount
-┃ *ᴛɪᴍᴇ* : #time ⏰
-┃ *ᴊᴇsᴜs ᴛᴀɪᴍᴇ ❤️*
-╰━━━━━━━━━━━━━━━╯
-> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏꜱᴛɢ x*";
+            const userTag = `@${user.split('@')[0]}`;
 
-                // Remplacement des variables magiques
-                const finalMessage = welcomeText
-                    .replace('@user', `@${user.split('@')[0]}`)
-                    .replace('#memberCount', metadata.participants.length)
-                    .replace('#time', new Date().toLocaleTimeString('fr-FR', { timeZone: 'Africa/Ouagadougou' }))
-                    .replace('#groupName', metadata.subject);
+            // --- DESIGN PAR DÉFAUT (PRESTIGE) ---
+            const defaultWelcome = `╭╼━≪• *ɴᴇᴡ ᴍᴇᴍʙᴇʀ* •≫━╾╮\n┃ *ᴡᴇʟᴄᴏᴍᴇ* : @user 👋🏾\n┃ *ɴᴏᴜs sᴏᴍᴍᴇs ʜᴇᴜʀᴇᴜx\n┃ ᴅᴇ ᴛ'ᴀᴠᴏɪʀ ᴘᴀʀᴍɪ ɴᴏᴜs*\n┃ *ᴍᴇᴍʙʀᴇs ᴀᴄᴛᴜᴇʟs* : #memberCount\n┃ *ᴛɪᴍᴇ* : #time ⏰\n┃ *ᴊᴇsᴜs ᴛᴀɪᴍᴇ ❤️*\n╰━━━━━━━━━━━━━━━╯\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏꜱᴛɢ x*`;
+
+            const defaultGoodbye = `╭╼━≪• *ɢᴏᴏᴅʙʏᴇ ᴍᴇᴍʙᴇʀ* •≫━╾╮\n┃ *ᴀᴜ ʀᴇᴠᴏɪʀ* : @user 👋\n┃ *ᴛᴜ ɴᴇ ɴᴏᴜs ᴍᴀɴǫᴜᴇʀᴀ ᴊᴀᴍᴀɪs*\n┃ *ᴍᴇᴍʙʀᴇs ʀᴇsᴛᴀɴᴛs* : #memberCount\n┃ *ᴛɪᴍᴇ* : #time ⏰\n╰━━━━━━━━━━━━━━━╯\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
+
+            // --- CAS 1 : BIENVENUE ---
+            if (action === 'add' && settings.welcome) {
+                let welcomeText = settings.welcomeMessage || defaultWelcome;
+
+                const finalWelcome = welcomeText
+                    .replace('@user', userTag)
+                    .replace('#memberCount', memberCount)
+                    .replace('#groupName', groupName)
+                    .replace('#time', time);
 
                 await sock.sendMessage(id, { 
-                    text: finalMessage, 
+                    text: finalWelcome, 
                     mentions: [user],
                     contextInfo: {
                         externalAdReply: {
                             title: "ɢʜᴏꜱᴛɢ-x ᴘʀᴇꜱᴛɪɢᴇ",
-                            body: `Bienvenue dans ${metadata.subject}`,
+                            body: "ᴊᴇsᴜs ᴛᴀɪᴍᴇ ❤️✝️",
                             mediaType: 1,
                             thumbnailUrl: "https://files.catbox.moe/2fmwpu.jpg",
                             sourceUrl: "https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c"
+                        }
+                    }
+                });
+            }
+
+            // --- CAS 2 : AU REVOIR ---
+            if (action === 'remove' && settings.goodbye) {
+                let goodbyeText = settings.goodbyeMessage || defaultGoodbye;
+
+                const finalGoodbye = goodbyeText
+                    .replace('@user', userTag)
+                    .replace('#memberCount', memberCount)
+                    .replace('#groupName', groupName)
+                    .replace('#time', time);
+
+                await sock.sendMessage(id, { 
+                    text: finalGoodbye, 
+                    mentions: [user],
+                    contextInfo: {
+                        externalAdReply: {
+                            title: "ɢʜᴏꜱᴛɢ-x ʟᴇᴀᴠᴇ",
+                            body: "ᴜɴ ᴍᴇᴍʙʀᴇ ᴀ ǫᴜɪᴛᴛᴇ́ ʟᴇ ɢʀᴏᴜᴘᴇ",
+                            mediaType: 1,
+                            thumbnailUrl: "https://files.catbox.moe/2fmwpu.jpg"
                         }
                     }
                 });
