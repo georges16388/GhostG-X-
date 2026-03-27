@@ -1,8 +1,3 @@
-/**
- * Group Info Command - Display group information
- * Custom Design & Category by -ɢʜᴏsᴛɢ 𝐗
- */
-
 module.exports = {
     name: 'groupinfo',
     aliases: ['info', 'ginfo', 'groupe'],
@@ -10,44 +5,44 @@ module.exports = {
     description: 'Affiche les informations détaillées du groupe.',
     usage: '.groupinfo',
     groupOnly: true,
-    
+
     async execute(sock, msg, args, extra) {
       try {
-        const metadata = extra.groupMetadata;
-        const participants = metadata.participants;
-        const admins = participants.filter(p => p.admin === 'admin' || p.admin === 'superadmin');
+        const from = msg.key.remoteJid;
         
-        // Réaction de scan
-        await sock.sendMessage(extra.from, { react: { text: "🏢", key: msg.key } });
+        // Sécurité : Récupération forcée si extra est vide
+        const metadata = extra.groupMetadata || await sock.groupMetadata(from);
+        const participants = metadata.participants || [];
+        const admins = participants.filter(p => p.admin === 'admin' || p.admin === 'superadmin');
 
-        // Récupération de l'image du groupe
+        await sock.sendMessage(from, { react: { text: "🏢", key: msg.key } });
+
         let ppUrl;
         try {
-          ppUrl = await sock.profilePictureUrl(extra.from, 'image');
+          ppUrl = await sock.profilePictureUrl(from, 'image');
         } catch {
-          ppUrl = 'https://telegra.ph/file/b3138928493e78b55526f.jpg'; // Image par défaut
+          ppUrl = 'https://telegra.ph/file/b3138928493e78b55526f.jpg';
         }
 
-        let text = `╭╼━≪• ɢʜᴏsᴛ ɢʀᴏᴜᴘ ɪɴғᴏ •≫━╾╮\n\n`;
+        let text = `╭╼━≪• *ɢʜᴏsᴛ ɢʀᴏᴜᴘ ɪɴғᴏ* •≫━╾╮\n\n`;
         text += `┃ 🏷️ *ɴᴏᴍ :* ${metadata.subject}\n`;
-        text += `┃ 🆔 *ɪᴅ :* ${metadata.id.split('@')[0]}\n`;
+        text += `┃ 🆔 *ɪᴅ :* ${from.split('@')[0]}\n`;
         text += `┃ 👥 *ᴍᴇᴍʙʀᴇs :* ${participants.length}\n`;
         text += `┃ 👑 *ᴀᴅᴍɪɴs :* ${admins.length}\n`;
         text += `┃ 📅 *ᴄʀᴇᴀᴛɪᴏɴ :* ${new Date(metadata.creation * 1000).toLocaleDateString('fr-FR')}\n`;
         text += `┃ 🔒 *ʀᴇsᴛʀᴇɪɴᴛ :* ${metadata.announce ? 'Oui (Admins)' : 'Non (Tous)'}\n\n`;
-        
+
         text += `┃ 📝 *ᴅᴇsᴄʀɪᴘᴛɪᴏɴ :*\n`;
         text += `┃ ${metadata.desc?.toString().slice(0, 200) || 'Aucune description.'}\n\n`;
-        
+
         text += `┃ 👑 *ʟɪsᴛᴇ ᴅᴇs ᴀᴅᴍɪɴs :*\n`;
         admins.forEach((admin, index) => {
           text += `┃ ${index + 1}. @${admin.id.split('@')[0]}\n`;
         });
-        
-        text += `╰━━━━━━━━━━━━━━━╯
-               > *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
 
-        await sock.sendMessage(extra.from, {
+        text += `╰━━━━━━━━━━━━━━━╯\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`; // Correction des espaces ici
+
+        await sock.sendMessage(from, {
           image: { url: ppUrl },
           caption: text,
           mentions: admins.map(a => a.id),
@@ -62,11 +57,12 @@ module.exports = {
           }
         }, { quoted: msg });
 
-        await sock.sendMessage(extra.from, { react: { text: "✅", key: msg.key } });
-        
+        await sock.sendMessage(from, { react: { text: "✅", key: msg.key } });
+
       } catch (error) {
         console.error('GroupInfo Error:', error);
-        await extra.reply(`❌ Erreur : Impossible de scanner le groupe.`);
+        // Utilisation de sock.sendMessage au cas où extra.reply échoue
+        await sock.sendMessage(msg.key.remoteJid, { text: `❌ Erreur : Impossible de scanner le groupe.` }, { quoted: msg });
       }
     }
-  };
+};
