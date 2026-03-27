@@ -111,6 +111,7 @@ const canReact = (jid) => {
     reactionCooldown.set(jid, now);
     return true;
 }; 
+if (config.autoReact && canReact(from)) {
  await sock.sendMessage(from, { react: { text: isCmd ? '⏳' : randomEmoji, key: msg.key } });
             }
         }
