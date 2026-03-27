@@ -12,7 +12,7 @@ const AGM_VISUAL = (status) => `╭╼━≪• ᴀɢᴍ ᴠɪsᴜᴀʟ ᴄᴏʀ
 ┃ sᴛᴀᴛᴜs : ${status}
 ┃ ᴀᴄᴛɪᴏɴ : sʏɴᴄɪɴɢ...
 ╰━━━━━━━━━━━━━━━╯
-> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
 
 module.exports = {
   name: 'setmenuimage',
