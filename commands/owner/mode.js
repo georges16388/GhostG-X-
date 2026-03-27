@@ -6,34 +6,13 @@
 const fs = require('fs');
 const path = require('path');
 
-// --- FONCTION DE DESIGN ---
+// --- DESIGN AGM ---
 const AGM_MODE = (mode) => `╭╼━≪• ᴀɢᴍ sʏsᴛᴇᴍ ᴍᴏᴅᴇ •≫━╾╮
 ┃ sᴛᴀᴛᴜs : 🟢 ᴜᴘᴅᴀᴛᴇᴅ
 ┃ ᴍᴏᴅᴇ : ${mode === 'private' ? '🔒 ᴘʀɪᴠᴀᴛᴇ' : '🌐 ᴘᴜʙʟɪᴄ'}
 ┃ ᴀᴄᴄᴇss : ${mode === 'private' ? 'ᴏᴡɴᴇʀ ᴏɴʟʏ' : 'ᴇᴠᴇʀʏᴏɴᴇ'}
 ╰━━━━━━━━━━━━━━━╯
 > *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
-
-// --- FONCTION D'ÉCRITURE ---
-function updateConfigFile(filePath, key, value) {
-  try {
-    if (!fs.existsSync(filePath)) return false;
-    let content = fs.readFileSync(filePath, 'utf8');
-
-    // Regex améliorée pour cibler la valeur après les deux-points
-    // Elle s'arrête à la première virgule ou fin de ligne
-    const regex = new RegExp(`(\\b${key}\\b\\s*:\\s*)([^,\\n]+)`, 'i');
-
-    if (regex.test(content)) {
-      const newContent = content.replace(regex, `$1${value}`);
-      fs.writeFileSync(filePath, newContent, 'utf8');
-      return true;
-    }
-    return false;
-  } catch (e) {
-    return false;
-  }
-}
 
 module.exports = {
   name: 'mode',
@@ -43,53 +22,80 @@ module.exports = {
   usage: '.mode public/private',
   ownerOnly: true,
 
-  async execute(sock, msg, args) {
-    const from = msg.key.remoteJid;
-    let configPath = path.join(process.cwd(), 'config.js');
+  async execute(sock, msg, args, { reply, react }) {
+    const config = require('../../config');
+    const configPath = path.join(process.cwd(), 'config.js');
 
     try {
-      // 1. Détection du chemin
-      if (!fs.existsSync(configPath)) {
-          configPath = path.join(__dirname, '../../config.js');
-      }
-
-      // 2. Lecture de la config actuelle via le cache
-      delete require.cache[require.resolve(configPath)];
-      const config = require(configPath);
-
       let input = args[0]?.toLowerCase();
 
-      // État actuel
+      // --- AFFICHAGE ÉTAT ACTUEL ---
       if (!input) {
-        const current = (global.config?.selfMode || config.selfMode) ? 'PRIVATE 🔒' : 'PUBLIC 🌐';
-        return sock.sendMessage(from, { 
-          text: `╭╼━≪• ʙᴏᴛ ᴍᴏᴅᴇ •≫━╾╮\n┃ ᴄᴜʀʀᴇɴᴛ : ${current}\n┃ ᴜsᴀɢᴇ : .ᴍᴏᴅᴇ ᴘᴜʙ/ᴘʀɪᴠ\n╰━━━━━━━━━━━━━━━╯\n> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗` 
-        }, { quoted: msg });
+        const current = config.selfMode ? 'PRIVATE 🔒' : 'PUBLIC 🌐';
+        return reply(
+          `╭╼━≪• ʙᴏᴛ ᴍᴏᴅᴇ •≫━╾╮\n` +
+          `┃ ᴄᴜʀʀᴇɴᴛ : ${current}\n` +
+          `┃ ᴜsᴀɢᴇ : .ᴍᴏᴅᴇ ᴘᴜʙ/ᴘʀɪᴠ\n` +
+          `╰━━━━━━━━━━━━━━━╯\n` +
+          `> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`
+        );
       }
+
+      await react('⚙️');
 
       let targetMode;
       if (['private', 'priv', 'self'].includes(input)) targetMode = true;
       else if (['public', 'pub'].includes(input)) targetMode = false;
-      else return sock.sendMessage(from, { text: '❌ *ᴏᴘᴛɪᴏɴ ɪɴᴠᴀʟɪᴅᴇ (ᴘᴜʙ/ᴘʀɪᴠ)*' }, { quoted: msg });
+      else return reply('❌ *ᴏᴘᴛɪᴏɴ ɪɴᴠᴀʟɪᴅᴇ (ᴘᴜʙ/ᴘʀɪᴠ)*');
 
-      await sock.sendMessage(from, { react: { text: '⚙️', key: msg.key } });
+      // Vérification si déjà dans ce mode
+      if (config.selfMode === targetMode) {
+        return reply(`⚠️ *Le bot est déjà en mode ${targetMode ? 'PRIVE' : 'PUBLIC'}.*`);
+      }
 
-      // 3. Mise à jour physique
+      // --- MISE À JOUR PHYSIQUE (config.js) ---
       const success = updateConfigFile(configPath, 'selfMode', targetMode);
 
       if (success) {
-        // Mise à jour de la mémoire pour éviter le redémarrage
+        // Mise à jour de la mémoire (Runtime)
+        config.selfMode = targetMode;
         if (global.config) global.config.selfMode = targetMode;
-        
-        await sock.sendMessage(from, { text: AGM_MODE(targetMode ? 'private' : 'public') }, { quoted: msg });
-        await sock.sendMessage(from, { react: { text: '✅', key: msg.key } });
+
+        await react('✅');
+        return reply(AGM_MODE(targetMode ? 'private' : 'public'));
       } else {
-        throw new Error("Impossible de modifier la clé dans config.js");
+        throw new Error("Clé 'selfMode' introuvable dans config.js");
       }
 
     } catch (error) {
       console.error('[MODE ERROR]:', error);
-      await sock.sendMessage(from, { text: `❌ *ᴇʀʀᴇᴜʀ :* ${error.message}` }, { quoted: msg });
+      reply(`❌ *ᴇʀʀᴇᴜʀ sʏsᴛᴇ̀ᴍᴇ :* ${error.message}`);
     }
   }
 };
+
+/**
+ * Fonction d'écriture Robuste
+ * Remplace la valeur de la clé sans détruire le formatage du fichier
+ */
+function updateConfigFile(filePath, key, value) {
+  try {
+    if (!fs.existsSync(filePath)) return false;
+    let content = fs.readFileSync(filePath, 'utf8');
+
+    // Regex qui cible la clé et remplace sa valeur booléenne
+    const regex = new RegExp(`(\\b${key}\\b\\s*:\\s*)(true|false|process\\.env\\.[A-Z_]+(?:\\s*\\|\\|\\s*(?:true|false))?)`, 'i');
+
+    if (regex.test(content)) {
+      const newContent = content.replace(regex, `$1${value}`);
+      fs.writeFileSync(filePath, newContent, 'utf8');
+      
+      // Nettoyage du cache pour le prochain require
+      delete require.cache[require.resolve(filePath)];
+      return true;
+    }
+    return false;
+  } catch (e) {
+    return false;
+  }
+}
