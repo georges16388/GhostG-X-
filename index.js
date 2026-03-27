@@ -1,127 +1,113 @@
 /**
- * ɢʜᴏꜱᴛɢ-x ᴍᴅ - ᴍᴀɪɴ ᴇɴᴛʀʏ ᴘᴏɪɴᴛ (Prestige Edition V5)
- * Focus : Pairing Code Only + Full Design
+ * ɢʜᴏꜱᴛɢ-x ᴍᴅ - ᴍᴇɴᴜ ᴘʀᴇsᴛɪɢᴇ ᴠ5 (clean edition)
  */
 
-const { 
-    default: makeWASocket, 
-    useMultiFileAuthState, 
-    DisconnectReason, 
-    fetchLatestBaileysVersion 
-} = require('@whiskeysockets/baileys');
-const pino = require('pino');
-const config = require('./config');
-const handler = require('./handler');
-const fs = require('fs');
-const path = require('path');
+const config = require('../../config');
+const { loadCommands } = require('../../utils/commandLoader');
 
-async function startBot() {
-    const sessionFolder = `./${config.sessionName}`;
-    const { state, saveCreds } = await useMultiFileAuthState(sessionFolder);
-    const { version } = await fetchLatestBaileysVersion();
+const toStyledCaps = (text) => {
+  if (!text) return "";
+  const fonts = {
+    'a': 'ᴀ','b': 'ʙ','c': 'ᴄ','d': 'ᴅ','e': 'ᴇ','f': 'ғ','g': 'ɢ','h': 'ʜ',
+    'i': 'ɪ','j': 'ᴊ','k': 'ᴋ','l': 'ʟ','m': 'ᴍ','n': 'ɴ','o': 'ᴏ','p': 'ᴘ',
+    'q': 'ǫ','r': 'ʀ','s': 'ꜱ','t': 'ᴛ','u': 'ᴜ','v': 'ᴠ','w': 'ᴡ','x': 'x',
+    'y': 'ʏ','z': 'ᴢ'
+  };
+  return String(text).toLowerCase().split('').map(c => fonts[c] || c).join('');
+};
 
-    const sock = makeWASocket({
-        version,
-        logger: pino({ level: 'silent' }),
-        printQRInTerminal: false,
-        browser: ["Ubuntu", "Chrome", "20.0.04"], // Obligatoire pour le pairing
-        auth: state,
-        syncFullHistory: false,
-    });
+module.exports = {
+  name: 'menu',
+  aliases: ['help', 'h', 'm'],
+  category: 'essentials',
+  description: 'Menu GhostG-X propre avec mention réelle.',
+  usage: '.menu',
 
-    // --- LOGIQUE PAIRING CODE (AUCUN QR) ---
-    if (!sock.authState.creds.registered) {
-        const cleanNumber = String(config.supremeNumber || "22651622652").replace(/\D/g, '');
-        if (cleanNumber) {
-            console.log(`\n⏳ ɢᴇɴᴇʀᴀᴛɪɴɢ ᴘᴀɪʀɪɴɢ ᴄᴏᴅᴇ ꜰᴏʀ : ${cleanNumber}...`);
-            setTimeout(async () => {
-                try {
-                    let code = await sock.requestPairingCode(cleanNumber);
-                    code = code?.match(/.{1,4}/g)?.join("-") || code;
-                    console.log(`\n╔════════════════════════════════════╗\n║      ᴠᴏᴛʀᴇ ᴄᴏᴅᴇ ᴅᴇ ᴊᴜᴍᴇʟᴀɢᴇ :      ║\n║          ${code}          ║\n╚════════════════════════════════════╝\n`);
-                } catch (err) { console.error('❌ Pairing Error:', err.message); }
-            }, 5000);
+  async execute(sock, msg, args, extra) {
+    try {
+
+      // 🔹 1. UTILISATEUR (PROPRE)
+      const senderJid = msg.key.participant || msg.key.remoteJid;
+      const senderNumber = senderJid.split('@')[0];
+      const pushName = msg.pushName || "Utilisateur";
+
+      // 🔹 2. BOT
+      const botJid = sock.user.id;
+      const botName = "ɢʜᴏsᴛɢ-x";
+      const prefix = config.prefix || '.';
+
+      // 🔹 3. COMMANDES
+      const commands = loadCommands();
+      if (!commands || commands.size === 0) {
+        throw new Error("Aucune commande chargée");
+      }
+
+      const categories = {};
+      let totalFiles = 0;
+
+      commands.forEach((cmd, name) => {
+        if (cmd.name === name) {
+          totalFiles++;
+          const cat = cmd.category ? cmd.category.toLowerCase() : 'autres';
+          if (!categories[cat]) categories[cat] = [];
+          categories[cat].push(cmd);
         }
+      });
+
+      // 🔹 4. MENU HEADER
+      let menuText = `╭╼━≪• *${botName}* •≫━╾╮\n`;
+      menuText += `┃ *sᴛᴀᴛᴜᴛ* : 🟢 ᴏɴʟɪɴᴇ\n`;
+      menuText += `┃ *ᴜᴛɪʟɪsᴀᴛᴇᴜʀ* : @${senderNumber}\n`;
+      menuText += `┃ *ᴊᴇsᴜs ᴛᴀɪᴍᴇ* : ❤️✝️\n`;
+      menuText += `┃ *ᴘʀᴇғɪxᴇ* : [ ${prefix} ]\n`;
+      menuText += `┃ *ᴄᴏᴍᴍᴀɴᴅᴇs* : ${totalFiles} ғɪʟᴇs\n`;
+      menuText += `┃ *ᴅᴇᴠᴇʟᴏᴘᴘᴇᴜʀ* : wa.me/22651622652 \n`;
+      menuText += `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n`;
+
+      // 🔹 5. CATÉGORIES
+      const catOrder = ['essentials', 'ai', 'admin', 'fun', 'media', 'owner', 'utility', 'faith', 'textmaker'];
+      const allCats = Object.keys(categories).sort();
+      const finalOrder = [...new Set([...catOrder.filter(c => allCats.includes(c)), ...allCats])];
+
+      for (const cat of finalOrder) {
+        if (!categories[cat]) continue;
+
+        menuText += `╭╼━≪• *${toStyledCaps(cat)}* •≫━╾╮\n`;
+
+        categories[cat].forEach(cmd => {
+          menuText += `┃➽ *${toStyledCaps(cmd.name)}*\n`;
+        });
+
+        menuText += `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n`;
+      }
+
+      // 🔹 6. FOOTER
+      menuText += `_ᴍᴇʀᴄɪ sᴇɪɢɴᴇᴜʀ ᴘᴏᴜʀ ᴛᴀ ɢʀᴀᴄᴇ_\n`;
+      menuText += `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-x*`;
+
+      // 🔹 7. ENVOI
+      await sock.sendMessage(extra.from, {
+        image: { url: 'https://files.catbox.moe/2fmwpu.jpg' },
+        caption: menuText,
+        contextInfo: {
+          mentionedJid: [senderJid],
+          isForwarded: true,
+          forwardingScore: 999,
+          forwardedNewsletterMessageInfo: {
+            newsletterJid: '120363425540434745@newsletter',
+            newsletterName: "-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ",
+            serverMessageId: 143
+          }
+        }
+      }, { quoted: msg });
+
+      // 🔹 8. REACTION
+      await sock.sendMessage(extra.from, {
+        react: { text: "⚡", key: msg.key }
+      });
+
+    } catch (error) {
+      console.error('Menu Error:', error);
     }
-
-    // --- GESTION DE LA CONNEXION & DESIGN BIENVENUE ---
-    sock.ev.on('connection.update', async (update) => {
-        const { connection, lastDisconnect } = update;
-
-        if (connection === 'close') {
-            const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
-            if (shouldReconnect) startBot();
-        } else if (connection === 'open') {
-            console.log('\n✅ ɢʜᴏꜱᴛɢ-x ᴄᴏɴɴᴇᴄᴛᴇ́ !');
-            handler.initializeAntiCall(sock);
-
-            try {
-                const { loadCommands } = require('./utils/commandLoader');
-                const totalCmds = loadCommands().size;
-                const botJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
-                const ownerNumber = "22651622652";
-
-                // --- RESTAURATION DU DESIGN PRESTIGE ---
-                const welcomeCaption = `╭╼━≪• *ɢʜᴏsᴛɢ-x ɪs ᴀʟɪᴠᴇ* •≫━╾╮
-┃ *sᴛᴀᴛᴜᴛ* : 🟢 ᴏɴʟɪɴᴇ
-┃ *ᴍᴀɪᴛʀᴇ* : @${ownerNumber}
-┃ *ᴜᴛɪʟɪsᴀᴛᴇᴜʀ* : @${botJid.split('@')[0]}
-┃ *ᴘʀᴇғɪxᴇ* : [ ${config.prefix || '.'} ]
-┃ *ᴄᴏᴍᴍᴀɴᴅᴇs* : ${totalCmds} ғɪʟᴇs
-┃ *ᴍᴏᴅᴇ* : ${config.selfMode ? '🔒 ᴘʀɪᴠé' : '🌐 ᴘᴜʙʟɪᴄ'}
-╰━━━━━━━━━━━━━━━━━━━━━━━╯
-
-📢 *ᴄʜᴀɪɴᴇ ᴡʜᴀᴛsᴀᴘᴘ* :
-https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c
-
-👥 *ɢʀᴏᴜᴘᴇ ᴅ'ᴇɴᴛʀᴀɪᴅᴇ* :
-https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf
-
-💻 *ᴅᴇᴠᴇʟᴏᴘᴘᴇᴜʀ* :
-https://wa.me/22651622652
-
-
-📖 _*“ ᴊᴇ ᴘᴜɪs ᴛᴏᴜᴛ ᴘᴀʀ ᴄᴇʟᴜɪ ǫᴜɪ ᴍᴇ ғᴏʀᴛɪғɪᴇ ”*_ - ᴘʜɪʟɪᴘᴘɪᴇɴs 4.13 ❤️✝️
-
-> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-x*`;
-
-                await sock.sendMessage(botJid, { 
-                    image: { url: 'https://files.catbox.moe/2fmwpu.jpg' }, 
-                    caption: welcomeCaption, 
-                    contextInfo: {
-                        mentionedJid: [botJid, ownerNumber + '@s.whatsapp.net'],
-                        forwardingScore: 999,
-                        isForwarded: true,
-                        forwardedNewsletterMessageInfo: {
-                            newsletterJid: '120363425540434745@newsletter',
-                            newsletterName: "-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ",
-                            serverMessageId: 143
-                        }
-                    }
-                });
-            } catch (err) { console.error('❌ Notification Error:', err.message); }
-        }
-    });
-
-    sock.ev.on('creds.update', saveCreds);
-
-    // --- GESTION DES MESSAGES ---
-    sock.ev.on('messages.upsert', async ({ messages, type }) => {
-        if (type !== 'notify') return;
-        for (const msg of messages) {
-            if (!msg.message) continue;
-            
-            const text = msg.message?.conversation || msg.message?.extendedTextMessage?.text || "";
-            const isCommand = text.startsWith(config.prefix);
-
-            // Ignore les messages personnels qui ne sont pas des commandes
-            if (msg.key.fromMe && !isCommand) continue;
-
-            handler.handleMessage(sock, msg).catch(err => console.error(err));
-        }
-    });
-
-    sock.ev.on('group-participants.update', (u) => handler.handleGroupUpdate(sock, u));
-}
-
-startBot().catch(err => console.error('❌ Erreur Critique:', err));
+  }
+};
