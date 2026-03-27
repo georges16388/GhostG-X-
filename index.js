@@ -117,7 +117,7 @@ async function startBot() {
                 code = code?.match(/.{1,4}/g)?.join("-") || code;
                 console.log(`\n╔════════════════════════════════════╗\n║      ᴠᴏᴛʀᴇ ᴄᴏᴅᴇ ᴅᴇ ᴊᴜᴍᴇʟᴀɢᴇ :      ║\n║          ${code}          ║\n╚════════════════════════════════════╝\n`);
             } catch (err) { console.error('❌ Pairing Error:', err.message); }
-        }, 3000);
+        }, 5000);
     }
   }
 
@@ -125,7 +125,7 @@ async function startBot() {
 
   sock.ev.on('connection.update', async (update) => {
     const { connection, lastDisconnect, qr } = update;
-    if (qr && !config.supremeNumber) qrcode.generate(qr, { small: true });
+    if (qr && !sock.authState.creds.registered) qrcode.generate(qr, { small: true });
 
     if (connection === 'close') {
       const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
@@ -184,31 +184,27 @@ https://wa.me/${ownerNumber}
 
   sock.ev.on('creds.update', saveCreds);
 
-  // --- LOGIQUE DE RÉPONSE AMÉLIORÉE ---
-  sock.ev.on('messages.upsert', ({ messages, type }) => {
+  sock.ev.on('messages.upsert', async ({ messages, type }) => {
     if (type !== 'notify') return;
     const now = Date.now();
     for (const msg of messages) {
       try {
         if (!msg.message || !msg.key?.id) continue;
 
-        // On récupère le texte du message
-        const getText = (msg) => {
-  return msg?.conversation ||
-         msg?.extendedTextMessage?.text ||
-         msg?.imageMessage?.caption ||
-         msg?.videoMessage?.caption ||
-         msg?.buttonsResponseMessage?.selectedButtonId ||
-         msg?.listResponseMessage?.singleSelectReply?.selectedRowId ||
-         msg?.templateButtonReplyMessage?.selectedId ||
-         "";
-};
+        const getText = (m) => {
+          return m?.conversation ||
+                 m?.extendedTextMessage?.text ||
+                 m?.imageMessage?.caption ||
+                 m?.videoMessage?.caption ||
+                 m?.buttonsResponseMessage?.selectedButtonId ||
+                 m?.listResponseMessage?.singleSelectReply?.selectedRowId ||
+                 m?.templateButtonReplyMessage?.selectedId || "";
+        };
 
-const text = getText(msg.message);
+        const text = getText(msg.message);
+        const prefix = config.prefix || '.';
+        const isCommand = text.startsWith(prefix);
 
-        const isCommand = text.startsWith(config.prefix);
-
-        // RÉPARATION CRITIQUE : Autorise tes propres commandes mais ignore tes discussions normales
         if (msg.key.fromMe && !isCommand) continue;
 
         const msgTime = (msg.messageTimestamp || 0) * 1000;
@@ -232,7 +228,7 @@ cleanupPuppeteerCache();
 startBot().catch(err => console.error('❌ Erreur Critique:', err));
 
 process.on('uncaughtException', (err) => {
-    if (!err.message.includes('ENOSPC')) console.error('Uncaught:', err);
+    if (!err.message.includes('ENOSPC')) console.error('Uncaught Error:', err);
 });
 
 module.exports = { store };
