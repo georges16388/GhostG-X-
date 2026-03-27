@@ -6,6 +6,44 @@
 
 const fs = require('fs');
 const path = require('path');
+// ... (garder les imports fs et path)
+
+async execute(sock, msg, args, extra) {
+    const from = msg.key.remoteJid;
+    let input = args[0]?.toLowerCase();
+
+    // Utiliser la variable globale pour vérifier l'état actuel
+    // On suppose que ton bot charge la config dans global.config au démarrage
+    if (!input) {
+        const current = global.config.selfMode ? 'PRIVATE 🔒' : 'PUBLIC 🌐';
+        return sock.sendMessage(from, { text: `*État actuel : ${current}*` });
+    }
+
+    let targetMode = ['private', 'priv', 'self'].includes(input);
+    
+    // 1. Mise à jour immédiate en mémoire (pour que le bot réagisse de suite)
+    global.config.selfMode = targetMode;
+
+    // 2. Mise à jour du fichier pour le prochain redémarrage
+    const configPath = path.join(process.cwd(), 'config.js');
+    updateConfigFile(configPath, 'selfMode', targetMode);
+
+    await sock.sendMessage(from, { text: AGM_MODE(targetMode ? 'private' : 'public') });
+}
+
+function updateConfigFile(filePath, key, value) {
+    try {
+        let content = fs.readFileSync(filePath, 'utf8');
+        // Regex plus précise pour cibler uniquement la clé exacte
+        const regex = new RegExp(`(\\b${key}\\b\\s*:\\s*)([^,\\n]+)`, 'i');
+        if (regex.test(content)) {
+            const newContent = content.replace(regex, `$1${value}`);
+            fs.writeFileSync(filePath, newContent, 'utf8');
+            return true;
+        }
+    } catch (e) { return false; }
+}
+
 
 // --- FONCTION DE DESIGN AGM ---
 const AGM_MODE = (mode) => `╭╼━≪• ᴀɢᴍ sʏsᴛᴇᴍ ᴍᴏᴅᴇ •≫━╾╮
