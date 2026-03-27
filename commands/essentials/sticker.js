@@ -14,12 +14,12 @@ const config = require('../../config');
 const { getTempDir, deleteTempFile } = require('../../utils/tempManager');
 
 // --- FONCTION DE DESIGN AGM ADAPTÉE ---
-const AGM_DESIGN = (type) => `╭╼━≪• sᴛɪᴄᴋᴇʀ ᴍᴀᴋᴇʀ •≫━╾╮
-┃ sᴛᴀᴛᴜs : 🟢 ɢᴇɴᴇʀᴀᴛᴇᴅ
-┃ ᴛʏᴘᴇ : ${type.toUpperCase()} ⚡
-┃ ɢᴜᴀʀᴅ : 🛡️ ᴀᴄᴛɪᴠᴇ
+const AGM_DESIGN = (type) => `╭╼━≪• *sᴛɪᴄᴋᴇʀ ᴍᴀᴋᴇʀ* •≫━╾╮
+┃ *sᴛᴀᴛᴜs* : 🟢 ɢᴇɴᴇʀᴀᴛᴇᴅ
+┃ *ᴛʏᴘᴇ* : ${type.toUpperCase()} ⚡
+┃ *ɢᴜᴀʀᴅ* : 🛡️ ᴀᴄᴛɪᴠᴇ
 ╰━━━━━━━━━━━━━━━╯
-> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
 
 module.exports = {
   name: 'sticker',
@@ -73,8 +73,8 @@ module.exports = {
       // --- CONFIGURATION DU NOM DU PACK (GHOSTG-X) ---
       const json = {
         'sticker-pack-id': crypto.randomBytes(32).toString('hex'),
-        'sticker-pack-name': "-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ", // NOM DU PACK
-        'sticker-pack-publisher': "ɢʜᴏsᴛɢ 𝐗", // NOM DE L'AUTEUR
+        'sticker-pack-name': "ᴛʀᴜᴛʜ ᴅᴇᴠɪᴄᴇs", // NOM DU PACK
+        'sticker-pack-publisher': "ɢʜᴏsᴛɢ-𝐗", // NOM DE L'AUTEUR
         'emojis': ['👻', '🔥']
       };
       
