@@ -5,12 +5,12 @@
 const db = require('../../database');
 
 // Design pour l'affichage du statut Welcome
-const WELCOME_STATUS_DESIGN = (status) => `╭╼━≪• ᴡᴇʟᴄᴏᴍᴇ sʏsᴛᴇᴍ •≫━╾╮
-┃ sᴛᴀᴛᴜs : ${status === 'on' ? '🟢 ᴀᴄᴛɪᴠᴀᴛᴇᴅ' : '🔴 ᴅᴇᴀᴄᴛɪᴠᴀᴛᴇᴅ'}
-┃ ᴛᴀʀɢᴇᴛ : ɴᴇᴡ ᴍᴇᴍʙᴇʀs 👥
-┃ ᴀᴄᴛɪᴏɴ : ᴀᴜᴛᴏ-ɢʀᴇᴇᴛ 👋
+const WELCOME_STATUS_DESIGN = (status) => `╭╼━≪• *ᴡᴇʟᴄᴏᴍᴇ sʏsᴛᴇᴍ* •≫━╾╮
+┃ *sᴛᴀᴛᴜs* : ${status === 'on' ? '🟢 ᴀᴄᴛɪᴠᴀᴛᴇᴅ' : '🔴 ᴅᴇᴀᴄᴛɪᴠᴀᴛᴇᴅ'}
+┃ *ᴛᴀʀɢᴇᴛ* : ɴᴇᴡ ᴍᴇᴍʙᴇʀs 👥
+┃ *ᴀᴄᴛɪᴏɴ* : ᴀᴜᴛᴏ-ɢʀᴇᴇᴛ 👋
 ╰━━━━━━━━━━━━━━━╯
-> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
 
 module.exports = {
   name: 'welcome',
