@@ -12,7 +12,7 @@ const AGM_DESIGN = (type) => `╭╼━≪• ᴍᴇᴅɪᴀ ᴄᴏɴᴠᴇʀᴛ
 ┃ ᴏᴜᴛᴘᴜᴛ : ${type.toUpperCase()} ⚡
 ┃ ᴍᴏᴅᴇ : sʏsᴛᴇᴍ 🛡️
 ╰━━━━━━━━━━━━━━━╯
-> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
 
 module.exports = {
   name: 'simage',
