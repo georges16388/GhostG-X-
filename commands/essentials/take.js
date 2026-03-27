@@ -8,7 +8,7 @@ const webp = require('node-webpmux');
 
 module.exports = {
   name: 'take',
-  aliases: ['steal', 'wm'],
+  aliases: ['t', 'steal', 'wm'],
   category: 'media',
   description: 'Change le nom d\'un sticker.',
 
@@ -60,7 +60,7 @@ module.exports = {
       // Envoi du sticker et du message de succès
       await sock.sendMessage(from, { sticker: result }, { quoted: msg });
       
-      const successMsg = `╭╼━≪• ꜱᴛɪᴄᴋᴇʀ ꜱᴛᴇᴀʟᴇʀ •≫━╾╮\n┃ ꜱᴛᴀᴛᴜꜱ : 🟢 ʀᴇ-ᴘᴀᴄᴋᴇᴅ\n┃ ᴏᴡɴᴇʀ : ${packname}\n╰━━━━━━━━━━━━━━━╯\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏꜱᴛɢ x*`;
+      const successMsg = `╭╼━≪• *ꜱᴛɪᴄᴋᴇʀ ꜱᴛᴇᴀʟᴇʀ* •≫━╾╮\n┃ *ꜱᴛᴀᴛᴜꜱ* : 🟢 ʀᴇ-ᴘᴀᴄᴋᴇᴅ\n┃ *ᴏᴡɴᴇʀ* : ${packname}\n╰━━━━━━━━━━━━━━━╯\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏꜱᴛɢ x*`;
       
       await sock.sendMessage(from, { text: successMsg }, { quoted: msg });
 
