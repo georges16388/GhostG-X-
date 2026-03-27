@@ -9,11 +9,10 @@ const fetch = require('node-fetch');
 // --- FONCTION DE DESIGN AGM (TRANSLATE STYLE) ---
 const AGM_TR = (text, lang) => `╭╼━≪• ᴀɢᴍ ᴛʀᴀɴꜱʟᴀᴛᴏʀ •≫━╾╮
 ┃ ᴛᴏ ʟᴀɴɢ : ${lang.toUpperCase()} 🌐
+┃ ᴛᴇxᴛ : ${text}
 ┃ ꜱᴛᴀᴛᴜꜱ : 🟢 ᴛʀᴀɴꜱʟᴀᴛᴇᴅ
->┃ ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏꜱᴛɢ x
 ╰━━━━━━━━━━━━━━━╯
-
-${text}`;
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
 
 module.exports = {
   name: 'translate',
