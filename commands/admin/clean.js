@@ -3,84 +3,77 @@
  * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
-// --- FONCTION DE DESIGN AGM ADAPTÉE ---
 const AGM_DESIGN = (deleted, total) => `╭╼━≪• ᴘᴜʀɢᴇ sʏsᴛᴇᴍ •≫━╾╮
 ┃ sᴛᴀᴛᴜs : 🟢 ᴄᴏᴍᴘʟᴇᴛᴇᴅ
 ┃ ᴅᴇʟᴇᴛᴇᴅ : ${deleted} / ${total} 🗑️
 ┃ sᴄᴏᴘᴇ : 🛡️ ᴀᴄᴛɪᴠᴇ
 ╰━━━━━━━━━━━━━━━╯
-> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
 
 module.exports = {
   name: 'clean',
-  aliases: ['purge', 'clear'],
+  aliases: ['purge', 'clear', 'del'],
   category: 'admin',
-  description: 'Clean messages (all or from specific user if replied)',
-  usage: '.clean <number>',
+  description: 'Supprime les messages du groupe ou d\'un utilisateur spécifique.',
+  usage: '.clean <nombre> (ou répondre à un message)',
   groupOnly: true,
   adminOnly: true,
   botAdminNeeded: true,
 
-  async execute(sock, msg, args, extra) {
+  async execute(sock, msg, args, { from, reply, react }) {
     try {
-      const count = parseInt(args[0]);
-      if (!count || count < 1 || count > 100) {
-        return extra.reply('⚠️ *Veuillez entrer un nombre valide (1-100).*');
+      // 1. Détermination du nombre de messages
+      let count = parseInt(args[0]) || 10; // Par défaut 10 si non précisé
+      if (count > 100) count = 100; // Limite de sécurité
+
+      // 2. Récupération du store (on suppose qu'il est accessible via global ou passé)
+      // Si tu n'as pas de store, Baileys ne peut pas "deviner" les anciens messages.
+      const store = global.store; 
+      if (!store || !store.messages[from]) {
+        return reply('⚠️ *Impossible d\'accéder à l\'historique des messages (Store manquant).*');
       }
 
-      const jid = extra.from;
-      const { store } = require('../../index');
+      await react('🧹');
 
-      // Check if message is a reply
-      const quotedParticipant = msg.message?.extendedTextMessage?.contextInfo?.participant;
+      // 3. Identification de la cible (Si c'est un reply)
+      const quoted = msg.message?.extendedTextMessage?.contextInfo;
+      const targetUser = quoted?.participant;
 
-      const msgs = store.messages[jid];
-      if (!msgs) {
-        return extra.reply('⚠️ *Aucun message trouvé dans la mémoire du bot.*');
-      }
+      // Récupération et tri des messages (du plus récent au plus ancien)
+      let allMessages = store.messages[from].array || Object.values(store.messages[from]);
+      let filteredMessages = allMessages
+        .filter(m => m.key && !m.key.fromMe) // On évite de supprimer ses propres messages de log si besoin
+        .sort((a, b) => (b.messageTimestamp || 0) - (a.messageTimestamp || 0));
 
-      let messagesToDelete = [];
+      let toDelete = [];
 
-      if (quotedParticipant) {
-        // Mode: Delete specific user's messages
-        messagesToDelete = Object.values(msgs)
-          .filter(m => {
-            const sender = m.key.participant || m.key.remoteJid;
-            return sender === quotedParticipant;
-          })
-          .sort((a, b) => (b.messageTimestamp || 0) - (a.messageTimestamp || 0))
-          .slice(0, count);
+      if (targetUser) {
+        // Mode suppression ciblée
+        toDelete = filteredMessages.filter(m => (m.key.participant || m.key.remoteJid) === targetUser).slice(0, count);
       } else {
-        // Mode: Delete last N messages from chat
-        messagesToDelete = Object.values(msgs)
-          .sort((a, b) => (b.messageTimestamp || 0) - (a.messageTimestamp || 0))
-          .slice(0, count);
+        // Mode suppression globale
+        toDelete = filteredMessages.slice(0, count);
       }
 
-      if (messagesToDelete.length === 0) {
-        return extra.reply('⚠️ *Aucun message à supprimer.*');
-      }
-
-      await sock.sendMessage(jid, { react: { text: "🧹", key: msg.key } });
+      if (toDelete.length === 0) return reply('⚠️ *Aucun message trouvé à supprimer.*');
 
       let deletedCount = 0;
-      for (const m of messagesToDelete) {
+      for (const m of toDelete) {
         try {
-          await sock.sendMessage(jid, { delete: m.key });
+          await sock.sendMessage(from, { delete: m.key });
           deletedCount++;
-          // Small delay to avoid rate limiting
-          await new Promise(resolve => setTimeout(resolve, 350));
+          // Petit délai pour éviter le spam block de WhatsApp
+          await new Promise(res => setTimeout(res, 250));
         } catch (err) {
-          console.error('[clean] delete error:', err.message);
+          // On continue même si un message échoue
         }
       }
 
-      // Envoi du rapport de purge final
-      return extra.reply(AGM_DESIGN(deletedCount, count));
+      return reply(AGM_DESIGN(deletedCount, toDelete.length));
 
     } catch (e) {
-      console.error('[clean cmd] error:', e);
-      extra.reply('❌ *Échec du nettoyage du chat.*');
+      console.error('[CLEAN ERROR]:', e);
+      reply('❌ *Erreur système lors de la purge.*');
     }
   }
 };
