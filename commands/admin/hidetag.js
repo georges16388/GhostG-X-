@@ -7,11 +7,11 @@
 const { downloadMediaMessage } = require('@whiskeysockets/baileys');
 
 // Design pour l'annonce du Tag avec Signature
-const TAG_DESIGN = (text) => `╭╼━≪• ᴀɴɴᴏᴜɴᴄᴇᴍᴇɴᴛ •≫━╾╮
-${text ? `┃ ᴍsɢ : ${text}\n` : ''}┃ ᴛᴀɢ : ᴇᴠᴇʀʏᴏɴᴇ 🔔
+const TAG_DESIGN = (text) => `╭╼━≪• *ᴀɴɴᴏᴜɴᴄᴇᴍᴇɴᴛ* •≫━╾╮
+${text ? `┃ *ᴍsɢ* : *${text}*\n` : ''}┃ *ᴛᴀɢ* : ᴇᴠᴇʀʏᴏɴᴇ 🔔
 ┃ ғʀᴏᴍ : ᴀᴅᴍɪɴ 🛡️
 ╰━━━━━━━━━━━━━━━╯
-> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
 
 module.exports = {
   name: 'hidetag',
