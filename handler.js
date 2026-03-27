@@ -163,25 +163,42 @@ if (command.adminOnly && !adminStatus && !ownerStatus) return; // Commandes admi
 const handleGroupUpdate = async (sock, update) => {
     const { id, participants, action } = update;
     try {
-        const settings = database.getGroupSettings ? database.getGroupSettings(id) : { welcome: true };
+        // Récupération des paramètres du groupe depuis la DB
+        const settings = database.getGroupSettings ? database.getGroupSettings(id) : null;
+        
+        // Si les réglages n'existent pas ou si le welcome est désactivé, on arrête
+        if (!settings || !settings.welcome) return;
 
         for (const user of participants) {
-            if (action === 'add' && settings.welcome) {
-                const welcomeText = `╭╼━≪• *ɴᴇᴡ ᴍᴇᴍʙᴇʀ* •≫━╾╮
+            if (action === 'add') {
+                const metadata = await sock.groupMetadata(id);
+                
+                // --- LOGIQUE DU MESSAGE DYNAMIQUE ---
+                // On utilise le message de la DB, sinon un message par défaut
+                let welcomeText = settings.welcomeMessage || 
+                    "╭╼━≪• *ɴᴇᴡ ᴍᴇᴍʙᴇʀ* •≫━╾╮
 ┃ *ᴡᴇʟᴄᴏᴍᴇ* : @${user.split('@')[0]} 👋🏾
 ┃ *ɴᴏᴜs sᴏᴍᴍᴇs ʜᴇᴜʀᴇᴜx\n ᴅᴇ ᴛ'ᴀᴠᴏɪʀ ᴘᴀʀᴍɪ ɴᴏᴜs*
 ┃ *ᴍᴇᴍʙʀᴇs ᴀᴄᴛᴜᴇʟs* : #memberCount
 ┃ *ᴛɪᴍᴇ* : #time ⏰
 ┃ *ᴊᴇsᴜs ᴛᴀɪᴍᴇ ❤️*
 ╰━━━━━━━━━━━━━━━╯
-> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏꜱᴛɢ x*`;
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏꜱᴛɢ x*";
+
+                // Remplacement des variables magiques
+                const finalMessage = welcomeText
+                    .replace('@user', `@${user.split('@')[0]}`)
+                    .replace('#memberCount', metadata.participants.length)
+                    .replace('#time', new Date().toLocaleTimeString('fr-FR', { timeZone: 'Africa/Ouagadougou' }))
+                    .replace('#groupName', metadata.subject);
+
                 await sock.sendMessage(id, { 
-                    text: welcomeText, 
+                    text: finalMessage, 
                     mentions: [user],
                     contextInfo: {
                         externalAdReply: {
                             title: "ɢʜᴏꜱᴛɢ-x ᴘʀᴇꜱᴛɪɢᴇ",
-                            body: "ᴊᴇsᴜs ᴛᴀɪᴍᴇ ❤️✝️",
+                            body: `Bienvenue dans ${metadata.subject}`,
                             mediaType: 1,
                             thumbnailUrl: "https://files.catbox.moe/2fmwpu.jpg",
                             sourceUrl: "https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c"
@@ -190,24 +207,7 @@ const handleGroupUpdate = async (sock, update) => {
                 });
             }
         }
-    } catch (e) { console.error('Group Update Error:', e); }
-};
-
-const initializeAntiCall = (sock) => {
-    sock.ev.on('call', async (node) => {
-        const { id, from, status } = node[0];
-        if (status === 'offer') {
-            await sock.rejectCall(id, from);
-            await sock.sendMessage(from, { 
-                text: "🚫 *ʟᴇꜱ ᴀᴘᴘᴇʟꜱ ꜱᴏɴᴛ ɪɴᴛᴇʀᴅɪᴛꜱ.* \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*" 
-            });
-        }
-    });
-};
-
-module.exports = { 
-    handleMessage, 
-    handleGroupUpdate, 
-    isOwner, 
-    initializeAntiCall 
+    } catch (e) { 
+        console.error('Group Update Error:', e); 
+    }
 };
