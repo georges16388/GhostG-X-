@@ -9,6 +9,18 @@ const database = require('./database');
 const { addMessage } = require('./utils/groupstats');
 const { loadCommands } = require('./utils/commandLoader');
 
+
+const initializeAntiCall = (sock) => {
+    sock.ev.on('call', async (calls) => {
+        for (const call of calls) {
+            if (call.status === 'offer') {
+                await sock.sendMessage(call.from, {
+                    text: "🚫 Les appels ne sont pas autorisés."
+                });
+            }
+        }
+    });
+};
 // --- SYSTÈME ANTI-RÉPÉTITION (CACHE) ---
 const processedMessages = new Set();
 setInterval(() => processedMessages.clear(), 10 * 60 * 1000);
@@ -235,5 +247,6 @@ const handleGroupUpdate = async (sock, update) => {
 
 module.exports = {
     handleMessage,
-    handleGroupUpdate
+    handleGroupUpdate,
+    initializeAnticall
 };
