@@ -2,6 +2,7 @@
  * System Updater - AGM Global Core (Ultra-Stable Edition)
  * Source: https://github.com/georges16388/GhostG-X-
  * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
+ * Role : ᴅᴇᴠᴇʟᴏᴘᴘᴇʀ ⚡
  */
 
 const { exec } = require('child_process');
@@ -9,15 +10,14 @@ const fs = require('fs');
 const path = require('path');
 const https = require('https');
 const http = require('http');
-const config = require('../../config');
 
-// --- DESIGN AGM ---
-const AGM_UPDATE = (status, info = "") => `╭╼━≪• ᴀɢᴍ sʏsᴛᴇᴍ ᴜᴘᴅᴀᴛᴇ •≫━╾╮
+// --- DESIGN AGM ELITE ---
+const AGM_UPDATE = (status, info = "SYSTEM") => `╭╼━≪• ᴀɢᴍ sʏsᴛᴇᴍ ᴜᴘᴅᴀᴛᴇ •≫━╾╮
 ┃ sᴛᴀᴛᴜs : ${status} 🔄
-┃ ɪɴғᴏ : ${info} 📁
+┃ ᴛᴀsᴋ : ${info} ⚙️
 ┃ sᴏᴜʀᴄᴇ : ɢɪᴛʜᴜʙ/ᴍᴀɪɴ 🌐
 ╰━━━━━━━━━━━━━━━╯
-> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
 
 // --- UTILS : RUN COMMAND ---
 function run(cmd) {
@@ -62,19 +62,20 @@ function copyRecursive(src, dest, ignore = []) {
 
 module.exports = {
   name: 'update',
-  aliases: ['upgrade', 'patch'],
+  aliases: ['upgrade', 'patch', 'up'],
   category: 'owner',
-  description: 'Mise à jour complète avec installation des dépendances.',
+  description: 'Mise à jour complète du système GhostG-X.',
   usage: '.update',
   ownerOnly: true,
 
   async execute(sock, msg, args, extra) {
-    const zipUrl = args[0] || config.updateZipUrl || "https://github.com/georges16388/GhostG-X-/archive/refs/heads/main.zip";
-    const from = extra.from;
+    const from = msg.key.remoteJid;
+    // On récupère l'URL depuis la config ou l'argument, sinon défaut
+    const zipUrl = args[0] || "https://github.com/georges16388/GhostG-X-/archive/refs/heads/main.zip";
 
     try {
       await sock.sendMessage(from, { react: { text: '📡', key: msg.key } });
-      await extra.reply(AGM_UPDATE('🟠 ᴅᴏᴡɴʟᴏᴀᴅɪɴɢ...'));
+      await extra.reply(AGM_UPDATE('🟠 ᴅᴏᴡɴʟᴏᴀᴅɪɴɢ', 'ғᴇᴛᴄʜɪɴɢ ᴢɪᴘ...'));
 
       const tmpDir = path.join(process.cwd(), 'temp_update');
       if (fs.existsSync(tmpDir)) fs.rmSync(tmpDir, { recursive: true, force: true });
@@ -83,45 +84,43 @@ module.exports = {
       const zipPath = path.join(tmpDir, 'update.zip');
       const extractTo = path.join(tmpDir, 'extract');
 
-      // 1. Téléchargement du ZIP
+      // 1. Téléchargement
       await downloadFile(zipUrl, zipPath);
 
-      // 2. Extraction
-      await run(process.platform === 'win32' 
-        ? `powershell -Command "Expand-Archive -Path '${zipPath}' -DestinationPath '${extractTo}' -Force"`
-        : `unzip -o '${zipPath}' -d '${extractTo}'`
-      );
+      // 2. Extraction (Correction pour Linux/Windows)
+      await extra.reply(AGM_UPDATE('🟡 ᴇxᴛʀᴀᴄᴛɪɴɢ', 'ᴜɴᴢɪᴘᴘɪɴɢ ғɪʟᴇs'));
+      if (process.platform === 'win32') {
+        await run(`powershell -Command "Expand-Archive -Path '${zipPath}' -DestinationPath '${extractTo}' -Force"`);
+      } else {
+        await run(`unzip -o "${zipPath}" -d "${extractTo}"`);
+      }
 
-      // 3. Identification du dossier GitHub (souvent GhostG-X-main)
+      // 3. Identification du dossier source
       const entries = fs.readdirSync(extractTo).filter(e => !e.startsWith('.'));
       const srcRoot = entries.length === 1 ? path.join(extractTo, entries[0]) : extractTo;
 
-      // 4. Copie Sécurisée
-      const ignore = ['node_modules', '.git', 'session', 'GhostG-X-Session', 'database', 'config.js', '.env'];
+      // 4. Copie Sécurisée (On ne touche pas à la config ni à la session)
+      const ignore = ['node_modules', '.git', 'session', 'GhostG-X-Session', 'database', 'config.js', '.env', 'package-lock.json'];
       copyRecursive(srcRoot, process.cwd(), ignore);
 
-      // 5. CRITIQUE : Installation des nouvelles dépendances (npm install)
-      await extra.reply(AGM_UPDATE('🔵 ɪɴsᴛᴀʟʟɪɴɢ...', 'ɴᴘᴍ ᴘᴀᴄᴋᴀɢᴇs'));
+      // 5. Installation des dépendances
+      await extra.reply(AGM_UPDATE('🔵 ɪɴsᴛᴀʟʟɪɴɢ', 'ɴᴘᴍ ᴘᴀᴄᴋᴀɢᴇs...'));
       await run('npm install');
 
       // 6. Nettoyage
       fs.rmSync(tmpDir, { recursive: true, force: true });
 
       await sock.sendMessage(from, { react: { text: '✅', key: msg.key } });
-      await extra.reply(AGM_UPDATE('🟢 sᴜᴄᴄᴇss', 'ʀᴇsᴛᴀʀᴛɪɴɢ...'));
+      await extra.reply(AGM_UPDATE('🟢 sᴜᴄᴄᴇss', 'ʀᴇsᴛᴀʀᴛɪɴɢ ɴᴏᴡ'));
 
-      // 7. Redémarrage Intelligent
+      // 7. Redémarrage
       setTimeout(() => {
-        if (process.env.PM2_HOME || process.env.PM2_JSON) {
-          run('pm2 restart all').catch(() => process.exit(0));
-        } else {
-          process.exit(0);
-        }
+        process.exit(0); // Le process manager (PM2/Panel) relancera le bot
       }, 3000);
 
     } catch (error) {
-      console.error('Update Error:', error);
-      await extra.reply(AGM_UPDATE('🔴 ᴇʀʀᴏʀ', error.message.substring(0, 100)));
+      console.error('[UPDATE ERROR]:', error);
+      await extra.reply(AGM_UPDATE('🔴 ᴇʀʀᴏʀ', error.message.substring(0, 50)));
     }
   }
 };
