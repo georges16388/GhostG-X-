@@ -7,7 +7,7 @@ const database = require('../../database');
 
 // --- FONCTION DE DESIGN AGM ---
 const AGM_DESIGN = (status, action) => `╭╼━≪• *ᴀɴᴛɪ-ʟɪɴᴋ sʏsᴛᴇᴍ* •≫━╾╮
-┃ *sᴛᴀᴛᴜs* : ${status === 'ON' ? '🟢  *ᴀᴄᴛɪᴠᴀᴛᴇᴅ* : '🔴 ᴅᴇᴀᴄᴛɪᴠᴀᴛᴇᴅ'}
+┃ *sᴛᴀᴛᴜs* : ${status === 'ON' ? '🟢*ᴀᴄᴛɪᴠᴀᴛᴇᴅ* : '🔴 ᴅᴇᴀᴄᴛɪᴠᴀᴛᴇᴅ'}
 ┃ *ᴀᴄᴛɪᴏɴ* : ${action.toUpperCase()} ⚡
 ┃ *ɢᴜᴀʀᴅ* : 🛡️ ᴀᴄᴛɪᴠᴇ
 ╰━━━━━━━━━━━━━━━╯
