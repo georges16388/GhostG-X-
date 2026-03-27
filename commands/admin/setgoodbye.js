@@ -1,61 +1,57 @@
 /**
- * Set Goodbye - Customize goodbye message
+ * sᴇᴛɢᴏᴏᴅʙʏᴇ ᴄᴏᴍᴍᴀɴᴅ - ᴀɢᴍ sʏsᴛᴇᴍ ᴄᴏʀᴇ
+ * ᴄᴜsᴛᴏᴍɪᴢᴇ ɢᴏᴏᴅʙʏᴇ ᴍᴇssᴀɢᴇ ᴛᴇxᴛ
+ * sᴛʏʟᴇ ʙʏ -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
-const db = require('../../database');
+const ᴅʙ = require('../../database');
 
-// Design pour la confirmation de mise à jour
-const SETGOODBYE_DESIGN = (preview) => `╭╼━≪• ɢᴏᴏᴅʙʏᴇ sᴇᴛᴛɪɴɢ •≫━╾╮
+const sᴇᴛɢᴏᴏᴅʙʏᴇ_ᴅᴇsɪɢɴ = (ᴘʀᴇᴠɪᴇᴡ) => `╭╼━≪• *ɢᴏᴏᴅʙʏᴇ sᴇᴛᴛɪɴɢ* •≫━╾╮
 ┃ sᴛᴀᴛᴜs : ᴜᴘᴅᴀᴛᴇᴅ ✅
 ┃ ᴛʏᴘᴇ : ᴄᴜsᴛᴏᴍ ᴛᴇxᴛ 📝
-┃ ᴘʀᴇᴠɪᴇᴡ : ${preview}
+┃ ᴘʀᴇᴠɪᴇᴡ : ${ᴘʀᴇᴠɪᴇᴡ}
 ╰━━━━━━━━━━━━━━━╯
-> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
 
 module.exports = {
   name: 'setgoodbye',
-  aliases: ['goodbyetext'],
+  aliases: ['goodbyetext', 'changegoodbye'],
   category: 'admin',
-  desc: 'Set custom goodbye message',
-  usage: 'setgoodbye <message> (use @user for member mention)',
+  description: 'ᴍᴏᴅɪꜰɪᴇʀ ʟᴇ ᴍᴇssᴀɢᴇ ᴅᴇ ᴅᴇ́ᴘᴀʀᴛ ᴅᴜ ɢʀᴏᴜᴘᴇ.',
+  usage: '.sᴇᴛɢᴏᴏᴅʙʏᴇ <ᴛᴇxᴛᴇ>',
   groupOnly: true,
   adminOnly: true,
-  botAdminNeeded: true,
-  execute: async (sock, msg, args) => {
+
+  execute: async (sock, msg, args, { from, reply, react }) => {
     try {
-      const groupId = msg.key.remoteJid;
-      
-      if (!args.length) {
-        const groupSettings = db.getGroupSettings(groupId);
-        return await sock.sendMessage(groupId, {
-          text: `📝 *Current Goodbye Message*\n\n${groupSettings.goodbyeMessage}\n\n*Usage:* .setgoodbye <message>\n\n*Tip:* Use @user to mention the member who left`
-        }, { quoted: msg });
+      const ɴᴇᴡᴛᴇxᴛ = args.join(' ');
+
+      if (!ɴᴇᴡᴛᴇxᴛ) {
+        const sᴇᴛᴛɪɴɢs = ᴅʙ.getGroupSettings(from);
+        return reply(
+          `📝 *ᴍᴇssᴀɢᴇ ᴅᴇ ᴅᴇ́ᴘᴀʀᴛ ᴀᴄᴛᴜᴇʟ :*\n\n${sᴇᴛᴛɪɴɢs.goodbyeMessage}\n\n` +
+          `💡 *ᴠᴀʀɪᴀʙʟᴇs ᴅɪsᴘᴏɴɪʙʟᴇs :*\n` +
+          `  > @user : ɴᴏᴍ ᴅᴜ ᴍᴇᴍʙʀᴇ\n` +
+          `  > #memberCount : ᴍᴇᴍʙʀᴇs ʀᴇsᴛᴀɴᴛs\n` +
+          `  > #time : ʜᴇᴜʀᴇ ᴅᴜ ᴅᴇ́ᴘᴀʀᴛ`
+        );
       }
-      
-      const goodbyeMessage = args.join(' ');
-      
-      if (goodbyeMessage.length > 500) {
-        return await sock.sendMessage(groupId, {
-          text: '❌ Goodbye message is too long! Maximum 500 characters.'
-        }, { quoted: msg });
-      }
-      
-      // Mise à jour en base de données
-      db.updateGroupSettings(groupId, { goodbyeMessage });
-      
-      // Préparation de la prévisualisation pour le design
-      const previewText = goodbyeMessage.replace('@user', '@' + (msg.key.participant || msg.participant).split('@')[0]);
-      
-      await sock.sendMessage(groupId, {
-        text: SETGOODBYE_DESIGN(previewText),
-        mentions: [msg.key.participant || msg.participant]
-      }, { quoted: msg });
-      
-    } catch (error) {
-      console.error('Set Goodbye Error:', error);
-      await sock.sendMessage(msg.key.remoteJid, {
-        text: `❌ Error: ${error.message}`
-      }, { quoted: msg });
+
+      if (ɴᴇᴡᴛᴇxᴛ.length > 500) return reply('❌ *ᴍᴇssᴀɢᴇ ᴛʀᴏᴘ ʟᴏɴɢ ! (ᴍᴀx 500 ᴄᴀʀᴀᴄᴛᴇ̀ʀᴇs).*');
+
+      await react('✍️');
+      ᴅʙ.updateGroupSettings(from, { 
+        goodbyeMessage: ɴᴇᴡᴛᴇxᴛ,
+        goodbye: true 
+      });
+
+      const ᴘʀᴇᴠɪᴇᴡᴛᴇxᴛ = ɴᴇᴡᴛᴇxᴛ.replace('@user', '@' + (msg.key.participant || from).split('@')[0]);
+
+      return reply(sᴇᴛɢᴏᴏᴅʙʏᴇ_ᴅᴇsɪɢɴ(ᴘʀᴇᴠɪᴇᴡᴛᴇxᴛ));
+
+    } catch (ᴇʀʀᴏʀ) {
+      console.error('[sᴇᴛɢᴏᴏᴅʙʏᴇ ᴇʀʀᴏʀ]:', ᴇʀʀᴏʀ);
+      reply(`❌ *ᴇʀʀᴇᴜʀ :* ${ᴇʀʀᴏʀ.ᴍᴇssᴀɢᴇ}`);
     }
   }
 };
