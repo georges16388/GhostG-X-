@@ -33,7 +33,7 @@ module.exports = {
 *ᴇx: ${ᴘʀᴇꜰɪx}ɢɪ ᴅᴇ́ᴄʀɪᴛ ᴄᴇᴛᴛᴇ ɪᴍᴀɢᴇ*`);
       }
 
-      if (!prompt) return extra.reply("❌ *Veuillez préciser ce que l'IA doit faire !*");
+      if (!prompt) return extra.reply("❌ *ᴠᴇᴜɪʟʟᴇᴢ ᴘʀᴇ́ᴄɪsᴇʀ ᴄᴇ ǫᴜᴇ ʟ'ɪᴀ ᴅᴏɪᴛ ꜰᴀɪʀᴇ !*");
 
       await sock.sendMessage(from, { react: { text: "👁️", key: msg.key } });
 
