@@ -117,6 +117,10 @@ console.log('OwnerStatus:', isOwner(sender), 'Sender:', sender);
         }
 
         // --- 3. EXÉCUTION DES COMMANDES ---
+        if (!global.commands || global.commands.size === 0) {
+    console.error("❌ Command system not loaded");
+    return;
+}
         if (isCmd && commandName) {
             const command = global.commands.get(commandName) || 
                           [...global.commands.values()].find(c => c.aliases && c.aliases.includes(commandName));
