@@ -1,5 +1,5 @@
 /**
- * ɢʜᴏꜱᴛɢ-x ᴍᴅ - Main Message Handler (Prestige Edition V5 - Fusion)
+ * ɢʜᴏꜱᴛɢ-x ᴍᴅ - Main Message Handler (Prestige Edition V5.1 - Fusion)
  * Optimized by Gemini - Powered by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
@@ -12,7 +12,6 @@ const { loadCommands } = require('./utils/commandLoader');
 const processedMessages = new Set();
 const reactionCooldown = new Map();
 
-// ɴᴇᴛᴛᴏʏᴀɢᴇ ᴀᴜᴛᴏᴍᴀᴛɪǫᴜᴇ ᴅᴜ ᴄᴀᴄʜᴇ ᴅᴇs ᴍᴇssᴀɢᴇs ᴛᴏᴜᴛᴇs ʟᴇs 10 ᴍɪɴ
 setInterval(() => processedMessages.clear(), 10 * 60 * 1000);
 
 const canReact = (jid) => {
@@ -81,32 +80,19 @@ const handleMessage = async (sock, msg) => {
         const args = isCmd ? body.trim().split(/\s+/).slice(1) : [];
         const ownerStatus = isOwner(sender);
 
-        // --- sʏsᴛᴇ̀ᴍᴇ ᴅᴇ ʀᴇ́ᴀᴄᴛɪᴏɴs (sᴜᴘʀᴇᴍᴇ & ᴀᴜᴛᴏ) ---
+        // --- sʏsᴛᴇ̀ᴍᴇ ᴅᴇ ʀᴇ́ᴀᴄᴛɪᴏɴs ---
         if (config.autoReact && canReact(from)) {
-            // 1. sᴜᴘʀᴇᴍᴇ ʀᴇᴀᴄᴛ (ᴘʀɪᴏʀɪᴛᴇ́ ᴀᴜ ᴍᴀɪ̂ᴛʀᴇ)
             if (ownerStatus) {
                 const sReact = config.supremeReact || '👑';
                 await sock.sendMessage(from, { react: { text: sReact, key: msg.key } });
-            } 
-            // 2. ʀᴇ́ᴀᴄᴛɪᴏɴ ᴀᴜᴛᴏᴍᴀᴛɪǫᴜᴇ ᴘᴏᴜʀ ʟᴇs ᴀᴜᴛʀᴇs
-            else if (!msg.key.fromMe) {
+            } else if (!msg.key.fromMe) {
                 const emojis = ['⚡', '💀', '🔥', '✨', '❤️', '🙏🏾', '🇧🇫'];
                 const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
-                // sɪ ᴄ'ᴇsᴛ ᴜɴᴇ ᴄᴏᴍᴍᴀɴᴅᴇ, ᴏɴ ᴍᴇᴛ ᴜɴ sᴀʙʟɪᴇʀ, sɪɴᴏɴ ᴜɴ ᴇᴍᴏᴊɪ ᴀʟᴇ́ᴀᴛᴏɪʀᴇ
                 await sock.sendMessage(from, { react: { text: isCmd ? '⏳' : randomEmoji, key: msg.key } });
             }
         }
 
         if (isGroup && typeof addMessage === 'function') addMessage(from, sender);
-
-        // ᴀɴᴛɪ-ʟɪᴇɴ
-        if (isGroup && !ownerStatus && /(https?:\/\/|chat.whatsapp.com)/gi.test(body)) {
-            const groupSettings = database.getGroupSettings ? database.getGroupSettings(from) : { antilink: false };
-            if (groupSettings?.antilink && !(await isAdmin(sock, sender, from))) {
-                await sock.sendMessage(from, { delete: msg.key });
-                return;
-            }
-        }
 
         // --- ᴇxᴇ́ᴄᴜᴛɪᴏɴ ᴄᴏᴍᴍᴀɴᴅᴇs ---
         if (isCmd && commandName) {
@@ -114,23 +100,19 @@ const handleMessage = async (sock, msg) => {
                           [...global.commands.values()].find(c => c.aliases && c.aliases.includes(commandName));
 
             if (!command) return;
-            if (config.selfMode && !ownerStatus) return;
-
             const adminStatus = isGroup ? await isAdmin(sock, sender, from) : false;
-            
-            // ᴠᴇ́ʀɪꜰɪᴄᴀᴛɪᴏɴ ᴅᴇs ᴘᴇʀᴍɪssɪᴏɴs (ᴍᴇssᴀɢᴇs ᴇɴ sᴍᴀʟʟᴄᴀᴘs ᴅᴇᴘᴜɪs config.js)
-            if (command.ownerOnly && !ownerStatus) return reply(config.messages.ownerOnly);
-            if (command.groupOnly && !isGroup) return reply(config.messages.groupOnly);
-            if (command.adminOnly && !adminStatus && !ownerStatus) return reply(config.messages.adminOnly);
-
-            console.log(`📩 [ɢʜᴏꜱᴛɢ-x] ᴄᴏᴍᴍᴀɴᴅᴇ : ${commandName} | ᴘᴀʀ : ${pushName}`);
-            if (config.autoTyping) await sock.sendPresenceUpdate('composing', from);
 
             const reply = (text) => {
                 return sock.sendMessage(from, { 
                     text: `${text}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*` 
                 }, { quoted: msg });
             };
+
+            if (command.ownerOnly && !ownerStatus) return reply(config.messages.ownerOnly);
+            if (command.groupOnly && !isGroup) return reply(config.messages.groupOnly);
+            if (command.adminOnly && !adminStatus && !ownerStatus) return reply(config.messages.adminOnly);
+
+            if (config.autoTyping) await sock.sendPresenceUpdate('composing', from);
 
             try {
                 await command.execute(sock, msg, args, {
@@ -148,27 +130,49 @@ const handleMessage = async (sock, msg) => {
 };
 
 /**
- * ɢᴇsᴛɪᴏɴɴᴀɪʀᴇ ᴅᴇ ɢʀᴏᴜᴘᴇs (ᴅᴇsɪɢɴ ʀᴇsᴛᴀᴜʀᴇ́)
+ * ɢᴇsᴛɪᴏɴɴᴀɪʀᴇ ᴅᴇ ɢʀᴏᴜᴘᴇs (ᴡᴇʟᴄᴏᴍᴇ & ɢᴏᴏᴅʙʏᴇ ᴅʏɴᴀᴍɪǫᴜᴇ)
  */
 const handleGroupUpdate = async (sock, update) => {
     const { id, participants, action } = update;
     try {
-        const settings = database.getGroupSettings ? database.getGroupSettings(id) : { welcome: true, goodbye: true };
+        const settings = database.getGroupSettings(id) || { welcome: true, goodbye: true };
         const metadata = await sock.groupMetadata(id);
         const time = new Date().toLocaleTimeString('fr-FR', { timeZone: 'Africa/Ouagadougou' });
 
         for (const user of participants) {
             const userTag = `@${user.split('@')[0]}`;
 
+            // --- Section Welcome ---
             if (action === 'add' && settings.welcome) {
-                const welcomeText = `╭╼━≪• *ɴᴇᴡ ᴍᴇᴍʙᴇʀ* •≫━╾╮\n┃ *ᴡᴇʟᴄᴏᴍᴇ* : ${userTag} 👋🏾\n┃ *ɴᴏᴜs sᴏᴍᴍᴇs ʜᴇᴜʀᴇᴜx\n┃ ᴅᴇ ᴛ'ᴀᴠᴏɪʀ ᴘᴀʀᴍɪ ɴᴏᴜs*\n┃ *ᴍᴇᴍʙʀᴇs* : ${metadata.participants.length}\n┃ *ᴛɪᴍᴇ* : ${time} ⏰\n┃ *ᴊᴇsᴜs ᴛᴀɪᴍᴇ ❤️*\n╰━━━━━━━━━━━━━━━╯\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
-                await sock.sendMessage(id, { text: welcomeText, mentions: [user], contextInfo: {
-                    externalAdReply: { title: "ɢʜᴏꜱᴛɢ-x ᴘʀᴇꜱᴛɪɢᴇ", body: "ᴊᴇsᴜs ᴛᴀɪᴍᴇ ❤️✝️", mediaType: 1, thumbnailUrl: "https://files.catbox.moe/2fmwpu.jpg", sourceUrl: "https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c" }
-                }});
+                let welcomeText = settings.welcomeMessage || `╭╼━≪• *ɴᴇᴡ ᴍᴇᴍʙᴇʀ* •≫━╾╮\n┃ *ᴡᴇʟᴄᴏᴍᴇ* : @user 👋🏾\n┃ *ɴᴏᴜs sᴏᴍᴍᴇs ʜᴇᴜʀᴇᴜx\n┃ ᴅᴇ ᴛ'ᴀᴠᴏɪʀ ᴘᴀʀᴍɪ ɴᴏᴜs*\n┃ *ᴍᴇᴍʙʀᴇs* : #memberCount\n┃ *ᴛɪᴍᴇ* : #time ⏰\n┃ *ᴊᴇsᴜs ᴛᴀɪᴍᴇ ❤️*\n╰━━━━━━━━━━━━━━━╯\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
+                
+                welcomeText = welcomeText.replace(/@user/g, userTag)
+                                         .replace(/#memberCount/g, metadata.participants.length)
+                                         .replace(/#time/g, time);
+
+                await sock.sendMessage(id, { 
+                    text: welcomeText, 
+                    mentions: [user], 
+                    contextInfo: {
+                        externalAdReply: { 
+                            title: "ɢʜᴏꜱᴛɢ-x ᴘʀᴇꜱᴛɪɢᴇ", 
+                            body: "ᴊᴇsᴜs ᴛᴀɪᴍᴇ ❤️✝️", 
+                            mediaType: 1, 
+                            thumbnailUrl: "https://files.catbox.moe/2fmwpu.jpg", 
+                            sourceUrl: "https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c" 
+                        }
+                    }
+                });
             }
 
+            // --- Section Goodbye ---
             if (action === 'remove' && settings.goodbye) {
-                const goodbyeText = `╭╼━≪• *ɢᴏᴏᴅʙʏᴇ* •≫━╾╮\n┃ *ᴀᴜ ʀᴇᴠᴏɪʀ* : ${userTag} 👋\n┃ *ᴛᴜ ɴᴇ ɴᴏᴜs ᴍᴀɴǫᴜᴇʀᴀ ᴊᴀᴍᴀɪs*\n┃ *ᴍᴇᴍʙʀᴇs* : ${metadata.participants.length}\n┃ *ᴛɪᴍᴇ* : ${time} ⏰\n╰━━━━━━━━━━━━━━━╯\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
+                let goodbyeText = settings.goodbyeMessage || `╭╼━≪• *ɢᴏᴏᴅʙʏᴇ* •≫━╾╮\n┃ *ᴀᴜ ʀᴇᴠᴏɪʀ* : @user 👋\n┃ *ᴛᴜ ɴᴇ ɴᴏᴜs ᴍᴀɴǫᴜᴇʀᴀ ᴊᴀᴍᴀɪs*\n┃ *ᴍᴇᴍʙʀᴇs* : #memberCount\n┃ *ᴛɪᴍᴇ* : #time ⏰\n╰━━━━━━━━━━━━━━━╯\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
+                
+                goodbyeText = goodbyeText.replace(/@user/g, userTag)
+                                         .replace(/#memberCount/g, metadata.participants.length)
+                                         .replace(/#time/g, time);
+
                 await sock.sendMessage(id, { text: goodbyeText, mentions: [user] });
             }
         }
