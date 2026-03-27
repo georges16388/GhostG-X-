@@ -241,5 +241,5 @@ const handleGroupUpdate = async (sock, update) => {
 module.exports = {
     handleMessage,
     handleGroupUpdate,
-    initializeAnticall
+    initializeAntiCall
 };
