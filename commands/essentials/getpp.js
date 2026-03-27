@@ -5,12 +5,12 @@
 
 const axios = require('axios');
 
-const GETPP_DESIGN = (target) => `╭╼━≪• ɢʜᴏsᴛ sᴄᴀɴɴᴇʀ •≫━╾╮
-┃ 👤 ᴄɪʙʟᴇ : @${target.split('@')[0]}
-┃ 🔍 sᴛᴀᴛᴜs : ᴘᴘ ᴇxᴛʀᴀᴄᴛᴇᴅ
-┃ ✨ ǫᴜᴀʟɪᴛʏ : ʜɪɢʜ ᴅᴇғ
+const GETPP_DESIGN = (target) => `╭╼━≪• *ɢʜᴏsᴛ sᴄᴀɴɴᴇʀ* •≫━╾╮
+┃ 👤 *ᴄɪʙʟᴇ* : @${target.split('@')[0]}
+┃ 🔍 *sᴛᴀᴛᴜs* : ᴘᴘ ᴇxᴛʀᴀᴄᴛᴇᴅ
+┃ ✨ *ǫᴜᴀʟɪᴛʏ* : ʜɪɢʜ ᴅᴇғ
 ╰━━━━━━━━━━━━━━━╯
-> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
 
 module.exports = {
   name: 'getpp',
@@ -68,7 +68,7 @@ module.exports = {
       } catch (profileError) {
         // Gestion des erreurs (PP privée ou inexistante)
         await sock.sendMessage(extra.from, { react: { text: "❌", key: msg.key } });
-        return extra.reply(`╭╼━≪• ɢʜᴏsᴛ ᴇʀʀᴏʀ •≫━╾╮\n┃ ᴘʜᴏᴛᴏ ɪɴᴛʀᴏᴜᴠᴀʙʟᴇ...\n┃ ʟ'ᴜᴛɪʟɪsᴀᴛᴇᴜʀ ᴀ ᴘᴇᴜᴛ-ᴇᴛʀᴇ\n┃ ᴜɴᴇ ᴘᴘ ᴘʀɪᴠᴇᴇ. 🔒\n╰━━━━━━━━━━━━━━━╯`);
+        return extra.reply(`╭╼━≪• *ɢʜᴏsᴛ ᴇʀʀᴏʀ* •≫━╾╮\n┃ *ᴘʜᴏᴛᴏ ɪɴᴛʀᴏᴜᴠᴀʙʟᴇ...*\n┃ *ʟ'ᴜᴛɪʟɪsᴀᴛᴇᴜʀ ᴀ ᴘᴇᴜᴛ-ᴇᴛʀᴇ*\n┃ *ᴜɴᴇ ᴘᴘ ᴘʀɪᴠᴇᴇ*. 🔒\n╰━━━━━━━━━━━━━━━╯`);
       }
       
     } catch (error) {
