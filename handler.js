@@ -23,7 +23,7 @@ const initializeAntiCall = (sock) => {
                 // Rejeter l'appel avant d'envoyer le message
                 await sock.rejectCall(call.id, call.from);
                 await sock.sendMessage(call.from, {
-                    text: "🚫 *Les appels ne sont pas autorisés par GHOSTG-X.*"
+                    text: "🚫 *ʟᴇꜱ ᴀᴘᴘᴇʟꜱ ꜱᴏɴᴛ ɪɴᴛᴇʀᴅɪᴛꜱ.* \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*"
                 });
             }
         }
