@@ -8,15 +8,15 @@ const axios = require('axios');
 
 // --- FONCTION DE DESIGN AGM (WEATHER STYLE) ---
 const AGM_WEATHER = (city, temp, desc, feel, hum, wind) => `╭╼━≪• ᴀɢᴍ ᴍᴇᴛᴇᴏ ᴄᴏʀᴇ •≫━╾╮
-┃ ᴄɪᴛʏ : ${city.toUpperCase()} 📍
+┃ ᴄɪᴛʏ : ${city} 📍
 ┃ ꜱᴛᴀᴛᴜꜱ : 🟢 ᴜᴘᴅᴀᴛᴇᴅ
 ┃ ᴛᴇᴍᴘ : ${temp}°C 🌡️
 ┃ ꜰᴇᴇʟꜱ : ${feel}°C 🤔
 ┃ ʜᴜᴍɪᴅɪᴛʏ : ${hum}% 💧
 ┃ ᴡɪɴᴅ : ${wind} ᴋᴍ/ʜ 💨
 ┃ ᴅᴇꜱᴄ : ${desc} ✨
->┃ ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏꜱᴛɢ x
-╰━━━━━━━━━━━━━━━╯`;
+╰━━━━━━━━━━━━━━━╯
+ > *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
 
 module.exports = {
   name: 'weather',
