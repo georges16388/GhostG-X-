@@ -17,15 +17,13 @@ const pino = require('pino');
 const fs = require('fs');
 const path = require('path');
 
-
 // ==========================================
-// MODULE 1 : CONFIGURATION (SANS STORE LOURD)
+// MODULE 1 : CONFIGURATION (MODE SANS STORE)
 // ==========================================
 const config = require('./config');
 const handler = require('./handler');
 global.config = config; 
 
-// 📁 Gestion des fichiers et logs
 const logFile = path.join(__dirname, 'bot-crash.log');
 const logError = (msg, err) => {
     const logStr = `[${new Date().toISOString()}] ❌ ${msg}: ${err.stack || err}\n`;
@@ -33,21 +31,20 @@ const logError = (msg, err) => {
     if (fs.appendFileSync) fs.appendFileSync(logFile, logStr);
 };
 
-// Dossier temporaire pour les médias
 const tmpDir = path.join(__dirname, 'tmp');
 if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir);
 
-// On définit un store vide ou minimal pour ne pas casser le reste du code
+// Simulation d'un store vide pour la compatibilité des autres modules
 global.store = {
     chats: [],
     contacts: {},
     messages: {},
     groupMetadata: {},
-    // On garde bind pour éviter les erreurs plus bas
-    bind: (ev) => {
-        console.log('✅ [ꜱʏꜱᴛᴇᴍ] ᴍᴏᴅᴇ ʟᴇɢᴇʀ ᴀᴄᴛɪᴠᴇ (ꜱᴀɴꜱ ꜱᴛᴏʀᴇ ᴊꜱᴏɴ)');
+    bind: () => { 
+        console.log('✅ [ꜱʏꜱᴛᴇᴍ] ꜱᴛᴏʀᴇ ꜱᴜᴘᴘʀɪᴍᴇ́ - ᴍᴏᴅᴇ ꜰʟUX ᴀᴄᴛɪᴠᴇ́'); 
     }
 };
+
 
 
 
