@@ -314,4 +314,51 @@ const handleGroupUpdate = async (sock, update) => {
     }
 };
 
+// --- 🛡️ SYSTÈME ANTI-DELETE (GROUPES + PRIVÉ) ---
+try {
+    sock.ev.on('messages.delete', async (update) => {
+        const keys = update.keys || [];
+        for (const key of keys) {
+            const from = key.remoteJid;
+            const isGroup = from.endsWith('@g.us');
+
+            // Récupérer les settings
+            const groupSettings = database.getGroupSettings(from) || {};
+            const active = groupSettings.antidelete || true; // par défaut on active pour privé aussi
+
+            if (!active) continue;
+
+            // Récupérer le message supprimé
+            const msgStore = await global.store.loadMessage(from, key.id);
+            if (!msgStore || !msgStore.message) continue;
+
+            const sender = msgStore.key.participant || msgStore.key.remoteJid;
+            const pushName = msgStore.pushName || 'ᴜsᴇʀ';
+            const mediaType = msgStore.message.imageMessage
+                ? 'image'
+                : msgStore.message.videoMessage
+                ? 'video'
+                : msgStore.message.audioMessage
+                ? 'audio'
+                : msgStore.message.stickerMessage
+                ? 'sticker'
+                : null;
+
+            const getMessage = (id) => global.store.loadMessage(from, id);
+
+            // Exécuter ton module anti-delete
+            await antideleteCmd.execute(sock, msgStore, [], {
+                from,
+                reply: (text) => sock.sendMessage(from, { text }, { quoted: msgStore }),
+                toSmallCaps,
+                sender,
+                pushName,
+                getMessage,
+                mediaType
+            });
+        }
+    });
+} catch (err) {
+    console.error('❌ AntiDelete Handler Error:', err);
+}
 module.exports = { handleMessage, handleGroupUpdate };
