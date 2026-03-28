@@ -1,22 +1,34 @@
 /**
- * Dare - Get a random dare challenge
- * Custom Design by -ɢʜᴏsᴛɢ 𝐗
+ * Dare Command - AGM Elite Edition
+ * Get a random dare challenge with Prestige Style
+ * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
-// Design pour le défi (Action)
-const DARE_DESIGN = (challenge) => `╭╼━≪• *ɢʜᴏsᴛ ᴅᴀʀᴇ* •≫━╾╮
-┃ *ᴅᴇғɪ* : ${challenge}
-┃ *ᴛʏᴘᴇ* : ᴀᴄᴛɪᴏɴ 🔥
-┃ *sᴛᴀᴛᴜs* : ᴘᴇɴᴅɪɴɢ... ⏳
-╰━━━━━━━━━━━━━━━╯
-> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+// Fonction de conversion en Bold Small Caps pour le style Prestige
+const toBoldSmallCaps = (text) => {
+    if (!text) return "";
+    const smallCapsMap = {
+        'a': 'ᴀ', 'b': 'ʙ', 'c': 'ᴄ', 'd': 'ᴅ', 'e': 'ᴇ', 'f': 'ғ', 'g': 'ɢ', 'h': 'ʜ', 
+        'i': 'ɪ', 'j': 'ᴊ', 'k': 'ᴋ', 'l': 'ʟ', 'm':'ᴍ', 'n': 'ɴ', 'o': 'ᴏ', 'p': 'ᴘ', 
+        'q': 'ǫ', 'r': 'ʀ', 's': 's', 't': 'ᴛ', 'u': 'ᴜ', 'v': 'ᴠ', 'w': 'ᴡ', 'x': 'x', 
+        'y': 'ʏ', 'z': 'ᴢ',
+        'é': 'ᴇ', 'è': 'ᴇ', 'ê': 'ᴇ', 'ë': 'ᴇ', 'à': 'ᴀ', 'â': 'ᴀ', 'î': 'ɪ', 'ï': 'ɪ', 'ô': 'ᴏ', 'û': 'ᴜ', 'ù': 'ᴜ', 'ç': 'ᴄ'
+    };
+    const capsText = text.toLowerCase().split('').map(char => smallCapsMap[char] || char).join('');
+    return `*${capsText}*`;
+};
+
+// Design Elite pour le défi
+const DARE_DESIGN = (content) => `*╭╼━≪• ${toBoldSmallCaps('ɢʜᴏsᴛ ᴅᴀʀᴇ')} •≫━╾╮*
+*┃*\n*┃* 🔥 *${toBoldSmallCaps('ᴅᴇғɪ')}* : ${content}\n*┃* 🎭 *${toBoldSmallCaps('ᴛʏᴘᴇ')}* : *${toBoldSmallCaps('ᴀᴄᴛɪᴏɴ')}* 🔥\n*┃* ⏳ *${toBoldSmallCaps('sᴛᴀᴛᴜs')}* : *${toBoldSmallCaps('ᴘᴇɴᴅɪɴɢ...')}* ⏳\n*┃*\n*╰━━━━━━━━━━━━━━━╯*
+> ***${toBoldSmallCaps('ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗')}***`;
 
 module.exports = {
     name: 'dare',
     aliases: ['action', 'defi'],
     category: 'fun',
-    desc: 'Get a random dare challenge',
-    usage: 'dare [@user]',
+    desc: 'Recevoir un défi aléatoire (Action)',
+    usage: '.dare [@user]',
     execute: async (sock, msg, args, extra) => {
       try {
         const dares = [
@@ -41,32 +53,41 @@ module.exports = {
           "Raconte une blague, si personne ne rit, recommence un défi ! 😂",
           "Enregistre-toi en faisant une danse TikTok ! 🕺"
         ];
-        
+
         const ctxInfo = msg.message?.extendedTextMessage?.contextInfo;
         const mentioned = ctxInfo?.mentionedJid || [];
-        const randomDare = dares[Math.floor(Math.random() * dares.length)];
-        
         const chatId = msg.key.remoteJid;
-        let finalChallenge = randomDare;
 
-        // Ciblage automatique de la personne mentionnée ou de la réponse
+        await sock.sendMessage(chatId, { react: { text: '🔥', key: msg.key } });
+
+        const randomDare = dares[Math.floor(Math.random() * dares.length)];
+        const styledDare = toBoldSmallCaps(randomDare);
+
+        let finalContent = styledDare;
+        let mentionsList = [...mentioned];
+
+        // Ciblage automatique (Mention, Réponse ou Soi-même)
         if (mentioned.length > 0) {
-            finalChallenge = `@${mentioned[0].split('@')[0]}, ton défi est : ${randomDare}`;
+            finalContent = `@${mentioned[0].split('@')[0]} : ${styledDare}`;
         } else if (ctxInfo?.participant) {
-            finalChallenge = `@${ctxInfo.participant.split('@')[0]}, ton défi est : ${randomDare}`;
-            mentioned.push(ctxInfo.participant);
+            const target = ctxInfo.participant;
+            finalContent = `@${target.split('@')[0]} : ${styledDare}`;
+            if (!mentionsList.includes(target)) mentionsList.push(target);
+        } else {
+            const sender = msg.key.participant || msg.key.remoteJid;
+            finalContent = `@${sender.split('@')[0]} : ${styledDare}`;
+            if (!mentionsList.includes(sender)) mentionsList.push(sender);
         }
 
         await sock.sendMessage(chatId, {
-          text: DARE_DESIGN(finalChallenge),
-          mentions: mentioned.length > 0 ? mentioned : []
+          text: DARE_DESIGN(finalContent),
+          mentions: mentionsList
         }, { quoted: msg });
-        
+
       } catch (error) {
         console.error('Dare Error:', error);
-        await sock.sendMessage(msg.key.remoteJid, {
-          text: `❌ Error: ${error.message}`
-        }, { quoted: msg });
+        const errorMsg = toBoldSmallCaps(`Erreur Action : ${error.message}`);
+        await sock.sendMessage(msg.key.remoteJid, { text: `❌ ${errorMsg}` }, { quoted: msg });
       }
     }
   };
