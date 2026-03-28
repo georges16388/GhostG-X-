@@ -1,55 +1,66 @@
 /**
- * System Command Reloader - AGM Global Core
+ * ɢʜᴏꜱᴛɢ-x ᴍᴅ - System Command Reloader (AGM Global Core)
+ * Instant Refresh Without Restart
  * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
 const path = require('path');
+const fs = require('fs');
 
-const AGM_RELOAD = `╭╼━≪• ᴀɢᴍ sʏsᴛᴇᴍ ʀᴇғʀᴇsʜ •≫━╾╮
-┃ sᴛᴀᴛᴜs : 🟢 ᴀʟʟ ᴄᴏᴍᴍᴀɴᴅs
-┃ ᴀᴄᴛɪᴏɴ : ᴄᴀᴄʜᴇ ᴘᴜʀɢᴇᴅ ⚡
-┃ ʀᴇsᴜʟᴛ : sʏɴᴄ ᴄᴏᴍᴘʟᴇᴛᴇ
-╰━━━━━━━━━━━━━━━╯
-> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
+const toSmallCaps = (text) => {
+    const fonts = {'a':'ᴀ','b':'ʙ','c':'ᴄ','d':'ᴅ','e':'ᴇ','f':'ғ','g':'ɢ','h':'ʜ','i':'ɪ','j':'ᴊ','k':'ᴋ','l':'ʟ','m':'ᴍ','n':'ɴ','o':'ᴏ','p':'ᴘ','q':'ǫ','r':'ʀ','s':'s','t':'ᴛ','u':'ᴜ','v':'ᴠ','w':'ᴡ','x':'x','y':'ʏ','z':'ᴢ'};
+    return String(text).toLowerCase().split('').map(c => fonts[c] || c).join('');
+};
+
+const AGM_RELOAD_DESIGN = (count) => `*╭╼━≪• ᴀɢᴍ sʏsᴛᴇᴍ ʀᴇғʀᴇsʜ •≫━╾╮*
+*┃*
+*┃* ⚙️ *${toSmallCaps('sᴛᴀᴛᴜs')}* : 🟢 ᴀʟʟ ᴄᴏᴍᴍᴀɴᴅs
+*┃* ⚡ *${toSmallCaps('ᴀᴄᴛɪᴏɴ')}* : ᴄᴀᴄʜᴇ ᴘᴜʀɢᴇᴅ
+*┃* 📦 *${toSmallCaps('ᴄᴏᴜɴᴛ')}* : *${count}* ${toSmallCaps('ᴄᴍᴅs')}
+*┃* ✅ *${toSmallCaps('ʀᴇsᴜʟᴛ')}* : sʏɴᴄ ᴄᴏᴍᴘʟᴇᴛᴇ
+*┃*
+*╰━━━━━━━━━━━━━━━╯*
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
 module.exports = {
   name: 'reload',
-  aliases: ['refresh', 'updatecmd'],
+  aliases: ['refresh', 'updatecmd', 'r'],
   category: 'owner',
-  description: 'Recharge toutes les commandes sans redémarrer le bot.',
+  description: 'Recharge les commandes à chaud',
   ownerOnly: true,
 
-  async execute(sock, msg, args, extra) {
+  async execute(sock, msg, args, { from, reply, react }) {
     try {
-      const from = extra.from;
-      await sock.sendMessage(from, { react: { text: '⏳', key: msg.key } });
+      await react('⏳');
 
-      // 1. Localiser le dossier des commandes
-      const commandsDir = path.join(process.cwd(), 'commands');
+      const commandsPath = path.join(process.cwd(), 'commands');
 
-      // 2. VIDER LE CACHE DE NODE.JS
-      // C'est l'étape magique : on supprime les anciens fichiers de la mémoire
+      // 1. PURGE SÉLECTIVE DU CACHE NODE.JS
+      // On ne supprime que ce qui se trouve dans le dossier commands
       Object.keys(require.cache).forEach((key) => {
-        if (key.includes(commandsDir)) {
-          delete require.cache[key];
+        if (key.startsWith(commandsPath)) {
+            delete require.cache[key];
         }
       });
 
-      // 3. Recharger la logique de chargement
-      const { loadCommands } = require('../../utils/commandLoader');
+      // 2. RECHARGEMENT DU LOADER
+      // On purge aussi le loader lui-même pour prendre en compte ses modifs
+      const loaderPath = path.resolve(process.cwd(), 'utils/commandLoader.js');
+      if (require.cache[loaderPath]) delete require.cache[loaderPath];
       
-      // On met à jour la variable globale (ou celle du handler)
-      // Note: Assure-toi que ton handler utilise bien global.commands
-      global.commands = loadCommands();
+      const { loadCommands } = require('../utils/commandLoader');
 
-      await sock.sendMessage(from, { react: { text: '✅', key: msg.key } });
-      await sock.sendMessage(from, { text: AGM_RELOAD }, { quoted: msg });
+      // 3. MISE À JOUR DE LA MÉMOIRE GLOBALE
+      global.commands = loadCommands();
+      const cmdCount = global.commands.size;
+
+      await react('✅');
+      return reply(AGM_RELOAD_DESIGN(cmdCount));
 
     } catch (error) {
-      console.error('Reload Error:', error);
-      await sock.sendMessage(extra.from, { 
-          text: `❌ *ᴇʀʀᴇᴜʀ ʟᴏʀs ᴅᴜ ʀᴀғʀᴀîᴄʜɪssᴇᴍᴇɴᴛ :* ${error.message}` 
-      }, { quoted: msg });
+      console.error('[RELOAD ERROR]:', error);
+      await react('❌');
+      return reply(`❌ *${toSmallCaps("erreur lors du rafraichissement")}* :\n${error.message}`);
     }
   }
 };
