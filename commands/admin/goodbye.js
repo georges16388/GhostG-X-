@@ -1,58 +1,78 @@
 /**
- * ɢᴏᴏᴅʙʏᴇ ᴄᴏᴍᴍᴀɴᴅ - ᴀɢᴍ sʏsᴛᴇᴍ ᴄᴏʀᴇ
- * ᴇɴᴀʙʟᴇ/ᴅɪsᴀʙʟᴇ ɢᴏᴏᴅʙʏᴇ ᴍᴇssᴀɢᴇs
- * sᴛʏʟᴇ ʙʏ -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
+ * GOODBYE COMMAND - AGM SYSTEM CORE
+ * STYLE BY -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
-const ᴅʙ = require('../../database');
+const db = require('../../database');
 
-const ɢᴏᴏᴅʙʏᴇ_sᴛᴀᴛᴜs_ᴅᴇsɪɢɴ = (sᴛᴀᴛᴜs) => `╭╼━≪• *ɢᴏᴏᴅʙʏᴇ sʏsᴛᴇᴍ* •≫━╾╮
-┃ *sᴛᴀᴛᴜs* : ${sᴛᴀᴛᴜs === 'ᴏɴ' ? '🟢 ᴀᴄᴛɪᴠᴀᴛᴇᴅ' : '🔴 ᴅᴇᴀᴄᴛɪᴠᴀᴛᴇᴅ'}
-┃ *ᴛᴀʀɢᴇᴛ* : ʟᴇᴀᴠɪɴɢ ᴍᴇᴍʙᴇʀs 👤
-┃ *ᴀᴄᴛɪᴏɴ* : ᴀᴜᴛᴏ-ꜰᴀʀᴇᴡᴇʟʟ 👋
-╰━━━━━━━━━━━━━━━╯
+// --- FONCTION DE CONVERSION EN SMALL CAPS ---
+const toStyledCaps = (text) => {
+  if (!text) return "";
+  const fonts = {
+    'a': 'ᴀ','b': 'ʙ','c': 'ᴄ','d':'ᴅ','e':'ᴇ','f':'ғ','g':'ɢ','h':'ʜ',
+    'i':'ɪ','j':'ᴊ','k':'ᴋ','l':'ʟ','m':'ᴍ','n':'ɴ','o':'ᴏ','p':'ᴘ',
+    'q':'ǫ','r':'ʀ','s':'ꜱ','t':'ᴛ','u':'ᴜ','v':'ᴠ','w':'ᴡ','x':'x',
+    'y':'ʏ','z':'ᴢ'
+  };
+  return String(text).toLowerCase().split('').map(c => fonts[c] || c).join('');
+};
+
+// --- DESIGN AGM PRESTIGE (GRAS) ---
+const GOODBYE_DESIGN = (status) => {
+  const sLabel = status === 'on' ? '🟢 ᴀᴄᴛɪᴠᴀᴛᴇᴅ' : '🔴 ᴅᴇᴀᴄᴛɪᴠᴀᴛᴇᴅ';
+  return `*╭╼━≪• ${toStyledCaps('ɢᴏᴏᴅʙʏᴇ sʏsᴛᴇᴍ')} •≫━╾╮*
+*┃*
+*┃* ⚙️ *${toStyledCaps('sᴛᴀᴛᴜs')}* : *${toStyledCaps(sLabel)}*
+*┃* 👤 *${toStyledCaps('ᴛᴀʀɢᴇᴛ')}* : *${toStyledCaps('ʟᴇᴀᴠɪɴɢ ᴍᴇᴍʙᴇʀs')}*
+*┃* 👋 *${toStyledCaps('ᴀᴄᴛɪᴏɴ')}* : *${toStyledCaps('ᴀᴜᴛᴏ-ꜰᴀʀᴇᴡᴇʟʟ')}*
+*┃*
+*╰━━━━━━━━━━━━━━━╯*
 > *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
+};
 
 module.exports = {
   name: 'goodbye',
   aliases: ['goodbyeon', 'goodbyeoff'],
   category: 'admin',
-  description: 'ᴀᴄᴛɪᴠᴇʀ ᴏᴜ ᴅᴇ́sᴀᴄᴛɪᴠᴇʀ ʟᴇs ᴍᴇssᴀɢᴇs ᴅᴇ ᴅᴇ́ᴘᴀʀᴛ.',
-  usage: '.ɢᴏᴏᴅʙʏᴇ ᴏɴ/ᴏꜰꜰ',
+  description: 'Activer ou désactiver les messages de départ.',
+  usage: '.goodbye on/off',
   groupOnly: true,
   adminOnly: true,
-  botAdminNeeded: true,
 
-  execute: async (sock, msg, args, { from, reply, react }) => {
+  async execute(sock, msg, args, { from, reply, react }) {
     try {
-      const ᴀᴄᴛɪᴏɴ = args[0]?.ᴛᴏʟᴏᴡᴇʀᴄᴀsᴇ();
-      const sᴇᴛᴛɪɴɢs = ᴅʙ.getGroupSettings(from);
+      const settings = db.getGroupSettings(from) || {};
+      const action = args[0]?.toLowerCase();
 
-      if (!ᴀᴄᴛɪᴏɴ || !['ᴏɴ', 'ᴏꜰꜰ'].includes(ᴀᴄᴛɪᴏɴ)) {
-        const sᴛᴀᴛᴜssᴛʀ = sᴇᴛᴛɪɴɢs.goodbye ? 'ᴏɴ' : 'ᴏꜰꜰ';
+      // --- AFFICHAGE DU STATUT SI PAS D'ARGUMENT ---
+      if (!action || !['on', 'off'].includes(action)) {
+        const currentStatus = settings.goodbye ? 'on' : 'off';
+        const currentMsg = settings.goodbyeMessage || toStyledCaps("ᴀᴜᴄᴜɴ ᴍᴇssᴀɢᴇ ᴅᴇꜰɪɴɪ");
+        
         await react('ℹ️');
         return reply(
-          `${ɢᴏᴏᴅʙʏᴇ_sᴛᴀᴛᴜs_ᴅᴇsɪɢɴ(sᴛᴀᴛᴜssᴛʀ)}\n\n` +
-          `📝 *ᴍᴇssᴀɢᴇ ᴀᴄᴛᴜᴇʟ :*\n${sᴇᴛᴛɪɴɢs.goodbyeMessage}\n\n` +
-          `💡 *ᴜsᴀɢᴇ :*\n` +
-          `  > .ɢᴏᴏᴅʙʏᴇ ᴏɴ\n` +
-          `  > .ɢᴏᴏᴅʙʏᴇ ᴏꜰꜰ\n` +
-          `  > .sᴇᴛɢᴏᴏᴅʙʏᴇ <ᴛᴇxᴛᴇ>`
+          `${GOODBYE_DESIGN(currentStatus)}\n\n` +
+          `📝 *${toStyledCaps('ᴍᴇssᴀɢᴇ ᴀᴄᴛᴜᴇʟ')} :*\n${currentMsg}\n\n` +
+          `💡 *${toStyledCaps('ᴜsᴀɢᴇ')} :*\n` +
+          `  > *.ɢᴏᴏᴅʙʏᴇ ᴏɴ*\n` +
+          `  > *.ɢᴏᴏᴅʙʏᴇ ᴏꜰꜰ*`
         );
       }
 
-      const ᴇɴᴀʙʟᴇ = ᴀᴄᴛɪᴏɴ === 'ᴏɴ';
-      ᴅʙ.updateGroupSettings(from, { goodbye: ᴇɴᴀʙʟᴇ });
-      await react(ᴇɴᴀʙʟᴇ ? '✅' : '⚠️');
+      // --- MISE À JOUR DU STATUT ---
+      const enable = action === 'on';
+      db.updateGroupSettings(from, { goodbye: enable });
+      
+      await react(enable ? '✅' : '⚠️');
 
       return reply(
-        `${ɢᴏᴏᴅʙʏᴇ_sᴛᴀᴛᴜs_ᴅᴇsɪɢɴ(ᴀᴄᴛɪᴏɴ.ᴛᴏᴜᴘᴘᴇʀᴄᴀsᴇ())}\n\n` +
-        `✅ *ʟᴇ sʏsᴛᴇ̀ᴍᴇ ɢᴏᴏᴅʙʏᴇ ᴇsᴛ ᴍᴀɪɴᴛᴇɴᴀɴᴛ* ${ᴇɴᴀʙʟᴇ ? 'ᴀᴄᴛɪᴠᴇ́' : 'ᴅᴇ́sᴀᴄᴛɪᴠᴇ́'} !`
+        `${GOODBYE_DESIGN(action)}\n\n` +
+        `✅ *${toStyledCaps('ʟᴇ sʏsᴛᴇᴍᴇ ɢᴏᴏᴅʙʏᴇ ᴇsᴛ')}* *${toStyledCaps(enable ? 'ᴀᴄᴛɪᴠᴇ' : 'ᴅᴇsᴀᴄᴛɪᴠᴇ')}* !`
       );
 
-    } catch (ᴇʀʀᴏʀ) {
-      console.error('[ɢᴏᴏᴅʙʏᴇ ᴇʀʀᴏʀ]:', ᴇʀʀᴏʀ);
-      reply(`❌ *ᴇʀʀᴇᴜʀ :* ${ᴇʀʀᴏʀ.ᴍᴇssᴀɢᴇ}`);
+    } catch (error) {
+      console.error('[GOODBYE ERROR]:', error);
+      reply(`❌ *${toStyledCaps('ᴇʀʀᴇᴜʀ sʏsᴛᴇᴍᴇ')}*`);
     }
   }
 };
