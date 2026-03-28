@@ -26,8 +26,7 @@ const AGM_STATUS = (status, action) => {
 *┃* ⚙️ *${toStyledCaps('ᴀᴄᴛɪᴏɴ')}* : *${toStyledCaps(action)}*
 *┃* 🌐 *${toStyledCaps('sᴄᴏᴘᴇ')}* : *${toStyledCaps('ɢʀᴏᴜᴘ ᴏɴʟʏ')}*
 *┃*
-*╰━━━━━━━━━━━━━━━╯*
-> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗`;
+*╰━━━━━━━━━━━━━━━╯*`;
 };
 
 module.exports = {
