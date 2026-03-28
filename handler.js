@@ -5,9 +5,11 @@
 
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 const database = require('./database'); 
+// ⚠️ MODIFIÉ ICI : Chemins mis à jour vers le dossier utils
 const { addMessage } = require('./utils/groupstats');
 const { loadCommands } = require('./utils/commandLoader');
-const { sticker } = require('./utils/sticker'); // Utilitaire pour la conversion
+// ⚠️ MODIFIÉ ICI : Importation de createStickerBuffer au lieu de sticker
+const { createStickerBuffer } = require('./utils/sticker'); 
 
 // --- SYSTÈME ANTI-RÉPÉTITION & COOLDOWN ---
 const processedMessages = new Set();
@@ -182,7 +184,8 @@ const handleMessage = async (sock, msg) => {
         if (isGroup && isMedia && !isCmd) {
             const groupSettings = database.getGroupSettings(from) || {};
             if (groupSettings.autosticker) {
-                if (msg.message?.videoMessage?.seconds <= 10) {
+                // Petit correctif : Ajout de la tolérance pour les images en plus des vidéos de moins de 10s
+                if (msg.message?.imageMessage || (msg.message?.videoMessage && msg.message?.videoMessage?.seconds <= 10)) {
                     try {
                         await sock.sendMessage(from, { react: { text: '🪄', key: msg.key } });
                         const quota = msg.message.imageMessage ? 'image' : 'video';
@@ -190,7 +193,8 @@ const handleMessage = async (sock, msg) => {
                         let buffer = Buffer.from([]);
                         for await (const chunk of stream) { buffer = Buffer.concat([buffer, chunk]); }
 
-                        const stickerBuffer = await sticker(buffer, {
+                        // ⚠️ MODIFIÉ ICI : Utilisation de createStickerBuffer
+                        const stickerBuffer = await createStickerBuffer(buffer, {
                             pack: "ɢʜᴏsᴛɢ-x ᴍᴅ",
                             author: pushName
                         });
