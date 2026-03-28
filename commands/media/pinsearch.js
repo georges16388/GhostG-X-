@@ -32,7 +32,7 @@ const AGM_DESIGN = (title, type) => {
 const processedMessages = new Set();
 
 module.exports = {
-  name: 'pinterest',
+  name: 'pinsearch',
   aliases: ['image', 'pindl'],
   category: 'media',
   description: 'Télécharger des images ou vidéos depuis Pinterest',
