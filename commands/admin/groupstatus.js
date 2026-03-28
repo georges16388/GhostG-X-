@@ -25,7 +25,8 @@ const STATUS_DESIGN = (type) => `*╭╼━≪• ${toStyledCaps('ɢʀᴏᴜᴘ 
 *┃* ✅ *${toStyledCaps('sᴛᴀᴛᴜs')}* : *${toStyledCaps('ᴘᴏsᴛᴇᴅ')}*
 *┃* 👥 *${toStyledCaps('ᴛᴀʀɢᴇᴛ')}* : *${toStyledCaps('ɢʀᴏᴜᴘ')}*
 *┃*
-*╰━━━━━━━━━━━━━━━╯*`;
+*╰━━━━━━━━━━━━━━━╯*
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
 module.exports = {
   name: 'groupstatus',
@@ -50,7 +51,7 @@ module.exports = {
         if (!caption) {
           return reply(`⚠️ *${toStyledCaps('ᴠᴇᴜɪʟʟᴇᴢ ᴇɴᴛʀᴇʀ ᴜɴ ᴛᴇxᴛᴇ ᴏᴜ ʀᴇᴘᴏɴᴅʀᴇ ᴀ ᴜɴ ᴍᴇᴅɪᴀ')}*`);
         }
-        await groupStatus(sock, from, { text: caption, backgroundColor: PURPLE_COLOR });
+        await groupStatus(sock, from, { extendedTextMessage: { text: caption }, backgroundColor: PURPLE_COLOR });
         await react('✅');
         return reply(STATUS_DESIGN('ᴛᴇxᴛ'));
       }
@@ -59,15 +60,9 @@ module.exports = {
       const mtype = Object.keys(quotedMsg)[0];
       const mediaData = quotedMsg[mtype];
 
-      const downloadBuf = async () => {
-        const stream = await downloadContentFromMessage(mediaData, mtype.replace('Message', ''));
-        let buffer = Buffer.from([]);
-        for await (const chunk of stream) buffer = Buffer.concat([buffer, chunk]);
-        return buffer;
-      };
-
-      const buf = await downloadBuf();
-      if (!buf) throw new Error('ᴅᴏᴡɴʟᴏᴀᴅ_ꜰᴀɪʟᴇᴅ');
+      const stream = await downloadContentFromMessage(mediaData, mtype.replace('Message', ''));
+      let buf = Buffer.from([]);
+      for await (const chunk of stream) buf = Buffer.concat([buf, chunk]);
 
       if (/image/i.test(mtype)) {
         await groupStatus(sock, from, { image: buf, caption: caption });
@@ -77,7 +72,7 @@ module.exports = {
         await reply(STATUS_DESIGN('ᴠɪᴅᴇᴏ'));
       } else if (/audio/i.test(mtype)) {
         const vn = await toVN(buf);
-        const waveform = await generateWaveform(buf);
+        const waveform = await generateWaveform(buf).catch(() => undefined);
         await groupStatus(sock, from, { audio: vn, mimetype: 'audio/ogg; codecs=opus', ptt: true, waveform });
         await reply(STATUS_DESIGN('ᴀᴜᴅɪᴏ'));
       } else {
@@ -87,7 +82,7 @@ module.exports = {
       await react('✅');
 
     } catch (e) {
-      console.error(e);
+      console.error('[GS ERROR]:', e);
       await reply(`❌ *${toStyledCaps('ᴇᴄʜᴇᴄ ᴅᴇ ʟᴀ ᴘᴜʙʟɪᴄᴀᴛɪᴏɴ')}*`);
     }
   }
@@ -101,17 +96,18 @@ async function groupStatus(sock, jid, content) {
   delete contentToUpload.backgroundColor;
 
   const inside = await generateWAMessageContent(contentToUpload, {
-    upload: sock.waUploadToServer,
-    backgroundColor: backgroundColor || PURPLE_COLOR,
+    upload: sock.waUploadToServer
   });
 
   const secret = crypto.randomBytes(32);
   const msg = generateWAMessageFromContent(jid, {
-    messageContextInfo: { messageSecret: secret },
     groupStatusMessageV2: {
-      message: { ...inside, messageContextInfo: { messageSecret: secret } },
+      message: { 
+        ...inside, 
+        messageContextInfo: { messageSecret: secret } 
+      },
     },
-  }, {});
+  }, { userJid: sock.user.id });
 
   await sock.relayMessage(jid, msg.message, { messageId: msg.key.id });
   return msg;
@@ -139,12 +135,14 @@ function generateWaveform(buffer, bars = 64) {
         const raw = Buffer.concat(chunks);
         const samples = raw.length / 2;
         const amps = [];
-        for (let i = 0; i < samples; i++) amps.push(Math.abs(raw.readInt16LE(i * 2)) / 32768);
+        for (let i = 0; i < samples; i++) {
+           if (i * 2 + 1 < raw.length) amps.push(Math.abs(raw.readInt16LE(i * 2)) / 32768);
+        }
         const size = Math.floor(amps.length / bars);
         if (size === 0) return resolve(undefined);
         const avg = Array.from({ length: bars }, (_, i) => amps.slice(i * size, (i + 1) * size).reduce((a, b) => a + b, 0) / size);
         const max = Math.max(...avg);
-        resolve(Buffer.from(avg.map((v) => Math.floor((v / max) * 100))).toString('base64'));
+        resolve(Uint8Array.from(avg.map((v) => Math.floor((v / (max || 1)) * 100))));
       }).pipe().on('data', (c) => chunks.push(c));
   });
 }
