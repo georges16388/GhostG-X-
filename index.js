@@ -5,25 +5,21 @@
  */
 
 const Baileys = require('@whiskeysockets/baileys');
-
-const makeWASocket = Baileys.default;
-const {
-    useMultiFileAuthState,
-    fetchLatestBaileysVersion,
-    DisconnectReason
+const { 
+    useMultiFileAuthState, 
+    DisconnectReason, 
+    fetchLatestBaileysVersion, 
+    makeInMemoryStore 
 } = Baileys;
 
+const makeWASocket = Baileys.default || Baileys; 
 const pino = require('pino');
 const fs = require('fs');
 const path = require('path');
 
-const makeInMemoryStore = Baileys.makeInMemoryStore;
-
 // --- CHARGEMENT DE LA CONFIGURATION ---
 const config = require('./config');
 const handler = require('./handler');
-
-// 🔹 Configuration Globale
 global.config = config; 
 
 // --- VÉRIFICATION DU DOSSIER TEMPORAIRE ---
@@ -34,15 +30,10 @@ if (!fs.existsSync(tmpDir)) {
 }
 
 // --- INITIALISATION DU STORE ---
-let store;
-
-if (typeof makeInMemoryStore === 'function') {
-    store = makeInMemoryStore({ logger: pino({ level: 'silent' }) });
-    global.store = store;
-    console.log("✅ Store initialisé");
-} else {
-    console.warn("⚠️ makeInMemoryStore indisponible — Store désactivé");
-}
+const store = makeInMemoryStore({ 
+    logger: pino({ level: 'silent' }) 
+});
+global.store = store; 
 
 /**
  * HIÉRARCHIE DE SÉCURITÉ GLOBALE
@@ -67,75 +58,64 @@ const toSmallCaps = (text) => {
     return String(text).toLowerCase().split('').map(c => fonts[c] || c).join('');
 };
 
+// --- GESTION DES INSTANCES ET RECONNEXION ---
+let activeBot = null;
+let reconnectQueue = false;
+
 async function startBot() {
+    if (activeBot) return activeBot; 
+    activeBot = await createBotSocket(); 
+    return activeBot;
+}
+
+async function handleDisconnect(sock, reason) {
+    if (reason === DisconnectReason.loggedOut) return;
+    if (reconnectQueue) return;
+    reconnectQueue = true;
+    
+    console.log(`⚠️ Connexion fermée: ${reason}. Reconnexion dans 3s...`);
+    try { sock.end(); } catch(e){}
+    
+    setTimeout(async () => {
+        reconnectQueue = false;
+        activeBot = null;
+        await startBot();
+    }, 3000);
+}
+
+async function createBotSocket() {
     try {
         const sessionFolder = `./${global.config.sessionName || 'session'}`;
         const { state, saveCreds } = await useMultiFileAuthState(sessionFolder);
         const { version } = await fetchLatestBaileysVersion();
 
-      
+        const sock = makeWASocket({
+            version,
+            logger: pino({ level: 'silent' }),
+            printQRInTerminal: false, 
+            browser: ["Ubuntu", "Chrome", "20.0.04"],
+            auth: state,
+            syncFullHistory: false,
+        });
 
-    const sock = makeWASocket({
-        version,
-        logger: pino({ level: 'silent' }),
-        printQRInTerminal: false, 
-        browser: ["Ubuntu", "Chrome", "20.0.04"],
-        auth: state,
-        syncFullHistory: false,
-    });
+        if (store) store.bind(sock.ev);
 
-    if (store) {
-    store.bind(sock.ev);
-}
+        // --- GESTION DE LA CONNEXION ---
+        sock.ev.on('connection.update', async (update) => {
+            const { connection, lastDisconnect } = update;
+            const reason = lastDisconnect?.error?.output?.statusCode;
 
-    // --- SYSTÈME ANTI-CALL ---
-    sock.ev.on('call', async (node) => {
-        if (!global.config.anticall) return;
-        for (let call of node) {
-            if (call.status === 'offer') {
-                await sock.rejectCall(call.id, call.from);
-                const warnMsg = `*╭╼━≪• *ɢʜᴏsᴛɢ-𝐗 sᴇᴄᴜʀɪᴛʏ* •≫━╾╮*\n┃\n┃ ⚠️ ${toSmallCaps("appels interdits")}\n┃ ${toSmallCaps("votre appel a ete rejete")}\n┃\n*╰━━━━━━━━━━━━━━━╯*\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
-                await sock.sendMessage(call.from, { text: warnMsg });
-            }
-        }
-    });
+            if (connection === 'close') {
+                await handleDisconnect(sock, reason);
+            } else if (connection === 'open') {
+                console.log('\n✅ ɢʜᴏꜱᴛɢ-x ᴄᴏɴɴᴇᴄᴛᴇ́ ᴀᴠᴇᴄ ꜱᴜᴄᴄᴇ̀ꜱ !');
 
-    // --- LOGIQUE PAIRING CODE ---
-    if (!sock.authState.creds.registered) {
-        const cleanNumber = String(global.config.supremeNumber).replace(/\D/g, '');
-        console.log(`\n⏳ ɢᴇɴᴇʀᴀᴛɪɴɢ ᴘᴀɪʀɪɴɢ ᴄᴏᴅᴇ ꜰᴏʀ : ${cleanNumber}...`);
+                try {
+                    const totalCmds = global.commands ? global.commands.size : 0;
+                    const botJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
+                    const ownerNum = global.config.supremeNumber;
 
-        setTimeout(async () => {
-            try {
-                let code = await sock.requestPairingCode(cleanNumber);
-                code = code?.match(/.{1,4}/g)?.join("-") || code;
-                console.log(`\n╔════════════════════════════════════╗\n║      ᴠᴏᴛʀᴇ ᴄᴏᴅᴇ ᴅᴇ ᴊᴜᴍᴇʟᴀɢᴇ :      ║\n║          ${code}          ║\n╚════════════════════════════════════╝\n`);
-            } catch (err) { 
-                console.error('❌ Pairing Error:', err.message); 
-            }
-        }, 6000);
-    }
-
-    // --- GESTION DE LA CONNEXION ---
-    sock.ev.on('connection.update', async (update) => {
-        const { connection, lastDisconnect } = update;
-
-        if (connection === 'close') {
-            const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
-            console.log('🔄 Connexion fermée. Reconnexion en cours...');
-            if (shouldReconnect) {
-    console.log("♻️ Reconnexion propre...");
-    setTimeout(() => startBot(), 3000);
-}
-        } else if (connection === 'open') {
-            console.log('\n✅ ɢʜᴏꜱᴛɢ-x ᴄᴏɴɴᴇᴄᴛᴇ́ ᴀᴠᴇᴄ ꜱᴜᴄᴄᴇ̀ꜱ !');
-
-            try {
-                const totalCmds = global.commands ? global.commands.size : 0;
-                const botJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
-                const ownerNum = global.config.supremeNumber;
-
-                const welcomeCaption = `╭╼━≪• *ɢʜᴏsᴛɢ-x ɪs ᴀʟɪᴠᴇ* •≫━╾╮
+                    const welcomeCaption = `╭╼━≪• *ɢʜᴏsᴛɢ-x ɪs ᴀʟɪᴠᴇ* •≫━╾╮
 ┃ *sᴛᴀᴛᴜᴛ* : 🟢 ᴏɴʟɪɴᴇ
 ┃ *ᴍᴀɪᴛʀᴇ* : @${ownerNum}
 ┃ *ᴘʀᴇғɪxᴇ* : [ ${global.config.prefix || '.'} ]
@@ -156,47 +136,77 @@ https://wa.me/${ownerNum}
 
 > *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
-                await sock.sendMessage(botJid, { 
-                    image: { url: 'https://files.catbox.moe/2fmwpu.jpg' }, 
-                    caption: welcomeCaption, 
-                    contextInfo: {
-                        mentionedJid: [botJid, `${ownerNum}@s.whatsapp.net`],
-                        forwardingScore: 999,
-                        isForwarded: true,
-                        forwardedNewsletterMessageInfo: {
-                            newsletterJid: '120363425540434745@newsletter',
-                            newsletterName: "-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ",
-                            serverMessageId: 143
+                    await sock.sendMessage(botJid, { 
+                        image: { url: 'https://files.catbox.moe/2fmwpu.jpg' }, 
+                        caption: welcomeCaption, 
+                        contextInfo: {
+                            mentionedJid: [botJid, `${ownerNum}@s.whatsapp.net`],
+                            forwardingScore: 999,
+                            isForwarded: true,
+                            forwardedNewsletterMessageInfo: {
+                                newsletterJid: '120363425540434745@newsletter',
+                                newsletterName: "-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ",
+                                serverMessageId: 143
+                            }
                         }
-                    }
-                });
-            } catch (err) { 
-                console.error('❌ Notification Error:', err.message); 
+                    });
+                } catch (err) { 
+                    console.error('❌ Notification Error:', err.message); 
+                }
             }
+        });
+
+        // --- SYSTÈME ANTI-CALL ---
+        sock.ev.on('call', async (node) => {
+            if (!global.config.anticall) return;
+            for (let call of node) {
+                if (call.status === 'offer') {
+                    await sock.rejectCall(call.id, call.from);
+                    const warnMsg = `*╭╼━≪• *ɢʜᴏsᴛɢ-𝐗 sᴇᴄᴜʀɪᴛʏ* •≫━╾╮*\n┃\n┃ ⚠️ ${toSmallCaps("appels interdits")}\n┃ ${toSmallCaps("votre appel a ete rejete")}\n┃\n*╰━━━━━━━━━━━━━━━╯*\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+                    await sock.sendMessage(call.from, { text: warnMsg });
+                }
+            }
+        });
+
+        // --- LOGIQUE PAIRING CODE ---
+        if (!sock.authState.creds.registered) {
+            const cleanNumber = String(global.config.supremeNumber).replace(/\D/g, '');
+            console.log(`\n⏳ ɢᴇɴᴇʀᴀᴛɪɴɢ ᴘᴀɪʀɪɴɢ ᴄᴏᴅᴇ ꜰᴏʀ : ${cleanNumber}...`);
+
+            setTimeout(async () => {
+                try {
+                    let code = await sock.requestPairingCode(cleanNumber);
+                    code = code?.match(/.{1,4}/g)?.join("-") || code;
+                    console.log(`\n╔════════════════════════════════════╗\n║      ᴠᴏᴛʀᴇ ᴄᴏᴅᴇ ᴅᴇ ᴊᴜᴍᴇʟᴀɢᴇ :      ║\n║          ${code}          ║\n╚════════════════════════════════════╝\n`);
+                } catch (err) { 
+                    console.error('❌ Pairing Error:', err.message); 
+                }
+            }, 6000);
         }
-    });
 
-    sock.ev.on('creds.update', saveCreds);
+        sock.ev.on('creds.update', saveCreds);
 
-    // --- GESTION DES MESSAGES ENTRANTS ---
-    sock.ev.on('messages.upsert', async ({ messages, type }) => {
-        if (type !== 'notify') return;
+        // --- GESTION DES MESSAGES ENTRANTS ---
+        sock.ev.on('messages.upsert', async ({ messages, type }) => {
+            if (type !== 'notify') return;
+            for (const msg of messages) {
+                if (!msg.message) continue;
+                const sender = msg.key.participant || msg.key.remoteJid;
+                if (global.config.selfMode && !global.isOwner(sender)) continue;
+                const messageTimestamp = msg.messageTimestamp;
+                const now = Math.floor(Date.now() / 1000);
+                if (now - messageTimestamp > 15) continue;
+                handler.handleMessage(sock, msg).catch(err => console.error(err));
+            }
+        });
 
-        for (const msg of messages) {
-            if (!msg.message) continue;
-            const sender = msg.key.participant || msg.key.remoteJid;
+        sock.ev.on('group-participants.update', (u) => handler.handleGroupUpdate(sock, u));
 
-            if (global.config.selfMode && !global.isOwner(sender)) continue;
+        return sock;
 
-            const messageTimestamp = msg.messageTimestamp;
-            const now = Math.floor(Date.now() / 1000);
-            if (now - messageTimestamp > 15) continue;
-
-            handler.handleMessage(sock, msg).catch(err => console.error(err));
-        }
-    });
-
-    sock.ev.on('group-participants.update', (u) => handler.handleGroupUpdate(sock, u));
+    } catch (err) {
+        console.error("❌ Crash lors de la création du socket:", err);
+    }
 }
 
 startBot().catch(err => console.error('❌ Erreur Critique:', err));
