@@ -2,7 +2,7 @@
  * ɢʜᴏꜱᴛɢ-x ᴍᴅ - Main Message Handler (Prestige Edition V5.2 - Full Fusion)
  * Optimized & Fixed - Powered by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
-
+const antideleteCmd = require('./commands/owner/antidelete'); // chemin vers ton module
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 const database = require('./database'); 
 const { addMessage } = require('./utils/groupstats');
