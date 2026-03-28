@@ -7,10 +7,10 @@ const { downloadMediaMessage } = require('@whiskeysockets/baileys');
 const { webp2png } = require('../../utils/webp2mp4');
 
 // --- FONCTION DE DESIGN AGM ADAPTÉE ---
-const AGM_DESIGN = (type) => `╭╼━≪• ᴍᴇᴅɪᴀ ᴄᴏɴᴠᴇʀᴛᴇʀ •≫━╾╮
-┃ sᴛᴀᴛᴜs : 🟢 sᴜᴄᴄᴇss
-┃ ᴏᴜᴛᴘᴜᴛ : ${type.toUpperCase()} ⚡
-┃ ᴍᴏᴅᴇ : sʏsᴛᴇᴍ 🛡️
+const AGM_DESIGN = (type) => `╭╼━≪• *ᴍᴇᴅɪᴀ ᴄᴏɴᴠᴇʀᴛᴇʀ* •≫━╾╮
+┃ *sᴛᴀᴛᴜs* : 🟢 sᴜᴄᴄᴇss
+┃ *ᴏᴜᴛᴘᴜᴛ* : ${type.toUpperCase()} ⚡
+┃ *ᴍᴏᴅᴇ* : sʏsᴛᴇᴍ 🛡️
 ╰━━━━━━━━━━━━━━━╯
 > *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
 
