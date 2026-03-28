@@ -54,11 +54,17 @@ const toSmallCaps = (text) => {
 const isAdmin = async (sock, participant, groupId) => {
     if (!groupId?.endsWith('@g.us')) return false;
     try {
-        const metadata = await sock.groupMetadata(groupId);
-        const p = metadata.participants.find(v => normalizeJid(v.id) === normalizeJid(participant));
+        // On vérifie si on a déjà les infos en mémoire vive
+        let metadata = global.store.groupMetadata[groupId];
+        if (!metadata) {
+            metadata = await sock.groupMetadata(groupId);
+            global.store.groupMetadata[groupId] = metadata; // On stocke pour 1 heure par ex.
+        }
+        const p = metadata.participants.find(v => v.id === participant);
         return p?.admin === 'admin' || p?.admin === 'superadmin';
     } catch { return false; }
 };
+
 
 // --- HANDLER PRINCIPAL ---
 const handleMessage = async (sock, msg) => {
