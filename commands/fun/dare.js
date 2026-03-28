@@ -4,12 +4,12 @@
  */
 
 // Design pour le défi (Action)
-const DARE_DESIGN = (challenge) => `╭╼━≪• ɢʜᴏsᴛ ᴅᴀʀᴇ •≫━╾╮
-┃ ᴅᴇғɪ : ${challenge}
-┃ ᴛʏᴘᴇ : ᴀᴄᴛɪᴏɴ 🔥
-┃ sᴛᴀᴛᴜs : ᴘᴇɴᴅɪɴɢ... ⏳
+const DARE_DESIGN = (challenge) => `╭╼━≪• *ɢʜᴏsᴛ ᴅᴀʀᴇ* •≫━╾╮
+┃ *ᴅᴇғɪ* : ${challenge}
+┃ *ᴛʏᴘᴇ* : ᴀᴄᴛɪᴏɴ 🔥
+┃ *sᴛᴀᴛᴜs* : ᴘᴇɴᴅɪɴɢ... ⏳
 ╰━━━━━━━━━━━━━━━╯
-> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
 module.exports = {
     name: 'dare',
