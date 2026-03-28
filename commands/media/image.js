@@ -17,9 +17,27 @@ const toStyledCaps = (text) => {
   return String(text).toLowerCase().split('').map(c => fonts[c] || c).join('');
 };
 
+// --- FONCTION DE DESIGN DU MENU ---
+const AGM_DESIGN = (query, selection) => {
+  let menu = `*╭╼━≪• ${toStyledCaps('ɢᴏᴏɢʟᴇ ɪᴍᴀɢᴇ sᴇʟᴇᴄᴛᴏʀ')} •≫━╾╮*\n`;
+  menu += `*┃*\n`;
+  menu += `*┃* 🔍 *${toStyledCaps('ʀᴇᴄʜᴇʀᴄʜᴇ')}* : *${toStyledCaps(query)}*\n`;
+  menu += `*┃* 📥 *${toStyledCaps('ᴄʜᴏɪsɪsꜱᴇᴢ ᴜɴ ɴᴜᴍᴇʀᴏ')}* :\n`;
+  menu += `*┃*\n`;
+  
+  selection.forEach((_, i) => {
+    menu += `*┃* *${i + 1}* ➽ *${toStyledCaps('ɪᴍᴀɢᴇ')} ${i + 1}*\n`;
+  });
+  
+  menu += `*┃*\n`;
+  menu += `*╰━━━━━━━━━━━━━━━━━━━━━━━╯*\n`;
+  menu += `> *${toStyledCaps('ʀᴇᴘᴏɴᴅᴇᴢ ᴀ ᴄᴇ ᴍᴇssᴀɢᴇ ᴀᴠᴇᴄ ʟᴇ ɴᴜᴍᴇʀᴏ')}*`;
+  return menu;
+};
+
 module.exports = {
   name: 'image',
-  aliases: ['img', 'pic'],
+  aliases: ['img', 'pic', 'google'],
   category: 'media',
   description: 'Rechercher et choisir une image sur Google',
   usage: '.image <mot-clé>',
@@ -27,49 +45,43 @@ module.exports = {
   async execute(sock, msg, args, extra) {
     try {
       const text = args.join(' ');
-      if (!text) return extra.reply(`⚠️ *${toStyledCaps('ᴠᴇᴜɪʟʟᴇᴢ ᴇɴᴛʀᴇʀ ᴜɴ ᴍᴏᴛ-ᴄʟᴇ')}*`);
+      const chatId = extra.from;
 
-      await sock.sendMessage(extra.from, { react: { text: '🔍', key: msg.key } });
+      if (!text) {
+        return extra.reply(`⚠️ *${toStyledCaps('ᴠᴇᴜɪʟʟᴇᴢ ᴇɴᴛʀᴇʀ ᴜɴ ᴍᴏᴛ-ᴄʟᴇ')}*`);
+      }
 
+      // Réaction de recherche
+      await sock.sendMessage(chatId, { react: { text: '🔍', key: msg.key } });
+
+      // Recherche via le scraper
       const results = await googleImage(text);
+      
       if (!results || results.length === 0) {
         return extra.reply(`❌ *${toStyledCaps('ᴀᴜᴄᴜɴ ʀᴇsᴜʟᴛᴀᴛ ᴛʀᴏᴜᴠᴇ')}*`);
       }
 
-      // Sélection des 5 premiers résultats
+      // On limite à 5 résultats pour la clarté
       const selection = results.slice(0, 5);
-      
-      let menuText = `*╭╼━≪• ${toStyledCaps('ɢᴏᴏɢʟᴇ ɪᴍᴀɢᴇ sᴇʟᴇᴄᴛᴏʀ')} •≫━╾╮*\n`;
-      menuText += `*┃*\n`;
-      menuText += `*┃* 🔍 *${toStyledCaps('ʀᴇᴄʜᴇʀᴄʜᴇ')}* : *${toStyledCaps(text)}*\n`;
-      menuText += `*┃* 📥 *${toStyledCaps('ᴄʜᴏɪsɪssez ᴜɴ ɴᴜᴍᴇʀᴏ')}* :\n`;
-      menuText += `*┃*\n`;
-      
-      selection.forEach((url, i) => {
-        menuText += `*┃* *${i + 1}* ➽ *${toStyledCaps('ɪᴍᴀɢᴇ')} ${i + 1}*\n`;
-      });
-      
-      menuText += `*┃*\n`;
-      menuText += `*╰━━━━━━━━━━━━━━━━━━━━━━━╯*\n`;
-      menuText += `> *${toStyledCaps('ʀᴇᴘᴏɴᴅᴇᴢ ᴀ ᴄᴇ ᴍᴇssᴀɢᴇ ᴀᴠᴇᴄ ʟᴇ ɴᴜᴍᴇʀᴏ')}*`;
 
-      // Envoi du menu avec la première image en miniature pour donner un aperçu
-      await sock.sendMessage(extra.from, {
-        image: { url: selection[0] },
-        caption: menuText,
+      // Envoi du menu interactif
+      await sock.sendMessage(chatId, {
+        image: { url: selection[0] }, // Utilise la 1ère image comme couverture
+        caption: AGM_DESIGN(text, selection),
         contextInfo: {
           externalAdReply: {
             title: "ɢʜᴏsᴛ ɪᴍᴀɢᴇ sʏsᴛᴇᴍ",
             body: toStyledCaps("selectionnez votre image"),
             mediaType: 1,
             thumbnailUrl: selection[0],
+            sourceUrl: "https://github.com/georges16388",
             showAdAttribution: false
           }
         }
       }, { quoted: msg });
 
-      // Stockage temporaire des résultats pour le Handler de réponse (si tu en as un)
-      // Sinon, je peux te coder la partie qui réceptionne le numéro.
+      // Réaction de succès
+      await sock.sendMessage(chatId, { react: { text: '✅', key: msg.key } });
 
     } catch (error) {
       console.error('Image Selector Error:', error);
