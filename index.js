@@ -17,19 +17,20 @@ const pino = require('pino');
 const fs = require('fs');
 const path = require('path');
 
+
 // ==========================================
-// MODULE 1 : CONFIGURATION & LOGGING 
+// MODULE 1 : CONFIGURATION & STORE PERSISTANT
 // ==========================================
 const config = require('./config');
 const handler = require('./handler');
 global.config = config; 
 
-// Logging rotatif basique vers fichier pour les crashs critiques
+// 📁 Gestion des fichiers et logs (Indispensable pour éviter les crashs)
 const logFile = path.join(__dirname, 'bot-crash.log');
 const logError = (msg, err) => {
     const logStr = `[${new Date().toISOString()}] ❌ ${msg}: ${err.stack || err}\n`;
     console.error(logStr);
-    fs.appendFileSync(logFile, logStr);
+    if (fs.appendFileSync) fs.appendFileSync(logFile, logStr);
 };
 
 const tmpDir = path.join(__dirname, 'tmp');
@@ -38,10 +39,32 @@ if (!fs.existsSync(tmpDir)) {
     console.log('✅ [ꜱʏꜱᴛᴇᴍ] ᴅᴏꜱꜱɪᴇʀ ᴛᴍᴘ ᴄʀᴇᴇ ᴀᴠᴇᴄ ꜱᴜᴄᴄᴇ̀ꜱ');
 }
 
+// 💾 Configuration du Store Persistant
+const storeFile = './ghostg_store.json';
 const store = makeInMemoryStore({ 
     logger: pino({ level: 'silent' }) 
 });
-global.store = store; 
+
+// Lecture du store au démarrage
+try {
+    if (fs.existsSync(storeFile)) {
+        store.readFromFile(storeFile);
+        console.log('✅ [ꜱʏꜱᴛᴇᴍ] ꜱᴛᴏʀᴇ ᴘᴇʀꜱɪꜱᴛᴀɴᴛ ᴄʜᴀʀɢᴇ́');
+    }
+} catch (e) {
+    logError("Erreur Lecture Store", e);
+}
+
+// Sauvegarde automatique toutes les 10 secondes
+setInterval(() => {
+    try {
+        if (store) store.writeToFile(storeFile);
+    } catch (e) { /* Silencieux */ }
+}, 10000);
+
+global.store = store;
+ 
+ 
 
 // ==========================================
 // MODULE 2 : SÉCURITÉ & UTILITAIRES
