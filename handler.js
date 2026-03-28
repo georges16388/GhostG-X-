@@ -98,7 +98,7 @@ const handleMessage = async (sock, msg) => {
                 const sReact = config.supremeReact || '👑';
                 await sock.sendMessage(from, { react: { text: sReact, key: msg.key } });
             } else {
-                const emojis = ['⚡', '💀', '🔥', '✨', '❤️', '🙏🏾', '🇧🇫'];
+                const emojis = ['⚡', '💀', '🔥', '✨', '❤️', '🙏🏾', '🇧🇫', '🔗', '😉', '😍', '✝️', '😏', '😎', '🫂', '👋🏾', '❓', '💩', '😊'];
                 const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
                 await sock.sendMessage(from, { react: { text: isCmd ? '⏳' : randomEmoji, key: msg.key } });
             }
@@ -115,7 +115,7 @@ const handleMessage = async (sock, msg) => {
 
             const reply = (text) => {
                 return sock.sendMessage(from, { 
-                    text: `${text}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*` 
+                    text: `${text}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*` 
                 }, { quoted: msg });
             };
 
