@@ -1,6 +1,7 @@
 /**
  * Media To URL - AGM Cloud Edition (Catbox)
  * Clean Edition - No External Links
+ * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
 const { downloadContentFromMessage, getContentType } = require('@whiskeysockets/baileys');
@@ -31,22 +32,23 @@ module.exports = {
     try {
       const from = extra.from;
 
-      // 1. Détection du média cité ou du message direct
+      // 1. Détection précise du média (Direct ou Quoted)
       const quoted = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage || msg.message;
       const mimeType = getContentType(quoted);
 
-      if (!quoted || !/image|video|audio|sticker|document/i.test(mimeType)) {
+      // On vérifie si c'est bien un média géré
+      if (!quoted || !mimeType || !/image|video|audio|sticker|document/i.test(mimeType)) {
         return extra.reply(`⚠️ *${toStyledCaps('ᴠᴇᴜɪʟʟᴇᴢ ʀᴇᴘᴏɴᴅʀᴇ ᴀ ᴜɴ ᴍᴇᴅɪᴀ')}*`);
       }
 
       await sock.sendMessage(from, { react: { text: '☁️', key: msg.key } });
 
-      // 2. Préparation du téléchargement
-      const mediaContent = quoted[mimeType];
-      const stream = await downloadContentFromMessage(
-        mediaContent,
-        mimeType.replace('Message', '').toLowerCase()
-      );
+      // 2. Téléchargement sécurisé
+      const mediaKey = mimeType.replace('Message', '').toLowerCase();
+      // Correction pour documentMessage qui nécessite 'document'
+      const downloadType = mediaKey === 'document' ? 'document' : mediaKey;
+      
+      const stream = await downloadContentFromMessage(quoted[mimeType], downloadType);
 
       let buffer = Buffer.from([]);
       for await (const chunk of stream) {
@@ -55,26 +57,27 @@ module.exports = {
 
       if (buffer.length === 0) throw new Error('Buffer vide');
 
-      // 3. Calcul des infos
+      // 3. Calcul des infos techniques
       const sizeMB = (buffer.length / (1024 * 1024)).toFixed(2) + ' ᴍʙ';
-      const cleanType = mimeType.replace('Message', '');
+      const cleanType = mediaKey.toUpperCase();
 
-      // 4. Upload
+      // 4. Upload vers Catbox (via ton utilitaire)
       const mediaUrl = await uploadByBuffer(buffer); 
 
-      // 5. Envoi du résultat sans lien cliquable dans l'aperçu
+      // 5. Construction du message final
       const caption = `${AGM_DESIGN(sizeMB, cleanType)}\n\n🔗 *${toStyledCaps('ʟɪɴᴋ')} :* ${mediaUrl}`;
 
       await sock.sendMessage(from, {
         text: caption,
         contextInfo: {
-            // Suppression de sourceUrl et showAdAttribution pour éviter les liens parasites
           externalAdReply: {
             title: "ɢʜᴏsᴛ ᴄʟᴏᴜᴅ sʏsᴛᴇᴍ",
             body: toStyledCaps("transfert securise effectue"),
-            thumbnail: buffer.length < 100000 ? buffer : null, 
+            // On n'envoie le thumbnail que si c'est une image légère pour éviter les lags
+            thumbnail: /image/i.test(mimeType) && buffer.length < 1000000 ? buffer : null, 
             mediaType: 1,
-            renderLargerThumbnail: false // Garde l'aperçu petit et discret
+            showAdAttribution: false,
+            renderLargerThumbnail: false 
           }
         }
       }, { quoted: msg });
