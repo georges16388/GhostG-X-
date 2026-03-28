@@ -97,34 +97,34 @@ const handleMessage = async (sock, msg) => {
         const tttResult = await handleTicTacToeMove(sock, msg, { sender, from, body });
         if (tttResult) return; // Si c'est un coup de Morpion, on s'arrête là
 
-                // --- LOGIQUE DE DÉTECTION PRIORITAIRE (GEORGES / OWNER) ---
+        // --- LOGIQUE DE DÉTECTION (FUSIONNÉE & CORRIGÉE) ---
         const isSupreme = normalizeJid(sender) === "22651622652";
         
-        // Si c'est toi, le bot accepte aussi ">" comme préfixe forcé
-        const isForceCmd = isSupreme && body.startsWith('>');
-        const activePrefix = isForceCmd ? '>' : prefix;
+        // Un propriétaire peut forcer avec '>' ou utiliser le préfixe normal '.'
+        // Les autres doivent utiliser le préfixe normal
+        let activePrefix = prefix;
+        if (isSupreme && body.startsWith('>')) {
+            activePrefix = '>';
+        }
 
-        // Une commande est valide si elle commence par le préfixe OU si c'est toi qui forces avec '>'
         const isCmd = body.startsWith(activePrefix);
         const commandName = isCmd ? body.slice(activePrefix.length).trim().split(/\s+/)[0].toLowerCase() : null;
+        
+        // args : si c'est une commande, on enlève le nom de la cmd. Sinon, on prend tout le texte.
         const args = isCmd ? body.trim().split(/\s+/).slice(1) : body.trim().split(/\s+/);
+        
         const ownerStatus = isOwner(sender);
         const adminStatus = isGroup ? await isAdmin(sock, sender, from) : false;
 
         // --- SÉCURITÉ SELF-MODE (MODE PRIVÉ) ---
-        // Le bot s'arrête si selfMode est ON, SAUF si c'est l'owner qui parle
         if (config.selfMode && !ownerStatus && !msg.key.fromMe) return;
 
-const isCmd = body.startsWith(prefix);
-        const commandName = isCmd ? body.slice(prefix.length).trim().split(/\s+/)[0].toLowerCase() : null;
-        // Modifié pour que GhostG reçoive les mots même s'il n'y a pas de préfixe
-        const args = isCmd ? body.trim().split(/\s+/).slice(1) : body.trim().split(/\s+/);
-        const ownerStatus = isOwner(sender);
-        const adminStatus = isGroup ? await isAdmin(sock, sender, from) : false;
-
         // --- GHOSTG INTEL SYSTEM (INTERCEPTION OWNER) ---
-        global.ghostgMode = global.ghostgMode || 'off'; // S'assure que la variable existe
+        global.ghostgMode = global.ghostgMode || 'off'; 
         if (global.ghostgMode !== 'off' && ownerStatus && !isCmd) {
+            // ... reste du code GhostG Intel
+
+ 
             // Si GhostG est ON, il analyse tous les messages du propriétaire
             const ghostgCmd = global.commands.get('ghostg');
             if (ghostgCmd) {
