@@ -13,30 +13,27 @@ const cleanNumber = ownerRaw.replace(/\D/g, '');
 
 module.exports = {
     // --- BOT OWNER CONFIGURATION ---
-    ownerNumber: [cleanNumber], // Utilisé pour les vérifications de sécurité
-    OWNER_NUMBER: [cleanNumber], // Compatibilité ascendante
+    ownerNumber: [cleanNumber], 
+    OWNER_NUMBER: [cleanNumber], 
     ownerName: 'ɢʜᴏꜱᴛɢ x', 
-    supremeNumber: cleanNumber, // Utilisé pour le lien wa.me et le pairing
-    
+    supremeNumber: cleanNumber, 
+
     // --- SESSIONS & CONNECTION ---
     sessionName: process.env.SESSION_ID || 'session',
     pairingCode: process.env.PAIRING_CODE === 'true', 
 
     // --- SETTINGS PRINCIPAUX (DYNAMIC) ---
-    prefix: process.env.PREFIX || '.', // Chargé depuis .env
+    prefix: process.env.PREFIX || '.', 
     timezone: 'Africa/Ouagadougou',
     selfMode: process.env.SELF_MODE === 'true' || false, 
 
     // --- AUTOMATIONS & BEHAVIOR ---
-    autoRead: true, // Marquer les messages comme vus
-    autoTyping: true, // "En train d'écrire..."
-    anticall: true, // Rejet automatique des appels
+    autoRead: true, 
+    autoTyping: true, 
+    anticall: true, 
     autoReact: true, 
-    autoReactMode: 'bot', // 'bot' réagit uniquement aux commandes
-    supremeReact: '👑', // Réaction spéciale pour l'owner
-
-    
-    },
+    autoReactMode: 'bot', 
+    supremeReact: '👑',
 
     // --- API KEYS (SÉCURISÉES DANS .ENV) ---
     apiKeys: {
@@ -55,8 +52,9 @@ module.exports = {
       privateOnly: `💬 *ᴄᴏɴᴛᴀᴄᴛᴇᴢ-ᴍᴏɪ ᴇɴ ᴘʀɪᴠᴇ́ ᴘᴏᴜʀ ᴄᴇᴛᴛᴇ ᴄᴏᴍᴍᴀɴᴅᴇ*: https://wa.me/${cleanNumber}`,
       botAdminNeeded: '🤖 *ʟᴇ ʙᴏᴛ ᴅᴏɪᴛ ᴇ̂ᴛʀᴇ ᴀᴅᴍɪɴ ᴘᴏᴜʀ ᴀɢɪʀ !*',
       invalidCommand: '❓ *ᴄᴏᴍᴍᴀɴᴅᴇ ɪɴᴄᴏɴɴᴜᴇ. ᴛᴀᴘᴇᴢ .ᴍᴇɴᴜ*'
+    }, // <-- Virgule ajoutée ici
 
-        // --- GROUP SETTINGS DEFAULTS (PRESTIGE DESIGN) ---
+    // --- GROUP SETTINGS DEFAULTS (PRESTIGE DESIGN) ---
     defaultGroupSettings: {
       antilink: false,
       antilinkAction: 'delete', 
@@ -78,7 +76,6 @@ module.exports = {
       chatbot: false,
       autosticker: false 
     },
-
 
     // --- LIMITS & SOCIALS ---
     maxWarnings: 3,
