@@ -87,10 +87,13 @@ const handleMessage = async (sock, msg) => {
         if (tttResult) return; 
 
         // --- LOGIQUE DE DÉTECTION ---
-        const ownerStatus = isOwner(sender);
-        const isSupreme = normalizeJid(sender) === config.supremeNumber;
+                // --- LOGIQUE DE DÉTECTION ---
+        // Le handler appelle directement nos nouvelles fonctions globales
+        const ownerStatus = global.isOwner(sender);
+        const isSupreme = global.isSupreme(sender);
 
         let activePrefix = prefix;
+        // SEUL le Maître Suprême peut forcer les commandes avec '>'
         if (isSupreme && body.startsWith('>')) {
             activePrefix = '>';
         }
@@ -100,6 +103,7 @@ const handleMessage = async (sock, msg) => {
         const args = isCmd ? body.trim().split(/\s+/).slice(1) : body.trim().split(/\s+/);
 
         const adminStatus = isGroup ? await isAdmin(sock, sender, from) : false;
+
 
         // --- SÉCURITÉ SELF-MODE (MODE PRIVÉ) ---
         if (config.selfMode && !ownerStatus && !msg.key.fromMe) return;
