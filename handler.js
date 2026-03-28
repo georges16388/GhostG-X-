@@ -104,19 +104,44 @@ const handleMessage = async (sock, msg) => {
 
         // --- 🎭 SYSTÈME DE RÉACTIONS AUTOMATIQUES (OPTIMISÉ) ---
         if (config.autoReact && canReact(from)) {
-            // 1. Si c'est une commande (même lancée par toi)
             if (isCmd) {
                 await sock.sendMessage(from, { react: { text: '⏳', key: msg.key } });
             } 
-            // 2. Si c'est un message du Maître/Owner (React Spécial)
             else if (ownerStatus) {
                 await sock.sendMessage(from, { react: { text: config.supremeReact || '👑', key: msg.key } });
             }
-            // 3. Si c'est un utilisateur lambda (Réaction Aléatoire) et PAS moi
             else if (!msg.key.fromMe) {
                 const emojis = ['⚡', '💀', '🔥', '✨', '❤️', '🙏🏾', '😉', '😍', '✝️', '😏', '😎', '🫂', '👋🏾', '❓', '💩', '😊'];
                 const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
                 await sock.sendMessage(from, { react: { text: randomEmoji, key: msg.key } });
+            }
+        }
+
+        // --- 🛡️ SYSTÈME ANTI-GROUP MENTION (AGM LOGIC) ---
+        if (isGroup && !ownerStatus && !adminStatus) {
+            const groupSettings = database.getGroupSettings(from) || {};
+            if (groupSettings.antigroupmention) {
+                const isMentioningAll = body.includes('@everyone') || 
+                                        body.includes('@all') || 
+                                        msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.length > 10;
+
+                if (isMentioningAll) {
+                    const action = groupSettings.antigroupmentionaction || 'delete';
+                    await sock.sendMessage(from, { delete: msg.key });
+
+                    if (action === 'kick') {
+                        await sock.groupParticipantsUpdate(from, [sender], "remove");
+                        await sock.sendMessage(from, { 
+                            text: `*╭╼━≪• ${toSmallCaps('ᴀɢᴍ sᴇᴄᴜʀɪᴛʏ')} •≫━╾╮*\n*┃*\n*┃* 🚫 *${toSmallCaps('ᴜsᴇʀ ᴋɪᴄᴋᴇᴅ')}*\n*┃* 📝 *${toSmallCaps('ʀᴇᴀsᴏɴ')}* : *${toSmallCaps('ᴍᴇɴᴛɪᴏɴ ɪɴᴛᴇʀᴅɪᴛᴇ')}*\n*┃*\n*╰━━━━━━━━━━━━━━━╯*`
+                        });
+                    } else {
+                        await sock.sendMessage(from, { 
+                            text: `⚠️ @${sender.split('@')[0]} *${toSmallCaps('les mentions de groupe sont interdites ici.')}*`,
+                            mentions: [sender]
+                        });
+                    }
+                    return; 
+                }
             }
         }
 
