@@ -4,15 +4,13 @@
  * Powered by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
-const Baileys = require('@whiskeysockets/baileys');
 const { 
     default: makeWASocket, 
     useMultiFileAuthState, 
     DisconnectReason, 
-    fetchLatestBaileysVersion
-} = Baileys;
-
-const makeInMemoryStore = Baileys.makeInMemoryStore; 
+    fetchLatestBaileysVersion,
+    makeInMemoryStore // 🔹 EXTRACTION DIRECTE : Règle l'erreur "is not a function"
+} = require('@whiskeysockets/baileys');
 
 const pino = require('pino');
 const fs = require('fs');
@@ -33,6 +31,7 @@ if (!fs.existsSync(tmpDir)) {
 }
 
 // --- INITIALISATION DU STORE ---
+// Le store permet de garder en mémoire les contacts et messages
 const store = makeInMemoryStore({ 
     logger: pino({ level: 'silent' }) 
 });
@@ -75,6 +74,7 @@ async function startBot() {
         syncFullHistory: false,
     });
 
+    // Liaison du store à l'instance du bot
     store.bind(sock.ev);
 
     // --- SYSTÈME ANTI-CALL ---
@@ -172,6 +172,7 @@ https://wa.me/${ownerNum}
             if (!msg.message) continue;
             const sender = msg.key.participant || msg.key.remoteJid;
 
+            // Vérification via la hiérarchie globale
             if (global.config.selfMode && !global.isOwner(sender)) continue;
 
             const messageTimestamp = msg.messageTimestamp;
