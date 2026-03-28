@@ -4,16 +4,15 @@
  * Powered by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
+const Baileys = require('@whiskeysockets/baileys');
+const makeWASocket = Baileys.default;
 const { 
-    default: makeWASocket, 
     useMultiFileAuthState, 
     DisconnectReason, 
     fetchLatestBaileysVersion,
     makeInMemoryStore 
-} = require('@whiskeysockets/baileys');
-const pino = require('pino');
-const fs = require('fs');
-const path = require('path');
+} = Baileys;
+
 
 // --- CHARGEMENT DE LA CONFIGURATION ---
 const config = require('./config');
