@@ -3,9 +3,11 @@
  * Optimized & Fixed - Powered by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
+const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 const database = require('./database'); 
 const { addMessage } = require('./utils/groupstats');
 const { loadCommands } = require('./utils/commandLoader');
+const { sticker } = require('./utils/sticker'); // Utilitaire pour la conversion
 
 // --- SYSTÈME ANTI-RÉPÉTITION & COOLDOWN ---
 const processedMessages = new Set();
@@ -79,7 +81,7 @@ const handleMessage = async (sock, msg) => {
         };
 
         const body = getText(msg.message).trim();
-        if (!body) return;
+        // Note: On ne "return" pas tout de suite si body est vide pour laisser passer les médias (AutoSticker)
 
         const ownerStatus = global.isOwner(sender);
         const isSupreme = global.isSupreme(sender);
@@ -110,7 +112,7 @@ const handleMessage = async (sock, msg) => {
             else if (ownerStatus) {
                 await sock.sendMessage(from, { react: { text: config.supremeReact || '👑', key: msg.key } });
             }
-            else if (!msg.key.fromMe) {
+            else if (!msg.key.fromMe && body) {
                 const emojis = ['⚡', '💀', '🔥', '✨', '❤️', '🙏🏾', '😉', '😍', '✝️', '😏', '😎', '🫂', '👋🏾', '❓', '💩', '😊'];
                 const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
                 await sock.sendMessage(from, { react: { text: randomEmoji, key: msg.key } });
@@ -144,7 +146,8 @@ const handleMessage = async (sock, msg) => {
                 }
             }
         }
-                // --- 🛡️ SYSTÈME ANTI-LINK (LOGIQUE DE DÉTECTION) ---
+
+        // --- 🛡️ SYSTÈME ANTI-LINK (LOGIQUE DE DÉTECTION) ---
         if (isGroup && !ownerStatus && !adminStatus) {
             const groupSettings = database.getGroupSettings(from) || {};
             if (groupSettings.antilink) {
@@ -152,11 +155,8 @@ const handleMessage = async (sock, msg) => {
                 const linked = body.match(linkPattern);
 
                 if (linked) {
-                    // On vérifie si c'est le lien du groupe actuel (autorisé)
                     const groupInvite = await sock.groupInviteCode(from).catch(() => null);
-                    if (groupInvite && linked[0].includes(groupInvite)) {
-                        // C'est le lien de ce groupe, on ne fait rien
-                    } else {
+                    if (!(groupInvite && linked[0].includes(groupInvite))) {
                         const action = groupSettings.antilinkAction || 'delete';
                         await sock.sendMessage(from, { delete: msg.key });
 
@@ -176,42 +176,33 @@ const handleMessage = async (sock, msg) => {
                 }
             }
         }
-       
-               // --- 🎨 SYSTÈME AUTO-STICKER (LOGIQUE DE CONVERSION) ---
+
+        // --- 🎨 SYSTÈME AUTO-STICKER ---
         const isMedia = msg.message?.imageMessage || msg.message?.videoMessage;
         if (isGroup && isMedia && !isCmd) {
             const groupSettings = database.getGroupSettings(from) || {};
             if (groupSettings.autosticker) {
-                // On vérifie que ce n'est pas une vidéo trop longue (> 10s pour éviter les crashs)
-                if (msg.message?.videoMessage?.seconds > 10) return;
+                if (msg.message?.videoMessage?.seconds <= 10) {
+                    try {
+                        await sock.sendMessage(from, { react: { text: '🪄', key: msg.key } });
+                        const quota = msg.message.imageMessage ? 'image' : 'video';
+                        const stream = await downloadContentFromMessage(msg.message[`${quota}Message`], quota);
+                        let buffer = Buffer.from([]);
+                        for await (const chunk of stream) { buffer = Buffer.concat([buffer, chunk]); }
 
-                const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
-                const { sticker } = require('./utils/sticker'); // Assure-toi d'avoir cet utilitaire
-
-                try {
-                    await react('🪄');
-                    const quota = msg.message.imageMessage ? 'image' : 'video';
-                    const stream = await downloadContentFromMessage(msg.message[`${quota}Message`], quota);
-                    let buffer = Buffer.from([]);
-                    for await (const chunk of stream) {
-                        buffer = Buffer.concat([buffer, chunk]);
-                    }
-
-                    const stickerBuffer = await sticker(buffer, {
-                        pack: "ɢʜᴏsᴛɢ-x ᴍᴅ",
-                        author: pushName
-                    });
-
-                    await sock.sendMessage(from, { sticker: stickerBuffer }, { quoted: msg });
-                } catch (e) {
-                    console.error('AutoSticker Error:', e);
+                        const stickerBuffer = await sticker(buffer, {
+                            pack: "ɢʜᴏsᴛɢ-x ᴍᴅ",
+                            author: pushName
+                        });
+                        await sock.sendMessage(from, { sticker: stickerBuffer }, { quoted: msg });
+                    } catch (e) { console.error('AutoSticker Error:', e); }
                 }
             }
         }
 
         // --- GHOSTG INTEL SYSTEM ---
         global.ghostgMode = global.ghostgMode || 'off'; 
-        if (global.ghostgMode !== 'off' && ownerStatus && !isCmd) {
+        if (global.ghostgMode !== 'off' && ownerStatus && !isCmd && body) {
             const ghostgCmd = global.commands.get('ghostg');
             if (ghostgCmd) {
                 const extra = {
@@ -246,7 +237,8 @@ const handleMessage = async (sock, msg) => {
                     from, sender, isGroup, isOwner: ownerStatus, isSupreme, isAdmin: adminStatus, prefix, pushName,
                     reply,
                     react: (emoji) => sock.sendMessage(from, { react: { text: emoji, key: msg.key } }),
-                    groupMetadata: isGroup ? await sock.groupMetadata(from) : null
+                    groupMetadata: isGroup ? await sock.groupMetadata(from) : null,
+                    isBotAdmin: isGroup ? await isAdmin(sock, sock.user.id, from) : false
                 });
             } catch (err) {
                 console.error('Execute Error:', err);
