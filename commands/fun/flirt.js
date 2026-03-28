@@ -6,12 +6,12 @@
 const axios = require('axios');
 
 // Design pour le message de drague
-const FLIRT_DESIGN = (text) => `╭╼━≪• ɢʜᴏsᴛ ғʟɪʀᴛ •≫━╾╮
-┃ ᴍsɢ : ${text}
-┃ ᴛʏᴘᴇ : ᴘɪᴄᴋᴜᴘ ʟɪɴᴇ ✨
-┃ sᴛᴀᴛᴜs : sᴍᴏᴏᴛʜ... 😏
-> ┃ ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗
-╰━━━━━━━━━━━━━━━╯`;
+const FLIRT_DESIGN = (text) => `╭╼━≪• *ɢʜᴏsᴛ ғʟɪʀᴛ* •≫━╾╮
+┃ *ᴍsɢ* : ${text}
+┃ *ᴛʏᴘᴇ* : ᴘɪᴄᴋᴜᴘ ʟɪɴᴇ ✨
+┃ *sᴛᴀᴛᴜs* : sᴍᴏᴏᴛʜ... 😏
+╰━━━━━━━━━━━━━━━╯
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
 module.exports = {
     name: 'flirt',
