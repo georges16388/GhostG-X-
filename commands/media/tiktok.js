@@ -5,28 +5,29 @@
 
 const { ttdl } = require('ruhend-scraper');
 
-// Fonction de conversion en Small Caps
-const toSmallCaps = (text) => {
-    const smallCapsMap = {
-        'a': 'ᴀ', 'b': 'ʙ', 'c': 'ᴄ', 'd': 'ᴅ', 'e': 'ᴇ', 'f': 'ғ', 'g': 'ɢ', 'h': 'ʜ', 
-        'i': 'ɪ', 'j': 'ᴊ', 'k': 'ᴋ', 'l': 'ʟ', 'm': 'ᴍ', 'n': 'ɴ', 'o': 'ᴏ', 'p': 'ᴘ', 
-        'q': 'ǫ', 'r': 'ʀ', 's': 's', 't': 'ᴛ', 'u': 'ᴜ', 'v': 'ᴠ', 'w': 'ᴡ', 'x': 'x', 
-        'y': 'ʏ', 'z': 'ᴢ'
-    };
-    return text.toString().toLowerCase().split('').map(char => smallCapsMap[char] || char).join('');
+// --- FONCTION DE CONVERSION EN SMALL CAPS ---
+const toStyledCaps = (text) => {
+  if (!text) return "";
+  const fonts = {
+    'a': 'ᴀ','b': 'ʙ','c': 'ᴄ','d':'ᴅ','e':'ᴇ','f':'ғ','g':'ɢ','h':'ʜ',
+    'i':'ɪ','j':'ᴊ','k':'ᴋ','l':'ʟ','m':'ᴍ','n':'ɴ','o':'ᴏ','p':'ᴘ',
+    'q':'ǫ','r':'ʀ','s':'ꜱ','t':'ᴛ','u':'ᴜ','v':'ᴠ','w':'ᴡ','x':'x',
+    'y':'ʏ','z':'ᴢ'
+  };
+  return String(text).toLowerCase().split('').map(c => fonts[c] || c).join('');
 };
 
-// --- FONCTION DE DESIGN AGM ADAPTÉE ---
+// --- FONCTION DE DESIGN AGM ADAPTÉE (GRAS & SMALLCAPS) ---
 const AGM_DESIGN = (title, type) => {
-  const shortTitle = title ? (title.length > 15 ? title.substring(0, 12) + '...' : title) : 'ɴ/ᴀ';
-  return `╭╼━≪• *ᴛɪᴋᴛᴏᴋ sʏsᴛᴇᴍ* •≫━╾╮
-┃ 
-┃ ${toSmallCaps('sᴛᴀᴛᴜs')} : 🟢 ${toSmallCaps('ᴅᴏᴡɴʟᴏᴀᴅᴇᴅ')}
-┃ ${toSmallCaps('ᴛʏᴘᴇ')} : ${toSmallCaps(type)} ⚡
-┃ ${toSmallCaps('ᴛɪᴛʟᴇ')} : ${toSmallCaps(shortTitle)}
-┃ 
-╰━━━━━━━━━━━━━━━╯
-> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
+  const shortTitle = title ? (title.length > 20 ? title.substring(0, 17) + '...' : title) : 'ɴ/ᴀ';
+  return `*╭╼━≪• ${toStyledCaps('ᴛɪᴋᴛᴏᴋ sʏsᴛᴇᴍ')} •≫━╾╮*
+*┃*
+*┃* ✅ *${toStyledCaps('sᴛᴀᴛᴜs')}* : 🟢 *${toStyledCaps('ᴅᴏᴡɴʟᴏᴀᴅᴇᴅ')}*
+*┃* ⚡ *${toStyledCaps('ᴛʏᴘᴇ')}* : *${toStyledCaps(type)}*
+*┃* 📝 *${toStyledCaps('ᴛɪᴛʟᴇ')}* : *${toStyledCaps(shortTitle)}*
+*┃*
+*╰━━━━━━━━━━━━━━━╯*
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 };
 
 module.exports = {
@@ -34,72 +35,78 @@ module.exports = {
   aliases: ['tt', 'ttdl', 'ttmp3'],
   category: 'media',
   description: 'Télécharger Vidéo ou Audio TikTok',
-  usage: '.tt <URL> [audio]',
+  usage: '.tt <URL>',
 
   async execute(sock, msg, args, extra) {
     try {
-      const url = args.find(a => a.includes('tiktok.com'));
-      const isAudioMode = args.some(a => a.toLowerCase() === 'audio') || extra.prefix.includes('mp3');
-
-      if (!url) {
-        const warn = toSmallCaps("usage : .tt <lien> ou .tt <lien> audio");
-        return extra.reply(`⚠️ *${warn}*`);
+      // 1. Détection robuste de l'URL
+      const text = args.join(' ');
+      const urlMatch = text.match(/https?:\/\/(www\.|v[mt]\.|)tiktok\.com\/[^\s]+/i);
+      
+      if (!urlMatch) {
+        return extra.reply(`⚠️ *${toStyledCaps('ᴠᴇᴜɪʟʟᴇᴢ sᴀɪsɪʀ ᴜɴ ʟɪᴇɴ ᴛɪᴋᴛᴏᴋ ᴠᴀʟɪᴅᴇ')}*`);
       }
 
-      // Réaction selon le mode
-      await sock.sendMessage(extra.from, { react: { text: isAudioMode ? '🎶' : '⏳', key: msg.key } });
+      const url = urlMatch[0];
+      const isAudioMode = args.some(a => a.toLowerCase() === 'audio') || msg.body.toLowerCase().includes('mp3');
 
+      await sock.sendMessage(extra.from, { react: { text: '⏳', key: msg.key } });
+
+      // 2. Appel à l'API Ruhend
       const res = await ttdl(url);
-      if (!res || !res.data) throw new Error("No data");
+      if (!res || !res.data) throw new Error("API_ERROR");
 
-      const { title, video, nowm, photos, audio } = res.data;
+      const data = res.data;
+      // Note : Selon la version, c'est parfois data[0] ou direct data
+      const title = data.title || "TikTok Content";
 
-      // --- OPTION 1 : UNIQUEMENT L'AUDIO ---
+      // --- OPTION 1 : MODE AUDIO ---
       if (isAudioMode) {
-        if (!audio) throw new Error("Audio not found");
-        
+        const audioUrl = data.audio || data.mp3;
+        if (!audioUrl) throw new Error("AUDIO_NOT_FOUND");
+
         await sock.sendMessage(extra.from, {
-          audio: { url: audio },
+          audio: { url: audioUrl },
           mimetype: 'audio/mp4',
-          ptt: false, // Envoi en tant que fichier audio (pas vocal)
+          ptt: false,
           contextInfo: {
             externalAdReply: {
-              title: toSmallCaps("tiktok mp3 player"),
-              body: toSmallCaps(title || "Musique TikTok"),
+              title: toStyledCaps("ᴛɪᴋᴛᴏᴋ ᴀᴜᴅɪᴏ ᴘʟᴀʏᴇʀ"),
+              body: toStyledCaps(title),
               mediaType: 1,
               thumbnailUrl: "https://files.catbox.moe/2fmwpu.jpg",
-              showAdAttribution: true
+              showAdAttribution: false
             }
           }
         }, { quoted: msg });
-        
-        await extra.reply(AGM_DESIGN(title, "audio mp3"));
       } 
-      
-      // --- OPTION 2 : DIAPORAMA PHOTOS ---
-      else if (photos && Array.isArray(photos) && photos.length > 0) {
-        for (let i = 0; i < Math.min(10, photos.length); i++) {
+
+      // --- OPTION 2 : DIAPORAMA / PHOTOS ---
+      else if (data.photo || data.photos) {
+        const album = data.photo || data.photos;
+        for (let i = 0; i < Math.min(5, album.length); i++) {
           await sock.sendMessage(extra.from, {
-            image: { url: photos[i] },
-            caption: i === 0 ? AGM_DESIGN(title || "Slideshow", "photo") : ""
+            image: { url: album[i] },
+            caption: i === 0 ? AGM_DESIGN(title, "ᴘʜᴏᴛᴏ ᴀʟʙᴜᴍ") : ""
           }, { quoted: msg });
         }
       } 
-      
-      // --- OPTION 3 : VIDÉO (PAR DÉFAUT) ---
+
+      // --- OPTION 3 : VIDÉO (SANS WATERMARK) ---
       else {
-        const videoUrl = nowm || video;
+        const videoUrl = data.nowm || data.video || data.no_watermark;
+        if (!videoUrl) throw new Error("VIDEO_NOT_FOUND");
+
         await sock.sendMessage(extra.from, {
           video: { url: videoUrl },
-          mimetype: 'video/mp4',
-          caption: AGM_DESIGN(title || "TikTok Video", "video"),
+          caption: AGM_DESIGN(title, "ᴠɪᴅᴇᴏ ɴᴏ ᴡᴍ"),
           contextInfo: {
             externalAdReply: {
               title: "ɢʜᴏsᴛ ᴛɪᴋᴛᴏᴋ ᴘʟᴀʏᴇʀ",
-              body: toSmallCaps("video sans watermark"),
+              body: toStyledCaps("ᴠɪᴅᴇᴏ ʜᴅ ʀᴇᴄᴜᴘᴇʀᴇᴇ"),
               mediaType: 2,
               thumbnailUrl: "https://files.catbox.moe/2fmwpu.jpg",
-              showAdAttribution: true
+              showAdAttribution: false
             }
           }
         }, { quoted: msg });
@@ -109,8 +116,7 @@ module.exports = {
 
     } catch (error) {
       console.error('TikTok DL Error:', error);
-      const failMsg = toSmallCaps("echec du telechargement");
-      await extra.reply(`❌ *${failMsg}*`);
+      await extra.reply(`❌ *${toStyledCaps('ᴇᴄʜᴇᴄ ᴅᴜ ᴛᴇʟᴇᴄʜᴀʀɢᴇᴍᴇɴᴛ. ᴠᴇʀɪғɪᴇᴢ ʟᴇ ʟɪᴇɴ')}.*`);
     }
   }
 };
