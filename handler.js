@@ -83,23 +83,38 @@ const handleMessage = async (sock, msg) => {
                    m?.listResponseMessage?.singleSelectReply?.selectedRowId ||
                    m?.templateButtonReplyMessage?.selectedId || "";
         };
-        
-        // Dans ton handler.js, juste avant la détection des commandes (isCmd)
-const { handleTicTacToeMove } = require('./commands/fun/tictactoe');
-const tttResult = await handleTicTacToeMove(sock, msg, { sender, from, body });
-if (tttResult) return; // Si c'est un coup de Morpion, on s'arrête là
-
-      if (global.ghostgMode !== 'off' && isOwner && !msg.body.startsWith(prefix)) {
-    // Si GhostG est ON, il analyse tous les messages du propriétaire
-    const ghostgCmd = global.commands.get('ghostg');
-    return ghostgCmd.execute(sock, msg, msg.body.split(' '), extra);
-}
 
         const body = getText(msg.message).trim();
+        if (!body) return; // Sécurité anti-crash pour les messages vides (ex: certains stickers)
+
+        // --- SYSTÈME TIC-TAC-TOE ---
+        const { handleTicTacToeMove } = require('./commands/fun/tictactoe');
+        const tttResult = await handleTicTacToeMove(sock, msg, { sender, from, body });
+        if (tttResult) return; // Si c'est un coup de Morpion, on s'arrête là
+
         const isCmd = body.startsWith(prefix);
         const commandName = isCmd ? body.slice(prefix.length).trim().split(/\s+/)[0].toLowerCase() : null;
-        const args = isCmd ? body.trim().split(/\s+/).slice(1) : [];
+        // Modifié pour que GhostG reçoive les mots même s'il n'y a pas de préfixe
+        const args = isCmd ? body.trim().split(/\s+/).slice(1) : body.trim().split(/\s+/);
         const ownerStatus = isOwner(sender);
+        const adminStatus = isGroup ? await isAdmin(sock, sender, from) : false;
+
+        // --- GHOSTG INTEL SYSTEM (INTERCEPTION OWNER) ---
+        global.ghostgMode = global.ghostgMode || 'off'; // S'assure que la variable existe
+        if (global.ghostgMode !== 'off' && ownerStatus && !isCmd) {
+            // Si GhostG est ON, il analyse tous les messages du propriétaire
+            const ghostgCmd = global.commands.get('ghostg');
+            if (ghostgCmd) {
+                // On crée les outils (extra) spécifiquement pour que l'IA puisse répondre
+                const extra = {
+                    from, sender, isGroup, isOwner: ownerStatus, isAdmin: adminStatus, prefix, pushName,
+                    reply: (text) => sock.sendMessage(from, { text: `${text}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*` }, { quoted: msg }),
+                    react: (emoji) => sock.sendMessage(from, { react: { text: emoji, key: msg.key } }),
+                    groupMetadata: isGroup ? await sock.groupMetadata(from) : null
+                };
+                return ghostgCmd.execute(sock, msg, args, extra);
+            }
+        }
 
         // --- RÉACTIONS AUTOMATIQUES ---
         if (config.autoReact && canReact(from) && !msg.key.fromMe) {
@@ -115,11 +130,10 @@ if (tttResult) return; // Si c'est un coup de Morpion, on s'arrête là
 
         if (isGroup && typeof addMessage === 'function') addMessage(from, sender);
 
-        // --- EXÉCUTION DES COMMANDES ---
+        // --- EXÉCUTION DES COMMANDES CLASSIQUES ---
         if (isCmd && commandName) {
             const command = global.commands.get(commandName);
             if (!command) return;
-            const adminStatus = isGroup ? await isAdmin(sock, sender, from) : false;
 
             const reply = (text) => {
                 return sock.sendMessage(from, { 
