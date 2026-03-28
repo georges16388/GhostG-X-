@@ -1,76 +1,118 @@
 /**
- * ATTP - Animated Text to Picture Sticker
- * Full GhostG-X Edition
+ * ᴀᴛᴛᴘ ᴄᴏᴍᴍᴀɴᴅ - ᴀɢᴍ sʏsᴛᴇᴍ ɢᴇɴᴇʀᴀᴛᴏʀ
+ * ᴄʀᴇᴀᴛᴇ ᴀɴɪᴍᴀᴛᴇᴅ ᴛᴇxᴛ sᴛɪᴄᴋᴇʀs (ʙʟɪɴᴋɪɴɢ ᴇꜰꜰᴇᴄᴛ)
+ * sᴛʏʟᴇ ʙʏ -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
 const { spawn } = require('child_process');
-const { writeExifVid } = require('../../utils/exif'); // Vérifie bien que ce chemin est correct
-const fs = require('fs');
-const path = require('path');
+const { writeExifVid } = require('../../utils/exif');
+const config = require('../../config');
 
 module.exports = {
   name: 'attp',
-  aliases: ['ttp'],
-  category: 'essentials',
-  description: 'Crée un sticker animé à partir d\'un texte.',
-  usage: '<texte>',
+  aliases: ['ttp', 'animtext'],
+  category: 'general',
+  description: 'ᴄʀᴇ́ᴇʀ ᴜɴ sᴛɪᴄᴋᴇʀ ᴀɴɪᴍᴇ́ ᴀ̀ ᴘᴀʀᴛɪʀ ᴅᴇ ᴛᴇxᴛᴇ.',
+  usage: '.ᴀᴛᴛᴘ <ᴛᴇxᴛᴇ>',
 
-  async execute(sock, msg, args, extra) {
+  async execute(sock, msg, args, { from, reply, react, prefix }) {
     try {
       const text = args.join(' ');
+
       if (!text) {
-        return extra.reply(`╭╼━≪• ɢʜᴏsᴛ ᴀᴛᴛᴘ •≫━╾╮\n┃ ᴜsᴀɢᴇ : ${extra.prefix || '.'}ᴀᴛᴛᴘ <ᴛᴇxᴛᴇ>\n╰━━━━━━━━━━━━━━━╯`);
+        return await reply(
+          '✨ *ᴀᴛᴛᴘ ɢᴇɴᴇʀᴀᴛᴏʀ*\n\n' +
+          `ᴜsᴀɢᴇ : ${prefix}ᴀᴛᴛᴘ <ᴠᴏᴛʀᴇ ᴛᴇxᴛᴇ>\n` +
+          'ᴇxᴇᴍᴘʟᴇ : .ᴀᴛᴛᴘ ɢʜᴏsᴛɢ-x'
+        );
       }
 
-      if (text.length > 50) return extra.reply('⚠️ *Texte trop long !*');
+      if (text.length > 50) {
+        return await reply('❌ *ᴛᴇxᴛᴇ ᴛʀᴏᴘ ʟᴏɴɢ ! (ᴍᴀx 50 ᴄᴀʀᴀᴄᴛᴇ̀ʀᴇs).*');
+      }
 
-      await sock.sendMessage(extra.from, { react: { text: "⚡", key: msg.key } });
+      await react('⏳');
 
-      // Génération de la vidéo via FFmpeg
-      const mp4Buffer = await renderBlinkingVideoWithFfmpeg(text);
+      try {
+        // ɢᴇ́ɴᴇ́ʀᴀᴛɪᴏɴ ᴅᴇ ʟᴀ ᴠɪᴅᴇ́ᴏ ᴄʟɪɢɴᴏᴛᴀɴᴛᴇ ᴠɪᴀ ꜰꜰᴍᴘᴇɢ
+        const mp4Buffer = await renderBlinkingVideoWithFfmpeg(text);
+        
+        // ᴀᴊᴏᴜᴛ ᴅᴇs ᴍᴇ́ᴛᴀᴅᴏɴɴᴇ́ᴇs ᴇxɪꜰ (ɴᴏᴍ ᴅᴜ ᴘᴀᴄᴋ)
+        const webpBuffer = await writeExifVid(mp4Buffer, { 
+            packname: 'ɢʜᴏsᴛɢ-x ᴍᴅ', 
+            author: 'ɢʜᴏsᴛɢ 𝐗' 
+        });
 
-      // Conversion en Sticker avec tes métadonnées
-      const webpBuffer = await writeExifVid(mp4Buffer, { 
-          packname: '-ɢʜᴏꜱᴛɢ x 𓆪⸙-', 
-          author: 'ɢʜᴏꜱᴛ-x' 
-      });
+        await sock.sendMessage(from, { sticker: webpBuffer }, { quoted: msg });
+        await react('✅');
 
-      await sock.sendMessage(extra.from, { sticker: webpBuffer }, { quoted: msg });
+      } catch (error) {
+        console.error('[ᴀᴛᴛᴘ ʀᴇɴᴅᴇʀ ᴇʀʀᴏʀ]:', error);
+        await react('❌');
+        await reply('❌ *ᴇ́ᴄʜᴇᴄ ᴅᴇ ʟᴀ ɢᴇ́ɴᴇ́ʀᴀᴛɪᴏɴ ᴅᴜ sᴛɪᴄᴋᴇʀ.*');
+      }
 
     } catch (error) {
-      console.error('ATTP Error:', error);
-      await extra.reply('❌ Erreur lors de la création du sticker.');
+      console.error('[ᴀᴛᴛᴘ ᴄᴏᴍᴍᴀɴᴅ ᴇʀʀᴏʀ]:', error);
+      await reply('❌ *ᴜɴᴇ ᴇʀʀᴇᴜʀ sʏsᴛᴇ̀ᴍᴇ ᴇsᴛ sᴜʀᴠᴇɴᴜᴇ.*');
     }
   }
 };
 
 /**
- * Moteur de rendu FFmpeg pour texte clignotant
+ * ꜰᴏɴᴄᴛɪᴏɴ ᴅᴇ ʀᴇɴᴅᴜ ꜰꜰᴍᴘᴇɢ (ɴᴇ ᴘᴀs ᴍᴏᴅɪꜰɪᴇʀ sᴀᴜꜰ sɪ ʙᴇsᴏɪɴ)
  */
 function renderBlinkingVideoWithFfmpeg(text) {
   return new Promise((resolve, reject) => {
-    // Sur téléphone (Termux), les polices sont souvent ici, sinon on utilise 'sans'
-    const font = "/system/fonts/Roboto-Bold.ttf"; 
-    const output = path.join(__dirname, `../../temp/attp_${Date.now()}.mp4`);
-    
-    // Commande FFmpeg : crée un texte qui change de couleur 10 fois par seconde
-    const ffmpeg = spawn('ffmpeg', [
-      '-f', 'lavfi', '-i', 'color=c=black:s=512x512:d=2', // Fond noir 512x512
-      '-vf', `drawtext=text='${text}':fontfile=${font}:fontcolor='if(lt(mod(t,0.2),0.1),white,cyan)':fontsize=50:x=(w-text_w)/2:y=(h-text_h)/2`,
+    const fontPath = process.platform === 'win32'
+      ? 'C:/Windows/Fonts/arialbd.ttf'
+      : '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf';
+
+    const escapeDrawtextText = (s) => s
+      .replace(/\\/g, '\\\\')
+      .replace(/:/g, '\\:')
+      .replace(/,/g, '\\,')
+      .replace(/'/g, "\\'")
+      .replace(/\[/g, '\\[')
+      .replace(/\]/g, '\\]')
+      .replace(/%/g, '\\%');
+
+    const safeText = escapeDrawtextText(text);
+    const safeFontPath = process.platform === 'win32'
+      ? fontPath.replace(/\\/g, '/').replace(':', '\\:')
+      : fontPath;
+
+    const cycle = 0.3;
+    const dur = 1.8;
+
+    const drawRed = `drawtext=fontfile='${safeFontPath}':text='${safeText}':fontcolor=red:borderw=2:bordercolor=black@0.6:fontsize=56:x=(w-text_w)/2:y=(h-text_h)/2:enable='lt(mod(t\\,${cycle})\\,0.1)'`;
+    const drawBlue = `drawtext=fontfile='${safeFontPath}':text='${safeText}':fontcolor=blue:borderw=2:bordercolor=black@0.6:fontsize=56:x=(w-text_w)/2:y=(h-text_h)/2:enable='between(mod(t\\,${cycle})\\,0.1\\,0.2)'`;
+    const drawGreen = `drawtext=fontfile='${safeFontPath}':text='${safeText}':fontcolor=green:borderw=2:bordercolor=black@0.6:fontsize=56:x=(w-text_w)/2:y=(h-text_h)/2:enable='gte(mod(t\\,${cycle})\\,0.2)'`;
+
+    const filter = `${drawRed},${drawBlue},${drawGreen}`;
+
+    const args = [
+      '-y',
+      '-f', 'lavfi',
+      '-i', `color=c=black:s=512x512:d=${dur}:r=20`,
+      '-vf', filter,
+      '-c:v', 'libx264',
       '-pix_fmt', 'yuv420p',
-      '-y', output
-    ]);
+      '-movflags', '+faststart+frag_keyframe+empty_moov',
+      '-t', String(dur),
+      '-f', 'mp4',
+      'pipe:1'
+    ];
 
-    ffmpeg.on('close', async (code) => {
-      if (code === 0 && fs.existsSync(output)) {
-        const buffer = fs.readFileSync(output);
-        fs.unlinkSync(output); // Nettoyage
-        resolve(buffer);
-      } else {
-        reject(new Error(`FFmpeg exited with code ${code}`));
-      }
+    const ff = spawn('ffmpeg', args);
+    const chunks = [];
+    const errors = [];
+    ff.stdout.on('data', d => chunks.push(d));
+    ff.stderr.on('data', e => errors.push(e));
+    ff.on('error', reject);
+    ff.on('close', code => {
+      if (code === 0) return resolve(Buffer.concat(chunks));
+      reject(new Error(Buffer.concat(errors).toString() || `ffmpeg exited with code ${code}`));
     });
-
-    ffmpeg.on('error', (err) => reject(err));
   });
 }
