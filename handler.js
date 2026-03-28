@@ -1,6 +1,6 @@
 /**
- * ɢʜᴏꜱᴛɢ-x ᴍᴅ - Main Message Handler (Prestige Edition V5.1 - Fusion)
- * Optimized by Gemini - Powered by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
+ * ɢʜᴏꜱᴛɢ-x ᴍᴅ - Main Message Handler (Prestige Edition V5.2 - Full Fusion)
+ * Optimized & Fixed by Gemini - Powered by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
 const config = require('./config');
@@ -8,7 +8,7 @@ const database = require('./database');
 const { addMessage } = require('./utils/groupstats');
 const { loadCommands } = require('./utils/commandLoader');
 
-// --- sʏsᴛᴇ̀ᴍᴇ ᴀɴᴛɪ-ʀᴇ́ᴘᴇ́ᴛɪᴛɪᴏɴ & ᴄᴏᴏʟᴅᴏᴡɴ ---
+// --- SYSTÈME ANTI-RÉPÉTITION & COOLDOWN ---
 const processedMessages = new Set();
 const reactionCooldown = new Map();
 
@@ -23,24 +23,30 @@ const canReact = (jid) => {
 };
 
 /**
- * ɪɴɪᴛɪᴀʟɪsᴀᴛɪᴏɴ ᴅᴇs ᴄᴏᴍᴍᴀɴᴅᴇs
+ * INITIALISATION DES COMMANDES (GLOBAL)
  */
 global.commands = loadCommands();
 
 /**
- * ᴜᴛɪʟɪᴛᴀɪʀᴇs ᴅᴇ ᴠᴇ́ʀɪꜰɪᴄᴀᴛɪᴏɴ
+ * UTILITAIRES DE VÉRIFICATION CORRIGÉS
  */
 const normalizeJid = (jid) => {
     if (!jid) return null;
     return jid.split(':')[0].split('@')[0].replace(/\D/g, '');
 };
 
+const toSmallCaps = (text) => {
+    const fonts = {'a':'ᴀ','b':'ʙ','c':'ᴄ','d':'ᴅ','e':'ᴇ','f':'ғ','g':'ɢ','h':'ʜ','i':'ɪ','j':'ᴊ','k':'ᴋ','l':'ʟ','m':'ᴍ','n':'ɴ','o':'ᴏ','p':'ᴘ','q':'ǫ','r':'ʀ','s':'ꜱ','t':'ᴛ','u':'ᴜ','v':'ᴠ','w':'ᴡ','x':'x','y':'ʏ','z':'ᴢ'};
+    return String(text).toLowerCase().split('').map(c => fonts[c] || c).join('');
+};
+
 const isOwner = (sender) => {
     const senderNumber = normalizeJid(sender);
     const supreme = "22651622652"; 
-    const ownerList = Array.isArray(config.OWNER_NUMBER) ? config.OWNER_NUMBER : [config.OWNER_NUMBER];
+    // Correction ici : On check proprement la liste de la config
+    const ownerList = Array.isArray(config.ownerNumber) ? config.ownerNumber : [config.ownerNumber];
     if (senderNumber === supreme) return true;
-    return ownerList.some(owner => String(owner).replace(/\D/g, '') === senderNumber);
+    return ownerList.some(owner => normalizeJid(String(owner)) === senderNumber);
 };
 
 const isAdmin = async (sock, participant, groupId) => {
@@ -53,7 +59,7 @@ const isAdmin = async (sock, participant, groupId) => {
 };
 
 /**
- * ɢᴇsᴛɪᴏɴɴᴀɪʀᴇ ᴅᴇ ᴍᴇssᴀɢᴇs
+ * GESTIONNAIRE DE MESSAGES PRINCIPAL
  */
 const handleMessage = async (sock, msg) => {
     try {
@@ -80,7 +86,7 @@ const handleMessage = async (sock, msg) => {
         const args = isCmd ? body.trim().split(/\s+/).slice(1) : [];
         const ownerStatus = isOwner(sender);
 
-        // --- sʏsᴛᴇ̀ᴍᴇ ᴅᴇ ʀᴇ́ᴀᴄᴛɪᴏɴs ---
+        // --- SYSTÈME DE RÉACTIONS AUTOMATIQUES ---
         if (config.autoReact && canReact(from)) {
             if (ownerStatus) {
                 const sReact = config.supremeReact || '👑';
@@ -94,10 +100,10 @@ const handleMessage = async (sock, msg) => {
 
         if (isGroup && typeof addMessage === 'function') addMessage(from, sender);
 
-        // --- ᴇxᴇ́ᴄᴜᴛɪᴏɴ ᴄᴏᴍᴍᴀɴᴅᴇs ---
+        // --- EXÉCUTION DES COMMANDES ---
         if (isCmd && commandName) {
-            const command = global.commands.get(commandName) || 
-                          [...global.commands.values()].find(c => c.aliases && c.aliases.includes(commandName));
+            // Recherche de la commande (insensible à la casse grâce au Loader corrigé)
+            const command = global.commands.get(commandName);
 
             if (!command) return;
             const adminStatus = isGroup ? await isAdmin(sock, sender, from) : false;
@@ -108,9 +114,10 @@ const handleMessage = async (sock, msg) => {
                 }, { quoted: msg });
             };
 
-            if (command.ownerOnly && !ownerStatus) return reply(config.messages.ownerOnly);
-            if (command.groupOnly && !isGroup) return reply(config.messages.groupOnly);
-            if (command.adminOnly && !adminStatus && !ownerStatus) return reply(config.messages.adminOnly);
+            // Vérifications des permissions
+            if (command.ownerOnly && !ownerStatus) return reply(`❌ *${toSmallCaps("cette commande est reservee a l'owner.")}*`);
+            if (command.groupOnly && !isGroup) return reply(`❌ *${toSmallCaps("cette commande est reservee aux groupes.")}*`);
+            if (command.adminOnly && !adminStatus && !ownerStatus) return reply(`❌ *${toSmallCaps("cette commande est reservee aux admins.")}*`);
 
             if (config.autoTyping) await sock.sendPresenceUpdate('composing', from);
 
@@ -122,15 +129,15 @@ const handleMessage = async (sock, msg) => {
                     groupMetadata: isGroup ? await sock.groupMetadata(from) : null
                 });
             } catch (err) {
-                console.error(err);
-                reply(config.messages.error);
+                console.error('Execute Error:', err);
+                reply(`❌ *${toSmallCaps("erreur lors de l'execution de la commande.")}*`);
             }
         }
     } catch (err) { console.error('Handler Error:', err); }
 };
 
 /**
- * ɢᴇsᴛɪᴏɴɴᴀɪʀᴇ ᴅᴇ ɢʀᴏᴜᴘᴇs (ᴡᴇʟᴄᴏᴍᴇ & ɢᴏᴏᴅʙʏᴇ ᴅʏɴᴀᴍɪǫᴜᴇ)
+ * GESTIONNAIRE DE GROUPES (WELCOME & GOODBYE)
  */
 const handleGroupUpdate = async (sock, update) => {
     const { id, participants, action } = update;
@@ -142,10 +149,9 @@ const handleGroupUpdate = async (sock, update) => {
         for (const user of participants) {
             const userTag = `@${user.split('@')[0]}`;
 
-            // --- Section Welcome ---
             if (action === 'add' && settings.welcome) {
                 let welcomeText = settings.welcomeMessage || `╭╼━≪• *ɴᴇᴡ ᴍᴇᴍʙᴇʀ* •≫━╾╮\n┃ *ᴡᴇʟᴄᴏᴍᴇ* : @user 👋🏾\n┃ *ɴᴏᴜs sᴏᴍᴍᴇs ʜᴇᴜʀᴇᴜx\n┃ ᴅᴇ ᴛ'ᴀᴠᴏɪʀ ᴘᴀʀᴍɪ ɴᴏᴜs*\n┃ *ᴍᴇᴍʙʀᴇs* : #memberCount\n┃ *ᴛɪᴍᴇ* : #time ⏰\n┃ *ᴊᴇsᴜs ᴛᴀɪᴍᴇ ❤️*\n╰━━━━━━━━━━━━━━━╯\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
-                
+
                 welcomeText = welcomeText.replace(/@user/g, userTag)
                                          .replace(/#memberCount/g, metadata.participants.length)
                                          .replace(/#time/g, time);
@@ -165,10 +171,9 @@ const handleGroupUpdate = async (sock, update) => {
                 });
             }
 
-            // --- Section Goodbye ---
             if (action === 'remove' && settings.goodbye) {
-                let goodbyeText = settings.goodbyeMessage || `╭╼━≪• *ɢᴏᴏᴅʙʏᴇ* •≫━╾╮\n┃ *ᴀᴜ ʀᴇᴠᴏɪʀ* : @user 👋\n┃ *ᴛᴜ ɴᴇ ɴᴏᴜs ᴍᴀɴǫᴜᴇʀᴀ ᴊᴀᴍᴀɪs*\n┃ *ᴍᴇᴍʙʀᴇs* : #memberCount\n┃ *ᴛɪᴍᴇ* : #time ⏰\n╰━━━━━━━━━━━━━━━╯\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
-                
+                let goodbyeText = settings.goodbyeMessage || `╭╼━≪• *ɢᴏᴏᴅʙʏᴇ* •≫━╾╮\n┃ *ᴀᴜ ʀᴇᴠᴏɪʀ* : @user 👋\n┃ *ᴛᴜ ɴᴇ ɴᴏᴜs ᴍᴀɴǫᴜᴇʀᴀ ᴊᴀᴍᴀɪs*\n┃ *ᴍᴇᴍʙʀᴇs* : #memberCount\n┃ *ᴛɪᴍᴇ* : #time ⏰\n╰━━━━━━━━━━━━━━━╯\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+
                 goodbyeText = goodbyeText.replace(/@user/g, userTag)
                                          .replace(/#memberCount/g, metadata.participants.length)
                                          .replace(/#time/g, time);
@@ -180,14 +185,18 @@ const handleGroupUpdate = async (sock, update) => {
 };
 
 /**
- * sʏsᴛᴇ̀ᴍᴇ ᴀɴᴛɪ-ᴀᴘᴘᴇʟ
+ * SYSTÈME ANTI-APPEL (INITIALISATION)
  */
 const initializeAntiCall = (sock) => {
     sock.ev.on('call', async (calls) => {
+        const { anticall } = require('./config'); 
+        if (!anticall) return;
+
         for (const call of calls) {
             if (call.status === 'offer') {
                 await sock.rejectCall(call.id, call.from);
-                await sock.sendMessage(call.from, { text: "🚫 *ʟᴇꜱ ᴀᴘᴘᴇʟꜱ ꜱᴏɴᴛ ɪɴᴛᴇʀᴅɪᴛꜱ.* \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*" });
+                const warnMsg = `╭╼━≪• *ᴀɢᴍ sᴇᴄᴜʀɪᴛʏ* •≫━╾╮\n┃\n┃ ⚠️ ${toSmallCaps("appels interdits")}\n┃ ${toSmallCaps("votre appel a ete rejete")}\n┃\n╰━━━━━━━━━━━━━━━╯\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+                await sock.sendMessage(call.from, { text: warnMsg });
             }
         }
     });
