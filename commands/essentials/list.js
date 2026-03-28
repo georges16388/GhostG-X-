@@ -20,7 +20,7 @@ const toStyledCaps = (text) => {
 
 module.exports = {
   name: 'list',
-  aliases: ['l', 'help', 'commands', 'all'],
+  aliases: ['l', 'help', 'commands', 'allcmd'],
   category: 'general',
   description: 'Afficher la liste complète des commandes.',
   usage: '.list',
