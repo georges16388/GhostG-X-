@@ -18,14 +18,13 @@ module.exports = {
   name: 'menu',
   aliases: ['help', 'h', 'm'],
   category: 'essentials',
-  description: 'Menu GhostG-X avec image dynamique et lien newsletter.',
+  description: 'Menu GhostG-X avec design Prestige et image dynamique.',
   usage: '.menu',
 
   async execute(sock, msg, args, extra) {
     try {
-      const { from } = extra;
+      const { from, pushName } = extra;
       const senderJid = msg.key.participant || msg.key.remoteJid;
-      const botName = "ɢʜᴏsᴛɢ-x ᴍᴅ";
       const prefix = config.prefix || '.';
 
       // --- LOGIQUE D'IMAGE DYNAMIQUE ---
@@ -46,15 +45,20 @@ module.exports = {
         categories[cat].push(cmd);
       });
 
-      // --- CONSTRUCTION DU TEXTE ---
-      let menuText = `*╭╼━≪• ${botName} •≫━╾╮*\n`;
-      menuText += `*┃* *${toStyledCaps('sᴛᴀᴛᴜᴛ')}* : 🟢 *${toStyledCaps('ᴏɴʟɪɴᴇ')}*\n`;
-      menuText += `*┃* *${toStyledCaps('ᴜᴛɪʟɪsᴀᴛᴇᴜʀ')}* : *@${senderJid.split('@')[0]}*\n`;
-      menuText += `*┃* *${toStyledCaps('ᴘʀᴇғɪxᴇ')}* : [ *${prefix}* ]\n`;
-      menuText += `*┃* *${toStyledCaps('ᴄᴏᴍᴍᴀɴᴅᴇs')}* : *${totalCmds}* *${toStyledCaps('ғɪʟᴇs')}*\n`;
-      menuText += `*╰━━━━━━━━━━━━━━━━━━━━━━━╯*\n\n`;
+      // --- CONSTRUCTION DU TEXTE (DESIGN EXACT) ---
+      let menuText = `╭╼━≪• *ɢʜᴏsᴛɢ-x ᴍᴅ* •≫━╾╮\n`;
+      menuText += `┃\n`;
+      menuText += `┃ ${toStyledCaps('statut')} : 🟢 ${toStyledCaps('online')}\n`;
+      menuText += `┃ ${toStyledCaps('utilisateur')} : @${senderJid.split('@')[0]}\n`;
+      menuText += `┃ ${toStyledCaps('jesus taime')} : ❤️✝️\n`;
+      menuText += `┃ ${toStyledCaps('prefixe')} : [ *${prefix}* ]\n`;
+      menuText += `┃ ${toStyledCaps('commandes')} : ${totalCmds} ${toStyledCaps('files')}\n`;
+      menuText += `┃\n`;
+      menuText += `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n`;
 
-      const catOrder = ['essentials', 'ai', 'admin', 'media', 'utility', 'fun', 'owner', 'faith'];
+      // Ordre des catégories selon ton souhait
+      const catOrder = ['essentials', 'ai', 'admin', 'media', 'utility', 'fun', 'owner', 'textmarker'];
+      
       const sortedCats = Object.keys(categories).sort((a, b) => {
           let indexA = catOrder.indexOf(a);
           let indexB = catOrder.indexOf(b);
@@ -64,13 +68,15 @@ module.exports = {
       });
 
       for (const cat of sortedCats) {
-        menuText += `*╭╼━≪• ${toStyledCaps(cat)} •≫━╾╮*\n`;
-        menuText += categories[cat].map(cmd => `*┃* ➽ *${toStyledCaps(cmd.name)}*`).join('\n') + '\n';
-        menuText += `*╰━━━━━━━━━━━━━━━━━━━━━━━╯*\n\n`;
+        menuText += `╭╼━≪• *${toStyledCaps(cat)}* •≫━╾╮\n`;
+        // Tri alphabétique des commandes à l'intérieur de la catégorie
+        const sortedCmds = categories[cat].sort((a, b) => a.name.localeCompare(b.name));
+        menuText += sortedCmds.map(cmd => `┃ ➽ *${toStyledCaps(cmd.name)}*`).join('\n') + '\n';
+        menuText += `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n`;
       }
 
-      menuText += `_“${toStyledCaps('ᴍᴇʀᴄɪ sᴇɪɢɴᴇᴜʀ ᴘᴏᴜʀ ᴛᴀ ɢʀᴀᴄᴇ')}”_\n`;
-      menuText += `> > *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+      menuText += `_“${toStyledCaps('merci seigneur pour ta grace')}”_\n`;
+      menuText += `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
       // --- ENVOI AVEC NEWSLETTER ---
       await sock.sendMessage(from, {
@@ -80,18 +86,16 @@ module.exports = {
         contextInfo: {
           isForwarded: true,
           forwardingScore: 999,
-          // Intégration de la Newsletter
           forwardedNewsletterMessageInfo: {
             newsletterJid: '120363425540434745@newsletter',
             newsletterName: "-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ",
             serverMessageId: 143
           },
           externalAdReply: {
-            title: botName,
+            title: "ɢʜᴏsᴛɢ-x ᴍᴅ",
             body: "sʏsᴛᴇᴍ ᴘʀᴇsᴛɪɢᴇ ᴠ5",
             mediaType: 1,
             thumbnail: menuImage, 
-           
           }
         }
       }, { quoted: msg });
