@@ -49,15 +49,12 @@ const toSmallCaps = (text) => {
     return String(text).toLowerCase().split('').map(c => fonts[c] || c).join('');
 };
 
+// MODIFICATION 1 : isAdmin optimisé pour le Store Baileys v6.7.9
 const isAdmin = async (sock, participant, groupId) => {
     if (!groupId?.endsWith('@g.us')) return false;
     try {
-        let metadata = global.store.groupMetadata[groupId];
-        if (!metadata) {
-            metadata = await sock.groupMetadata(groupId);
-            global.store.groupMetadata[groupId] = metadata;
-        }
-        const p = metadata.participants.find(v => v.id === participant);
+        const groupMetadata = await sock.groupMetadata(groupId);
+        const p = groupMetadata.participants.find(v => v.id === participant);
         return p?.admin === 'admin' || p?.admin === 'superadmin';
     } catch { return false; }
 };
@@ -83,11 +80,17 @@ const handleMessage = async (sock, msg) => {
         const config = global.config;
         const prefix = config.prefix || '.';
 
+        // MODIFICATION 2 : getText étendu pour les nouveaux types de messages
         const getText = (m) => {
-            return m?.conversation || m?.extendedTextMessage?.text || m?.imageMessage?.caption ||
-                   m?.videoMessage?.caption || m?.buttonsResponseMessage?.selectedButtonId ||
+            return m?.conversation || 
+                   m?.extendedTextMessage?.text || 
+                   m?.imageMessage?.caption ||
+                   m?.videoMessage?.caption || 
+                   m?.buttonsResponseMessage?.selectedButtonId ||
                    m?.listResponseMessage?.singleSelectReply?.selectedRowId ||
-                   m?.templateButtonReplyMessage?.selectedId || "";
+                   m?.templateButtonReplyMessage?.selectedId || 
+                   m?.pollUpdateMessage?.pollUpdate?.name || // Nouveau : Polls
+                   m?.interactiveResponseMessage?.body?.text || ""; // Nouveau : Interactive Msg
         };
         const body = getText(msg.message).trim();
         const ownerStatus = global.isOwner(sender);
@@ -238,10 +241,7 @@ const handleAntiDelete = async (sock, update) => {
 const handleGroupUpdate = async (sock, update) => {
     const { id, participants, action } = update;
     try {
-        // 1. Récupération des réglages du groupe (JSON)
         const groupSettings = database.getGroupSettings(id) || {};
-        
-        // On récupère la config globale pour les messages par défaut
         const config = global.config; 
 
         const metadata = await sock.groupMetadata(id);
@@ -251,39 +251,19 @@ const handleGroupUpdate = async (sock, update) => {
 
         for (const user of participants) {
             const userTag = `@${user.split('@')[0]}`;
-            
+
             try {
-                // --- CAS : ENTRÉE (WELCOME) ---
-                // On vérifie si activé dans le groupe OU activé par défaut dans config
                 const isWelcomeOn = groupSettings.welcome !== undefined ? groupSettings.welcome : config.defaultGroupSettings.welcome;
-
                 if (action === 'add' && isWelcomeOn) {
-                    // Priorité : Message du groupe > Message par défaut de config.js > Texte brut
                     let text = groupSettings.welcomeMessage || config.defaultGroupSettings.welcomeMessage || "Bienvenue @user sur #groupName";
-                    
-                    text = text
-                        .replace(/@user/g, userTag)
-                        .replace(/#groupName/g, groupName)
-                        .replace(/#groupDesc/g, groupDesc)
-                        .replace(/#memberCount/g, metadata.participants.length)
-                        .replace(/#time/g, time);
-
+                    text = text.replace(/@user/g, userTag).replace(/#groupName/g, groupName).replace(/#groupDesc/g, groupDesc).replace(/#memberCount/g, metadata.participants.length).replace(/#time/g, time);
                     await sock.sendMessage(id, { text, mentions: [user] });
                 }
 
-                // --- CAS : SORTIE (GOODBYE) ---
                 const isGoodbyeOn = groupSettings.goodbye !== undefined ? groupSettings.goodbye : config.defaultGroupSettings.goodbye;
-
                 if (action === 'remove' && isGoodbyeOn) {
-                    // Priorité : Message du groupe > Message par défaut de config.js > Texte brut
                     let text = groupSettings.goodbyeMessage || config.defaultGroupSettings.goodbyeMessage || "Au revoir @user !";
-                    
-                    text = text
-                        .replace(/@user/g, userTag)
-                        .replace(/#groupName/g, groupName)
-                        .replace(/#memberCount/g, metadata.participants.length)
-                        .replace(/#time/g, time);
-
+                    text = text.replace(/@user/g, userTag).replace(/#groupName/g, groupName).replace(/#memberCount/g, metadata.participants.length).replace(/#time/g, time);
                     await sock.sendMessage(id, { text, mentions: [user] });
                 }
             } catch (innerError) {
