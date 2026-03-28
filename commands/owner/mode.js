@@ -1,5 +1,6 @@
 /**
- * Bot Mode Controller - AGM System Core
+ * Bot Mode Controller - AGM System Core (V5.2)
+ * Dual Update: Config + ENV (Persistence)
  * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
@@ -7,12 +8,12 @@ const fs = require('fs');
 const path = require('path');
 
 // --- DESIGN AGM ---
-const AGM_MODE = (mode) => `╭╼━≪• ᴀɢᴍ sʏsᴛᴇᴍ ᴍᴏᴅᴇ •≫━╾╮
-┃ sᴛᴀᴛᴜs : 🟢 ᴜᴘᴅᴀᴛᴇᴅ
-┃ ᴍᴏᴅᴇ : ${mode === 'private' ? '🔒 ᴘʀɪᴠᴀᴛᴇ' : '🌐 ᴘᴜʙʟɪᴄ'}
-┃ ᴀᴄᴄᴇss : ${mode === 'private' ? 'ᴏᴡɴᴇʀ ᴏɴʟʏ' : 'ᴇᴠᴇʀʏᴏɴᴇ'}
+const AGM_MODE = (mode) => `╭╼━≪• *ᴀɢᴍ sʏsᴛᴇᴍ ᴍᴏᴅᴇ* •≫━╾╮
+┃ *sᴛᴀᴛᴜs* : 🟢 ᴜᴘᴅᴀᴛᴇᴅ
+┃ *ᴍᴏᴅᴇ* : ${mode === 'private' ? '🔒 ᴘʀɪᴠᴀᴛᴇ' : '🌐 ᴘᴜʙʟɪᴄ'}
+┃ *ᴀᴄᴄᴇss* : ${mode === 'private' ? 'ᴏᴡɴᴇʀ ᴏɴʟʏ' : 'ᴇᴠᴇʀʏᴏɴᴇ'}
 ╰━━━━━━━━━━━━━━━╯
-> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
 module.exports = {
   name: 'mode',
@@ -23,8 +24,8 @@ module.exports = {
   ownerOnly: true,
 
   async execute(sock, msg, args, { reply, react }) {
-    const config = require('../../config');
-    const configPath = path.join(process.cwd(), 'config.js');
+    // On utilise la config globale pour la synchronisation immédiate
+    const config = global.config || require('../../config');
 
     try {
       let input = args[0]?.toLowerCase();
@@ -48,23 +49,18 @@ module.exports = {
       else if (['public', 'pub'].includes(input)) targetMode = false;
       else return reply('❌ *ᴏᴘᴛɪᴏɴ ɪɴᴠᴀʟɪᴅᴇ (ᴘᴜʙ/ᴘʀɪᴠ)*');
 
-      // Vérification si déjà dans ce mode
-      if (config.selfMode === targetMode) {
-        return reply(`⚠️ *Le bot est déjà en mode ${targetMode ? 'PRIVE' : 'PUBLIC'}.*`);
-      }
-
-      // --- MISE À JOUR PHYSIQUE (config.js) ---
-      const success = updateConfigFile(configPath, 'selfMode', targetMode);
+      // --- MISE À JOUR PHYSIQUE (config.js + .env) ---
+      const success = updateModeSystem(targetMode);
 
       if (success) {
-        // Mise à jour de la mémoire (Runtime)
+        // Mise à jour de la mémoire vive (Runtime)
         config.selfMode = targetMode;
         if (global.config) global.config.selfMode = targetMode;
 
         await react('✅');
         return reply(AGM_MODE(targetMode ? 'private' : 'public'));
       } else {
-        throw new Error("Clé 'selfMode' introuvable dans config.js");
+        throw new Error("Impossible de modifier les fichiers de configuration.");
       }
 
     } catch (error) {
@@ -75,27 +71,41 @@ module.exports = {
 };
 
 /**
- * Fonction d'écriture Robuste
- * Remplace la valeur de la clé sans détruire le formatage du fichier
+ * Fonction d'écriture Robuste (Dual-Update : Config + ENV)
  */
-function updateConfigFile(filePath, key, value) {
+function updateModeSystem(value) {
+  const configPath = path.join(process.cwd(), 'config.js');
+  const envPath = path.join(process.cwd(), '.env');
+
   try {
-    if (!fs.existsSync(filePath)) return false;
-    let content = fs.readFileSync(filePath, 'utf8');
-
-    // Regex qui cible la clé et remplace sa valeur booléenne
-    const regex = new RegExp(`(\\b${key}\\b\\s*:\\s*)(true|false|process\\.env\\.[A-Z_]+(?:\\s*\\|\\|\\s*(?:true|false))?)`, 'i');
-
-    if (regex.test(content)) {
-      const newContent = content.replace(regex, `$1${value}`);
-      fs.writeFileSync(filePath, newContent, 'utf8');
+    // 1. Mise à jour de config.js (Regex améliorée pour les booléens)
+    if (fs.existsSync(configPath)) {
+      let configContent = fs.readFileSync(configPath, 'utf8');
+      const configRegex = /(\bselfMode\b\s*:\s*)(true|false|process\.env\.SELF_MODE(?:\s*===\s*'true'|'true'|true)?(?:\s*\|\|\s*(?:true|false))?)/i;
       
-      // Nettoyage du cache pour le prochain require
-      delete require.cache[require.resolve(filePath)];
-      return true;
+      if (configRegex.test(configContent)) {
+        configContent = configContent.replace(configRegex, `$1${value}`);
+        fs.writeFileSync(configPath, configContent, 'utf8');
+        delete require.cache[require.resolve(configPath)];
+      }
     }
-    return false;
+
+    // 2. Mise à jour du fichier .env (Persistence Katabump)
+    if (fs.existsSync(envPath)) {
+      let envContent = fs.readFileSync(envPath, 'utf8');
+      const envRegex = /^SELF_MODE\s*=\s*.*/m;
+      
+      if (envRegex.test(envContent)) {
+        envContent = envContent.replace(envRegex, `SELF_MODE=${value}`);
+      } else {
+        envContent += `\nSELF_MODE=${value}`;
+      }
+      fs.writeFileSync(envPath, envContent, 'utf8');
+    }
+    
+    return true;
   } catch (e) {
+    console.error("Critical Write Error:", e);
     return false;
   }
 }
