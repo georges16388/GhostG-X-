@@ -39,7 +39,7 @@ module.exports = {
             title: "ɢʜᴏꜱᴛɢ-x ᴏꜰꜰɪᴄɪᴀʟ ʜǫ",
             body: "ᴄʟɪǫᴜᴇᴢ ᴘᴏᴜʀ ʀᴇᴊᴏɪɴᴅʀᴇ ʟᴀ ᴄᴏᴍᴍᴜɴᴀᴜᴛᴇ́",
             thumbnailUrl: "https://files.catbox.moe/2fmwpu.jpg",
-            sourceUrl: "https://chat.whatsapp.com/BEYGvU5LnR13lVBpU9ypgK",
+           
             mediaType: 1,
             renderLargerThumbnail: true
           }
