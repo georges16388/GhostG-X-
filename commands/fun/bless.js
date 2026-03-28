@@ -21,7 +21,7 @@ const toBoldSmallCaps = (text) => {
 // Design Elite pour la bénédiction divine
 const BLESS_DESIGN = (content) => `*╭╼━≪• ${toBoldSmallCaps('ɢʜᴏsᴛ ʙʟᴇssɪɴɢ')} •≫━╾╮*
 *┃*\n*┃* 🕊️ *${toBoldSmallCaps('ᴍsɢ')}* : ${content}\n*┃* 🤲 *${toBoldSmallCaps('ᴛʏᴘᴇ')}* : *${toBoldSmallCaps('ɢʟᴏɪʀᴇ ᴀ ᴅɪᴇᴜ')}* 🙌\n*┃* 🛡️ *${toBoldSmallCaps('ғʀᴏᴍ')}* : *${toBoldSmallCaps('ɢʜᴏsᴛ ᴀɪ')}* 🕊️\n*┃*\n*╰━━━━━━━━━━━━━━━╯*
-> ***${toBoldSmallCaps('> ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗')}***`;
+> ***${toBoldSmallCaps('ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗')}***`;
 
 module.exports = {
     name: 'bless',
