@@ -91,7 +91,7 @@ async function startBot() {
         for (let call of node) {
             if (call.status === 'offer') {
                 await sock.rejectCall(call.id, call.from);
-                const warnMsg = `*╭╼━≪• *ᴀɢᴍ sᴇᴄᴜʀɪᴛʏ* •≫━╾╮*\n┃\n┃ ⚠️ ${toSmallCaps("appels interdits")}\n┃ ${toSmallCaps("votre appel a ete rejete")}\n┃\n*╰━━━━━━━━━━━━━━━╯*\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+                const warnMsg = `*╭╼━≪• *ɢʜᴏsᴛɢ-𝐗 sᴇᴄᴜʀɪᴛʏ* •≫━╾╮*\n┃\n┃ ⚠️ ${toSmallCaps("appels interdits")}\n┃ ${toSmallCaps("votre appel a ete rejete")}\n┃\n*╰━━━━━━━━━━━━━━━╯*\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
                 await sock.sendMessage(call.from, { text: warnMsg });
             }
         }
