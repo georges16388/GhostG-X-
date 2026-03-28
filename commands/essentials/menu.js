@@ -5,13 +5,34 @@
 
 const config = require('../../config');
 const { loadCommands } = require('../../utils/commandLoader');
+const fs = require('fs');
+const path = require('path');
+
+/**
+ * Fonction récursive pour compter tous les fichiers .js
+ * dans le dossier commands et ses sous-dossiers.
+ */
+const countFiles = (dirPath) => {
+  let count = 0;
+  const files = fs.readdirSync(dirPath);
+
+  files.forEach((file) => {
+    const fullPath = path.join(dirPath, file);
+    if (fs.statSync(fullPath).isDirectory()) {
+      count += countFiles(fullPath); // On descend dans le sous-dossier
+    } else if (file.endsWith('.js')) {
+      count++; // C'est un fichier de commande
+    }
+  });
+  return count;
+};
 
 const toStyledCaps = (text) => {
   if (!text) return "";
   const fonts = {
     'a': 'ᴀ','b': 'ʙ','c': 'ᴄ','d': 'ᴅ','e': 'ᴇ','f': 'ғ','g': 'ɢ','h': 'ʜ',
     'i': 'ɪ','j': 'ᴊ','k': 'ᴋ','l': 'ʟ','m':'ᴍ','n': 'ɴ','o': 'ᴏ','p': 'ᴘ',
-    'q': 'ǫ','r': 'ʀ','s': 'ꜱ','t': 'ᴛ','u': 'ᴜ','v': 'ᴠ','w': 'ᴡ','x': 'x',
+    'q': 'ǫ','r': 'ʀ','s': 'ꜱ','t': 'ᴛ','u': 'ᴜ','v':'ᴠ','w': 'ᴡ','x': 'x',
     'y': 'ʏ','z': 'ᴢ'
   };
   return String(text).toLowerCase().split('').map(c => fonts[c] || c).join('');
@@ -21,7 +42,7 @@ module.exports = {
   name: 'menu',
   aliases: ['help', 'h', 'm'],
   category: 'essentials',
-  description: 'Menu GhostG-X propre avec mention réelle.',
+  description: 'Menu GhostG-X propre avec compteur de fichiers réel.',
   usage: '.menu',
 
   async execute(sock, msg, args, extra) {
@@ -33,35 +54,34 @@ module.exports = {
       const senderNumber = senderJid.split('@')[0];
       const prefix = config.prefix || '.';
 
-      // 🔹 2. CHARGEMENT DES COMMANDES
+      // 🔹 2. COMPTEUR DE FICHIERS (RÉCURSIF)
+      const commandsPath = path.join(process.cwd(), 'commands');
+      const totalFilesCount = countFiles(commandsPath);
+
+      // 🔹 3. CHARGEMENT DES COMMANDES POUR LES CATÉGORIES
       const commands = loadCommands();
       const categories = {};
-      let totalFiles = 0;
 
-      // On filtre pour ne pas compter les alias comme des fichiers séparés
       commands.forEach((cmd, name) => {
         if (cmd.name === name) {
-          totalFiles++;
           const cat = cmd.category ? cmd.category.toLowerCase() : 'autres';
           if (!categories[cat]) categories[cat] = [];
           categories[cat].push(cmd);
         }
       });
 
-      // 🔹 3. CONSTRUCTION DU HEADER
+      // 🔹 4. CONSTRUCTION DU HEADER
       let menuText = `╭╼━≪• *ɢʜᴏsᴛɢ-x ᴍᴅ* •≫━╾╮\n`;
       menuText += `┃ *sᴛᴀᴛᴜᴛ* : 🟢 ᴏɴʟɪɴᴇ\n`;
       menuText += `┃ *ᴜᴛɪʟɪsᴀᴛᴇᴜʀ* : @${senderNumber}\n`;
       menuText += `┃ *ᴊᴇsᴜs ᴛᴀɪᴍᴇ* : ❤️✝️\n`;
       menuText += `┃ *ᴘʀᴇғɪxᴇ* : [ ${prefix} ]\n`;
-      menuText += `┃ *ᴄᴏᴍᴍᴀɴᴅᴇs* : ${totalFiles}\n`;
+      menuText += `┃ *ᴄᴏᴍᴍᴀɴᴅᴇs* : ${totalFilesCount} ${toStyledCaps('files')}\n`; // Compteur réel ici
       menuText += `┃ *ᴅᴇᴠᴇʟᴏᴘᴘᴇᴜʀ* : wa.me/22651622652\n`;
       menuText += `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n`;
 
-      // 🔹 4. ORDRE DES CATÉGORIES
+      // 🔹 5. ORDRE DES CATÉGORIES
       const catOrder = ['essentials', 'ai', 'admin', 'fun', 'media', 'owner', 'utility', 'faith', 'textmarker'];
-      
-      // On récupère toutes les catégories présentes, classées selon l'ordre défini
       const existingCats = Object.keys(categories).sort((a, b) => {
           let indexA = catOrder.indexOf(a);
           let indexB = catOrder.indexOf(b);
@@ -70,10 +90,9 @@ module.exports = {
           return indexA - indexB;
       });
 
-      // 🔹 5. GÉNÉRATION DES SECTIONS
+      // 🔹 6. GÉNÉRATION DES SECTIONS
       for (const cat of existingCats) {
         menuText += `╭╼━≪• *${toStyledCaps(cat)}* •≫━╾╮\n`;
-        // Tri alphabétique des commandes
         const sortedCmds = categories[cat].sort((a, b) => a.name.localeCompare(b.name));
         for (const cmd of sortedCmds) {
           menuText += `┃➽ *${toStyledCaps(cmd.name)}*\n`;
@@ -81,11 +100,11 @@ module.exports = {
         menuText += `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n`;
       }
 
-      // 🔹 6. FOOTER
+      // 🔹 7. FOOTER
       menuText += `_ᴍᴇʀᴄɪ sᴇɪɢɴᴇᴜʀ ᴘᴏᴜʀ ᴛᴀ ɢʀᴀᴄᴇ_\n`;
       menuText += `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
-      // 🔹 7. ENVOI DU MESSAGE
+      // 🔹 8. ENVOI DU MESSAGE
       await sock.sendMessage(from, {
         image: { url: 'https://files.catbox.moe/2fmwpu.jpg' },
         caption: menuText,
@@ -101,10 +120,7 @@ module.exports = {
         }
       }, { quoted: msg });
 
-      // 🔹 8. RÉACTION
-      await sock.sendMessage(from, { 
-        react: { text: "⚡", key: msg.key } 
-      });
+      await sock.sendMessage(from, { react: { text: "⚡", key: msg.key } });
 
     } catch (error) {
       console.error('Menu Prestige Error:', error);
