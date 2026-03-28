@@ -5,50 +5,71 @@
 
 const database = require('../../database');
 
-// --- FONCTION DE DESIGN AGM ADAPTÉE ---
-const AGM_DESIGN = (status) => `╭╼━≪• ᴀᴜᴛᴏ-sᴛɪᴄᴋᴇʀ sʏsᴛᴇᴍ •≫━╾╮
-┃ sᴛᴀᴛᴜs : ${status === 'ON' ? '🟢 ᴀᴄᴛɪᴠᴀᴛᴇᴅ' : '🔴 ᴅᴇᴀᴄᴛɪᴠᴀᴛᴇᴅ'}
-┃ ᴍᴏᴅᴇ : ᴀᴜᴛᴏ-ᴄᴏɴᴠᴇʀᴛ ⚡
-┃ ᴛʏᴘᴇ : ɪᴍɢ & ᴠɪᴅ 🎬
-╰━━━━━━━━━━━━━━━╯
-> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
+// --- FONCTION DE CONVERSION EN SMALL CAPS ---
+const toStyledCaps = (text) => {
+  if (!text) return "";
+  const fonts = {
+    'a': 'ᴀ','b': 'ʙ','c': 'ᴄ','d':'ᴅ','e':'ᴇ','f':'ғ','g':'ɢ','h':'ʜ',
+    'i':'ɪ','j':'ᴊ','k':'ᴋ','l':'ʟ','m':'ᴍ','n':'ɴ','o':'ᴏ','p':'ᴘ',
+    'q':'ǫ','r':'ʀ','s':'ꜱ','t':'ᴛ','u':'ᴜ','v':'ᴠ','w':'ᴡ','x':'x',
+    'y':'ʏ','z':'ᴢ'
+  };
+  return String(text).toLowerCase().split('').map(c => fonts[c] || c).join('');
+};
+
+// --- FONCTION DE DESIGN AGM PRESTIGE (GRAS) ---
+const AGM_DESIGN = (status) => {
+  const sLabel = status === 'ON' ? '🟢 ᴀᴄᴛɪᴠᴀᴛᴇᴅ' : '🔴 ᴅᴇᴀᴄᴛɪᴠᴀᴛᴇᴅ';
+  return `*╭╼━≪• ${toStyledCaps('ᴀᴜᴛᴏ-sᴛɪᴄᴋᴇʀ sʏsᴛᴇᴍ')} •≫━╾╮*
+*┃*
+*┃* ⚙️ *${toStyledCaps('sᴛᴀᴛᴜs')}* : *${toStyledCaps(sLabel)}*
+*┃* ⚡ *${toStyledCaps('ᴍᴏᴅᴇ')}* : *${toStyledCaps('ᴀᴜᴛᴏ-ᴄᴏɴᴠᴇʀᴛ')}*
+*┃* 🎬 *${toStyledCaps('ᴛʏᴘᴇ')}* : *${toStyledCaps('ɪᴍɢ & ᴠɪᴅ')}*
+*┃*
+*╰━━━━━━━━━━━━━━━╯*`;
+};
 
 module.exports = {
   name: 'autosticker',
   aliases: ['autos', 'asticker'],
   category: 'admin',
-  description: 'Enable or disable auto-sticker conversion',
+  description: 'Activer ou désactiver la conversion automatique des médias en stickers.',
   usage: '.autosticker <on/off>',
   groupOnly: true,
   adminOnly: true,
-  botAdminNeeded: false,
 
-  async execute(sock, msg, args, extra) {
+  async execute(sock, msg, args, { from, reply, react }) {
     try {
-      const settings = database.getGroupSettings(extra.from);
+      const settings = database.getGroupSettings(from) || {};
       let status = settings.autosticker ? 'ON' : 'OFF';
 
+      // --- AFFICHAGE DU STATUT ACTUEL ---
       if (!args[0]) {
-        return extra.reply(AGM_DESIGN(status));
+        await react('🎨');
+        return reply(AGM_DESIGN(status));
       }
 
       const opt = args[0].toLowerCase();
 
-      if (opt === 'on') {
-        database.updateGroupSettings(extra.from, { autosticker: true });
-        return extra.reply(AGM_DESIGN('ON'));
+      // --- ACTIVATION ---
+      if (opt === 'on' || opt === 'active') {
+        await react('✅');
+        database.updateGroupSettings(from, { autosticker: true });
+        return reply(AGM_DESIGN('ON'));
       }
 
-      if (opt === 'off') {
-        database.updateGroupSettings(extra.from, { autosticker: false });
-        return extra.reply(AGM_DESIGN('OFF'));
+      // --- DÉSACTIVATION ---
+      if (opt === 'off' || opt === 'disable') {
+        await react('⚠️');
+        database.updateGroupSettings(from, { autosticker: false });
+        return reply(AGM_DESIGN('OFF'));
       }
 
-      await sock.sendMessage(extra.from, { react: { text: "🎨", key: msg.key } });
+      return reply(`⚠️ *${toStyledCaps('ᴜsᴀɢᴇ')}* : *.ᴀᴜᴛᴏsᴛɪᴄᴋᴇʀ ᴏɴ | ᴏꜰꜰ*`);
 
     } catch (error) {
       console.error('[AutoSticker Error]:', error);
-      await extra.reply(`❌ ᴇʀʀᴇᴜʀ : ${error.message}`);
+      await reply(`❌ *${toStyledCaps('ᴇʀʀᴇᴜʀ sʏsᴛᴇᴍᴇ')}*`);
     }
   }
 };
