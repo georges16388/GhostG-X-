@@ -1,98 +1,137 @@
 /**
- * GPT Image Command - Vision & Edit
- * Full Logic by -ɢʜᴏsᴛɢ 𝐗
+ * ɢᴘᴛ ɪᴍᴀɢᴇ ᴇᴅɪᴛᴏʀ - ᴀɢᴍ sʏsᴛᴇᴍ ᴀɪ
+ * ᴇᴅɪᴛ ɪᴍᴀɢᴇ ᴜsɪɴɢ ɢᴘᴛ ᴠɪsɪᴏɴ ᴡɪᴛʜ ᴘʀᴏᴍᴘᴛ
+ * sᴛʏʟᴇ ʙʏ -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
 const axios = require('axios');
-const sharp = require('sharp');
+const FormData = require('form-data');
 const { downloadMediaMessage } = require('@whiskeysockets/baileys');
 const { webp2png } = require('../../utils/webp2mp4');
+const sharp = require('sharp');
 const config = require('../../config');
-
-const VISION_DESIGN = (prompt) => `╭╼━≪• *ɢʜᴏꜱᴛ ᴠɪꜱɪᴏɴ* •≫━╾╮
-┃ *ᴘʀᴏᴍᴘᴛ* : ${prompt}
-┃ *ꜱᴛᴀᴛᴜꜱ* : ᴘʀᴏᴄᴇꜱꜱᴇᴅ ✨
-┃ *ᴛʏᴘᴇ* : ᴀɪ ᴀɴᴀʟʏꜱɪꜱ
-╰━━━━━━━━━━━━━━━╯
-> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
 module.exports = {
   name: 'gptimage',
-  aliases: ['gptimg', 'vision', 'gi'],
+  aliases: ['gptimg', 'editimage', 'aiimage', 'vision', 'gi'],
   category: 'ai',
-  description: 'Analyse ou modifie une image via l\'IA.',
-  usage: '.gi <prompt> (en répondant à une image)',
+  description: 'ᴍᴏᴅɪꜰɪᴇʀ ᴜɴᴇ ɪᴍᴀɢᴇ ᴀᴠᴇᴄ ʟ\'ɪᴀ ɢᴘᴛ ᴠɪsɪᴏɴ.',
+  usage: '.ɢᴘᴛɪᴍᴀɢᴇ <ᴘʀᴏᴍᴘᴛ> (ʀᴇ́ᴘᴏɴᴅʀᴇ ᴀ̀ ᴜɴᴇ ɪᴍᴀɢᴇ/sᴛɪᴄᴋᴇʀ)',
 
-  async execute(sock, msg, args, extra) {
+  async execute(sock, msg, args, { from, reply, react, prefix }) {
     try {
-      const { from, quoted, prefix } = extra;
-      const prompt = args.join(' ').trim();
-
-      if (!quoted || (!quoted.imageMessage && !quoted.stickerMessage)) {
-        return extra.reply(`⚠️ *ʀᴇ́ᴘᴏɴᴅᴇᴢ ᴀ̀ ᴜɴᴇ ɪᴍᴀɢᴇ ᴏᴜ ᴜɴ sᴛɪᴄᴋᴇʀ !*
-*ᴇx: ${ᴘʀᴇꜰɪx}ɢɪ ᴅᴇ́ᴄʀɪᴛ ᴄᴇᴛᴛᴇ ɪᴍᴀɢᴇ*`);
+      const ctxInfo = msg.message?.extendedTextMessage?.contextInfo;
+      
+      // ᴠᴇ́ʀɪꜰɪᴄᴀᴛɪᴏɴ sɪ ᴍᴇssᴀɢᴇ ᴄɪᴛᴇ́
+      if (!ctxInfo?.quotedMessage) {
+        return await reply(
+          '📸 *ɢᴘᴛ ɪᴍᴀɢᴇ ᴇᴅɪᴛᴏʀ*\n\n' +
+          'ʀᴇ́ᴘᴏɴᴅᴇᴢ ᴀ̀ ᴜɴᴇ *ɪᴍᴀɢᴇ* ᴏᴜ ᴜɴ *sᴛɪᴄᴋᴇʀ* ᴀᴠᴇᴄ ᴜɴ ᴘʀᴏᴍᴘᴛ ᴘᴏᴜʀ ʟᴀ ᴍᴏᴅɪꜰɪᴇʀ.\n\n' +
+          `ᴜsᴀɢᴇ : ${prefix}ɢᴘᴛɪᴍᴀɢᴇ <ᴠᴏᴛʀᴇ ɪɴsᴛʀᴜᴄᴛɪᴏɴ>\n\n` +
+          'ᴇxᴇᴍᴘʟᴇ : ʀᴇ́ᴘᴏɴᴅᴇᴢ ᴀ̀ ᴜɴᴇ ᴘʜᴏᴛᴏ ᴀᴠᴇᴄ :\n' +
+          `${prefix}ɢᴘᴛɪᴍᴀɢᴇ ᴄʜᴀɴɢᴇ ʟᴇ ꜰᴏɴᴅ ᴇɴ ᴘʟᴀɢᴇ ᴘᴀʀᴀᴅɪsɪᴀǫᴜᴇ`
+        );
       }
 
-      if (!prompt) return extra.reply("❌ *ᴠᴇᴜɪʟʟᴇᴢ ᴘʀᴇ́ᴄɪsᴇʀ ᴄᴇ ǫᴜᴇ ʟ'ɪᴀ ᴅᴏɪᴛ ꜰᴀɪʀᴇ !*");
+      const prompt = args.join(' ').trim();
+      if (!prompt) {
+        return await reply(
+          '❌ *ᴠᴇᴜɪʟʟᴇᴢ ꜰᴏᴜʀɴɪʀ ᴜɴᴇ ɪɴsᴛʀᴜᴄᴛɪᴏɴ !*\n\n' +
+          `ᴇxᴇᴍᴘʟᴇ : ${prefix}ɢᴘᴛɪᴍᴀɢᴇ ᴀᴊᴏᴜᴛᴇ ᴅᴇs ʟᴜɴᴇᴛᴛᴇs ᴅᴇ sᴏʟᴇɪʟ`
+        );
+      }
 
-      await sock.sendMessage(from, { react: { text: "👁️", key: msg.key } });
+      const quotedMsg = ctxInfo.quotedMessage;
+      const isImage = !!quotedMsg.imageMessage;
+      const isSticker = !!quotedMsg.stickerMessage;
 
-      // Téléchargement du média
+      if (!isImage && !isSticker) {
+        return await reply('❌ *ᴠᴇᴜɪʟʟᴇᴢ ʀᴇ́ᴘᴏɴᴅʀᴇ ᴀ̀ ᴜɴᴇ ɪᴍᴀɢᴇ ᴏᴜ ᴜɴ sᴛɪᴄᴋᴇʀ sᴛᴀᴛɪǫᴜᴇ !*');
+      }
+
+      await react('⏳');
+      await reply('⏳ *ᴛʀᴀɪᴛᴇᴍᴇɴᴛ ᴅᴇ ʟ\'ɪᴍᴀɢᴇ ᴘᴀʀ ʟ\'ɪᴀ ɢʜᴏsᴛɢ...*');
+
+      const targetMessage = {
+        key: {
+          remoteJid: from,
+          id: ctxInfo.stanzaId,
+          participant: ctxInfo.participant,
+        },
+        message: quotedMsg,
+      };
+
+      // ᴛᴇ́ʟᴇ́ᴄʜᴀʀɢᴇᴍᴇɴᴛ ᴅᴜ ᴍᴇ́ᴅɪᴀ
       const mediaBuffer = await downloadMediaMessage(
-        { key: msg.message.extendedTextMessage.contextInfo.quotedMessage ? { remoteJid: from, id: msg.message.extendedTextMessage.contextInfo.stanzaId } : msg.key, 
-          message: quoted },
-        'buffer'
+        targetMessage,
+        'buffer',
+        {},
+        { logger: undefined, reuploadRequest: sock.updateMediaMessage },
       );
 
+      if (!mediaBuffer) return await reply('❌ *ᴇ́ᴄʜᴇᴄ ᴅᴜ ᴛᴇ́ʟᴇ́ᴄʜᴀʀɢᴇᴍᴇɴᴛ.*');
+
       let imageBuffer = mediaBuffer;
-      
-      // Conversion sticker -> png si nécessaire
-      if (quoted.stickerMessage) {
-        imageBuffer = await webp2png(mediaBuffer);
+
+      // ᴄᴏɴᴠᴇʀsɪᴏɴ sɪ sᴛɪᴄᴋᴇʀ
+      if (isSticker) {
+        if (quotedMsg.stickerMessage.isAnimated) {
+          return await reply('❌ *ʟᴇs sᴛɪᴄᴋᴇʀs ᴀɴɪᴍᴇ́s ɴᴇ sᴏɴᴛ ᴘᴀs sᴜᴘᴘᴏʀᴛᴇ́s.*');
+        }
+        try {
+          imageBuffer = await webp2png(mediaBuffer);
+        } catch (e) {
+          console.error(e);
+          return await reply('❌ *ᴇ́ᴄʜᴇᴄ ᴅᴇ ʟᴀ ᴄᴏɴᴠᴇʀsɪᴏɴ ᴅᴜ sᴛɪᴄᴋᴇʀ.*');
+        }
       }
 
-      // Optimisation de l'image pour l'API (Sharp)
-      const finalImageBuffer = await sharp(imageBuffer)
-        .resize(800) // Redimensionner pour économiser de la bande passante
-        .jpeg({ quality: 80 })
-        .toBuffer();
-
-      // Envoi à l'API (Exemple avec une API de type GPT-4 Vision)
-      // Note: Tu dois avoir une clé API valide dans ton config.js
-      const base64Image = finalImageBuffer.toString('base64');
-      
+      // ᴏᴘᴛɪᴍɪsᴀᴛɪᴏɴ ᴀᴠᴇᴄ sʜᴀʀᴘ (ᴊᴘᴇɢ ǫᴜᴀʟɪᴛʏ 90)
+      let finalImageBuffer;
       try {
-        const response = await axios.post('https://api.openai.com/v1/chat/completions', {
-          model: "gpt-4-vision-preview",
-          messages: [
-            {
-              role: "user",
-              content: [
-                { type: "text", text: prompt },
-                { type: "image_url", image_url: { url: `data:image/jpeg;base64,${base64Image}` } }
-              ]
-            }
-          ],
-          max_tokens: 500
-        }, {
-          headers: { 'Authorization': `Bearer ${config.apiKeys.openai}` }
-        });
-
-        const result = response.data.choices[0].message.content;
-
-        await sock.sendMessage(from, { 
-          text: VISION_DESIGN(prompt) + `\n\n${result}`,
-          mentions: [extra.sender]
-        }, { quoted: msg });
-
-      } catch (apiErr) {
-        console.error("API AI Error:", apiErr.message);
-        await extra.reply("❌ *L'IA n'a pas pu répondre.* Vérifie ta clé API OpenAI.");
+        finalImageBuffer = await sharp(imageBuffer)
+          .jpeg({ quality: 90 })
+          .toBuffer();
+      } catch (e) {
+        finalImageBuffer = imageBuffer;
       }
+
+      // ᴘʀᴇ́ᴘᴀʀᴀᴛɪᴏɴ ᴅᴇs ᴅᴏɴɴᴇ́ᴇs ᴘᴏᴜʀ ʟ'ᴀᴘɪ
+      const form = new FormData();
+      form.append('image', finalImageBuffer, { filename: 'ghostg_vision.jpg', contentType: 'image/jpeg' });
+      form.append('param', prompt);
+
+      const apiUrl = 'https://api.nexray.web.id/ai/gptimage';
+      
+      const response = await axios.post(apiUrl, form, {
+        headers: { 
+            ...form.getHeaders(),
+            'User-Agent': 'ɢʜᴏsᴛɢ-x ᴍᴅ ᴠ5'
+        },
+        responseType: 'arraybuffer',
+        timeout: 120000 
+      });
+
+      if (!response.data || response.data.length === 0) {
+        return await reply('❌ *ʟ\'ᴀᴘɪ ɴ\'ᴀ ʀᴇɴᴠᴏʏᴇ́ ᴀᴜᴄᴜɴᴇ ᴅᴏɴɴᴇ́ᴇ.*');
+      }
+
+      const resultImageBuffer = Buffer.from(response.data);
+
+      // ᴇɴᴠᴏɪ ᴅᴜ ʀᴇ́sᴜʟᴛᴀᴛ
+      await sock.sendMessage(from, {
+        image: resultImageBuffer,
+        caption: `✨ *ɢᴘᴛ ᴠɪsɪᴏɴ ʀᴇsᴜʟᴛ*\n\n📝 *ɪɴsᴛʀᴜᴄᴛɪᴏɴ :* ${prompt}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`
+      }, { quoted: msg });
+      
+      await react('✅');
 
     } catch (error) {
-      console.error("Global GI Error:", error);
-      await extra.reply("❌ *Une erreur est survenue lors du traitement !*");
+      console.error('[ɢᴘᴛɪᴍᴀɢᴇ ᴇʀʀᴏʀ]:', error);
+      await react('❌');
+      
+      const errMsg = error.response ? `ᴇʀʀᴇᴜʀ sᴇʀᴠᴇᴜʀ (${error.response.status})` : error.message;
+      return await reply(`❌ *ᴇʀʀᴇᴜʀ :* ${errMsg}`);
     }
-  }
+  },
 };
