@@ -1,24 +1,16 @@
 /**
  * Media To URL - AGM Cloud Edition (Catbox)
- * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
+ * Clean Edition - No External Links
  */
 
-const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
+const { downloadContentFromMessage, getContentType } = require('@whiskeysockets/baileys');
 const { uploadByBuffer } = require('../../utils/uploader'); 
 
-// --- FONCTION DE CONVERSION EN SMALL CAPS ---
 const toStyledCaps = (text) => {
-  if (!text) return "";
-  const fonts = {
-    'a': 'ᴀ','b': 'ʙ','c': 'ᴄ','d':'ᴅ','e':'ᴇ','f':'ғ','g':'ɢ','h':'ʜ',
-    'i':'ɪ','j':'ᴊ','k':'ᴋ','l':'ʟ','m':'ᴍ','n':'ɴ','o':'ᴏ','p':'ᴘ',
-    'q':'ǫ','r':'ʀ','s':'ꜱ','t':'ᴛ','u':'ᴜ','v':'ᴠ','w':'ᴡ','x':'x',
-    'y':'ʏ','z':'ᴢ'
-  };
+  const fonts = {'a':'ᴀ','b':'ʙ','c':'ᴄ','d':'ᴅ','e':'ᴇ','f':'ғ','g':'ɢ','h':'ʜ','i':'ɪ','j':'ᴊ','k':'ᴋ','l':'ʟ','m':'ᴍ','n':'ɴ','o':'ᴏ','p':'ᴘ','q':'ǫ','r':'ʀ','s':'ꜱ','t':'ᴛ','u':'ᴜ','v':'ᴠ','w':'ᴡ','x':'x','y':'ʏ','z':'ᴢ'};
   return String(text).toLowerCase().split('').map(c => fonts[c] || c).join('');
 };
 
-// --- FONCTION DE DESIGN AGM (GRAS & SMALLCAPS) ---
 const AGM_DESIGN = (size, type) => `*╭╼━≪• ${toStyledCaps('ᴍᴇᴅɪᴀ ᴛᴏ ᴜʀʟ')} •≫━╾╮*
 *┃*
 *┃* ✅ *${toStyledCaps('sᴛᴀᴛᴜs')}* : 🟢 *${toStyledCaps('ᴜᴘʟᴏᴀᴅᴇᴅ')}*
@@ -37,68 +29,61 @@ module.exports = {
 
   async execute(sock, msg, args, extra) {
     try {
-      const chatId = extra.from;
+      const from = extra.from;
 
-      // 1. Détection du message cité (Quoted)
-      const quoted = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage || 
-                     msg.message?.imageMessage?.contextInfo?.quotedMessage || 
-                     msg.message?.videoMessage?.contextInfo?.quotedMessage;
+      // 1. Détection du média cité ou du message direct
+      const quoted = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage || msg.message;
+      const mimeType = getContentType(quoted);
 
-      if (!quoted) {
+      if (!quoted || !/image|video|audio|sticker|document/i.test(mimeType)) {
         return extra.reply(`⚠️ *${toStyledCaps('ᴠᴇᴜɪʟʟᴇᴢ ʀᴇᴘᴏɴᴅʀᴇ ᴀ ᴜɴ ᴍᴇᴅɪᴀ')}*`);
       }
 
-      // 2. Identification du type de média
-      const mimeType = Object.keys(quoted)[0];
-      if (!/image|video|audio|sticker|document/i.test(mimeType)) {
-        return extra.reply(`❌ *${toStyledCaps('ᴄᴇ ᴛʏᴘᴇ ᴅᴇ ғɪᴄʜɪᴇʀ ɴᴇsᴛ ᴘᴀs sᴜᴘᴘᴏʀᴛᴇ')}*`);
-      }
+      await sock.sendMessage(from, { react: { text: '☁️', key: msg.key } });
 
-      await sock.sendMessage(chatId, { react: { text: '☁️', key: msg.key } });
-
-      // 3. Téléchargement du buffer
+      // 2. Préparation du téléchargement
+      const mediaContent = quoted[mimeType];
       const stream = await downloadContentFromMessage(
-        quoted[mimeType],
+        mediaContent,
         mimeType.replace('Message', '').toLowerCase()
       );
-      
+
       let buffer = Buffer.from([]);
       for await (const chunk of stream) {
         buffer = Buffer.concat([buffer, chunk]);
       }
 
-      if (!buffer || buffer.length === 0) throw new Error('DOWNLOAD_FAILED');
+      if (buffer.length === 0) throw new Error('Buffer vide');
 
-      // 4. Calcul de la taille et formatage
+      // 3. Calcul des infos
       const sizeMB = (buffer.length / (1024 * 1024)).toFixed(2) + ' ᴍʙ';
       const cleanType = mimeType.replace('Message', '');
 
-      // 5. Upload sur Catbox
+      // 4. Upload
       const mediaUrl = await uploadByBuffer(buffer); 
-      if (!mediaUrl) throw new Error('UPLOAD_FAILED');
 
-      // 6. Envoi du résultat final
+      // 5. Envoi du résultat sans lien cliquable dans l'aperçu
       const caption = `${AGM_DESIGN(sizeMB, cleanType)}\n\n🔗 *${toStyledCaps('ʟɪɴᴋ')} :* ${mediaUrl}`;
 
-      await sock.sendMessage(chatId, {
+      await sock.sendMessage(from, {
         text: caption,
         contextInfo: {
+            // Suppression de sourceUrl et showAdAttribution pour éviter les liens parasites
           externalAdReply: {
             title: "ɢʜᴏsᴛ ᴄʟᴏᴜᴅ sʏsᴛᴇᴍ",
-            body: toStyledCaps("conversion catbox reussie"),
-            thumbnail: buffer.length < 1000000 ? buffer : null, 
-            sourceUrl: mediaUrl,
+            body: toStyledCaps("transfert securise effectue"),
+            thumbnail: buffer.length < 100000 ? buffer : null, 
             mediaType: 1,
-            showAdAttribution: false
+            renderLargerThumbnail: false // Garde l'aperçu petit et discret
           }
         }
       }, { quoted: msg });
 
-      await sock.sendMessage(chatId, { react: { text: '✅', key: msg.key } });
+      await sock.sendMessage(from, { react: { text: '✅', key: msg.key } });
 
     } catch (error) {
       console.error('ToURL Error:', error);
-      await extra.reply(`❌ *${toStyledCaps('ᴇʀʀᴇᴜʀ ʟᴏʀs ᴅᴇ ʟᴜᴘʟᴏᴀᴅ. ᴠᴇʀɪғɪᴇᴢ ᴠᴏᴛʀᴇ ᴜᴘʟᴏᴀᴅᴇʀ.ᴊs')}*`);
+      await extra.reply(`❌ *${toStyledCaps('ᴇʀʀᴇᴜʀ sʏsᴛᴇᴍᴇ ʟᴏʀs ᴅᴇ ʟᴜᴘʟᴏᴀᴅ.')}*`);
     }
   }
 };
