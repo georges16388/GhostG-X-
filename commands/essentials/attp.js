@@ -42,8 +42,8 @@ module.exports = {
         
         // ᴀᴊᴏᴜᴛ ᴅᴇs ᴍᴇ́ᴛᴀᴅᴏɴɴᴇ́ᴇs ᴇxɪꜰ (ɴᴏᴍ ᴅᴜ ᴘᴀᴄᴋ)
         const webpBuffer = await writeExifVid(mp4Buffer, { 
-            packname: 'ɢʜᴏsᴛɢ-x ᴍᴅ', 
-            author: 'ɢʜᴏsᴛɢ 𝐗' 
+            packname: '', 
+            author: 'ɢʜᴏsᴛɢ-x ᴍᴅ' 
         });
 
         await sock.sendMessage(from, { sticker: webpBuffer }, { quoted: msg });
