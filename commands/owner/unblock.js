@@ -20,7 +20,7 @@ const AGM_UNBLOCK_DESIGN = (user) => `*╭╼━≪• ᴀɢᴍ ᴜɴʙʟᴏᴄ�
 
 module.exports = {
   name: 'unblock',
-  aliases: ['unban', 'debloquer'],
+  aliases: ['debloquer'],
   category: 'owner',
   description: 'Débloquer un utilisateur sur WhatsApp.',
   usage: '.unblock @user (ou répondre)',
