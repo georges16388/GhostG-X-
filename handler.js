@@ -122,9 +122,7 @@ const handleMessage = async (sock, msg) => {
         // --- GHOSTG INTEL SYSTEM (INTERCEPTION OWNER) ---
         global.ghostgMode = global.ghostgMode || 'off'; 
         if (global.ghostgMode !== 'off' && ownerStatus && !isCmd) {
-            // ... reste du code GhostG Intel
-
- 
+           
             // Si GhostG est ON, il analyse tous les messages du propriétaire
             const ghostgCmd = global.commands.get('ghostg');
             if (ghostgCmd) {
