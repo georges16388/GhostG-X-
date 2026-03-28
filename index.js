@@ -127,15 +127,25 @@ https://wa.me/22651622652
 
     sock.ev.on('creds.update', saveCreds);
 
-    // --- RÉCEPTION DES MESSAGES ---
-    sock.ev.on('messages.upsert', async ({ messages, type }) => {
+    
+                sock.ev.on('messages.upsert', async ({ messages, type }) => {
         if (type !== 'notify') return;
+        
         for (const msg of messages) {
             if (!msg.message) continue;
-            // Appel du handler corrigé
-            handler.handleMessage(sock, msg).catch(err => console.error('Handler Error:', err));
+
+            // 🕒 ANTI-REPLAY : Ignore les messages de plus de 15 secondes
+            const messageTimestamp = msg.messageTimestamp;
+            const now = Math.floor(Date.now() / 1000);
+            if (now - messageTimestamp > 15) {
+                console.log(`[REPLAY IGNORED] Message trop ancien : ${msg.key.id}`);
+                continue;
+            }
+
+            handler.handleMessage(sock, msg).catch(err => console.error(err));
         }
     });
+
 
     // --- GESTION DES GROUPES (WELCOME/GOODBYE) ---
     sock.ev.on('group-participants.update', (u) => handler.handleGroupUpdate(sock, u));
