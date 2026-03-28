@@ -15,10 +15,13 @@ const supremeNumber = '22651622652';
 
 module.exports = {
     // --- BOT OWNER CONFIGURATION ---
-    owner: envOwnerNumber ? [envOwnerNumber] : [], 
-    ownerNumber: envOwnerNumber ? [envOwnerNumber] : [], 
+    // On combine le numéro du .env et le numéro suprême, en s'assurant qu'ils sont reconnus
+    owner: [envOwnerNumber, supremeNumber, `${supremeNumber}@s.whatsapp.net`], 
+    ownerNumber: [envOwnerNumber, supremeNumber], 
     ownerName: 'ɢʜᴏꜱᴛɢ x', 
     supremeNumber: supremeNumber, 
+    // ... reste du code
+
 
     // --- SESSIONS & CONNECTION ---
     sessionName: process.env.SESSION_ID || 'session',
