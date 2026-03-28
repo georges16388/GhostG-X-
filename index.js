@@ -4,13 +4,11 @@
  * Powered by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
-const { 
-    default: makeWASocket, 
-    useMultiFileAuthState, 
-    DisconnectReason, 
-    fetchLatestBaileysVersion,
-    makeInMemoryStore // ✅ AJOUTÉ ICI : C'est la seule modification nécessaire
-} = require('@whiskeysockets/baileys');
+const Baileys = require('@whiskeysockets/baileys');
+
+// On extrait proprement les fonctions
+const makeWASocket = Baileys.default || Baileys;
+const makeInMemoryStore = Baileys.makeInMemoryStore
 
 const pino = require('pino');
 const fs = require('fs');
@@ -31,10 +29,16 @@ if (!fs.existsSync(tmpDir)) {
 }
 
 // --- INITIALISATION DU STORE ---
-const store = makeInMemoryStore({ 
-    logger: pino({ level: 'silent' }) 
-});
-global.store = store; 
+const store = typeof makeInMemoryStore === 'function' 
+    ? makeInMemoryStore({ logger: pino({ level: 'silent' }) }) 
+    : null;
+
+if (!store) {
+    console.error("❌ Erreur : Impossible d'initialiser le Store. Vérifiez l'import Baileys.");
+} else {
+    global.store = store;
+    console.log("✅ [ꜱʏꜱᴛᴇᴍ] Store initialisé");
+}
 
 /**
  * HIÉRARCHIE DE SÉCURITÉ GLOBALE
