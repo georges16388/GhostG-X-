@@ -1,19 +1,29 @@
 /**
- * ɢʜᴏꜱᴛɢ-x ᴍᴅ - TicTacToe Game Logic
- * Optimized for Stability & Prestige Design
- * Powered by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
+ * TicTacToe Game - AGM Elite Edition
+ * Optimized Logic & Prestige Design
+ * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
-const toSmallCaps = (text) => {
-    const map = {'a':'ᴀ','b':'ʙ','c':'ᴄ','d':'ᴅ','e':'ᴇ','f':'ғ','g':'ɢ','h':'ʜ','i':'ɪ','j':'ᴊ','k':'ᴋ','l':'ʟ','m':'ᴍ','n':'ɴ','o':'ᴏ','p':'ᴘ','q':'ǫ','r':'ʀ','s':'s','t':'ᴛ','u':'ᴜ','v':'ᴠ','w':'ᴡ','x':'x','y':'ʏ','z':'ᴢ'};
-    return text.toString().toLowerCase().split('').map(c => map[c] || c).join('');
+// Fonction de conversion en Bold Small Caps (Prestige Intégral)
+const toBoldSmallCaps = (text) => {
+    if (!text) return "";
+    const smallCapsMap = {
+        'a': 'ᴀ', 'b': 'ʙ', 'c': 'ᴄ', 'd': 'ᴅ', 'e': 'ᴇ', 'f': 'ғ', 'g': 'ɢ', 'h': 'ʜ', 
+        'i': 'ɪ', 'j': 'ᴊ', 'k': 'ᴋ', 'l': 'ʟ', 'm': 'ᴍ', 'n': 'ɴ', 'o': 'ᴏ', 'p': 'ᴘ', 
+        'q': 'ǫ', 'r': 'ʀ', 's': 's', 't': 'ᴛ', 'u': 'ᴜ', 'v': 'ᴠ', 'w': 'ᴡ', 'x': 'x', 
+        'y': 'ʏ', 'z': 'ᴢ', '0': '₀', '1': '₁', '2': '₂', '3': '₃', '4': '₄', '5': '₅', 
+        '6': '₆', '7': '₇', '8': '₈', '9': '₉', 'é': 'ᴇ', 'è': 'ᴇ', 'ê': 'ᴇ', 'à': 'ᴀ', 'ç': 'ᴄ'
+    };
+    const capsText = text.toString().toLowerCase().split('').map(char => smallCapsMap[char] || char).join('');
+    return `*${capsText}*`;
 };
 
 const games = {};
 
-const TTT_DESIGN = (status, board, players) => `*╭╼━≪• ɢʜᴏsᴛ ᴛɪᴄᴛᴀᴄᴛᴏᴇ •≫━╾╮*
+// Design Elite pour le plateau de jeu
+const TTT_DESIGN = (status, board, players) => `*╭╼━≪• ${toBoldSmallCaps('ɢʜᴏsᴛ ᴛɪᴄᴛᴀᴄᴛᴏᴇ')} •≫━╾╮*
 *┃*
-*┃* 💡 *${toSmallCaps('sᴛᴀᴛᴜs')}* : ${status}
+*┃* 💡 *${toBoldSmallCaps('sᴛᴀᴛᴜs')}* : ${status}
 *┃*
 *┃* ${board[0]} | ${board[1]} | ${board[2]}
 *┃* ──┼───┼──
@@ -25,34 +35,32 @@ const TTT_DESIGN = (status, board, players) => `*╭╼━≪• ɢʜᴏsᴛ ᴛ
 *┃* ⭕ : @${players.o.split('@')[0]}
 *┃*
 *╰━━━━━━━━━━━━━━━╯*
-> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+> ***${toBoldSmallCaps('ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-x')}***`;
 
 module.exports = {
   games,
   name: 'tictactoe',
   aliases: ['ttt', 'xo', 'morpion'],
   category: 'fun',
-  
+
   async execute(sock, msg, args, extra) {
     const { from, sender, prefix, reply } = extra;
     const text = args.join(' ').trim();
 
-    // Vérifier si le joueur est déjà occupé
     const alreadyPlaying = Object.values(games).find(g => [g.playerX, g.playerO].includes(sender));
-    if (alreadyPlaying) return reply(`⚠️ *${toSmallCaps("tu es deja dans une partie")}*`);
+    if (alreadyPlaying) return reply(`⚠️ ${toBoldSmallCaps("tu es deja dans une partie")}`);
 
-    // Chercher une salle en attente
     let room = Object.values(games).find(g => g.state === 'WAITING' && (text ? g.name === text : true));
 
     if (room) {
-      if (room.timeout) clearTimeout(room.timeout); // Stopper l'auto-suppression
+      if (room.timeout) clearTimeout(room.timeout);
       room.playerO = sender;
       room.state = 'PLAYING';
       room.currentTurn = room.playerX;
       room.board = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
       const boardDisplay = ['⬜','⬜','⬜','⬜','⬜','⬜','⬜','⬜','⬜'];
-      const status = `🎮 *${toSmallCaps("au tour de")}* @${room.currentTurn.split('@')[0]}`;
+      const status = `🎮 ${toBoldSmallCaps("au tour de")} @${room.currentTurn.split('@')[0]}`;
 
       await sock.sendMessage(from, {
         text: TTT_DESIGN(status, boardDisplay, { x: room.playerX, o: room.playerO }),
@@ -60,26 +68,25 @@ module.exports = {
       }, { quoted: msg });
 
     } else {
-      // Création d'une nouvelle salle
       const id = `ttt_${Date.now()}`;
       const roomName = text || 'GhostRoom';
       games[id] = {
         id, name: roomName, playerX: sender, playerO: '', state: 'WAITING', board: [1,2,3,4,5,6,7,8,9],
         timeout: setTimeout(() => { 
             if (games[id]) {
-                sock.sendMessage(from, { text: `⏳ *${toSmallCaps("salle")}* [${roomName}] *${toSmallCaps("fermee (expirée)")}*` });
+                sock.sendMessage(from, { text: `⏳ ${toBoldSmallCaps("salle")} [${toBoldSmallCaps(roomName)}] ${toBoldSmallCaps("fermee (expirée)")}` });
                 delete games[id];
             }
         }, 60000)
       };
 
-      await reply(`*╭╼━≪• ᴛᴛᴛ ᴡᴀɪᴛɪɴɢ •≫━╾╮*\n*┃*\n*┃* ⏳ *${toSmallCaps("en attente d'un rival")}*\n*┃* 🏷️ *${toSmallCaps("salle")}* : *${roomName}*\n*┃* 💡 *${toSmallCaps("rejoindre")}* : *${prefix}ttt ${roomName}*\n*┃*\n*╰━━━━━━━━━━━━━━━╯*`);
+      await reply(`*╭╼━≪• ${toBoldSmallCaps('ᴛᴛᴛ ᴡᴀɪᴛɪɴɢ')} •≫━╾╮*\n*┃*\n*┃* ⏳ ${toBoldSmallCaps("en attente d'un rival")}\n*┃* 🏷️ *${toBoldSmallCaps("salle")}* : *${toBoldSmallCaps(roomName)}*\n*┃* 💡 *${toBoldSmallCaps("rejoindre")}* : *${prefix}ttt ${toBoldSmallCaps(roomName)}*\n*┃*\n*╰━━━━━━━━━━━━━━━╯*`);
     }
   }
 };
 
 /**
- * GESTIONNAIRE DE COUPS (À placer dans index.js ou handler.js)
+ * GESTIONNAIRE DE COUPS (Handler)
  */
 async function handleTicTacToeMove(sock, msg, extra) {
   const { sender, from, body } = extra;
@@ -88,32 +95,30 @@ async function handleTicTacToeMove(sock, msg, extra) {
   const room = Object.values(games).find(g => g.state === 'PLAYING' && [g.playerX, g.playerO].includes(sender));
   if (!room) return false;
 
-  // Abandon
+  // Abandon Prestige
   if (/^(abandon|surrender|stop|quitter)$/i.test(input)) {
     const winner = (sender === room.playerX) ? room.playerO : room.playerX;
+    const msgAbandon = `${toBoldSmallCaps("a fui")} ! @${winner.split('@')[0]} ${toBoldSmallCaps("gagne par forfait")} 🏆`;
     await sock.sendMessage(from, { 
-        text: `🏳️ @${sender.split('@')[0]} *${toSmallCaps("a fuit")}* ! @${winner.split('@')[0]} *${toSmallCaps("gagne par forfait")}* 🏆`, 
+        text: `🏳️ @${sender.split('@')[0]} ${msgAbandon}`, 
         mentions: [sender, winner] 
     });
     delete games[room.id];
     return true;
   }
 
-  // Vérifier si l'entrée est un chiffre 1-9 valide
   if (!/^[1-9]$/.test(input)) return false; 
   const index = parseInt(input) - 1;
 
-  if (sender !== room.currentTurn) return true; // Ignorer silencieusement si ce n'est pas son tour
+  if (sender !== room.currentTurn) return true;
 
   if (typeof room.board[index] !== 'number') {
-    await sock.sendMessage(from, { text: `❌ *${toSmallCaps("case deja prise")}*` }, { quoted: msg });
+    await sock.sendMessage(from, { text: `❌ ${toBoldSmallCaps("case deja prise")}` }, { quoted: msg });
     return true;
   }
 
-  // Jouer le pion
   room.board[index] = (sender === room.playerX) ? 'x' : 'o';
 
-  // Logique Victoire / Égalité
   const winConditions = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
   let winner = null;
   for (let c of winConditions) {
@@ -127,9 +132,9 @@ async function handleTicTacToeMove(sock, msg, extra) {
   room.currentTurn = (room.currentTurn === room.playerX) ? room.playerO : room.playerX;
 
   const display = room.board.map(v => v === 'x' ? '❎' : v === 'o' ? '⭕' : '⬜');
-  let statusStr = winner ? `🏆 *${toSmallCaps("victoire pour")}* @${winner.split('@')[0]} !` : 
-                  isTie ? `🤝 *${toSmallCaps("match nul !") }*` : 
-                  `⏳ *${toSmallCaps("au tour de")}* @${room.currentTurn.split('@')[0]}`;
+  let statusStr = winner ? `🏆 ${toBoldSmallCaps("victoire pour")} @${winner.split('@')[0]} !` : 
+                  isTie ? `🤝 ${toBoldSmallCaps("match nul !") }` : 
+                  `⏳ ${toBoldSmallCaps("au tour de")} @${room.currentTurn.split('@')[0]}`;
 
   await sock.sendMessage(from, {
     text: TTT_DESIGN(statusStr, display, { x: room.playerX, o: room.playerO }),
