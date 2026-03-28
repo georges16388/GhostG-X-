@@ -53,8 +53,6 @@ module.exports = {
           mentions: [targetUser],
           contextInfo: {
             externalAdReply: {
-              title: "GHOST PROFILE SCANNER",
-              body: "Fetching target data...",
               mediaType: 1,
               thumbnail: buffer,
               renderLargerThumbnail: false
