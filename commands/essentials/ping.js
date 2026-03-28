@@ -4,10 +4,10 @@
  */
 
 // --- FONCTION DE DESIGN AGM ADAPTÉE ---
-const AGM_DESIGN = (latency) => `╭╼━≪• sʏsᴛᴇᴍ ᴘɪɴɢ •≫━╾╮
-┃ sᴛᴀᴛᴜs : 🟢 ᴏɴʟɪɴᴇ
-┃ ʟᴀᴛᴇɴᴄʏ : ${latency}ᴍs ⚡
-┃ sᴘᴇᴇᴅ : 🛡️ ᴇʟɪᴛᴇ
+const AGM_DESIGN = (latency) => `*╭╼━≪• sʏsᴛᴇᴍ ᴘɪɴɢ •≫━╾╮*
+┃ *sᴛᴀᴛᴜs* : 🟢 *ᴏɴʟɪɴᴇ*
+┃ *ʟᴀᴛᴇɴᴄʏ* : *${latency}ᴍs* ⚡
+┃ *sᴘᴇᴇᴅ* : 🛡️*ᴇʟɪᴛᴇ*
 ╰━━━━━━━━━━━━━━━╯
 > *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
 
