@@ -1,57 +1,72 @@
 /**
- * sᴇᴛɢᴏᴏᴅʙʏᴇ ᴄᴏᴍᴍᴀɴᴅ - ᴀɢᴍ sʏsᴛᴇᴍ ᴄᴏʀᴇ
- * ᴄᴜsᴛᴏᴍɪᴢᴇ ɢᴏᴏᴅʙʏᴇ ᴍᴇssᴀɢᴇ ᴛᴇxᴛ
- * sᴛʏʟᴇ ʙʏ -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
+ * SETGOODBYE COMMAND - AGM SYSTEM CORE
+ * CUSTOMIZE GOODBYE MESSAGE TEXT
+ * STYLE BY -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
-const ᴅʙ = require('../../database');
+const db = require('../../database');
 
-const sᴇᴛɢᴏᴏᴅʙʏᴇ_ᴅᴇsɪɢɴ = (ᴘʀᴇᴠɪᴇᴡ) => `╭╼━≪• *ɢᴏᴏᴅʙʏᴇ sᴇᴛᴛɪɴɢ* •≫━╾╮
-┃ sᴛᴀᴛᴜs : ᴜᴘᴅᴀᴛᴇᴅ ✅
-┃ ᴛʏᴘᴇ : ᴄᴜsᴛᴏᴍ ᴛᴇxᴛ 📝
-┃ ᴘʀᴇᴠɪᴇᴡ : ${ᴘʀᴇᴠɪᴇᴡ}
-╰━━━━━━━━━━━━━━━╯
-> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
+// --- DESIGN SETTINGS AGM (LABELS FIXES) ---
+const SETGOODBYE_DESIGN = (preview) => `*╭╼━≪• ɢᴏᴏᴅʙʏᴇ sᴇᴛᴛɪɴɢ •≫━╾╮*
+*┃*
+*┃* ✅ *sᴛᴀᴛᴜs* : *ᴜᴘᴅᴀᴛᴇᴅ*
+*┃* 📝 *ᴛʏᴘᴇ* : *ᴄᴜsᴛᴏᴍ ᴛᴇxᴛ*
+*┃* 👀 *ᴘʀᴇᴠɪᴇᴡ* : *${preview}*
+*┃*
+*╰━━━━━━━━━━━━━━━╯*
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗`;
 
 module.exports = {
   name: 'setgoodbye',
   aliases: ['goodbyetext', 'changegoodbye'],
   category: 'admin',
-  description: 'ᴍᴏᴅɪꜰɪᴇʀ ʟᴇ ᴍᴇssᴀɢᴇ ᴅᴇ ᴅᴇ́ᴘᴀʀᴛ ᴅᴜ ɢʀᴏᴜᴘᴇ.',
-  usage: '.sᴇᴛɢᴏᴏᴅʙʏᴇ <ᴛᴇxᴛᴇ>',
+  description: 'Modifier le message de départ du groupe.',
+  usage: '.setgoodbye <texte>',
   groupOnly: true,
   adminOnly: true,
 
-  execute: async (sock, msg, args, { from, reply, react }) => {
+  async execute(sock, msg, args, { from, reply, react }) {
     try {
-      const ɴᴇᴡᴛᴇxᴛ = args.join(' ');
+      const newText = args.join(' ');
+      const settings = db.getGroupSettings(from) || {};
 
-      if (!ɴᴇᴡᴛᴇxᴛ) {
-        const sᴇᴛᴛɪɴɢs = ᴅʙ.getGroupSettings(from);
+      // --- AFFICHAGE DE L'AIDE SI VIDE ---
+      if (!newText) {
+        await react('ℹ️');
+        const currentMsg = settings.goodbyeMessage || "ᴀᴜᴄᴜɴ ᴍᴇssᴀɢᴇ ᴅᴇꜰɪɴɪ";
         return reply(
-          `📝 *ᴍᴇssᴀɢᴇ ᴅᴇ ᴅᴇ́ᴘᴀʀᴛ ᴀᴄᴛᴜᴇʟ :*\n\n${sᴇᴛᴛɪɴɢs.goodbyeMessage}\n\n` +
+          `📝 *ᴍᴇssᴀɢᴇ ᴅᴇ ᴅᴇᴘᴀʀᴛ ᴀᴄᴛᴜᴇʟ :*\n\n${currentMsg}\n\n` +
           `💡 *ᴠᴀʀɪᴀʙʟᴇs ᴅɪsᴘᴏɴɪʙʟᴇs :*\n` +
-          `  > @user : ɴᴏᴍ ᴅᴜ ᴍᴇᴍʙʀᴇ\n` +
-          `  > #memberCount : ᴍᴇᴍʙʀᴇs ʀᴇsᴛᴀɴᴛs\n` +
-          `  > #time : ʜᴇᴜʀᴇ ᴅᴜ ᴅᴇ́ᴘᴀʀᴛ`
+          `  > *@user* : ɴᴏᴍ ᴅᴜ ᴍᴇᴍʙʀᴇ\n` +
+          `  > *#memberCount* : ᴍᴇᴍʙʀᴇs ʀᴇsᴛᴀɴᴛs\n` +
+          `  > *#time* : ʜᴇᴜʀᴇ ᴅᴜ ᴅᴇᴘᴀʀᴛ`
         );
       }
 
-      if (ɴᴇᴡᴛᴇxᴛ.length > 500) return reply('❌ *ᴍᴇssᴀɢᴇ ᴛʀᴏᴘ ʟᴏɴɢ ! (ᴍᴀx 500 ᴄᴀʀᴀᴄᴛᴇ̀ʀᴇs).*');
+      // --- SÉCURITÉ LONGUEUR ---
+      if (newText.length > 500) {
+        return reply('❌ *ᴍᴇssᴀɢᴇ ᴛʀᴏᴘ ʟᴏɴɢ ! (ᴍᴀx 500 ᴄᴀʀᴀᴄᴛᴇʀᴇs).*');
+      }
 
       await react('✍️');
-      ᴅʙ.updateGroupSettings(from, { 
-        goodbyeMessage: ɴᴇᴡᴛᴇxᴛ,
+
+      // --- MISE À JOUR DB ---
+      db.updateGroupSettings(from, { 
+        goodbyeMessage: newText,
         goodbye: true 
       });
 
-      const ᴘʀᴇᴠɪᴇᴡᴛᴇxᴛ = ɴᴇᴡᴛᴇxᴛ.replace('@user', '@' + (msg.key.participant || from).split('@')[0]);
+      // --- GÉNÉRATION DE L'APERÇU ---
+      const previewText = newText
+        .replace('@user', '@' + (msg.key.participant || from).split('@')[0])
+        .replace('#memberCount', '100')
+        .replace('#time', new Date().toLocaleTimeString());
 
-      return reply(sᴇᴛɢᴏᴏᴅʙʏᴇ_ᴅᴇsɪɢɴ(ᴘʀᴇᴠɪᴇᴡᴛᴇxᴛ));
+      return reply(SETGOODBYE_DESIGN(previewText), { mentions: [msg.key.participant || from] });
 
-    } catch (ᴇʀʀᴏʀ) {
-      console.error('[sᴇᴛɢᴏᴏᴅʙʏᴇ ᴇʀʀᴏʀ]:', ᴇʀʀᴏʀ);
-      reply(`❌ *ᴇʀʀᴇᴜʀ :* ${ᴇʀʀᴏʀ.ᴍᴇssᴀɢᴇ}`);
+    } catch (error) {
+      console.error('[SETGOODBYE ERROR]:', error);
+      reply(`❌ *ᴇʀʀᴇᴜʀ sʏsᴛᴇᴍᴇ ʟᴏʀs ᴅᴇ ʟᴀ ᴍᴏᴅɪꜰɪᴄᴀᴛɪᴏɴ*`);
     }
   }
 };
