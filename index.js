@@ -19,13 +19,13 @@ const path = require('path');
 
 
 // ==========================================
-// MODULE 1 : CONFIGURATION & STORE PERSISTANT
+// MODULE 1 : CONFIGURATION (SANS STORE LOURD)
 // ==========================================
 const config = require('./config');
 const handler = require('./handler');
 global.config = config; 
 
-// 📁 Gestion des fichiers et logs (Indispensable pour éviter les crashs)
+// 📁 Gestion des fichiers et logs
 const logFile = path.join(__dirname, 'bot-crash.log');
 const logError = (msg, err) => {
     const logStr = `[${new Date().toISOString()}] ❌ ${msg}: ${err.stack || err}\n`;
@@ -33,38 +33,23 @@ const logError = (msg, err) => {
     if (fs.appendFileSync) fs.appendFileSync(logFile, logStr);
 };
 
+// Dossier temporaire pour les médias
 const tmpDir = path.join(__dirname, 'tmp');
-if (!fs.existsSync(tmpDir)) {
-    fs.mkdirSync(tmpDir);
-    console.log('✅ [ꜱʏꜱᴛᴇᴍ] ᴅᴏꜱꜱɪᴇʀ ᴛᴍᴘ ᴄʀᴇᴇ ᴀᴠᴇᴄ ꜱᴜᴄᴄᴇ̀ꜱ');
-}
+if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir);
 
-// 💾 Configuration du Store Persistant
-const storeFile = './ghostg_store.json';
-const store = makeInMemoryStore({ 
-    logger: pino({ level: 'silent' }) 
-});
-
-// Lecture du store au démarrage
-try {
-    if (fs.existsSync(storeFile)) {
-        store.readFromFile(storeFile);
-        console.log('✅ [ꜱʏꜱᴛᴇᴍ] ꜱᴛᴏʀᴇ ᴘᴇʀꜱɪꜱᴛᴀɴᴛ ᴄʜᴀʀɢᴇ́');
+// On définit un store vide ou minimal pour ne pas casser le reste du code
+global.store = {
+    chats: [],
+    contacts: {},
+    messages: {},
+    groupMetadata: {},
+    // On garde bind pour éviter les erreurs plus bas
+    bind: (ev) => {
+        console.log('✅ [ꜱʏꜱᴛᴇᴍ] ᴍᴏᴅᴇ ʟᴇɢᴇʀ ᴀᴄᴛɪᴠᴇ (ꜱᴀɴꜱ ꜱᴛᴏʀᴇ ᴊꜱᴏɴ)');
     }
-} catch (e) {
-    logError("Erreur Lecture Store", e);
-}
+};
 
-// Sauvegarde automatique toutes les 10 secondes
-setInterval(() => {
-    try {
-        if (store) store.writeToFile(storeFile);
-    } catch (e) { /* Silencieux */ }
-}, 10000);
 
-global.store = store;
- 
- 
 
 // ==========================================
 // MODULE 2 : SÉCURITÉ & UTILITAIRES
