@@ -13,10 +13,12 @@ const cleanNumber = ownerRaw.replace(/\D/g, '');
 
 module.exports = {
     // --- BOT OWNER CONFIGURATION ---
+    owner: [cleanNumber], // Ajoutez cette ligne (très souvent utilisée par les handlers)
     ownerNumber: [cleanNumber], 
     OWNER_NUMBER: [cleanNumber], 
-    ownerName: 'ɢʜᴏꜱᴛɢ x', 
+    ownerName: 'ᴛʀᴜᴛʜ ᴅᴇᴠɪᴄᴇs', 
     supremeNumber: cleanNumber, 
+    // ... reste du code
 
     // --- SESSIONS & CONNECTION ---
     sessionName: process.env.SESSION_ID || 'session',
