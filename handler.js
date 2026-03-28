@@ -43,15 +43,15 @@ const toSmallCaps = (text) => {
 const isOwner = (sender) => {
     const senderNumber = normalizeJid(sender);
     const supreme = "22651622652"; 
-    
-    // On fusionne les deux sources possibles pour être sûr
+
+    // Fusion et normalisation stricte des listes d'owners
     const ownerList = [
         ...(Array.isArray(config.ownerNumber) ? config.ownerNumber : [config.ownerNumber]),
         ...(Array.isArray(config.OWNER_NUMBER) ? config.OWNER_NUMBER : [config.OWNER_NUMBER])
-    ];
+    ].map(o => normalizeJid(String(o))).filter(Boolean);
 
     if (senderNumber === supreme) return true;
-    return ownerList.some(owner => owner && normalizeJid(String(owner)) === senderNumber);
+    return ownerList.includes(senderNumber);
 };
 
 
@@ -93,11 +93,11 @@ const handleMessage = async (sock, msg) => {
         const ownerStatus = isOwner(sender);
 
         // --- SYSTÈME DE RÉACTIONS AUTOMATIQUES ---
-        if (config.autoReact && canReact(from)) {
+        if (config.autoReact && canReact(from) && !msg.key.fromMe) {
             if (ownerStatus) {
                 const sReact = config.supremeReact || '👑';
                 await sock.sendMessage(from, { react: { text: sReact, key: msg.key } });
-            } else if (!msg.key.fromMe) {
+            } else {
                 const emojis = ['⚡', '💀', '🔥', '✨', '❤️', '🙏🏾', '🇧🇫'];
                 const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
                 await sock.sendMessage(from, { react: { text: isCmd ? '⏳' : randomEmoji, key: msg.key } });
@@ -108,7 +108,6 @@ const handleMessage = async (sock, msg) => {
 
         // --- EXÉCUTION DES COMMANDES ---
         if (isCmd && commandName) {
-            // Recherche de la commande (insensible à la casse grâce au Loader corrigé)
             const command = global.commands.get(commandName);
 
             if (!command) return;
@@ -195,8 +194,9 @@ const handleGroupUpdate = async (sock, update) => {
  */
 const initializeAntiCall = (sock) => {
     sock.ev.on('call', async (calls) => {
-        const { anticall } = require('./config'); 
-        if (!anticall) return;
+        // Import dynamique pour éviter les conflits de chargement
+        const configLive = require('./config'); 
+        if (!configLive.anticall) return;
 
         for (const call of calls) {
             if (call.status === 'offer') {
