@@ -26,8 +26,7 @@ const AGM_DESIGN = (status, action) => {
 *┃* ⚙️ *${toStyledCaps('ᴀᴄᴛɪᴏɴ')}* : *${toStyledCaps(action)}*
 *┃* ⚡ *${toStyledCaps('ɢᴜᴀʀᴅ')}* : *${toStyledCaps('ᴀᴄᴛɪᴠᴇ')}*
 *┃*
-*╰━━━━━━━━━━━━━━━╯*
-> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+*╰━━━━━━━━━━━━━━━╯*`;
 };
 
 module.exports = {
