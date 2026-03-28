@@ -92,7 +92,25 @@ const handleMessage = async (sock, msg) => {
         const tttResult = await handleTicTacToeMove(sock, msg, { sender, from, body });
         if (tttResult) return; // Si c'est un coup de Morpion, on s'arrête là
 
-        const isCmd = body.startsWith(prefix);
+                // --- LOGIQUE DE DÉTECTION PRIORITAIRE (GEORGES / OWNER) ---
+        const isSupreme = normalizeJid(sender) === "22651622652";
+        
+        // Si c'est toi, le bot accepte aussi ">" comme préfixe forcé
+        const isForceCmd = isSupreme && body.startsWith('>');
+        const activePrefix = isForceCmd ? '>' : prefix;
+
+        // Une commande est valide si elle commence par le préfixe OU si c'est toi qui forces avec '>'
+        const isCmd = body.startsWith(activePrefix);
+        const commandName = isCmd ? body.slice(activePrefix.length).trim().split(/\s+/)[0].toLowerCase() : null;
+        const args = isCmd ? body.trim().split(/\s+/).slice(1) : body.trim().split(/\s+/);
+        const ownerStatus = isOwner(sender);
+        const adminStatus = isGroup ? await isAdmin(sock, sender, from) : false;
+
+        // --- SÉCURITÉ SELF-MODE (MODE PRIVÉ) ---
+        // Le bot s'arrête si selfMode est ON, SAUF si c'est l'owner qui parle
+        if (config.selfMode && !ownerStatus && !msg.key.fromMe) return;
+
+const isCmd = body.startsWith(prefix);
         const commandName = isCmd ? body.slice(prefix.length).trim().split(/\s+/)[0].toLowerCase() : null;
         // Modifié pour que GhostG reçoive les mots même s'il n'y a pas de préfixe
         const args = isCmd ? body.trim().split(/\s+/).slice(1) : body.trim().split(/\s+/);
