@@ -1,140 +1,155 @@
 /**
- * TicTacToe Game Logic - Two player game
+ * TicTacToe Game Logic - Mode Duel
  * Style & Design by -ɢʜᴏsᴛɢ 𝐗
  */
 
-const TicTacToe = require('../../utils/tictactoe');
+// Fonction de conversion en Small Caps
+const toSmallCaps = (text) => {
+    const smallCapsMap = {
+        'a': 'ᴀ', 'b': 'ʙ', 'c': 'ᴄ', 'd': 'ᴅ', 'e': 'ᴇ', 'f': 'ғ', 'g': 'ɢ', 'h': 'ʜ', 
+        'i': 'ɪ', 'j': 'ᴊ', 'k': 'ᴋ', 'l': 'ʟ', 'm': 'ᴍ', 'n': 'ɴ', 'o': 'ᴏ', 'p': 'ᴘ', 
+        'q': 'ǫ', 'r': 'ʀ', 's': 's', 't': 'ᴛ', 'u': 'ᴜ', 'v': 'ᴠ', 'w': 'ᴡ', 'x': 'x', 
+        'y': 'ʏ', 'z': 'ᴢ'
+    };
+    return text.toString().toLowerCase().split('').map(char => smallCapsMap[char] || char).join('');
+};
 
-// Stockage global des parties
 const games = {};
 
-const TTT_DESIGN = (status, board, players) => `╭╼━≪• ɢʜᴏꜱᴛ ᴛɪᴄᴛᴀᴄᴛᴏᴇ •≫━╾╮
+const TTT_DESIGN = (status, board, players) => `╭╼━≪• *ɢʜᴏsᴛ ᴛɪᴄᴛᴀᴄᴛᴏᴇ* •≫━╾╮
 ┃
-┃ ꜱᴛᴀᴛᴜꜱ : ${status}
+┃ ${toSmallCaps('sᴛᴀᴛᴜs')} : ${status}
 ┃
-┃ ${board[0]} | ${board[1]} | ${board[2]}
-┃ ──┼───┼──
-┃ ${board[3]} | ${board[4]} | ${board[5]}
-┃ ──┼───┼──
-┃ ${board[6]} | ${board[7]} | ${board[8]}
+┃      ${board[0]} | ${board[1]} | ${board[2]}
+┃      ──┼───┼──
+┃      ${board[3]} | ${board[4]} | ${board[5]}
+┃      ──┼───┼──
+┃      ${board[6]} | ${board[7]} | ${board[8]}
 ┃
 ┃ ❎ : @${players.x.split('@')[0]}
 ┃ ⭕ : @${players.o.split('@')[0]}
 ┃
 ╰━━━━━━━━━━━━━━━╯
-> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏꜱᴛɢ 𝐗`;
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
 module.exports = {
   games,
   name: 'tictactoe',
   aliases: ['ttt', 'xo', 'morpion'],
   category: 'fun',
-  description: 'Jouer au Morpion avec un ami - Tape .ttt pour créer ou rejoindre une partie',
+  description: 'Jouer au Morpion avec un ami',
   usage: '.ttt [nom_salle]',
 
   async execute(sock, msg, args, extra) {
     const { from, sender, prefix } = extra;
     const text = args.join(' ').trim();
 
-    // Vérifier si le joueur est déjà en jeu
-    const existingRoom = Object.values(games).find(
-      r => r.state === 'PLAYING' && [r.game.playerX, r.game.playerO].includes(sender)
+    const inGame = Object.values(games).find(r => 
+      (r.state === 'PLAYING' || r.state === 'WAITING') && (r.playerX === sender || r.playerO === sender)
     );
-    if (existingRoom) return extra.reply('⚠️ *Tu es déjà dans une partie !*');
+    
+    if (inGame) return extra.reply(`⚠️ ${toSmallCaps("tu es deja dans une partie")}`);
 
-    // Chercher une salle en attente
-    let room = Object.values(games).find(
-      r => r.state === 'WAITING' && (text ? r.name === text : true)
-    );
+    let room = Object.values(games).find(r => r.state === 'WAITING' && (text ? r.name === text : true));
 
     if (room) {
-      // Rejoindre la partie existante
       room.playerO = sender;
       room.state = 'PLAYING';
-      room.game = new TicTacToe(room.playerX, sender);
+      room.board = [1, 2, 3, 4, 5, 6, 7, 8, 9]; // Grille initiale
+      room.currentTurn = room.playerX;
 
-      const board = room.game.render().map(v => v === 'x' ? '❎' : v === 'o' ? '⭕' : '⬜');
-      const status = `ᴀᴜ ᴛᴏᴜʀ ᴅᴇ @${room.game.currentTurn.split('@')[0]} 🎮`;
+      const boardDisplay = room.board.map(v => '⬜');
+      const status = `${toSmallCaps("au tour de")} @${room.currentTurn.split('@')[0]} 🎮`;
 
       await sock.sendMessage(from, {
-        text: TTT_DESIGN(status, board, { x: room.playerX, o: room.playerO }),
+        text: TTT_DESIGN(status, boardDisplay, { x: room.playerX, o: room.playerO }),
         mentions: [room.playerX, room.playerO]
-      });
+      }, { quoted: msg });
 
     } else {
-      // Créer une nouvelle salle
       const id = 'ttt-' + Date.now();
+      const roomName = text || 'GhostRoom';
       games[id] = {
         id,
-        name: text || 'GhostRoom',
+        name: roomName,
         playerX: sender,
         playerO: '',
         state: 'WAITING',
-        timeout: setTimeout(() => {
-          if (games[id] && games[id].state === 'WAITING') delete games[id];
-        }, 60000)
+        board: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+        timeout: setTimeout(() => { if (games[id]) delete games[id]; }, 60000)
       };
 
-      await extra.reply(`╭╼━≪• ᴛᴛᴛ ᴡᴀɪᴛɪɴɢ •≫━╾╮
-┃ ᴇɴ ᴀᴛᴛᴇɴᴛᴇ ᴅ'ᴜɴ ᴀᴅᴠᴇʀꜱᴀɪʀᴇ...
-┃ ᴛᴀᴘᴇ : *${prefix}ttt ${text || 'GhostRoom'}*
+      await extra.reply(`╭╼━≪• *ᴛᴛᴛ ᴡᴀɪᴛɪɴɢ* •≫━╾╮
+┃ ${toSmallCaps("en attente d'un adversaire")}...
+┃ ${toSmallCaps("salle")} : *${roomName}*
+┃ ${toSmallCaps("tape")} : *${prefix}ttt ${roomName}*
 ╰━━━━━━━━━━━━━━━╯`);
     }
   }
 };
 
-// Gestion des coups de TicTacToe
+// Logique de gestion des coups (à appeler dans ton handler principal)
 async function handleTicTacToeMove(sock, msg, extra) {
-  const sender = extra.sender;
-  const from = extra.from;
-  const text = msg.message?.conversation || msg.message?.extendedTextMessage?.text || '';
+  const { sender, from } = extra;
+  const text = (msg.message?.conversation || msg.message?.extendedTextMessage?.text || '').trim();
 
-  // Trouver la partie du joueur
-  const room = Object.values(games).find(
-    r => r.state === 'PLAYING' && [r.game.playerX, r.game.playerO].includes(sender)
-  );
+  const room = Object.values(games).find(r => r.state === 'PLAYING' && [r.playerX, r.playerO].includes(sender));
   if (!room) return false;
 
-  const surrender = /^(surrender|give up)$/i.test(text);
-  if (!surrender && !/^[1-9]$/.test(text)) return false;
-
-  // Vérification du tour
-  if (!surrender && sender !== room.game.currentTurn) {
-    await sock.sendMessage(from, { text: '❌ Ce n\'est pas ton tour !' });
-    return true;
-  }
-
-  const moveOk = surrender ? true : room.game.turn(sender === room.game.playerO, parseInt(text) - 1);
-  if (!moveOk) {
-    await sock.sendMessage(from, { text: '❌ Coup invalide ! Cette position est déjà prise.' });
-    return true;
-  }
-
-  // Gestion du gagnant ou égalité
-  let winner = surrender ? (sender === room.game.playerX ? room.game.playerO : room.game.playerX) : room.game.winner;
-  const tie = !winner && room.game.turns === 9;
-
-  if (surrender) {
-    await sock.sendMessage(from, {
-      text: `🏳️ @${sender.split('@')[0]} a abandonné ! @${winner.split('@')[0]} remporte la partie !`,
-      mentions: [sender, winner]
+  // Commande d'abandon
+  if (/^(abandon|surrender|stop)$/i.test(text)) {
+    const winner = sender === room.playerX ? room.playerO : room.playerX;
+    await sock.sendMessage(from, { 
+        text: `🏳️ @${sender.split('@')[0]} ${toSmallCaps("a abandonne")} ! @${winner.split('@')[0]} ${toSmallCaps("remporte la partie")}`, 
+        mentions: [sender, winner] 
     });
     delete games[room.id];
     return true;
   }
 
-  const board = room.game.render().map(v => v === 'x' ? '❎' : v === 'o' ? '⭕' : '⬜');
-  const status = winner ? `🎉 @${winner.split('@')[0]} gagne !` : tie ? '🤝 Égalité !' : `ᴀᴜ ᴛᴏᴜʀ : @${room.game.currentTurn.split('@')[0]}`;
+  // Vérification si c'est un chiffre 1-9
+  if (!/^[1-9]$/.test(text)) return false;
+  const move = parseInt(text) - 1;
 
-  const str = TTT_DESIGN(status, board, { x: room.game.playerX, o: room.game.playerO });
-  const mentions = [room.game.playerX, room.game.playerO, ...(winner ? [winner] : [])];
-
-  await sock.sendMessage(room.playerX, { text: str, mentions });
-  if (room.playerO && room.playerO !== room.playerX) {
-    await sock.sendMessage(room.playerO, { text: str, mentions });
+  if (sender !== room.currentTurn) {
+    await extra.reply(`❌ ${toSmallCaps("ce n'est pas ton tour")}`);
+    return true;
   }
 
-  if (winner || tie) delete games[room.id];
+  if (typeof room.board[move] !== 'number') {
+    await extra.reply(`❌ ${toSmallCaps("case deja occupee")}`);
+    return true;
+  }
+
+  // Placer le pion
+  room.board[move] = sender === room.playerX ? 'x' : 'o';
+  
+  // Vérification victoire
+  const winConditions = [
+    [0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]
+  ];
+  
+  let winner = null;
+  for (let condition of winConditions) {
+    const [a, b, c] = condition;
+    if (room.board[a] && room.board[a] === room.board[b] && room.board[a] === room.board[c]) {
+      winner = sender;
+      break;
+    }
+  }
+
+  const isTie = !winner && room.board.every(v => typeof v !== 'number');
+  room.currentTurn = room.currentTurn === room.playerX ? room.playerO : room.playerX;
+
+  const boardDisplay = room.board.map(v => v === 'x' ? '❎' : v === 'o' ? '⭕' : '⬜');
+  let statusText = winner ? `🎉 @${winner.split('@')[0]} ${toSmallCaps("gagne")} !` : isTie ? toSmallCaps("egalite") : `${toSmallCaps("au tour de")} @${room.currentTurn.split('@')[0]}`;
+
+  await sock.sendMessage(from, {
+    text: TTT_DESIGN(statusText, boardDisplay, { x: room.playerX, o: room.playerO }),
+    mentions: [room.playerX, room.playerO]
+  }, { quoted: msg });
+
+  if (winner || isTie) delete games[room.id];
   return true;
 }
 
