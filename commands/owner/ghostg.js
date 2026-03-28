@@ -1,81 +1,103 @@
 /**
- * ɢʜᴏꜱᴛɢ-x ᴍᴅ - Intel AI Controller (GhostG Core V1)
- * Role : Intelligence Artificielle de commande (NLP Exec)
- * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
+ * ɢʜᴏꜱᴛɢ-x ᴍᴅ - Intelligence Artificielle GhostG (NLP & Command Redirection)
+ * Version : Prestige V5.2 - Full Power (Design Small Caps)
  */
 
-const config = require('../../config');
-const toSmallCaps = (text) => {
-    const fonts = {'a':'ᴀ','b':'ʙ','c':'ᴄ','d':'ᴅ','e':'ᴇ','f':'ғ','g':'ɢ','h':'ʜ','i':'ɪ','j':'ᴊ','k':'ᴋ','l':'ʟ','m':'ᴍ','n':'ɴ','o':'ᴏ','p':'ᴘ','q':'ǫ','r':'ʀ','s':'s','t':'ᴛ','u':'ᴜ','v':'ᴠ','w':'ᴡ','x':'x','y':'ʏ','z':'ᴢ'};
-    return String(text).toLowerCase().split('').map(c => fonts[c] || c).join('');
-};
-
-const AGM_GHOSTG = (mode, status) => `*╭╼━≪• ɢʜᴏsᴛɢ ɪɴᴛᴇʟ sʏsᴛᴇᴍ •≫━╾╮*
-*┃*
-*┃* 🧠 *${toSmallCaps('sʏsᴛᴇᴍ')}* : ᴀɪ ᴄᴏɴᴛʀᴏʟʟᴇʀ
-*┃* ⚙️ *${toSmallCaps('ᴍᴏᴅᴇ')}* : ${mode}
-*┃* ✨ *${toSmallCaps('sᴛᴀᴛᴜs')}* : ${status}
-*┃*
-*╰━━━━━━━━━━━━━━━╯*
-> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+const { toSmallCaps } = require('../../utils/format'); 
 
 module.exports = {
-  name: 'ghostg',
-  aliases: ['gg', 'ai-exec'],
-  category: 'owner',
-  description: 'IA de contrôle des commandes du bot.',
-  ownerOnly: true,
+    name: "ghostg",
+    description: "Système NLP intelligent pour exécuter des ordres sans préfixe",
+    category: "owner",
+    ownerOnly: true,
 
-  async execute(sock, msg, args, extra) {
-    const { from, reply, react } = extra;
-    const input = args.join(' ').toLowerCase();
+    async execute(sock, msg, args, extra) {
+        const { from, reply, isOwner, react, prefix, body } = extra;
+        const input = args.join(' ').toLowerCase();
+        const firstWord = args[0]?.toLowerCase();
 
-    // --- 1. GESTION DES MODES (ON/OFF) ---
-    if (['on private', 'on priv'].includes(input)) {
-        global.ghostgMode = 'private';
-        return reply(AGM_GHOSTG('🔒 ᴘʀɪᴠᴀᴛᴇ', '🟢 ᴀᴄᴛɪᴠᴀᴛᴇᴅ'));
-    }
-    if (['on all', 'on public'].includes(input)) {
-        global.ghostgMode = 'all';
-        return reply(AGM_GHOSTG('🌐 ᴘᴜʙʟɪᴄ', '🟢 ᴀᴄᴛɪᴠᴀᴛᴇᴅ'));
-    }
-    if (input === 'off') {
-        global.ghostgMode = 'off';
-        return reply(AGM_GHOSTG('⚪ ᴏғғ', '🔴 ᴅᴇᴀᴄᴛɪᴠᴀᴛᴇᴅ'));
-    }
+        // --- CAS 1 : CONFIGURATION (AVEC PRÉFIXE) ---
+        if (msg.body && msg.body.startsWith(prefix)) {
+            if (firstWord === 'on') {
+                global.ghostgMode = 'on';
+                await react('🧠');
+                return reply(`✅ *ɢʜᴏsᴛɢ ɪɴᴛᴇʟ* : *${toSmallCaps("activé. je t'écoute désormais.")}*`);
+            }
+            if (firstWord === 'off') {
+                global.ghostgMode = 'off';
+                await react('💤');
+                return reply(`💡 *ɢʜᴏsᴛɢ ɪɴᴛᴇʟ* : *${toSmallCaps("mis en veille.")}*`);
+            }
+            return reply(`🤖 *ɢʜᴏsᴛɢ ᴄᴏɴᴛʀᴏʟ* : *${global.ghostgMode === 'on' ? '🟢 ᴏɴ' : '🔴 ᴏғғ'}*`);
+        }
 
-    // --- 2. LOGIQUE D'IA D'EXÉCUTION ---
-    if (!args[0]) return reply(`💡 *${toSmallCaps('ᴜsᴀɢᴇ')}* : .ghostg <ordre>\n_Ex: .ghostg kick @user_`);
+        // --- CAS 2 : NLP & RÉPONSES AUTOMATIQUES (DESIGN SMALL CAPS) ---
+        
+        // 1. Salutations & Présence
+        if (input.includes("bonjour") || input.includes("salut") || input.includes("hey") || input.includes("ghostg ?")) {
+            return reply(`👋🏾 *${toSmallCaps("présent, mon maître georges. j'attends tes ordres.")}*`);
+        }
 
-    await react('🧠');
-
-    // Analyse simple des intentions (Tu peux améliorer cela avec une API IA)
-    const text = args.join(' ').toLowerCase();
-    let commandToExec = null;
-    let newArgs = [...args];
-
-    if (text.includes('kick') || text.includes('vire')) commandToExec = 'kick';
-    else if (text.includes('add') || text.includes('ajoute')) commandToExec = 'add';
-    else if (text.includes('ban') || text.includes('block')) commandToExec = 'block';
-    else if (text.includes('nom') || text.includes('name')) commandToExec = 'setbotname';
-    else if (text.includes('quitte') || text.includes('leave')) commandToExec = 'leave';
-
-    if (commandToExec) {
-        const cmd = global.commands.get(commandToExec) || 
-                    global.commands.find(c => c.aliases && c.aliases.includes(commandToExec));
-
-        if (cmd) {
-            // Nettoyage des arguments pour ne pas passer le mot "kick" à la commande kick
-            newArgs.shift(); 
-            
-            try {
-                return await cmd.execute(sock, msg, newArgs, extra);
-            } catch (e) {
-                return reply(`❌ *${toSmallCaps('ᴇʀʀᴇᴜʀ ᴇxᴇᴄᴜᴛɪᴏɴ')}* : ${e.message}`);
+        // 2. Antidelete / Suppression rapide
+        if (input.includes("supprime") || input.includes("efface") || input.includes("delete")) {
+            const quoted = msg.message.extendedTextMessage?.contextInfo;
+            if (quoted?.stanzaId) {
+                const key = {
+                    remoteJid: from,
+                    fromMe: quoted.participant === sock.user.id.split(':')[0] + '@s.whatsapp.net',
+                    id: quoted.stanzaId,
+                    participant: quoted.participant
+                };
+                await sock.sendMessage(from, { delete: key });
+                return react('🗑️');
             }
         }
-    }
 
-    return reply(`🧠 *${toSmallCaps('ɢʜᴏsᴛɢ')}* : Je n'ai pas compris cet ordre, Maître.`);
-  }
+        // 3. Gestion du groupe (Lock/Unlock)
+        if (input.includes("ferme le groupe") || input.includes("bloque le groupe")) {
+            await sock.groupSettingUpdate(from, 'announcement');
+            return reply(`🔒 *${toSmallCaps("groupe verrouillé. repos pour les membres.")}*`);
+        }
+        if (input.includes("ouvre le groupe") || input.includes("débloque le groupe")) {
+            await sock.groupSettingUpdate(from, 'not_announcement');
+            return reply(`🔓 *${toSmallCaps("groupe ouvert. la parole est libre.")}*`);
+        }
+
+        // 4. Informations système rapides
+        if (input.includes("état du bot") || input.includes("ca va") || input.includes("tu dors")) {
+            const uptime = process.uptime();
+            const hours = Math.floor(uptime / 3600);
+            return reply(`⚡ *${toSmallCaps("en ligne depuis")}* ${hours}ʜ. *${toSmallCaps("prêt à tout dévaster.")}*`);
+        }
+
+        // 5. Humour / Prestige
+        if (input.includes("qui est ton créateur") || input.includes("qui t'a fait")) {
+            return reply(`👑 *${toSmallCaps("je suis l'œuvre de truth devices, l'élite de fada.")}*`);
+        }
+
+        // 6. Protection & Sécurité
+        if (input.includes("bloque cet utilisateur") || input.includes("block user")) {
+            const target = msg.message.extendedTextMessage?.contextInfo?.participant;
+            if (target) {
+                await sock.updateBlockStatus(target, "block");
+                return reply(`🚫 *${toSmallCaps("utilisateur banni de mes circuits.")}*`);
+            }
+        }
+
+        // --- CAS 3 : MOTEUR DE REDIRECTION (EXÉCUTION AUTOMATIQUE) ---
+        const possibleCmd = global.commands.get(firstWord) || global.commands.find(c => c.aliases && c.aliases.includes(firstWord));
+
+        if (possibleCmd) {
+            const newArgs = args.slice(1); 
+            try {
+                await react('⚡'); 
+                return await possibleCmd.execute(sock, msg, newArgs, extra);
+            } catch (err) {
+                console.error(err);
+                return reply(`❌ *${toSmallCaps("erreur lors de l'exécution automatique de")}* ${firstWord.toUpperCase()}`);
+            }
+        }
+
+        return; // Silence si rien n'est matché
+    }
 };
