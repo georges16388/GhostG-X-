@@ -11,10 +11,10 @@
 
 <p align="center">
   <a href="https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf?mode=gi_t">
-    <img src="https://img.shields.io/badge/sᴜᴘᴘᴏʀᴛ-ɢʀᴏᴜᴘ-ɢᴏʟᴅ?style=for-the-badge&logo=whatsapp" alt="support group">
+    <img src="https://img.shields.io/badge/sᴜᴘᴘᴏʀᴛ-ɢʀᴏᴜᴘ?style=for-the-badge&logo=whatsapp" alt="support group">
   </a>
   <a href="https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c">
-    <img src="https://img.shields.io/badge/ᴄʜᴀɴɴᴇʟ-ᴜᴘᴅᴀᴛᴇs-ɢᴏʟᴅ?style=for-the-badge&logo=whatsapp" alt="chaîne whatsApp">
+    <img src="https://img.shields.io/badge/ᴄʜᴀɴɴᴇʟ?style=for-the-badge&logo=whatsapp" alt="chaîne whatsApp">
   </a>
   <a href="https://wa.me/22651622652?text=Bonjour%20maître,%20j'utilise%20le%20GhostG-X">
     <img src="https://img.shields.io/badge/ᴏᴡɴᴇʀ-ᴄᴏɴᴛᴀᴄᴛ-ɢᴏʟᴅ?style=for-the-badge&logo=whatsapp" alt="developpeur">
