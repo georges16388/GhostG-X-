@@ -10,12 +10,12 @@ const handler = require('../../handler');
 // Design pour l'expulsion (Kick)
 const KICK_DESIGN = (users) => {
   const usernames = users.map((jid) => `@${jid.split('@')[0]}`).join(', ');
-  return `╭╼━≪• ᴍᴇᴍʙᴇʀ ᴋɪᴄᴋᴇᴅ •≫━╾╮
-┃ ᴜsᴇʀ : ${usernames}
-┃ sᴛᴀᴛᴜs : ʀᴇᴍᴏᴠᴇᴅ ❌
-┃ ᴀᴄᴛɪᴏɴ : sᴜᴄᴄᴇssғᴜʟ ✅
+  return `╭╼━≪• *ᴍᴇᴍʙᴇʀ ᴋɪᴄᴋᴇᴅ* •≫━╾╮
+┃ *ᴜsᴇʀ* : ${usernames}
+┃ *sᴛᴀᴛᴜs* : *ʀᴇᴍᴏᴠᴇᴅ* ❌
+┃ *ᴀᴄᴛɪᴏɴ* : *sᴜᴄᴄᴇssғᴜʟ* ✅
 ╰━━━━━━━━━━━━━━━╯
-> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 };
 
 module.exports = {
