@@ -9,9 +9,14 @@ const {
     default: makeWASocket, 
     useMultiFileAuthState, 
     DisconnectReason, 
-    fetchLatestBaileysVersion,
-    makeInMemoryStore 
+    fetchLatestBaileysVersion
 } = Baileys;
+
+// On récupère explicitement la fonction depuis l'objet Baileys
+const makeInMemoryStore = Baileys.makeInMemoryStore; 
+
+const pino = require('pino');
+
 
 const pino = require('pino');
 const fs = require('fs');
