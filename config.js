@@ -1,34 +1,36 @@
- const dotenv = require('dotenv');
+const dotenv = require('dotenv');
 dotenv.config();
 
-module.exports = {
-        // --- BOT OWNER CONFIGURATION ---
-    ownerNumber: ['22651622652'], // Utilisé par le Handler (minuscule)
-    OWNER_NUMBER: ['22651622652'], // Doublon de sécurité (Majuscule)
-    ownerName: 'ɢʜᴏꜱᴛɢ x', 
-    supremeNumber: '22651622652',
-    
-    // --- SETTINGS ---
-    anticall: true,
-    autoReact: true,
-    autoReactMode: 'bot', // 'bot' ou 'all'
-    prefix: '.',
+// Extraction propre du numéro depuis le .env ou valeur par défaut
+const ownerRaw = process.env.OWNER_NUMBER || '22651622652';
+const cleanNumber = ownerRaw.replace(/\D/g, '');
 
-    // --- BOT BEHAVIOR & AUTOMATIONS ---
-    selfMode: false, 
+module.exports = {
+    // --- BOT OWNER CONFIGURATION (FUSION .ENV) ---
+    ownerNumber: [cleanNumber], // Utilisé par le Handler (format tableau)
+    OWNER_NUMBER: [cleanNumber], // Doublon de sécurité
+    ownerName: 'ɢʜᴏꜱᴛɢ x', 
+    supremeNumber: cleanNumber,
+    sessionName: process.env.SESSION_ID || 'session', // Nom du dossier session
+    pairingCode: process.env.PAIRING_CODE === 'true', // Active le code de jumelage
+
+    // --- SETTINGS PRINCIPAUX ---
+    prefix: process.env.PREFIX || '.',
+    timezone: 'Africa/Ouagadougou',
+    selfMode: process.env.SELF_MODE === 'true' || false, 
+
+    // --- AUTOMATIONS & BEHAVIOR ---
     autoRead: true,
     autoTyping: true,
-    autoReact: false,
-    autoReactMode: 'all', 
+    anticall: true, 
+    autoReact: true, // Activé par défaut
+    autoReactMode: 'bot', // 'bot' (réagit aux cmds) ou 'all' (réagit à tout)
     supremeReact: '👑', 
-    // ... (le reste de ton code est parfait)
 
-    timezone: 'Africa/Ouagadougou',
-
-    // --- GROUP SETTINGS DEFAULTS (COMPLETE) ---
+    // --- GROUP SETTINGS DEFAULTS ---
     defaultGroupSettings: {
       antilink: false,
-      antilinkAction: 'delete', // 'delete', 'kick', 'warn'
+      antilinkAction: 'delete', 
       antitag: false,
       antitagAction: 'delete',
       antiall: false, 
@@ -36,23 +38,10 @@ module.exports = {
       antibot: true,
       anticall: true, 
       antigroupmention: false,
-      antigroupmentionAction: 'delete',
       welcome: true,
-      welcomeMessage: `╭╼━≪• *ɴᴇᴡ ᴍᴇᴍʙᴇʀ* •≫━╾╮
-┃ *ᴡᴇʟᴄᴏᴍᴇ* : @user 👋🏾
-┃ *ɴᴏᴜs sᴏᴍᴍᴇs ʜᴇᴜʀᴇᴜx ᴅᴇ ᴛ'ᴀᴠᴏɪʀ ᴘᴀʀᴍɪ ɴᴏᴜs*
-┃ *ᴍᴇᴍʙʀᴇs ᴀᴄᴛᴜᴇʟs* : #memberCount
-┃ *ᴛɪᴍᴇ* : #time ⏰
-╰━━━━━━━━━━━━━━━╯
-> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏꜱᴛɢ x`,
+      welcomeMessage: `╭╼━≪• *ɴᴇᴡ ᴍᴇᴍʙᴇʀ* •≫━╾╮\n┃ *ᴡᴇʟᴄᴏᴍᴇ* : @user 👋🏾\n┃ *ɴᴏᴜs sᴏᴍᴍᴇs ʜᴇᴜʀᴇᴜx ᴅᴇ ᴛ'ᴀᴠᴏɪʀ ᴘᴀʀᴍɪ ɴᴏᴜs*\n┃ *ᴍᴇᴍʙʀᴇs ᴀᴄᴛᴜᴇʟs* : #memberCount\n┃ *ᴛɪᴍᴇ* : #time ⏰\n╰━━━━━━━━━━━━━━━╯\n> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`,
       goodbye: true,
-      goodbyeMessage: `╭╼━≪• *ɢᴏᴏᴅʙʏᴇ ᴍᴇᴍʙᴇʀ* •≫━╾╮
-┃ *ᴀᴜ ʀᴇᴠᴏɪʀ* : @user 👋
-┃ *ᴛᴜ ɴᴇ ɴᴏᴜs ᴍᴀɴǫᴜᴇʀᴀ ᴊᴀᴍᴀɪs*
-┃ *ᴍᴇᴍʙʀᴇs ʀᴇsᴛᴀɴᴛs* : #memberCount
-┃ *ᴛɪᴍᴇ* : #time ⏰
-╰━━━━━━━━━━━━━━━━━╯
-> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`,
+      goodbyeMessage: `╭╼━≪• *ɢᴏᴏᴅʙʏᴇ ᴍᴇᴍʙᴇʀ* •≫━╾╮\n┃ *ᴀᴜ ʀᴇᴠᴏɪʀ* : @user 👋\n┃ *ᴛᴜ ɴᴇ ɴᴏᴜs ᴍᴀɴǫᴜᴇʀᴀ ᴊᴀᴍᴀɪs*\n┃ *ᴍᴇᴍʙʀᴇs ʀᴇsᴛᴀɴᴛs* : #memberCount\n┃ *ᴛɪᴍᴇ* : #time ⏰\n╰━━━━━━━━━━━━━━━━━╯\n> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`,
       antiSpam: false,
       antidelete: false,
       nsfw: false,
@@ -61,10 +50,9 @@ module.exports = {
       autosticker: false 
     },
 
-    // --- API KEYS ---
+    // --- API KEYS (DEPUIS .ENV) ---
     apiKeys: {
       openai: process.env.OPENAI_API_KEY || '',
-      deepai: '',
       remove_bg: process.env.REMOVE_BG_KEY || ''
     },
 
@@ -76,7 +64,7 @@ module.exports = {
       ownerOnly: '👑 *ᴄᴇᴛᴛᴇ ᴄᴏᴍᴍᴀɴᴅᴇ ᴇꜱᴛ ʀᴇ́ꜱᴇʀᴠᴇ́ᴇ ᴀᴜ ᴍᴀɪ̂ᴛʀᴇ ꜱᴜᴘʀᴇ̂ᴍᴇ !*',
       adminOnly: '🛡️ *ᴀᴄᴄᴇ̀ꜱ ʀᴇꜱᴛʀᴇɪɴᴛ ᴀᴜx ᴀᴅᴍɪɴɪꜱᴛʀᴀᴛᴇᴜʀꜱ !*',
       groupOnly: '👥 *ᴄᴇᴛᴛᴇ ꜰᴏɴᴄᴛɪᴏɴ ɴᴇ ꜰᴏɴᴄᴛɪᴏɴɴᴇ ǫᴜᴇ ᴅᴀɴꜱ ʟᴇꜱ ɢʀᴏᴜᴘᴇꜱ !*',
-      privateOnly: '💬 *ᴄᴏɴᴛᴀᴄᴛᴇᴢ-ᴍᴏɪ ᴇɴ ᴘʀɪᴠᴇ́ ᴘᴏᴜʀ ᴄᴇᴛᴛᴇ ᴄᴏᴍᴍᴀɴᴅᴇ*: https://wa.me/${cleanNumber}',
+      privateOnly: `💬 *ᴄᴏɴᴛᴀᴄᴛᴇᴢ-ᴍᴏɪ ᴇɴ ᴘʀɪᴠᴇ́ ᴘᴏᴜʀ ᴄᴇᴛᴛᴇ ᴄᴏᴍᴍᴀɴᴅᴇ*: https://wa.me/${cleanNumber}`,
       botAdminNeeded: '🤖 *ʟᴇ ʙᴏᴛ ᴅᴏɪᴛ ᴇ̂ᴛʀᴇ ᴀᴅᴍɪɴ ᴘᴏᴜʀ ᴀɢɪʀ !*',
       invalidCommand: '❓ *ᴄᴏᴍᴍᴀɴᴅᴇ ɪɴᴄᴏɴɴᴜᴇ. ᴛᴀᴘᴇᴢ .ᴍᴇɴᴜ*'
     },
