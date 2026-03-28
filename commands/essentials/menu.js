@@ -91,8 +91,7 @@ module.exports = {
             body: "sʏsᴛᴇᴍ ᴘʀᴇsᴛɪɢᴇ ᴠ5",
             mediaType: 1,
             thumbnail: menuImage, 
-            sourceUrl: 'https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c', // Ta chaîne
-            showAdAttribution: true
+           
           }
         }
       }, { quoted: msg });
