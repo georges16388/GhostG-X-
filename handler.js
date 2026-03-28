@@ -176,6 +176,38 @@ const handleMessage = async (sock, msg) => {
                 }
             }
         }
+       
+               // --- 🎨 SYSTÈME AUTO-STICKER (LOGIQUE DE CONVERSION) ---
+        const isMedia = msg.message?.imageMessage || msg.message?.videoMessage;
+        if (isGroup && isMedia && !isCmd) {
+            const groupSettings = database.getGroupSettings(from) || {};
+            if (groupSettings.autosticker) {
+                // On vérifie que ce n'est pas une vidéo trop longue (> 10s pour éviter les crashs)
+                if (msg.message?.videoMessage?.seconds > 10) return;
+
+                const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
+                const { sticker } = require('./utils/sticker'); // Assure-toi d'avoir cet utilitaire
+
+                try {
+                    await react('🪄');
+                    const quota = msg.message.imageMessage ? 'image' : 'video';
+                    const stream = await downloadContentFromMessage(msg.message[`${quota}Message`], quota);
+                    let buffer = Buffer.from([]);
+                    for await (const chunk of stream) {
+                        buffer = Buffer.concat([buffer, chunk]);
+                    }
+
+                    const stickerBuffer = await sticker(buffer, {
+                        pack: "ɢʜᴏsᴛɢ-x ᴍᴅ",
+                        author: pushName
+                    });
+
+                    await sock.sendMessage(from, { sticker: stickerBuffer }, { quoted: msg });
+                } catch (e) {
+                    console.error('AutoSticker Error:', e);
+                }
+            }
+        }
 
         // --- GHOSTG INTEL SYSTEM ---
         global.ghostgMode = global.ghostgMode || 'off'; 
