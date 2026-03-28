@@ -10,10 +10,10 @@ const { loadCommands } = require('../../utils/commandLoader');
 const toStyledCaps = (text) => {
   if (!text) return "";
   const fonts = {
-    'a': 'ᴀ','b': 'ʙ','c': 'ᴄ','d': 'ᴅ','e': 'ᴇ','f': 'ғ','g': 'ɢ','h': 'ʜ',
-    'i': 'ɪ','j': 'ᴊ','k': 'ᴋ','l': 'ʟ','m': 'ᴍ','n': 'ɴ','o': 'ᴏ','p': 'ᴘ',
-    'q': 'ǫ','r': 'ʀ','s': 'ꜱ','t': 'ᴛ','u': 'ᴜ','v': 'ᴠ','w': 'ᴡ','x': 'x',
-    'y': 'ʏ','z': 'ᴢ'
+    'a': 'ᴀ','b': 'ʙ','c': 'ᴄ','d':'ᴅ','e':'ᴇ','f':'ғ','g':'ɢ','h':'ʜ',
+    'i':'ɪ','j':'ᴊ','k':'ᴋ','l':'ʟ','m':'ᴍ','n':'ɴ','o':'ᴏ','p':'ᴘ',
+    'q':'ǫ','r':'ʀ','s':'ꜱ','t':'ᴛ','u':'ᴜ','v':'ᴠ','w':'ᴡ','x':'x',
+    'y':'ʏ','z':'ᴢ'
   };
   return String(text).toLowerCase().split('').map(c => fonts[c] || c).join('');
 };
@@ -42,22 +42,21 @@ module.exports = {
         totalCmds++;
         const cat = cmd.category ? cmd.category.toLowerCase() : 'autres';
         if (!categories[cat]) categories[cat] = [];
-        // Évite les doublons si une commande a des alias
         if (!categories[cat].find(c => c.name === cmd.name)) {
           categories[cat].push(cmd);
         }
       });
 
-      // 🔹 3. HEADER DU MENU
-      let menuText = `╭╼━≪• *${botName}* •≫━╾╮\n`;
-      menuText += `┃\n`;
-      menuText += `┃ ${toStyledCaps('sᴛᴀᴛᴜᴛ')} : 🟢 ${toStyledCaps('ᴏɴʟɪɴᴇ')}\n`;
-      menuText += `┃ ${toStyledCaps('ᴜᴛɪʟɪsᴀᴛᴇᴜʀ')} : @${senderNumber}\n`;
-      menuText += `┃ ${toStyledCaps('ᴊᴇsᴜs ᴛᴀɪᴍᴇ')} : ❤️✝️\n`;
-      menuText += `┃ ${toStyledCaps('ᴘʀᴇғɪxᴇ')} : [ *${prefix}* ]\n`;
-      menuText += `┃ ${toStyledCaps('ᴄᴏᴍᴍᴀɴᴅᴇs')} : ${totalCmds} ${toStyledCaps('ғɪʟᴇs')}\n`;
-      menuText += `┃\n`;
-      menuText += `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n`;
+      // 🔹 3. HEADER DU MENU (GRAS RENFORCÉ)
+      let menuText = `*╭╼━≪• ${botName} •≫━╾╮*\n`;
+      menuText += `*┃*\n`;
+      menuText += `*┃* *${toStyledCaps('sᴛᴀᴛᴜᴛ')}* : 🟢 *${toStyledCaps('ᴏɴʟɪɴᴇ')}*\n`;
+      menuText += `*┃* *${toStyledCaps('ᴜᴛɪʟɪsᴀᴛᴇᴜʀ')}* : *@${senderNumber}*\n`;
+      menuText += `*┃* *${toStyledCaps('ᴊᴇsᴜs ᴛᴀɪᴍᴇ')}* : ❤️✝️\n`;
+      menuText += `*┃* *${toStyledCaps('ᴘʀᴇғɪxᴇ')}* : [ *${prefix}* ]\n`;
+      menuText += `*┃* *${toStyledCaps('ᴄᴏᴍᴍᴀɴᴅᴇs')}* : *${totalCmds}* *${toStyledCaps('ғɪʟᴇs')}*\n`;
+      menuText += `*┃*\n`;
+      menuText += `*╰━━━━━━━━━━━━━━━━━━━━━━━╯*\n\n`;
 
       // 🔹 4. GÉNÉRATION DES CATÉGORIES
       const catOrder = ['essentials', 'ai', 'admin', 'media', 'utility', 'fun', 'owner', 'faith', 'textmaker'];
@@ -67,18 +66,17 @@ module.exports = {
       for (const cat of sortedCats) {
         if (!categories[cat] || categories[cat].length === 0) continue;
 
-        menuText += `╭╼━≪• *${toStyledCaps(cat)}* •≫━╾╮\n`;
-        // Alignement propre des commandes
-        const cmdList = categories[cat].map(cmd => `┃ ➽ *${toStyledCaps(cmd.name)}*`).join('\n');
+        menuText += `*╭╼━≪• ${toStyledCaps(cat)} •≫━╾╮*\n`;
+        const cmdList = categories[cat].map(cmd => `*┃* ➽ *${toStyledCaps(cmd.name)}*`).join('\n');
         menuText += `${cmdList}\n`;
-        menuText += `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n`;
+        menuText += `*╰━━━━━━━━━━━━━━━━━━━━━━━╯*\n\n`;
       }
 
       // 🔹 5. FOOTER
       menuText += `_“${toStyledCaps('ᴍᴇʀᴄɪ sᴇɪɢɴᴇᴜʀ ᴘᴏᴜʀ ᴛᴀ ɢʀᴀᴄᴇ')}”_\n`;
       menuText += `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-x*`;
 
-      // 🔹 6. ENVOI AVEC CONTEXTE AVANCÉ
+      // 🔹 6. ENVOI (URL MASQUÉE & CONTEXTE ÉLITE)
       await sock.sendMessage(extra.from, {
         image: { url: 'https://files.catbox.moe/2fmwpu.jpg' },
         caption: menuText,
@@ -98,16 +96,21 @@ module.exports = {
             mediaType: 1,
             thumbnailUrl: "https://files.catbox.moe/2fmwpu.jpg",
             sourceUrl: "https://github.com/georges16388",
-            showAdAttribution: true
+            showAdAttribution: false
           }
         }
       }, { quoted: msg });
 
-      await sock.sendMessage(extra.from, { react: { text: "⚡", key: msg.key } });
+      // 🔹 7. RÉACTION AUTOMATIQUE
+      await sock.sendMessage(extra.from, { 
+        react: { text: "⚡", key: msg.key } 
+      });
 
     } catch (error) {
       console.error('Menu Prestige Error:', error);
-      await extra.reply("❌ ᴇʀʀᴇᴜʀ ʟᴏʀs ᴅᴇ ʟ'ᴀғғɪᴄʜᴀɢᴇ ᴅᴜ ᴍᴇɴᴜ.");
+      if (extra && extra.reply) {
+        await extra.reply("❌ ᴇʀʀᴇᴜʀ ʟᴏʀs ᴅᴇ ʟ'ᴀғғɪᴄʜᴀɢᴇ ᴅᴜ ᴍᴇɴᴜ.");
+      }
     }
   }
 };
