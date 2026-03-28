@@ -1,17 +1,16 @@
 /**
- * Sticker Command - AGM Prestige Edition
+ * Sticker Command - GhostG-X MD (Silent Edition)
  * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
 const fs = require('fs');
 const path = require('path');
 const { exec } = require('child_process');
-const crypto = require('crypto');
 const webp = require('node-webpmux');
 const ffmpegPath = require('ffmpeg-static');
 const { downloadMediaMessage } = require('@whiskeysockets/baileys');
 
-// --- FONCTION DE CONVERSION EN SMALL CAPS ---
+// --- FONCTION DE CONVERSION EN SMALL CAPS (Pour les erreurs) ---
 const toStyledCaps = (text) => {
   if (!text) return "";
   const fonts = {
@@ -23,31 +22,18 @@ const toStyledCaps = (text) => {
   return String(text).toLowerCase().split('').map(c => fonts[c] || c).join('');
 };
 
-// --- FONCTION DE DESIGN AGM (GRAS & SMALLCAPS) ---
-const AGM_DESIGN = (type) => {
-  // On retire la ligne "> Powered by" ici pour éviter le doublon avec le handler
-  return `*╭╼━≪• ${toStyledCaps('sᴛɪᴄᴋᴇʀ ᴍᴀᴋᴇʀ')} •≫━╾╮*
-*┃*
-*┃* ✅ *${toStyledCaps('sᴛᴀᴛᴜs')}* : 🟢 *${toStyledCaps('ɢᴇɴᴇʀᴀᴛᴇᴅ')}*
-*┃* ⚡ *${toStyledCaps('ᴛʏᴘᴇ')}* : *${toStyledCaps(type)}*
-*┃* 🛡️ *${toStyledCaps('ɢᴜᴀʀᴅ')}* : *${toStyledCaps('ᴀᴄᴛɪᴠᴇ')}*
-*┃*
-*╰━━━━━━━━━━━━━━━╯*`;
-};
-
 module.exports = {
   name: 'sticker',
   aliases: ['s', 'stiker', 'stc'],
   category: 'media',
-  description: 'Convertir image ou vidéo en sticker avec EXIF personnalisé',
-  usage: '.sticker (répondez à un média)',
+  description: 'Convertir image ou vidéo en sticker.',
+  usage: '.sticker',
 
   async execute(sock, msg, args, extra) {
     const chatId = extra.from;
     let targetMessage = msg;
 
     try {
-      // 1. Détection du message cité
       const ctxInfo = msg.message?.extendedTextMessage?.contextInfo;
       if (ctxInfo?.quotedMessage) {
         targetMessage = {
@@ -63,9 +49,9 @@ module.exports = {
         return extra.reply(`⚠️ *${toStyledCaps('ʀᴇᴘᴏɴᴅᴇᴢ ᴀ ᴜɴᴇ ɪᴍᴀɢᴇ ᴏᴜ ᴠɪᴅᴇᴏ')}*`);
       }
 
+      // Réaction de travail
       await sock.sendMessage(chatId, { react: { text: "🎨", key: msg.key } });
 
-      // 2. Préparation des fichiers temporaires
       const tempInput = path.join(__dirname, `../../temp/in_${Date.now()}`);
       const tempOutput = path.join(__dirname, `../../temp/out_${Date.now()}.webp`);
 
@@ -75,24 +61,24 @@ module.exports = {
         {}, 
         { logger: undefined, reuploadRequest: sock.updateMediaMessage }
       );
-      
+
       fs.writeFileSync(tempInput, mediaBuffer);
 
-      // 3. Conversion via FFmpeg (Optimisé pour Stickers WhatsApp)
+      // Conversion FFmpeg
       const ffmpegCmd = `"${ffmpegPath}" -i "${tempInput}" -vf "scale=512:512:force_original_aspect_ratio=decrease,fps=15,pad=512:512:(ow-iw)/2:(oh-ih)/2:color=#00000000" -c:v libwebp -preset default -loop 0 -vsync 0 -pix_fmt yuva420p -quality 75 "${tempOutput}"`;
 
       await new Promise((resolve, reject) => {
         exec(ffmpegCmd, (err) => err ? reject(err) : resolve());
       });
 
-      // 4. Ajout des métadonnées (EXIF) - TRUTH DEVICES
+      // Injection des métadonnées TRUTH DEVICES
       const img = new webp.Image();
       await img.load(fs.readFileSync(tempOutput));
 
       const json = {
-        'sticker-pack-name': "ᴛʀᴜᴛʜ ᴅᴇᴠɪᴄᴇs",
+        'sticker-pack-name': "ᴛʀᴜᴛʜ ᴅᴇᴠɪᴄᴇs 💠",
         'sticker-pack-publisher': "ɢʜᴏsᴛɢ-𝐗",
-        'emojis': ['👻']
+        'emojis': ['👻', '✨']
       };
 
       const exifAttr = Buffer.from([0x49, 0x49, 0x2a, 0x00, 0x08, 0x00, 0x00, 0x00, 0x01, 0x00, 0x41, 0x57, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x16, 0x00, 0x00, 0x00]);
@@ -103,11 +89,11 @@ module.exports = {
       img.exif = exif;
       const finalBuffer = await img.save(null);
 
-      // 5. Envoi du Sticker et de la confirmation designée
+      // 1. Envoi du Sticker
       await sock.sendMessage(chatId, { sticker: finalBuffer }, { quoted: msg });
-      
-      const typeLabel = isVideo ? 'ᴀɴɪᴍᴀᴛᴇᴅ' : 'sᴛᴀᴛɪᴄ';
-      await extra.reply(AGM_DESIGN(typeLabel));
+
+      // 2. Réaction de succès (au lieu du texte)
+      await sock.sendMessage(chatId, { react: { text: "✅", key: msg.key } });
 
       // Nettoyage
       if (fs.existsSync(tempInput)) fs.unlinkSync(tempInput);
@@ -115,7 +101,7 @@ module.exports = {
 
     } catch (error) {
       console.error('Sticker Error:', error);
-      await extra.reply(`❌ *${toStyledCaps('ᴇᴄʜᴇᴄ ᴅᴇ ʟᴀ ᴄʀᴇᴀᴛɪᴏɴ ᴅᴜ sᴛɪᴄᴋᴇʀ')}*`);
+      await extra.reply(`❌ *${toStyledCaps('ᴇᴄʜᴇᴄ ᴅᴇ ʟᴀ ᴄʀᴇᴀᴛɪᴏɴ')}*`);
     }
   },
 };
