@@ -6,7 +6,7 @@
 
 const Baileys = require('@whiskeysockets/baileys');
 
-const makeWASocket = Baileys.default || Baileys;
+const makeWASocket = Baileys.default;
 const {
     useMultiFileAuthState,
     fetchLatestBaileysVersion,
