@@ -1,7 +1,5 @@
 /**
  * ɢʜᴏꜱᴛɢ-x ᴍᴅ - ᴍᴀɪɴ ᴇɴᴛʀʏ ᴘᴏɪɴᴛ (Prestige Edition V5.2 - FULL FUSION)
- * Optimized for Dual-Level Ownership, Security, Store History & Extreme Resilience
- * Powered by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
 const Baileys = require('@whiskeysockets/baileys');
@@ -9,6 +7,7 @@ const {
     useMultiFileAuthState, 
     DisconnectReason, 
     fetchLatestBaileysVersion,
+    makeInMemoryStore // <--- Nécessaire pour les métadonnées
 } = Baileys;
 
 const makeWASocket = Baileys.default || Baileys; 
@@ -17,7 +16,7 @@ const fs = require('fs');
 const path = require('path');
 
 // ==========================================
-// MODULE 1 : CONFIGURATION (MODE SANS STORE)
+// MODULE 1 : CONFIGURATION & STORE
 // ==========================================
 const config = require('./config');
 const handler = require('./handler');
@@ -33,19 +32,8 @@ const logError = (msg, err) => {
 const tmpDir = path.join(__dirname, 'tmp');
 if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir);
 
-// Simulation d'un store vide pour la compatibilité des autres modules
-global.store = {
-    chats: [],
-    contacts: {},
-    messages: {},
-    groupMetadata: {},
-    bind: () => { 
-        console.log('✅ [ꜱʏꜱᴛᴇᴍ] ꜱᴛᴏʀᴇ ꜱᴜᴘᴘʀɪᴍᴇ́ - ᴍᴏᴅᴇ ꜰʟUX ᴀᴄᴛɪᴠᴇ́'); 
-    }
-};
-
-
-
+// REMPLACEMENT : On utilise un vrai store pour que isAdmin fonctionne dans le handler
+global.store = makeInMemoryStore({ logger: pino().child({ level: 'silent', stream: 'store' }) });
 
 // ==========================================
 // MODULE 2 : SÉCURITÉ & UTILITAIRES
@@ -102,10 +90,10 @@ setInterval(async () => {
         activeBot = null; 
         await startBot(); 
     }
-}, 30000); // Ping toutes les 30 sec
+}, 30000);
 
 // ==========================================
-// MODULE 5 : GESTION DES INSTANCES (SINGLETON)
+// MODULE 5 : GESTION DES INSTANCES
 // ==========================================
 let activeBot = null;
 let reconnectQueue = false;
@@ -118,15 +106,11 @@ async function startBot() {
 
 async function safeReconnect(sock, reason) {
     if (reason === DisconnectReason.loggedOut) {
-        console.log("❌ Déconnecté par WhatsApp (Logged Out). Supprimez la session et scannez à nouveau.");
+        console.log("❌ Déconnecté.");
         return;
     }
     if (reconnectQueue) return;
     reconnectQueue = true;
-    
-    console.log(`⚠️ Connexion fermée: ${reason || 'Inconnue'}. Reconnexion bloquée à 3s...`);
-    try { sock.end(); } catch(e){}
-    
     setTimeout(async () => {
         reconnectQueue = false;
         activeBot = null;
@@ -135,7 +119,7 @@ async function safeReconnect(sock, reason) {
 }
 
 // ==========================================
-// MODULE 6 : CRÉATION DU SOCKET & ÉVÉNEMENTS
+// MODULE 6 : SOCKET & ÉVÉNEMENTS
 // ==========================================
 async function createBotSocket() {
     try {
@@ -143,7 +127,6 @@ async function createBotSocket() {
         const { state, saveCreds } = await useMultiFileAuthState(sessionFolder);
         const { version } = await fetchLatestBaileysVersion();
 
-        // Ajout d'un logger fichier pour Baileys si besoin, sinon silent
         const sock = makeWASocket({
             version,
             logger: pino({ level: 'silent' }), 
@@ -153,61 +136,39 @@ async function createBotSocket() {
             syncFullHistory: false,
         });
 
-       // Dans index.js, là où tu as tes sock.ev.on
-sock.ev.on('messages.delete', async (update) => {
-    await handler.handleAntiDelete(sock, update);
-});
+        // LIAISON DU STORE AU SOCKET
+        global.store.bind(sock.ev);
 
+        // ANTI-DELETE HANDLER
+        sock.ev.on('messages.delete', async (update) => {
+            try { await handler.handleAntiDelete(sock, update); } catch (e) { logError("Anti-Delete", e); }
+        });
 
         // --- GESTION DE LA CONNEXION ---
         sock.ev.on('connection.update', async (update) => {
             const { connection, lastDisconnect } = update;
-            
             if (connection === 'close') {
                 const reason = lastDisconnect?.error?.output?.statusCode || lastDisconnect?.error?.toString();
                 await safeReconnect(sock, reason);
             } 
             else if (connection === 'open') {
-                console.log('\n✅ ɢʜᴏꜱᴛɢ-x ᴄᴏɴɴᴇᴄᴛᴇ́ ᴀᴠᴇᴄ ꜱᴜᴄᴄᴇ̀ꜱ !');
+                console.log('\n✅ ɢʜᴏꜱᴛɢ-x ᴄᴏɴɴᴇᴄᴛᴇ́ !');
 
-                // Logique Pairing Code fiable (Uniquement si pas enregistré et connexion ouverte)
                 if (!sock.authState.creds.registered) {
                     const cleanNumber = String(global.config.supremeNumber).replace(/\D/g, '');
-                    console.log(`\n⏳ ɢᴇɴᴇʀᴀᴛɪɴɢ ᴘᴀɪʀɪɴɢ ᴄᴏᴅᴇ ꜰᴏʀ : ${cleanNumber}...`);
                     try {
                         let code = await sock.requestPairingCode(cleanNumber);
                         code = code?.match(/.{1,4}/g)?.join("-") || code;
-                        console.log(`\n╔════════════════════════════════════╗\n║      ᴠᴏᴛʀᴇ ᴄᴏᴅᴇ ᴅᴇ ᴊᴜᴍᴇʟᴀɢᴇ :      ║\n║          ${code}          ║\n╚════════════════════════════════════╝\n`);
-                    } catch (err) { 
-                        logError("Pairing Error", err); 
-                    }
+                        console.log(`\nCODE DE JUMELAGE : ${code}\n`);
+                    } catch (err) { logError("Pairing Error", err); }
                 }
 
+                // Notification de démarrage (Ta légende personnalisée)
                 try {
                     const totalCmds = global.commands ? global.commands.size : 0;
                     const botJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
                     const ownerNum = global.config.supremeNumber;
-
-                    const welcomeCaption = `╭╼━≪• *ɢʜᴏsᴛɢ-x ɪs ᴀʟɪᴠᴇ* •≫━╾╮
-┃ *sᴛᴀᴛᴜᴛ* : 🟢 ᴏɴʟɪɴᴇ
-┃ *ᴍᴀɪᴛʀᴇ* : @${ownerNum}
-┃ *ᴘʀᴇғɪxᴇ* : [ ${global.config.prefix || '.'} ]
-┃ *ᴄᴏᴍᴍᴀɴᴅᴇs* : ${totalCmds}
-┃ *ᴍᴏᴅᴇ* : ${global.config.selfMode ? '🔒 ᴘʀɪᴠé' : '🌐 ᴘᴜʙʟɪᴄ'}
-╰━━━━━━━━━━━━━━━━━━━━━━━╯
-
-📢 *ᴄʜᴀɪɴᴇ ᴡʜᴀᴛsᴀᴘᴘ* :
-${global.config.social.channel}
-
-👥 *ɢʀᴏᴜᴘᴇ ᴅ'ᴇɴᴛʀᴀɪᴅᴇ* :
-${global.config.social.group}
-
-💻 *ᴅᴇᴠᴇʟᴏᴘᴘᴇᴜʀ* :
-https://wa.me/${ownerNum}
-
-📖 _*“ᴊᴇ ᴘᴜɪꜱ ᴛᴏᴜᴛ ᴘᴀʀ ᴄᴇʟᴜɪ ǫᴜɪ ᴍᴇ ғᴏʀᴛɪғɪᴇ”*_ ❤️✝️
-
-> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+                    const welcomeCaption = `╭╼━≪• *ɢʜᴏsᴛɢ-x ɪs ᴀʟɪᴠᴇ* •≫━╾╮\n┃ *sᴛᴀᴛᴜᴛ* : 🟢 ᴏɴʟɪɴᴇ\n┃ *ᴍᴀɪᴛʀᴇ* : @${ownerNum}\n┃ *ᴘʀᴇғɪxᴇ* : [ ${global.config.prefix || '.'} ]\n┃ *ᴄᴏᴍᴍᴀɴᴅᴇs* : ${totalCmds}\n┃ *ᴍᴏᴅᴇ* : ${global.config.selfMode ? '🔒 ᴘʀɪᴠé' : '🌐 ᴘᴜʙʟɪᴄ'}\n╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n📢 *ᴄʜᴀɪɴᴇ* : ${global.config.social.channel}\n\n👥 *ɢʀᴏᴜᴘᴇ ᴅ'ᴇɴᴛʀᴀɪᴅᴇ*: ${global.config.social.group}\n\n💻 *ᴅᴇᴠ* : wa.me/${ownerNum}\n\n📖 _*“ᴊᴇ ᴘᴜɪꜱ ᴛᴏᴜᴛ ᴘᴀʀ ᴄᴇʟᴜɪ ǫᴜɪ ᴍᴇ ғᴏʀᴛɪғɪᴇ”*_ ❤️✝️\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
                     await sock.sendMessage(botJid, { 
                         image: { url: 'https://files.catbox.moe/2fmwpu.jpg' }, 
@@ -223,69 +184,44 @@ https://wa.me/${ownerNum}
                             }
                         }
                     });
-                } catch (err) { 
-                    logError("Notification Error", err); 
-                }
+                } catch (err) { logError("Notification Error", err); }
             }
         });
 
-        // --- SYSTÈME ANTI-CALL (AVEC TRY/CATCH) ---
+        // ANTI-CALL
         sock.ev.on('call', async (node) => {
             if (!global.config.anticall) return;
             try {
                 for (let call of node) {
                     if (call.status === 'offer') {
                         await sock.rejectCall(call.id, call.from);
-                        const warnMsg = `*╭╼━≪• *ɢʜᴏsᴛɢ-𝐗 sᴇᴄᴜʀɪᴛʏ* •≫━╾╮*\n┃\n┃ ⚠️ ${toSmallCaps("appels interdits")}\n┃ ${toSmallCaps("votre appel a ete rejete")}\n┃\n*╰━━━━━━━━━━━━━━━╯*\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
-                        await sock.sendMessage(call.from, { text: warnMsg });
+                        await sock.sendMessage(call.from, { text: `*╭╼━≪• ɢʜᴏsᴛɢ-𝐗 sᴇᴄᴜʀɪᴛʏ •≫━╾╮*\n┃ ⚠️ ${toSmallCaps("appels interdits")}\n*╰━━━━━━━━━━━━━━━╯*` });
                     }
                 }
-            } catch (err) {
-                logError("Anti-Call Crash", err);
-            }
+            } catch (err) { logError("Anti-Call Crash", err); }
         });
 
         sock.ev.on('creds.update', saveCreds);
 
-        // --- GESTION DES MESSAGES ENTRANTS (VERS QUEUE) ---
+        // MESSAGES UPSERT
         sock.ev.on('messages.upsert', async ({ messages, type }) => {
             if (type !== 'notify') return;
-            
             for (const msg of messages) {
                 if (!msg.message) continue;
                 const sender = msg.key.participant || msg.key.remoteJid;
-                
                 if (global.config.selfMode && !global.isOwner(sender)) continue;
-                
-                const now = Math.floor(Date.now() / 1000);
-                if (now - msg.messageTimestamp > 15) continue;
-                
-                // Pousse dans la file d'attente au lieu d'exécuter direct
                 messageQueue.push({ sock, msg });
             }
-            // Déclenche le traitement
             processQueue();
         });
 
-        // --- GESTION DES GROUPES (AVEC TRY/CATCH) ---
+        // GROUP UPDATE
         sock.ev.on('group-participants.update', async (u) => {
-            try {
-                await handler.handleGroupUpdate(sock, u);
-            } catch (err) {
-                logError("Group Update Crash", err);
-            }
+            try { await handler.handleGroupUpdate(sock, u); } catch (err) { logError("Group Update Crash", err); }
         });
 
         return sock;
-
-    } catch (err) {
-        logError("Crash fatal lors de la création du socket", err);
-    }
+    } catch (err) { logError("Socket Crash", err); }
 }
 
-// Lancement avec try/catch global ultime
-try {
-    startBot().catch(err => logError("Erreur Critique Lancement", err));
-} catch (error) {
-    console.error("❌ Crash Inattendu:", error);
-}
+startBot();
