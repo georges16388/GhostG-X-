@@ -42,7 +42,7 @@ module.exports = {
         
         // ᴀᴊᴏᴜᴛ ᴅᴇs ᴍᴇ́ᴛᴀᴅᴏɴɴᴇ́ᴇs ᴇxɪꜰ (ɴᴏᴍ ᴅᴜ ᴘᴀᴄᴋ)
         const webpBuffer = await writeExifVid(mp4Buffer, { 
-            packname: '', 
+            packname: 'ᴛʀᴜᴛʜ ᴅᴇᴠɪᴄᴇs 💠', 
             author: 'ɢʜᴏsᴛɢ-x ᴍᴅ' 
         });
 
