@@ -1,81 +1,81 @@
 /**
- * ᴡᴀʀɴ ᴄᴏᴍᴍᴀɴᴅ - ᴀɢᴍ sʏsᴛᴇᴍ ᴄᴏʀᴇ
- * ᴍᴀɴᴀɢᴇ ᴜsᴇʀ ᴅɪsᴄɪᴘʟɪɴᴇ ᴡɪᴛʜ ᴀᴜᴛᴏ-ᴋɪᴄᴋ
- * sᴛʏʟᴇ ʙʏ -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
+ * Warn Command - AGM System Core
+ * Manage user discipline with auto-kick
+ * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
-const ᴅᴀᴛᴀʙᴀsᴇ = require('../../database');
-const ᴄᴏɴꜰɪɢ = require('../../config');
+const database = require('../../database');
+const config = require('../../config');
 
-// --- ᴅᴇsɪɢɴ ᴀɢᴍ ---
-const ᴀɢᴍ_ᴡᴀʀɴ = (ᴜsᴇʀ, ʀᴇᴀsᴏɴ, ᴄᴏᴜɴᴛ, ᴍᴀx) => `╭╼━≪• *ɢʜᴏsᴛ sʏsᴛᴇᴍ ᴡᴀʀɴ* •≫━╾╮
-┃ 👤 *ᴜᴛɪʟɪsᴀᴛᴇᴜʀ :* @${ᴜsᴇʀ.sᴘʟɪᴛ('@')[0]}
-┃ 📝 *ʀᴀɪsᴏɴ :* ${ʀᴇᴀsᴏɴ}
-┃ ⚠️ *ᴡᴀʀɴɪɴɢs :* ${ᴄᴏᴜɴᴛ} / ${ᴍᴀx}
-┃ 🛡️ *sᴛᴀᴛᴜs :* ${ᴄᴏᴜɴᴛ >= ᴍᴀx ? '🚫 ᴇxᴘᴜʟsɪᴏɴ' : '🟡 ᴀᴠᴇʀᴛɪssᴇᴍᴇɴᴛ'}
-╰━━━━━━━━━━━━━━━╯
-> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
+// --- DESIGN AGM PRESTIGE (LABELS FIXES) ---
+const AGM_WARN = (user, reason, count, max) => {
+  const statusLabel = count >= max ? '🚫 ᴇxᴘᴜʟsɪᴏɴ' : '🟡 ᴀᴠᴇʀᴛɪssᴇᴍᴇɴᴛ';
+  return `*╭╼━≪• ɢʜᴏsᴛ sʏsᴛᴇᴍ ᴡᴀʀɴ •≫━╾╮*
+*┃* 👤 *ᴜᴛɪʟɪsᴀᴛᴇᴜʀ* : *@${user.split('@')[0]}*
+*┃* 📝 *ʀᴀɪsᴏɴ* : *${reason}*
+*┃* ⚠️ *ᴡᴀʀɴɪɴɢs* : *${count} / ${max}*
+*┃* 🛡️ *sᴛᴀᴛᴜs* : *${statusLabel}*
+*╰━━━━━━━━━━━━━━━╯*
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+};
 
 module.exports = {
   name: 'warn',
   aliases: ['warning', 'avertir'],
   category: 'admin',
-  description: 'ᴀᴠᴇʀᴛɪʀ ᴜɴ ᴜᴛɪʟɪsᴀᴛᴇᴜʀ. ʟ\'ᴇxᴘᴜʟsᴇ ᴀᴘʀᴇ̀s ʟᴀ ʟɪᴍɪᴛᴇ.',
-  usage: '.ᴡᴀʀɴ @ᴜsᴇʀ <ʀᴀɪsᴏɴ>',
+  description: 'Avertir un utilisateur. L\'expulse après la limite.',
+  usage: '.warn @user <raison>',
   groupOnly: true,
   adminOnly: true,
   botAdminNeeded: true,
 
   async execute(sock, msg, args, { from, reply, react, groupMetadata, isBotAdmin }) {
     try {
-      let ᴛᴀʀɢᴇᴛ;
-      const ǫᴜᴏᴛᴇᴅ = msg.message?.extendedTextMessage?.contextInfo;
+      const ctx = msg.message?.extendedTextMessage?.contextInfo;
+      let target = ctx?.mentionedJid?.[0] || ctx?.participant;
+
+      if (!target) {
+        return reply(`⚠️ *ᴠᴇᴜɪʟʟᴇᴢ ᴍᴇɴᴛɪᴏɴɴᴇʀ ᴏᴜ ʀᴇᴘᴏɴᴅʀᴇ ᴀ ᴜɴ ᴜᴛɪʟɪsᴀᴛᴇᴜʀ*`);
+      }
+
+      // --- SÉCURITÉ : ANTI-WARN ADMIN ---
+      const isAdmin = groupMetadata.participants.find(p => p.id === target && (p.admin === 'admin' || p.admin === 'superadmin'));
+      if (isAdmin) {
+        return reply(`❌ *ɪᴍᴘᴏssɪʙʟᴇ ᴅ'ᴀᴠᴇʀᴛɪʀ ᴜɴ ᴀᴅᴍɪɴɪsᴛʀᴀᴛᴇᴜʀ*`);
+      }
+
+      const reason = args.join(' ') || 'ᴀᴜᴄᴜɴᴇ ʀᴀɪsᴏɴ sᴘᴇᴄɪꜰɪᴇᴇ';
+      const maxWarns = config.maxWarnings || 3;
+
+      // --- LOGIQUE BASE DE DONNÉES ---
+      const warnings = database.addWarning(from, target, reason);
       
-      // 1. ᴇxᴛʀᴀᴄᴛɪᴏɴ ᴅᴜ ᴊɪᴅ (ᴍᴇɴᴛɪᴏɴ ᴏᴜ ʀᴇᴘʟʏ)
-      if (ǫᴜᴏᴛᴇᴅ?.participant) {
-        ᴛᴀʀɢᴇᴛ = ǫᴜᴏᴛᴇᴅ.participant;
-      } else if (ǫᴜᴏᴛᴇᴅ?.mentionedJid && ǫᴜᴏᴛᴇᴅ.mentionedJid.length > 0) {
-        ᴛᴀʀɢᴇᴛ = ǫᴜᴏᴛᴇᴅ.mentionedJid[0];
-      }
-
-      if (!ᴛᴀʀɢᴇᴛ) {
-        return reply('⚠️ *ᴠᴇᴜɪʟʟᴇᴢ ᴍᴇɴᴛɪᴏɴɴᴇʀ ᴏᴜ ʀᴇ́ᴘᴏɴᴅʀᴇ ᴀ̀ ᴜɴ ᴜᴛɪʟɪsᴀᴛᴇᴜʀ.*');
-      }
-
-      // 2. sᴇ́ᴄᴜʀɪᴛᴇ́ : ɪᴍᴘᴏssɪʙʟᴇ ᴅ'ᴀᴠᴇʀᴛɪʀ ᴜɴ ᴀᴅᴍɪɴ
-      const ɪsᴀᴅᴍɪɴ = groupMetadata.participants.find(p => p.id === ᴛᴀʀɢᴇᴛ && (p.admin === 'admin' || p.admin === 'superadmin'));
-      if (ɪsᴀᴅᴍɪɴ) {
-        return reply('❌ *ɪᴍᴘᴏssɪʙʟᴇ ᴅ\'ᴀᴠᴇʀᴛɪʀ ᴜɴ ᴀᴅᴍɪɴɪsᴛʀᴀᴛᴇᴜʀ.*');
-      }
-
       await react('⚠️');
-      
-      const ʀᴇᴀsᴏɴ = args.join(' ') || 'ᴀᴜᴄᴜɴᴇ ʀᴀɪsᴏɴ sᴘᴇ́ᴄɪꜰɪᴇ́ᴇ';
-      const ᴍᴀxᴡᴀʀɴs = ᴄᴏɴꜰɪɢ.maxWarnings || 3;
-      
-      // 3. ᴍɪsᴇ ᴀ̀ ᴊᴏᴜʀ ᴅᴀɴs ʟᴀ ʙᴀsᴇ ᴅᴇ ᴅᴏɴɴᴇ́ᴇs
-      const ᴡᴀʀɴɪɴɢs = ᴅᴀᴛᴀʙᴀsᴇ.addWarning(from, ᴛᴀʀɢᴇᴛ, ʀᴇᴀsᴏɴ);
 
-      // 4. ᴇɴᴠᴏɪ ᴅᴜ ʀᴀᴘᴘᴏʀᴛ
+      // --- ENVOI DU RAPPORT ---
       await sock.sendMessage(from, {
-        text: ᴀɢᴍ_ᴡᴀʀɴ(ᴛᴀʀɢᴇᴛ, ʀᴇᴀsᴏɴ, ᴡᴀʀɴɪɴɢs.count, ᴍᴀxᴡᴀʀɴs),
-        mentions: [ᴛᴀʀɢᴇᴛ]
+        text: AGM_WARN(target, reason, warnings.count, maxWarns),
+        mentions: [target]
       }, { quoted: msg });
 
-      // 5. ɢᴇsᴛɪᴏɴ ᴅᴇ ʟ'ᴇxᴘᴜʟsɪᴏɴ (ᴋɪᴄᴋ)
-      if (ᴡᴀʀɴɪɴɢs.count >= ᴍᴀxᴡᴀʀɴs) {
+      // --- GESTION DE L'EXPULSION ---
+      if (warnings.count >= maxWarns) {
         if (isBotAdmin) {
-          await sock.sendMessage(from, { text: `🚫 *ʟɪᴍɪᴛᴇ ᴀᴛᴛᴇɪɴᴛᴇ ᴘᴏᴜʀ @${ᴛᴀʀɢᴇᴛ.sᴘʟɪᴛ('@')[0]}. ᴇxᴘᴜʟsɪᴏɴ ᴇɴ ᴄᴏᴜʀs...*`, mentions: [ᴛᴀʀɢᴇᴛ] });
-          await sock.groupParticipantsUpdate(from, [ᴛᴀʀɢᴇᴛ], 'remove');
-          ᴅᴀᴛᴀʙᴀsᴇ.clearWarnings(from, ᴛᴀʀɢᴇᴛ);
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          await sock.sendMessage(from, { 
+            text: `🚫 *ʟɪᴍɪᴛᴇ ᴀᴛᴛᴇɪɴᴛᴇ ᴘᴏᴜʀ @${target.split('@')[0]}. ᴇxᴘᴜʟsɪᴏɴ ᴇɴ ᴄᴏᴜʀs...*`, 
+            mentions: [target] 
+          });
+          await sock.groupParticipantsUpdate(from, [target], 'remove');
+          database.clearWarnings(from, target);
         } else {
-          await reply('⚠️ *ʟɪᴍɪᴛᴇ ᴀᴛᴛᴇɪɴᴛᴇ, ᴍᴀɪs ᴊᴇ ɴᴇ sᴜɪs ᴘᴀs ᴀᴅᴍɪɴ ᴘᴏᴜʀ ᴇxᴘᴜʟsᴇʀ.*');
+          await reply(`⚠️ *ʟɪᴍɪᴛᴇ ᴀᴛᴛᴇɪɴᴛᴇ, ᴍᴀɪs ᴊᴇ ɴᴇ sᴜɪs ᴘᴀs ᴀᴅᴍɪɴ ᴘᴏᴜʀ ᴇxᴘᴜʟsᴇʀ*`);
         }
       }
 
-    } catch (ᴇʀʀᴏʀ) {
-      console.error('[ᴡᴀʀɴ ᴇʀʀᴏʀ]:', ᴇʀʀᴏʀ);
-      reply(`❌ *ᴇʀʀᴇᴜʀ sʏsᴛᴇ̀ᴍᴇ :* ${ᴇʀʀᴏʀ.ᴍᴇssᴀɢᴇ}`);
+    } catch (error) {
+      console.error('[WARN ERROR]:', error);
+      reply(`❌ *ᴇʀʀᴇᴜʀ sʏsᴛᴇᴍᴇ ʟᴏʀs ᴅᴇ ʟ'ᴀᴠᴇʀᴛɪssᴇᴍᴇɴᴛ*`);
     }
   }
 };
