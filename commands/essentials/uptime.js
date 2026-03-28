@@ -25,7 +25,7 @@ function formatUptime(seconds) {
   const h = Math.floor((seconds % 86400) / 3600);
   const m = Math.floor((seconds % 3600) / 60);
   const s = Math.floor(seconds % 60);
-  
+
   let result = "";
   if (d > 0) result += `${d}ᴅ `;
   if (h > 0) result += `${h}ʜ `;
@@ -58,23 +58,14 @@ module.exports = {
       // Temps de fonctionnement du processus
       const uptimeSeconds = process.uptime();
       const uptimeFormatted = formatUptime(uptimeSeconds);
-      const botVersion = '3.0.0 ᴍᴅ';
+      const botVersion = '1.0.0 ᴍᴅ';
 
       // Réaction de monitoring
       await sock.sendMessage(extra.from, { react: { text: "⏳", key: msg.key } });
 
-      // Envoi du cadre AGM (Le handler ajoutera le Powered By)
+      // Envoi du cadre AGM uniquement (Sans externalAdReply)
       await sock.sendMessage(extra.from, {
-        text: AGM_DESIGN(uptimeFormatted, botVersion),
-        contextInfo: {
-          externalAdReply: {
-            title: toStyledCaps("ɢʜᴏsᴛɢ-x sʏsᴛᴇᴍ sᴛᴀᴛᴜs"),
-            body: toStyledCaps("surveillance du serveur en temps reel"),
-            mediaType: 1,
-            thumbnailUrl: "https://files.catbox.moe/2fmwpu.jpg",
-            showAdAttribution: false
-          }
-        }
+        text: AGM_DESIGN(uptimeFormatted, botVersion)
       }, { quoted: msg });
 
     } catch (error) {
