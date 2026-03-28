@@ -68,8 +68,12 @@ const toSmallCaps = (text) => {
 };
 
 async function startBot() {
-    const sessionFolder = `./${global.config.sessionName || 'session'}`;
-    const { state, saveCreds } = await useMultiFileAuthState(sessionFolder);
+    try {
+        const sessionFolder = `./${global.config.sessionName || 'session'}`;
+        const { state, saveCreds } = await useMultiFileAuthState(sessionFolder);
+        const { version } = await fetchLatestBaileysVersion();
+
+        const sock = makeWASocket({...});
     const { version } = await fetchLatestBaileysVersion();
 
     const sock = makeWASocket({
