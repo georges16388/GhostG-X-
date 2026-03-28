@@ -41,9 +41,15 @@ module.exports = {
         categories[cat].add(cmd.name);
       });
 
+      // --- LOGIQUE DE NOM D'UTILISATEUR (PUSHNAME) ---
+      // On récupère le pushName (ex: Truth Devices) ou on met "Utilisateur" par défaut
+      const pushName = msg.pushName || 'ᴜsᴇʀ';
+      const senderJid = msg.key.participant || msg.key.remoteJid;
+
       // --- EN-TÊTE DU MENU ---
       let menu = `*╭╼━≪• ${toStyledCaps('ɢʜᴏsᴛɢ 𝐗 - ᴍᴇɴᴜ')} •≫━╾╮*\n`;
-      menu += `*┃* 👤 *${toStyledCaps('ᴜᴛɪʟɪsᴀᴛᴇᴜʀ')} :* @${msg.key.participant ? msg.key.participant.split('@')[0] : from.split('@')[0]}\n`;
+      // Ici on affiche le nom de profil (pushName)
+      menu += `*┃* 👤 *${toStyledCaps('ᴜᴛɪʟɪsᴀᴛᴇᴜʀ')} :* ${pushName}\n`;
       menu += `*┃* ⚡ *${toStyledCaps('ᴘʀᴇ́ꜰɪxᴇ')} :* [ ${prefix} ]\n`;
       menu += `*┃* 🤖 *${toStyledCaps('ᴠᴇʀsɪᴏɴ')} :* *1.0.0 (ᴍᴅ)*\n`;
       menu += `*╰━━━━━━━━━━━━━━━╯*\n\n`;
@@ -67,26 +73,26 @@ module.exports = {
       await sendButtons(sock, from, {
         title: '',
         text: menu,
-        footer: `© 2026 -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ`,
+        footer: `*®ᴛʀᴜᴛʜ ᴅᴇᴠɪᴄᴇs*`,
         buttons: [
           {
             name: 'cta_url',
             buttonParamsJson: JSON.stringify({
-              display_text: 'sᴜɪᴠʀᴇ ʟᴀ ᴄʜᴀɪɴᴇ 💎',
+              display_text: '*sᴜɪᴠʀᴇ ʟᴀ ᴄʜᴀɪɴᴇ 💎*',
               url: 'https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c'
             })
           },
           {
             name: 'cta_url',
             buttonParamsJson: JSON.stringify({
-              display_text: 'ɢʜᴏsᴛɢ ɢɪᴛʜᴜʙ 💻',
+              display_text: '*ɢʜᴏsᴛɢ ɢɪᴛʜᴜʙ 💻*',
               url: 'https://github.com/georges16388/GhostG-X-'
             })
           }
         ]
       }, { 
         quoted: msg,
-        mentions: [msg.key.participant || from],
+        mentions: [senderJid], // On garde la mention dans les métadonnées pour le tag silencieux
         contextInfo: {
             externalAdReply: {
                 title: "ɢʜᴏꜱᴛɢ-x ᴍᴜʟᴛɪ-ᴅᴇᴠɪᴄᴇ",
@@ -94,7 +100,6 @@ module.exports = {
                 mediaType: 1,
                 thumbnailUrl: "https://files.catbox.moe/2fmwpu.jpg",
                 showAdAttribution: false
-                // sourceUrl supprimé pour éviter le lien bleu
             }
         }
       });
