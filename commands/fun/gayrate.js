@@ -3,12 +3,12 @@
  * Custom Design by -ɢʜᴏsᴛɢ 𝐗
  */
 
-const GAY_DESIGN = (target, percent, verdict) => `╭╼━≪• ɢʜᴏsᴛ ɢᴀʏ-ᴛᴇsᴛ •≫━╾╮
-┃ ᴄɪʙʟᴇ : @${target.split('@')[0]} 🎯
-┃ sᴄᴏʀᴇ : ${percent}% 🌈
-┃ ᴠᴇʀᴅɪᴄᴛ : ${verdict}
+const GAY_DESIGN = (target, percent, verdict) => `╭╼━≪• *ɢʜᴏsᴛ ɢᴀʏ-ᴛᴇsᴛ* •≫━╾╮
+┃ *ᴄɪʙʟᴇ* : @${target.split('@')[0]} 🎯
+┃ *sᴄᴏʀᴇ* : ${percent}% 🌈
+┃ *ᴠᴇʀᴅɪᴄᴛ* : ${verdict}
 ╰━━━━━━━━━━━━━━━╯
-> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
 module.exports = {
   name: 'gayrate',
