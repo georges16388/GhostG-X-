@@ -1,6 +1,6 @@
 /**
- * Global Cleanup System - GhostG-X MD Core
- * Prévient les erreurs ENOSPC (Disque Plein)
+ * ɢʜᴏꜱᴛɢ-x ᴍᴅ - Global Cleanup System
+ * Prevent ENOSPC errors by cleaning old temp files
  * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
@@ -8,73 +8,59 @@ const fs = require('fs');
 const path = require('path');
 const config = require('../config');
 
-// Intervalle de nettoyage : 10 minutes
-const CLEANUP_INTERVAL_MS = 10 * 60 * 1000;
-
-// Seuil d'âge des fichiers : 30 minutes (pour ne pas supprimer un fichier en cours d'envoi)
-const FILE_AGE_THRESHOLD_MS = 30 * 60 * 1000;
-
-// Dossiers à NE JAMAIS TOUCHER (Sécurité Critique)
-const FORBIDDEN_PATHS = [
-  config.sessionName || 'session',
-  'database',
-  'node_modules',
-  '.git'
-];
-
-let cleanupInterval = null;
+// --- CONFIGURATION DU NETTOYAGE ---
+const CLEANUP_INTERVAL = 15 * 60 * 1000; // Toutes les 15 minutes
+const FILE_AGE_LIMIT = 30 * 60 * 1000;   // Supprime après 30 minutes
+const SESSION_DIR = config.sessionName || 'session';
 
 /**
- * Nettoyage des fichiers temporaires obsolètes
+ * Nettoyage des fichiers temporaires périmés
  */
 function cleanupOldFiles() {
   try {
-    // On cible les dossiers de stockage temporaire habituels
-    const targetDirs = [
-      path.join(process.cwd(), 'tmp'),
-      path.join(process.cwd(), 'temp')
-    ];
+    // On cible le dossier temp à la racine du projet
+    const tempDir = path.join(__dirname, '../temp');
+    
+    if (!fs.existsSync(tempDir)) return;
 
     const now = Date.now();
     let deletedCount = 0;
-    let totalSizeFreed = 0;
+    let sizeFreed = 0;
 
-    targetDirs.forEach(dir => {
-      if (!fs.existsSync(dir)) return;
+    const files = fs.readdirSync(tempDir);
 
-      const files = fs.readdirSync(dir);
+    for (const file of files) {
+      // SÉCURITÉ ABSOLUE : Ne jamais toucher au dossier de session
+      if (file === SESSION_DIR || file.includes('auth_info')) continue;
 
-      for (const file of files) {
-        const filePath = path.join(dir, file);
+      const filePath = path.join(tempDir, file);
+      
+      try {
+        const stats = fs.statSync(filePath);
         
-        // --- SÉCURITÉ ANTI-PURGE SESSION ---
-        if (FORBIDDEN_PATHS.some(p => filePath.includes(p))) continue;
+        // On ne traite que les fichiers (pas les dossiers pour éviter les accidents)
+        if (stats.isFile()) {
+          const age = now - stats.mtimeMs;
 
-        try {
-          const stats = fs.statSync(filePath);
-          
-          if (stats.isDirectory()) continue; // On ne supprime pas les dossiers ici
-
-          const fileAge = now - stats.mtimeMs;
-
-          if (fileAge > FILE_AGE_THRESHOLD_MS) {
-            const fileSize = stats.size;
+          if (age > FILE_AGE_LIMIT) {
+            sizeFreed += stats.size;
             fs.unlinkSync(filePath);
             deletedCount++;
-            totalSizeFreed += fileSize;
           }
-        } catch (err) {
-          // Fichier peut-être déjà supprimé ou verrouillé, on ignore silencieusement
         }
+      } catch (e) {
+        // Le fichier est peut-être déjà utilisé par une commande en cours
+        continue;
       }
-    });
+    }
 
     if (deletedCount > 0) {
-      const sizeMB = (totalSizeFreed / (1024 * 1024)).toFixed(2);
-      console.log(`🧹 [ɢʜᴏꜱᴛɢ-x] Cleanup: ${deletedCount} fichiers supprimés (${sizeMB} MB libérés).`);
+      const mb = (sizeFreed / (1024 * 1024)).toFixed(2);
+      console.log(`[🧹 CLEANUP]: ${deletedCount} fichiers supprimés | ${mb} MB libérés.`);
     }
-  } catch (error) {
-    console.error('⚠️ [CLEANUP ERROR]:', error.message);
+
+  } catch (err) {
+    console.error('[CLEANUP ERROR]:', err.message);
   }
 }
 
@@ -82,34 +68,13 @@ function cleanupOldFiles() {
  * Démarrage du système de maintenance
  */
 function startCleanup() {
-  console.log('🧹 [ɢʜᴏꜱᴛɢ-x] Initialisation du système de maintenance...');
-  
-  // Premier passage immédiat
+  // Premier nettoyage au démarrage
   cleanupOldFiles();
   
   // Planification périodique
-  cleanupInterval = setInterval(cleanupOldFiles, CLEANUP_INTERVAL_MS);
+  setInterval(cleanupOldFiles, CLEANUP_INTERVAL);
   
-  console.log(`✅ [Maintenance] Actif (Cycle: ${CLEANUP_INTERVAL_MS / 60000} min | Seuil: ${FILE_AGE_THRESHOLD_MS / 60000} min)`);
+  console.log(`✅ *sʏsᴛᴇᴍᴇ ᴅᴇ ɴᴇᴛᴛᴏʏᴀɢᴇ ᴀᴄᴛɪғ* (⏳ 15ᴍ)`);
 }
 
-/**
- * Arrêt propre du système
- */
-function stopCleanup() {
-  if (cleanupInterval) {
-    clearInterval(cleanupInterval);
-    cleanupInterval = null;
-    console.log('🛑 [Maintenance] Système arrêté.');
-  }
-}
-
-// Gestion des signaux système pour éviter de corrompre des fichiers
-process.on('SIGINT', () => { stopCleanup(); process.exit(0); });
-process.on('SIGTERM', () => { stopCleanup(); process.exit(0); });
-
-module.exports = {
-  cleanupOldFiles,
-  startCleanup,
-  stopCleanup
-};
+module.exports = { startCleanup, cleanupOldFiles };
