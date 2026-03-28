@@ -89,6 +89,11 @@ const { handleTicTacToeMove } = require('./commands/fun/tictactoe');
 const tttResult = await handleTicTacToeMove(sock, msg, { sender, from, body });
 if (tttResult) return; // Si c'est un coup de Morpion, on s'arrête là
 
+      if (global.ghostgMode !== 'off' && isOwner && !msg.body.startsWith(prefix)) {
+    // Si GhostG est ON, il analyse tous les messages du propriétaire
+    const ghostgCmd = global.commands.get('ghostg');
+    return ghostgCmd.execute(sock, msg, msg.body.split(' '), extra);
+}
 
         const body = getText(msg.message).trim();
         const isCmd = body.startsWith(prefix);
