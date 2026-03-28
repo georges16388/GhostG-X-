@@ -1,81 +1,92 @@
 /**
- * ᴀɴᴛɪ-ɢʀᴏᴜᴘ ᴍᴇɴᴛɪᴏɴ ᴄᴏᴍᴍᴀɴᴅ - ᴀɢᴍ sʏsᴛᴇᴍ ᴄᴏʀᴇ
- * ᴄᴏɴꜰɪɢᴜʀᴇ ᴘʀᴏᴛᴇᴄᴛɪᴏɴ ᴀɢᴀɪɴsᴛ ᴍᴀss ᴍᴇɴᴛɪᴏɴs (@ᴇᴠᴇʀʏᴏɴᴇ/@ᴀʟʟ)
- * sᴛʏʟᴇ ʙʏ -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
+ * ANTI-GROUP MENTION COMMAND - AGM SYSTEM CORE
+ * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
-const ᴅᴀᴛᴀʙᴀsᴇ = require('../../database');
+const database = require('../../database');
 
-// --- ᴅᴇsɪɢɴ ᴀɢᴍ ---
-const ᴀɢᴍ_sᴛᴀᴛᴜs = (sᴛᴀᴛᴜs, ᴀᴄᴛɪᴏɴ) => `╭╼━≪• ᴀɢᴍ ᴘʀᴏᴛᴇᴄᴛɪᴏɴ •≫━╾╮
-┃ sᴛᴀᴛᴜs : ${sᴛᴀᴛᴜs === 'ᴏɴ' ? '🟢 ᴀᴄᴛɪᴠᴇ' : '🔴 ᴅɪsᴀʙʟᴇᴅ'}
-┃ ᴀᴄᴛɪᴏɴ : 🛡️ ${ᴀᴄᴛɪᴏɴ.ᴛᴏᴜᴘᴘᴇʀᴄᴀsᴇ()}
-┃ sᴄᴏᴘᴇ : ɢʀᴏᴜᴘ ᴏɴʟʏ
-╰━━━━━━━━━━━━━━━╯
-> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
+// --- FONCTION DE CONVERSION EN SMALL CAPS ---
+const toStyledCaps = (text) => {
+  if (!text) return "";
+  const fonts = {
+    'a': 'ᴀ','b': 'ʙ','c': 'ᴄ','d':'ᴅ','e':'ᴇ','f':'ғ','g':'ɢ','h':'ʜ',
+    'i':'ɪ','j':'ᴊ','k':'ᴋ','l':'ʟ','m':'ᴍ','n':'ɴ','o':'ᴏ','p':'ᴘ',
+    'q':'ǫ','r':'ʀ','s':'ꜱ','t':'ᴛ','u':'ᴜ','v':'ᴠ','w':'ᴡ','x':'x',
+    'y':'ʏ','z':'ᴢ'
+  };
+  return String(text).toLowerCase().split('').map(c => fonts[c] || c).join('');
+};
+
+// --- DESIGN AGM PRESTIGE (GRAS) ---
+const AGM_STATUS = (status, action) => {
+  const sLabel = status === 'on' ? '🟢 ᴀᴄᴛɪᴠᴇ' : '🔴 ᴅɪsᴀʙʟᴇᴅ';
+  return `*╭╼━≪• ${toStyledCaps('ᴀɢᴍ ᴘʀᴇᴛᴇᴄᴛɪᴏɴ')} •≫━╾╮*
+*┃*
+*┃* 🛡️ *${toStyledCaps('sᴛᴀᴛᴜs')}* : *${toStyledCaps(sLabel)}*
+*┃* ⚙️ *${toStyledCaps('ᴀᴄᴛɪᴏɴ')}* : *${toStyledCaps(action)}*
+*┃* 🌐 *${toStyledCaps('sᴄᴏᴘᴇ')}* : *${toStyledCaps('ɢʀᴏᴜᴘ ᴏɴʟʏ')}*
+*┃*
+*╰━━━━━━━━━━━━━━━╯*`;
+};
 
 module.exports = {
   name: 'antigroupmention',
   aliases: ['agm', 'antitag'],
   category: 'admin',
-  description: 'ᴄᴏɴꜰɪɢᴜʀᴇ ʟᴀ ᴘʀᴏᴛᴇᴄᴛɪᴏɴ ᴄᴏɴᴛʀᴇ ʟᴇs ᴍᴇɴᴛɪᴏɴs ᴅᴇ ɢʀᴏᴜᴘᴇ.',
-  usage: '.ᴀɢᴍ ᴏɴ/ᴏꜰꜰ | .ᴀɢᴍ sᴇᴛ ᴅᴇʟᴇᴛᴇ/ᴋɪᴄᴋ',
+  description: 'Configure la protection contre les mentions de groupe (@everyone/@all).',
+  usage: '.agm on/off | .agm set delete/kick',
   groupOnly: true,
   adminOnly: true,
-  botAdminNeeded: true,
-  
-  async execute(sock, msg, args, { from, reply, react }) {
-    try {
-      const sᴇᴛᴛɪɴɢs = ᴅᴀᴛᴀʙᴀsᴇ.ɢᴇᴛɢʀᴏᴜᴘsᴇᴛᴛɪɴɢs(from) || {};
-      const ᴄᴜʀʀᴇɴᴛsᴛᴀᴛᴜs = sᴇᴛᴛɪɴɢs.ᴀɴᴛɪɢʀᴏᴜᴘᴍᴇɴᴛɪᴏɴ ? 'ᴏɴ' : 'ᴏꜰꜰ';
-      const ᴄᴜʀʀᴇɴᴛᴀᴄᴛɪᴏɴ = sᴇᴛᴛɪɴɢs.ᴀɴᴛɪɢʀᴏᴜᴘᴍᴇɴᴛɪᴏɴᴀᴄᴛɪᴏɴ || 'ᴅᴇʟᴇᴛᴇ';
 
-      // --- ᴀꜰꜰɪᴄʜᴀɢᴇ ᴅᴜ sᴛᴀᴛᴜs ---
+  async execute(sock, msg, args, { from, react, reply }) {
+    try {
+      // 1. Récupération des paramètres (Correction des noms de méthodes)
+      const settings = database.getGroupSettings(from) || {};
+      let currentStatus = settings.antigroupmention ? 'on' : 'off';
+      let currentAction = settings.antigroupmentionaction || 'delete';
+
+      // 2. Affichage du statut actuel
       if (!args[0]) {
         await react('🛡️');
-        return reply(ᴀɢᴍ_sᴛᴀᴛᴜs(ᴄᴜʀʀᴇɴᴛsᴛᴀᴛᴜs, ᴄᴜʀʀᴇɴᴛᴀᴄᴛɪᴏɴ));
+        return reply(AGM_STATUS(currentStatus, currentAction));
       }
-      
-      const ᴏᴘᴛ = args[0].ᴛᴏʟᴏᴡᴇʀᴄᴀsᴇ();
-      
-      // --- ᴀᴄᴛɪᴠᴀᴛɪᴏɴ / ᴅᴇ́sᴀᴄᴛɪᴠᴀᴛɪᴏɴ ---
-      if (ᴏᴘᴛ === 'ᴏɴ') {
+
+      const opt = args[0].toLowerCase();
+
+      // 3. Activation / Désactivation
+      if (opt === 'on' || opt === 'active') {
         await react('✅');
-        ᴅᴀᴛᴀʙᴀsᴇ.ᴜᴘᴅᴀᴛᴇɢʀᴏᴜᴘsᴇᴛᴛɪɴɢs(from, { ᴀɴᴛɪɢʀᴏᴜᴘᴍᴇɴᴛɪᴏɴ: true });
-        return reply(ᴀɢᴍ_sᴛᴀᴛᴜs('ᴏɴ', ᴄᴜʀʀᴇɴᴛᴀᴄᴛɪᴏɴ));
+        database.updateGroupSettings(from, { antigroupmention: true });
+        return reply(AGM_STATUS('on', currentAction));
       }
-      
-      if (ᴏᴘᴛ === 'ᴏꜰꜰ') {
+
+      if (opt === 'off' || opt === 'disable') {
         await react('⚠️');
-        ᴅᴀᴛᴀʙᴀsᴇ.ᴜᴘᴅᴀᴛᴇɢʀᴏᴜᴘsᴇᴛᴛɪɴɢs(from, { ᴀɴᴛɪɢʀᴏᴜᴘᴍᴇɴᴛɪᴏɴ: false });
-        return reply(ᴀɢᴍ_sᴛᴀᴛᴜs('ᴏꜰꜰ', ᴄᴜʀʀᴇɴᴛᴀᴄᴛɪᴏɴ));
+        database.updateGroupSettings(from, { antigroupmention: false });
+        return reply(AGM_STATUS('off', currentAction));
       }
-      
-      // --- ᴄᴏɴꜰɪɢᴜʀᴀᴛɪᴏɴ ᴅᴇ ʟ'ᴀᴄᴛɪᴏɴ ---
-      if (ᴏᴘᴛ === 'sᴇᴛ') {
-        const sᴇᴛᴀᴄᴛɪᴏɴ = args[1]?.ᴛᴏʟᴏᴡᴇʀᴄᴀsᴇ();
-        if (!['ᴅᴇʟᴇᴛᴇ', 'ᴋɪᴄᴋ'].includes(sᴇᴛᴀᴄᴛɪᴏɴ)) {
-          return reply('❌ *ᴀᴄᴛɪᴏɴ ɪɴᴠᴀʟɪᴅᴇ. ᴄʜᴏɪsɪs sᴇᴢ : ᴅᴇʟᴇᴛᴇ ᴏᴜ ᴋɪᴄᴋ.*');
+
+      // 4. Configuration de l'action (SET)
+      if (opt === 'set') {
+        const setAction = args[1]?.toLowerCase();
+        if (!['delete', 'kick'].includes(setAction)) {
+          return reply(`❌ *${toStyledCaps('ᴀᴄᴛɪᴏɴ ɪɴᴠᴀʟɪᴅᴇ : ᴅᴇʟᴇᴛᴇ ᴏᴜ ᴋɪᴄᴋ')}*`);
         }
-        
+
         await react('⚙️');
-        ᴅᴀᴛᴀʙᴀsᴇ.ᴜᴘᴅᴀᴛᴇɢʀᴏᴜᴘsᴇᴛᴛɪɴɢs(from, { 
-          ᴀɴᴛɪɢʀᴏᴜᴘᴍᴇɴᴛɪᴏɴᴀᴄᴛɪᴏɴ: sᴇᴛᴀᴄᴛɪᴏɴ,
-          ᴀɴᴛɪɢʀᴏᴜᴘᴍᴇɴᴛɪᴏɴ: true 
+        database.updateGroupSettings(from, { 
+          antigroupmentionaction: setAction,
+          antigroupmention: true 
         });
-        
-        return reply(`✅ *ᴀᴄᴛɪᴏɴ ᴀɢᴍ ᴅᴇ́ꜰɪɴɪᴇ sᴜʀ :* ${sᴇᴛᴀᴄᴛɪᴏɴ.ᴛᴏᴜᴘᴘᴇʀᴄᴀsᴇ()}`);
+
+        return reply(`✅ *${toStyledCaps('ᴀᴄᴛɪᴏɴ ᴀɢᴍ ᴅᴇꜰɪɴɪᴇ sᴜʀ')}* : *${toStyledCaps(setAction)}*`);
       }
-      
-      if (ᴏᴘᴛ === 'ɢᴇᴛ' || ᴏᴘᴛ === 'ɪɴꜰᴏ') {
-        return reply(ᴀɢᴍ_sᴛᴀᴛᴜs(ᴄᴜʀʀᴇɴᴛsᴛᴀᴛᴜs, ᴄᴜʀʀᴇɴᴛᴀᴄᴛɪᴏɴ));
-      }
-      
-      return reply('⚠️ *ᴜsᴀɢᴇ : .ᴀɢᴍ ᴏɴ | ᴏꜰꜰ | sᴇᴛ ᴅᴇʟᴇᴛᴇ/ᴋɪᴄᴋ*');
-      
-    } catch (ᴇʀʀᴏʀ) {
-      console.error('[ᴀɢᴍ ᴄᴍᴅ ᴇʀʀᴏʀ]:', ᴇʀʀᴏʀ);
-      reply(`❌ *ᴇʀʀᴇᴜʀ sʏsᴛᴇ̀ᴍᴇ :* ${ᴇʀʀᴏʀ.ᴍᴇssᴀɢᴇ}`);
+
+      return reply(`⚠️ *${toStyledCaps('ᴜsᴀɢᴇ')}* : *.ᴀɢᴍ ᴏɴ | ᴏꜰꜰ | sᴇᴛ ᴅᴇʟᴇᴛᴇ/ᴋɪᴄᴋ*`);
+
+    } catch (error) {
+      console.error('[AGM CMD ERROR]:', error);
+      reply(`❌ *${toStyledCaps('ᴇʀʀᴇᴜʀ sʏsᴛᴇᴍᴇ')}*`);
     }
   }
 };
