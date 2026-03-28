@@ -249,35 +249,39 @@ const handleGroupUpdate = async (sock, update) => {
 };
 
 // --- ANTI-DELETE HANDLER (ASYNC SAFE + BULLETPROOF) ---
-const attachAntiDelete = (sock) => {
-    sock.ev.on('messages.delete', async (update) => {
-        const keys = update.keys || [];
-        for (const key of keys) {
-            try {
-                const from = key.remoteJid;
-                const groupSettings = database.getGroupSettings(from) || {};
-                const active = groupSettings.antidelete ?? true;
-                if (!active) continue;
 
-                const msgStore = await global.store.loadMessage(from,key.id);
-                if (!msgStore?.message) continue;
+const handleAntiDelete = async (sock, update) => {
+    const keys = update.keys || [];
+    for (const key of keys) {
+        try {
+            const from = key.remoteJid;
+            if (!from.endsWith('@g.us')) continue;
 
-                const sender = msgStore.key.participant || msgStore.key.remoteJid;
-                const pushName = msgStore.pushName || 'ᴜsᴇʀ';
-                const mediaType = msgStore.message.imageMessage ? 'image' : msgStore.message.videoMessage ? 'video' : msgStore.message.audioMessage ? 'audio' : msgStore.message.stickerMessage ? 'sticker' : null;
+            const groupSettings = database.getGroupSettings(from) || {};
+            if (groupSettings.antidelete === false) continue;
 
-                await antideleteCmd.execute(sock, msgStore, [], {
-                    from,
-                    reply:(text)=>sock.sendMessage(from,{text},{quoted:msgStore}),
-                    toSmallCaps,
-                    sender,
-                    pushName,
-                    getMessage:(id)=>global.store.loadMessage(from,id),
-                    mediaType
-                });
-            } catch(e){ console.error('❌ AntiDelete Error:', e); }
-        }
-    });
+            const msgStore = await global.store.loadMessage(from, key.id);
+            if (!msgStore || !msgStore.message) continue;
+
+            const sender = msgStore.key.participant || msgStore.key.remoteJid;
+            const pushName = msgStore.pushName || 'ᴜsᴇʀ';
+            const messageContent = msgStore.message.conversation || msgStore.message.extendedTextMessage?.text || msgStore.message.imageMessage?.caption || "ᴍᴇᴅɪᴀ (ɴᴏ ᴄᴀᴘᴛɪᴏɴ)";
+            
+            let caption = `*╭╼━≪• ${toSmallCaps('ᴀɴᴛɪ-ᴅᴇʟᴇᴛᴇ ᴅᴇᴛᴇᴄᴛᴇᴅ')} •≫━╾╮*\n` +
+                          `*┃* 👤 *${toSmallCaps('ᴜsᴇʀ')}* : *@${toSmallCaps(pushName)}*\n` +
+                          `*┃* 💬 *${toSmallCaps('ᴄᴏɴᴛᴇɴᴜ')}* :\n` +
+                          `*┃* _${messageContent}_\n` +
+                          `*╰━━━━━━━━━━━━━━━╼*\n\n` +
+                          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+
+            await sock.sendMessage(from, { text: caption, mentions: [sender] }, { quoted: msgStore });
+
+            if (msgStore.message.imageMessage || msgStore.message.videoMessage) {
+                await sock.sendMessage(from, { forward: msgStore });
+            }
+        } catch (e) { console.error('❌ AntiDelete Error:', e); }
+    }
 };
 
-module.exports = { handleMessage, handleGroupUpdate, attachAntiDelete };
+// --- EXPORTS ---
+module.exports = { handleMessage, handleGroupUpdate, handleAntiDelete };
