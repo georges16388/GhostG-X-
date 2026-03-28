@@ -75,9 +75,26 @@ module.exports = {
       anticall: true, 
       antigroupmention: false,
       welcome: true,
-      welcomeMessage: `*╭╼━≪• ✨ ɴᴇᴡ ᴍᴇᴍʙᴇʀ ✨ •≫━╾╮*\n*┃*\n*┃* 👥 *ɢʀᴏᴜᴘ* : *#groupName*\n*┃* 👋🏾 *ᴡᴇʟᴄᴏᴍᴇ* : *@user*\n*┃*\n*┃* 📝 *#groupDesc*\n*┃*\n*┃* 📊 *ᴍᴇᴍʙʀᴇs* : *#memberCount*\n*┃* ⏰ *ᴛɪᴍᴇ* : *#time*\n*┃*\n*┃* 🛡️ *ʀᴇsᴘᴇᴄᴛᴇ ʟᴇs ʀᴇɢʟᴇs ᴘᴏᴜʀ*\n*┃* *ɴᴇ ᴘᴀs ᴇᴛʀᴇ ʀᴇᴛɪʀᴇ...*\n*┃*\n*┃* ❤️ *ᴊᴇsᴜs ᴛᴀɪᴍᴇ*\n*┃*\n*╰━━━━━━━━━━━━━━━╯*\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`,
+      welcomeMessage: `*╭╼━≪• ✨ ɴᴇᴡ ᴍᴇᴍʙᴇʀ ✨ •≫━╾╮*
+*┃ 👥 ɢʀᴏᴜᴘ : #groupName*
+*┃ 👋🏾 ᴡᴇʟᴄᴏᴍᴇ : @user*
+*┃ 📝 #groupDesc*
+*┃ 📊 ᴍᴇᴍʙʀᴇs : #memberCount*
+*┃ ⏰ ᴛɪᴍᴇ : #time*
+*┃ 🛡️ ʀᴇsᴘᴇᴄᴛᴇ ʟᴇs ʀᴇɢʟᴇs*
+*┃ ❤️ ᴊᴇsᴜs ᴛ'ᴀɪᴍᴇ*
+*╰━━━━━━━━━━━━━━━━━╯*
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*
+`,
       goodbye: true,
-      goodbyeMessage: `*╭╼━≪• 🥀 ɢᴏᴏᴅʙʏᴇ ᴍᴇᴍʙᴇʀ •≫━╾╮*\n*┃*\n*┃* 👋🏾 *ᴀᴜ ʀᴇᴠᴏɪʀ* : *@user*\n*┃*\n*┃* 🚪 *ᴍᴀʟʜᴇᴜʀᴇᴜsᴇᴍᴇɴᴛ ᴛᴜ ɴ'ᴀs*\n*┃* *ᴘᴀs ʀᴇsᴘᴇᴄᴛᴇ ʟᴇs ʀᴇɢʟᴇs...* 🙂‍↔️\n*┃*\n*┃* 📊 *ᴍᴇᴍʙʀᴇs* : *#memberCount*\n*┃* ⏰ *ᴛɪᴍᴇ* : *#time*\n*┃*\n*╰━━━━━━━━━━━━━━━╯*\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`,
+      goodbyeMessage: `*╭╼━≪• 🥀 ɢᴏᴏᴅʙʏᴇ •≫━╾╮*
+*┃ 👋🏾 ᴀᴜ ʀᴇᴠᴏɪʀ : @user*
+*┃ 🚮 ɴᴇ ɴᴏᴜs ᴍᴀɴǫᴜᴇʀᴀ ᴊᴀᴍᴀɪs*
+*┃ 📊 ᴍᴇᴍʙʀᴇs : #memberCount*
+*┃ ⏰ ᴛɪᴍᴇ : #time*
+*╰━━━━━━━━━━━━━━━╯*
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*
+`,
       antiSpam: false,
       antidelete: false,
       nsfw: false,
