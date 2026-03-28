@@ -13,6 +13,10 @@ const {
     DisconnectReason
 } = Baileys;
 
+const pino = require('pino');
+const fs = require('fs');
+const path = require('path');
+
 const makeInMemoryStore = Baileys.makeInMemoryStore;
 
 // --- CHARGEMENT DE LA CONFIGURATION ---
