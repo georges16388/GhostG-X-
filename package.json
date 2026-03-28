@@ -24,7 +24,7 @@
         "whatsapp-automation",
         "ghost-intel-nlp",
         "bot-whatsapp-burkina",
-        "georges-the-ghost"
+        "ghost"
     ],
     "author": "Truth Devices",
     "license": "MIT",
@@ -61,7 +61,8 @@
         "ytdl-core": "^4.11.5",
         "btch-downloader": "^2.3.1",
         "wa-sticker-formatter": "^4.4.4",
-        "fs-extra": "^11.2.0"
+        "fs-extra": "^11.2.0",
+        "sqlite3": "^5.1.7"
     },
     "devDependencies": {
         "nodemon": "^3.1.0"
