@@ -1,6 +1,6 @@
 /**
  * Take Command - Smart Identity Edition
- * Ultra-Fast Fix for -ɢʜᴏsᴛɢ 𝐗
+ * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
@@ -8,37 +8,38 @@ const webp = require('node-webpmux');
 
 module.exports = {
   name: 'take',
-  aliases: ['t', 'steal', 'wm'],
+  aliases: ['t', 'steal', 'wm', 'wmsticker'],
   category: 'media',
-  description: 'Change le nom d\'un sticker.',
+  description: 'Change le nom et l\'auteur d\'un sticker instantanément.',
 
   async execute(sock, msg, args, extra) {
     try {
-      const { from, prefix, pushName } = extra;
-      
-      // Extraction correcte du message cité
+      const { from, pushName } = extra;
+
+      // 1. Détection du sticker cité
       const quoted = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage;
       const sticker = quoted?.stickerMessage;
 
       if (!sticker) {
-        return sock.sendMessage(from, { text: `🎭 *Répondez à un sticker !*\nEx: ${prefix}take MonNom` }, { quoted: msg });
+        return extra.reply('🎭 *ʀᴇᴘᴏɴᴅᴇᴢ ᴀ ᴜɴ sᴛɪᴄᴋᴇʀ ᴘᴏᴜʀ ᴄʜᴀɴɢᴇʀ sᴏɴ ɴᴏᴍ !*');
       }
 
-      // Réaction flash
+      // 2. Réaction flash "Ninja"
       await sock.sendMessage(from, { react: { text: "🥷", key: msg.key } });
 
-      // Téléchargement Direct & Rapide
+      // 3. Téléchargement rapide du flux
       const stream = await downloadContentFromMessage(sticker, 'sticker');
       let buffer = Buffer.from([]);
       for await (const chunk of stream) {
         buffer = Buffer.concat([buffer, chunk]);
       }
 
-      // --- LOGIQUE DE NOM ---
+      // 4. Configuration des nouvelles métadonnées
+      // Si l'utilisateur écrit .take MonNom, on prend "MonNom". Sinon on prend son pseudo WhatsApp.
       const packname = args.length ? args.join(' ') : (pushName || "ɢʜᴏꜱᴛɢ-x");
-      const author = "ɢʜᴏꜱᴛ-x";
+      const author = "ɢʜᴏꜱᴛ-x ʙᴏᴛ";
 
-      // --- INJECTION EXIF ---
+      // 5. Injection des EXIF (Signature GhostG-X)
       const img = new webp.Image();
       await img.load(buffer);
 
@@ -46,7 +47,7 @@ module.exports = {
         "sticker-pack-id": `ghost-${Date.now()}`,
         "sticker-pack-name": packname,
         "sticker-pack-publisher": author,
-        "emojis": ["💠"]
+        "emojis": ["💠", "✨"]
       };
 
       const exifAttr = Buffer.from([0x49, 0x49, 0x2A, 0x00, 0x08, 0x00, 0x00, 0x00, 0x01, 0x00, 0x41, 0x57, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x16, 0x00, 0x00, 0x00]);
@@ -57,16 +58,15 @@ module.exports = {
       img.exif = exif;
       const result = await img.save(null);
 
-      // Envoi du sticker et du message de succès
+      // 6. Envoi direct du sticker modifié (Sans message texte)
       await sock.sendMessage(from, { sticker: result }, { quoted: msg });
       
-      const successMsg = `╭╼━≪• *ꜱᴛɪᴄᴋᴇʀ ꜱᴛᴇᴀʟᴇʀ* •≫━╾╮\n┃ *ꜱᴛᴀᴛᴜꜱ* : 🟢 ʀᴇ-ᴘᴀᴄᴋᴇᴅ\n┃ *ᴏᴡɴᴇʀ* : ${packname}\n╰━━━━━━━━━━━━━━━╯\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏꜱᴛɢ x*`;
-      
-      await sock.sendMessage(from, { text: successMsg }, { quoted: msg });
+      // Réaction de succès
+      await sock.sendMessage(from, { react: { text: "✅", key: msg.key } });
 
     } catch (error) {
       console.error('Take error:', error);
-      await sock.sendMessage(extra.from, { text: '❌ Erreur : Assurez-vous d\'avoir installé "node-webpmux"' });
+      await extra.reply('❌ *ᴇʀʀᴇᴜʀ ʟᴏʀs ᴅᴇ ʟᴀ ᴍᴏᴅɪғɪᴄᴀᴛɪᴏɴ ᴅᴜ sᴛɪᴄᴋᴇʀ.*');
     }
   }
 };
