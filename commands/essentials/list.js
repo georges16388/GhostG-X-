@@ -45,7 +45,7 @@ module.exports = {
       let menu = `*╭╼━≪• ${toStyledCaps('ɢʜᴏsᴛɢ 𝐗 - ᴍᴇɴᴜ')} •≫━╾╮*\n`;
       menu += `*┃* 👤 *${toStyledCaps('ᴜᴛɪʟɪsᴀᴛᴇᴜʀ')} :* @${msg.key.participant ? msg.key.participant.split('@')[0] : from.split('@')[0]}\n`;
       menu += `*┃* ⚡ *${toStyledCaps('ᴘʀᴇ́ꜰɪxᴇ')} :* [ ${prefix} ]\n`;
-      menu += `*┃* 🤖 *${toStyledCaps('ᴠᴇʀsɪᴏɴ')} :* *3.0.0 (ᴍᴅ)*\n`;
+      menu += `*┃* 🤖 *${toStyledCaps('ᴠᴇʀsɪᴏɴ')} :* *1.0.0 (ᴍᴅ)*\n`;
       menu += `*╰━━━━━━━━━━━━━━━╯*\n\n`;
 
       const sortedCats = Object.keys(categories).sort();
