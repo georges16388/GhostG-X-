@@ -25,13 +25,14 @@ module.exports = {
       const metadata = await sock.groupMetadata(from);
       const participants = metadata.participants;
       const admins = participants.filter(p => p.admin === 'admin' || p.admin === 'superadmin');
+      const owner = metadata.owner || from.split('-')[0] + '@s.whatsapp.net'; // Détection du créateur
 
       // 2. Récupération de la photo du groupe (Dynamique)
       let groupPP;
       try {
         groupPP = await sock.profilePictureUrl(from, 'image');
       } catch {
-        groupPP = "https://files.catbox.moe/2fmwpu.jpg"; // Image de secours
+        groupPP = "https://files.catbox.moe/2fmwpu.jpg"; 
       }
 
       const creationDate = new Date(metadata.creation * 1000).toLocaleDateString('fr-FR', {
@@ -47,6 +48,7 @@ module.exports = {
       let text = `*╭╼━≪• ${toStyledCaps('ɢʜᴏsᴛ ɢʀᴏᴜᴘ ɪɴғᴏ')} •≫━╾╮*\n`;
       text += `*┃*\n`;
       text += `*┃* 🏷️ *${toStyledCaps('nom')} :* *${metadata.subject}*\n`;
+      text += `*┃* 👑 *${toStyledCaps('fondateur')} :* @${owner.split('@')[0]}\n`;
       text += `*┃* 👥 *${toStyledCaps('membres')} :* *${participants.length}*\n`;
       text += `*┃* 👑 *${toStyledCaps('admins')} :* *${admins.length}*\n`;
       text += `*┃* 📅 *${toStyledCaps('creation')} :* *${toStyledCaps(creationDate)}*\n`;
@@ -69,26 +71,26 @@ module.exports = {
       text += `*╰━━━━━━━━━━━━━━━╯*\n`;
       text += `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
 
-      // 4. ENVOI AVEC L'IMAGE DU GROUPE
+      // 4. ENVOI FINAL (Correction du bloc contextInfo)
       await sock.sendMessage(from, {
         image: { url: groupPP },
         caption: text,
-        mentions: admins.map(a => a.id),
+        mentions: [...admins.map(a => a.id), owner],
         contextInfo: {
             isForwarded: true,
             forwardingScore: 999,
             forwardedNewsletterMessageInfo: {
-              newsletterJid: '120363425540434745@newsletter',
-              newsletterName: "-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ",
-              serverMessageId: 143
+                newsletterJid: '120363425540434745@newsletter',
+                newsletterName: "-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ",
+                serverMessageId: 143
             },
-          externalAdReply: {
-            title: toStyledCaps(metadata.subject),
-            body: `ɢʜᴏꜱᴛɢ-x ꜱʏꜱᴛᴇᴍ | ${participants.length} ᴍᴇᴍʙʀᴇs`,
-            mediaType: 1,
-            thumbnailUrl: groupPP,
-            showAdAttribution: false,
-          }
+            externalAdReply: {
+                title: metadata.subject,
+                body: `ɢʜᴏꜱᴛɢ-x ꜱʏꜱᴛᴇᴍ | ${participants.length} ᴍᴇᴍʙʀᴇs`,
+                mediaType: 1,
+                thumbnailUrl: groupPP,
+                showAdAttribution: false,
+            }
         }
       }, { quoted: msg });
 
