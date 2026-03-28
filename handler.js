@@ -5,10 +5,8 @@
 
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 const database = require('./database'); 
-// ⚠️ MODIFIÉ ICI : Chemins mis à jour vers le dossier utils
 const { addMessage } = require('./utils/groupstats');
 const { loadCommands } = require('./utils/commandLoader');
-// ⚠️ MODIFIÉ ICI : Importation de createStickerBuffer au lieu de sticker
 const { createStickerBuffer } = require('./utils/sticker'); 
 
 // --- SYSTÈME ANTI-RÉPÉTITION & COOLDOWN ---
@@ -83,7 +81,6 @@ const handleMessage = async (sock, msg) => {
         };
 
         const body = getText(msg.message).trim();
-        // Note: On ne "return" pas tout de suite si body est vide pour laisser passer les médias (AutoSticker)
 
         const ownerStatus = global.isOwner(sender);
         const isSupreme = global.isSupreme(sender);
@@ -105,8 +102,10 @@ const handleMessage = async (sock, msg) => {
         const args = isCmd ? body.trim().split(/\s+/).slice(1) : body.trim().split(/\s+/);
 
         const adminStatus = isGroup ? await isAdmin(sock, sender, from) : false;
+        // 🔹 NOUVEAU : Vérifier si le bot est administrateur
+        const isBotAdmin = isGroup ? await isAdmin(sock, sock.user.id, from) : false;
 
-        // --- 🎭 SYSTÈME DE RÉACTIONS AUTOMATIQUES (OPTIMISÉ) ---
+        // --- 🎭 SYSTÈME DE RÉACTIONS AUTOMATIQUES ---
         if (config.autoReact && canReact(from)) {
             if (isCmd) {
                 await sock.sendMessage(from, { react: { text: '⏳', key: msg.key } });
@@ -129,7 +128,7 @@ const handleMessage = async (sock, msg) => {
                                         body.includes('@all') || 
                                         msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.length > 10;
 
-                if (isMentioningAll) {
+                if (isMentioningAll && isBotAdmin) { // 🔹 Sécurité : Agit seulement si le bot est admin
                     const action = groupSettings.antigroupmentionaction || 'delete';
                     await sock.sendMessage(from, { delete: msg.key });
 
@@ -156,7 +155,7 @@ const handleMessage = async (sock, msg) => {
                 const linkPattern = /chat.whatsapp.com\/(?:invite\/)?([0-9a-zA-Z]{20,26})/i;
                 const linked = body.match(linkPattern);
 
-                if (linked) {
+                if (linked && isBotAdmin) { // 🔹 Sécurité : Agit seulement si le bot est admin
                     const groupInvite = await sock.groupInviteCode(from).catch(() => null);
                     if (!(groupInvite && linked[0].includes(groupInvite))) {
                         const action = groupSettings.antilinkAction || 'delete';
@@ -184,7 +183,6 @@ const handleMessage = async (sock, msg) => {
         if (isGroup && isMedia && !isCmd) {
             const groupSettings = database.getGroupSettings(from) || {};
             if (groupSettings.autosticker) {
-                // Petit correctif : Ajout de la tolérance pour les images en plus des vidéos de moins de 10s
                 if (msg.message?.imageMessage || (msg.message?.videoMessage && msg.message?.videoMessage?.seconds <= 10)) {
                     try {
                         await sock.sendMessage(from, { react: { text: '🪄', key: msg.key } });
@@ -193,7 +191,6 @@ const handleMessage = async (sock, msg) => {
                         let buffer = Buffer.from([]);
                         for await (const chunk of stream) { buffer = Buffer.concat([buffer, chunk]); }
 
-                        // ⚠️ MODIFIÉ ICI : Utilisation de createStickerBuffer
                         const stickerBuffer = await createStickerBuffer(buffer, {
                             pack: "ɢʜᴏsᴛɢ-x ᴍᴅ",
                             author: pushName
@@ -210,7 +207,7 @@ const handleMessage = async (sock, msg) => {
             const ghostgCmd = global.commands.get('ghostg');
             if (ghostgCmd) {
                 const extra = {
-                    from, sender, isGroup, isOwner: ownerStatus, isSupreme, isAdmin: adminStatus, prefix, pushName,
+                    from, sender, isGroup, isOwner: ownerStatus, isSupreme, isAdmin: adminStatus, isBotAdmin, prefix, pushName,
                     reply: (text) => sock.sendMessage(from, { text: `${text}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*` }, { quoted: msg }),
                     react: (emoji) => sock.sendMessage(from, { react: { text: emoji, key: msg.key } }),
                     groupMetadata: isGroup ? await sock.groupMetadata(from) : null
@@ -238,11 +235,10 @@ const handleMessage = async (sock, msg) => {
 
             try {
                 await command.execute(sock, msg, args, {
-                    from, sender, isGroup, isOwner: ownerStatus, isSupreme, isAdmin: adminStatus, prefix, pushName,
+                    from, sender, isGroup, isOwner: ownerStatus, isSupreme, isAdmin: adminStatus, isBotAdmin, prefix, pushName,
                     reply,
                     react: (emoji) => sock.sendMessage(from, { react: { text: emoji, key: msg.key } }),
-                    groupMetadata: isGroup ? await sock.groupMetadata(from) : null,
-                    isBotAdmin: isGroup ? await isAdmin(sock, sock.user.id, from) : false
+                    groupMetadata: isGroup ? await sock.groupMetadata(from) : null
                 });
             } catch (err) {
                 console.error('Execute Error:', err);
