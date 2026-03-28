@@ -154,7 +154,7 @@ async function createBotSocket() {
             syncFullHistory: false,
         });
 
-        if (store) store.bind(sock.ev);
+       
 
         // --- GESTION DE LA CONNEXION ---
         sock.ev.on('connection.update', async (update) => {
