@@ -1,151 +1,110 @@
-const crypto = require('crypto');
-const {
-  generateWAMessageContent,
-  generateWAMessageFromContent,
-  downloadContentFromMessage,
-} = require('@whiskeysockets/baileys');
-const { PassThrough } = require('stream');
-const ffmpeg = require('fluent-ffmpeg');
+/**
+ * Group Status Command - AGM Elite Edition
+ * Post media or text to Group Status (V2)
+ * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
+ */
 
-// Single default color for text statuses (purple)
+const { downloadContentFromMessage, generateWAMessageContent, generateWAMessageFromContent } = require('@whiskeysockets/baileys');
+const crypto = require('crypto');
+const ffmpeg = require('fluent-ffmpeg');
+const { PassThrough } = require('stream');
+
+// --- FONCTION DE CONVERSION EN SMALL CAPS ---
+const toStyledCaps = (text) => {
+  if (!text) return "";
+  const fonts = {'a':'ᴀ','b':'ʙ','c':'ᴄ','d':'ᴅ','e':'ᴇ','f':'ғ','g':'ɢ','h':'ʜ','i':'ɪ','j':'ᴊ','k':'ᴋ','l':'ʟ','m':'ᴍ','n':'ɴ','o':'ᴏ','p':'ᴘ','q':'ǫ','r':'ʀ','s':'ꜱ','t':'ᴛ','u':'ᴜ','v':'ᴠ','w':'ᴡ','x':'x','y':'ʏ','z':'ᴢ'};
+  return String(text).toLowerCase().split('').map(c => fonts[c] || c).join('');
+};
+
 const PURPLE_COLOR = '#9C27B0';
 
-// Design pour les confirmations de statut
-const STATUS_DESIGN = (type) => `╭╼━≪• ɢʀᴏᴜᴘ sᴛᴀᴛᴜs •≫━╾╮
-┃ ᴛʏᴘᴇ : ${type.toUpperCase()} 📑
-┃ sᴛᴀᴛᴜs : ᴘᴏsᴛᴇᴅ ✅
-┃ ᴛᴀʀɢᴇᴛ : ɢʀᴏᴜᴘ 👥
-╰━━━━━━━━━━━━━━━╯
-> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
+// --- DESIGN PRESTIGE ---
+const STATUS_DESIGN = (type) => `*╭╼━≪• ${toStyledCaps('ɢʀᴏᴜᴘ sᴛᴀᴛᴜs')} •≫━╾╮*
+*┃*
+*┃* 📑 *${toStyledCaps('ᴛʏᴘᴇ')}* : *${toStyledCaps(type)}*
+*┃* ✅ *${toStyledCaps('sᴛᴀᴛᴜs')}* : *${toStyledCaps('ᴘᴏsᴛᴇᴅ')}*
+*┃* 👥 *${toStyledCaps('ᴛᴀʀɢᴇᴛ')}* : *${toStyledCaps('ɢʀᴏᴜᴘ')}*
+*┃*
+*╰━━━━━━━━━━━━━━━╯*`;
 
 module.exports = {
   name: 'groupstatus',
   aliases: ['togstatus', 'swgc', 'gs', 'gstatus'],
-  description: 'Post replied media or text as a WhatsApp group status.',
-  usage: '.groupstatus [caption]',
+  description: 'Poster un texte ou un média en statut de groupe.',
+  usage: '.gs [texte] ou répondre à un média',
   category: 'admin',
   groupOnly: true,
   adminOnly: true,
   botAdminNeeded: true,
 
-  async execute(sock, msg, args, extra) {
+  async execute(sock, msg, args, { from, reply, react }) {
     try {
-      const from = extra.from;
-
-      if (!extra.isGroup) {
-        return extra.reply('👥 This command can only be used in groups.');
-      }
-
       const caption = (args.join(' ') || '').trim();
       const ctxInfo = msg.message?.extendedTextMessage?.contextInfo;
-      const hasQuoted = !!ctxInfo?.quotedMessage;
+      const quotedMsg = ctxInfo?.quotedMessage;
 
-      // CASE 1: No quoted message -> treat as TEXT
-      if (!hasQuoted) {
+      await react('⏳');
+
+      // --- CAS 1 : TEXTE UNIQUEMENT ---
+      if (!quotedMsg) {
         if (!caption) {
-          return extra.reply(
-            `╭╼━≪• ɢʀᴏᴜᴘ sᴛᴀᴛᴜs •≫━╾╮\n` +
-            `┃ ᴜsᴀɢᴇ : .ɢs <ᴛᴇxᴛ>\n` +
-            `┃ ᴏʀ ʀᴇᴘʟʏ ᴛᴏ ᴍᴇᴅɪᴀ 📸\n` +
-            `╰━━━━━━━━━━━━━━━╯`
-          );
+          return reply(`⚠️ *${toStyledCaps('ᴠᴇᴜɪʟʟᴇᴢ ᴇɴᴛʀᴇʀ ᴜɴ ᴛᴇxᴛᴇ ᴏᴜ ʀᴇᴘᴏɴᴅʀᴇ ᴀ ᴜɴ ᴍᴇᴅɪᴀ')}*`);
         }
-
-        await extra.reply('⏳ Posting text group status...');
-
-        try {
-          await groupStatus(sock, from, {
-            text: caption,
-            backgroundColor: PURPLE_COLOR,
-          });
-          return extra.reply(STATUS_DESIGN('text'));
-        } catch (e) {
-          return extra.reply('❌ Failed: ' + (e.message || e));
-        }
+        await groupStatus(sock, from, { text: caption, backgroundColor: PURPLE_COLOR });
+        await react('✅');
+        return reply(STATUS_DESIGN('ᴛᴇxᴛ'));
       }
 
-      // CASE 2: Quoted media
-      const targetMessage = {
-        key: {
-          remoteJid: from,
-          id: ctxInfo.stanzaId,
-          participant: ctxInfo.participant,
-        },
-        message: ctxInfo.quotedMessage,
-      };
-
-      const mtype = Object.keys(targetMessage.message)[0] || '';
+      // --- CAS 2 : MÉDIA CITÉ ---
+      const mtype = Object.keys(quotedMsg)[0];
+      const mediaData = quotedMsg[mtype];
 
       const downloadBuf = async () => {
-        const qmsg = targetMessage.message;
-        const type = /image/i.test(mtype) ? 'image' : /video/i.test(mtype) ? 'video' : /audio/i.test(mtype) ? 'audio' : /sticker/i.test(mtype) ? 'sticker' : null;
-        if (!type) return null;
-        
-        const stream = await downloadContentFromMessage(qmsg[mtype] || qmsg, type);
-        const chunks = [];
-        for await (const chunk of stream) chunks.push(chunk);
-        return Buffer.concat(chunks);
+        const stream = await downloadContentFromMessage(mediaData, mtype.replace('Message', ''));
+        let buffer = Buffer.from([]);
+        for await (const chunk of stream) buffer = Buffer.concat([buffer, chunk]);
+        return buffer;
       };
 
-      // IMAGE / STICKER
-      if (/image|sticker/i.test(mtype)) {
-        await extra.reply('⏳ Posting image group status...');
-        const buf = await downloadBuf();
-        if (!buf) return extra.reply('❌ Download failed');
+      const buf = await downloadBuf();
+      if (!buf) throw new Error('ᴅᴏᴡɴʟᴏᴀᴅ_ꜰᴀɪʟᴇᴅ');
 
-        try {
-          await groupStatus(sock, from, { image: buf, caption: caption || '' });
-          return extra.reply(STATUS_DESIGN('image'));
-        } catch (e) { return extra.reply('❌ Error: ' + e.message); }
+      if (/image/i.test(mtype)) {
+        await groupStatus(sock, from, { image: buf, caption: caption });
+        await reply(STATUS_DESIGN('ɪᴍᴀɢᴇ'));
+      } else if (/video/i.test(mtype)) {
+        await groupStatus(sock, from, { video: buf, caption: caption });
+        await reply(STATUS_DESIGN('ᴠɪᴅᴇᴏ'));
+      } else if (/audio/i.test(mtype)) {
+        const vn = await toVN(buf);
+        const waveform = await generateWaveform(buf);
+        await groupStatus(sock, from, { audio: vn, mimetype: 'audio/ogg; codecs=opus', ptt: true, waveform });
+        await reply(STATUS_DESIGN('ᴀᴜᴅɪᴏ'));
+      } else {
+        return reply(`❌ *${toStyledCaps('ꜰᴏʀᴍᴀᴛ ɴᴏɴ sᴜᴘᴘᴏʀᴛᴇ')}*`);
       }
 
-      // VIDEO
-      if (/video/i.test(mtype)) {
-        await extra.reply('⏳ Posting video group status...');
-        const buf = await downloadBuf();
-        if (!buf) return extra.reply('❌ Download failed');
+      await react('✅');
 
-        try {
-          await groupStatus(sock, from, { video: buf, caption: caption || '' });
-          return extra.reply(STATUS_DESIGN('video'));
-        } catch (e) { return extra.reply('❌ Error: ' + e.message); }
-      }
-
-      // AUDIO
-      if (/audio/i.test(mtype)) {
-        await extra.reply('⏳ Posting audio group status...');
-        const buf = await downloadBuf();
-        if (!buf) return extra.reply('❌ Download failed');
-
-        try {
-          const vn = await toVN(buf);
-          const waveform = await generateWaveform(buf);
-          await groupStatus(sock, from, {
-            audio: vn,
-            mimetype: 'audio/ogg; codecs=opus',
-            ptt: true,
-            waveform,
-          });
-          return extra.reply(STATUS_DESIGN('audio'));
-        } catch (e) { return extra.reply('❌ Error: ' + e.message); }
-      }
-
-      return extra.reply('❌ Unsupported media type.');
     } catch (e) {
-      return extra.reply('❌ Error: ' + (e.message || e));
+      console.error(e);
+      await reply(`❌ *${toStyledCaps('ᴇᴄʜᴇᴄ ᴅᴇ ʟᴀ ᴘᴜʙʟɪᴄᴀᴛɪᴏɴ')}*`);
     }
-  },
+  }
 };
 
-// ---- Helpers (Inchangés pour préserver la fonctionnalité) ----
+// ---- HELPERS CORE ----
 
 async function groupStatus(sock, jid, content) {
   const { backgroundColor } = content;
-  delete content.backgroundColor;
-  const inside = await generateWAMessageContent(content, {
+  const contentToUpload = { ...content };
+  delete contentToUpload.backgroundColor;
+
+  const inside = await generateWAMessageContent(contentToUpload, {
     upload: sock.waUploadToServer,
     backgroundColor: backgroundColor || PURPLE_COLOR,
   });
+
   const secret = crypto.randomBytes(32);
   const msg = generateWAMessageFromContent(jid, {
     messageContextInfo: { messageSecret: secret },
@@ -153,6 +112,7 @@ async function groupStatus(sock, jid, content) {
       message: { ...inside, messageContextInfo: { messageSecret: secret } },
     },
   }, {});
+
   await sock.relayMessage(jid, msg.message, { messageId: msg.key.id });
   return msg;
 }
@@ -184,7 +144,6 @@ function generateWaveform(buffer, bars = 64) {
         if (size === 0) return resolve(undefined);
         const avg = Array.from({ length: bars }, (_, i) => amps.slice(i * size, (i + 1) * size).reduce((a, b) => a + b, 0) / size);
         const max = Math.max(...avg);
-        if (max === 0) return resolve(undefined);
         resolve(Buffer.from(avg.map((v) => Math.floor((v / max) * 100))).toString('base64'));
       }).pipe().on('data', (c) => chunks.push(c));
   });
