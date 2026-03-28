@@ -1,74 +1,90 @@
 /**
- * ᴄʟᴇᴀɴ ᴄᴏᴍᴍᴀɴᴅ - ᴀɢᴍ sʏsᴛᴇᴍ ᴄᴏʀᴇ
- * ᴘᴜʀɢᴇ ᴍᴇssᴀɢᴇs ꜰʀᴏᴍ ᴄʜᴀᴛ ᴏʀ sᴘᴇᴄɪꜰɪᴄ ᴜsᴇʀ
- * sᴛʏʟᴇ ʙʏ -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
+ * CLEAN COMMAND - AGM SYSTEM CORE
+ * PURGE MESSAGES FROM CHAT OR SPECIFIC USER
+ * STYLE BY -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
-// --- ᴅᴇsɪɢɴ ᴀɢᴍ ---
-const ᴀɢᴍ_ᴄʟᴇᴀɴ = (ᴄᴏᴜɴᴛ, ᴛᴀʀɢᴇᴛ) => `╭╼━≪• *ɢʜᴏsᴛ sʏsᴛᴇᴍ ᴄʟᴇᴀɴ* •≫━╾╮
-┃ *sᴛᴀᴛᴜs* : 🧹 ɴᴇᴛᴛᴏʏᴀɢᴇ
-┃ *ᴄɪʙʟᴇ* : ${ᴛᴀʀɢᴇᴛ ? '@' + ᴛᴀʀɢᴇᴛ.sᴘʟɪᴛ('@')[0] : 'ᴛᴏᴜs ʟᴇs ᴍᴇssᴀɢᴇs'}
-┃ *ǫᴜᴀɴᴛɪᴛᴇ́* : ${ᴄᴏᴜɴᴛ} ᴍsɢs
-╰━━━━━━━━━━━━━━━╯
+// --- FONCTION DE CONVERSION EN SMALL CAPS ---
+const toStyledCaps = (text) => {
+  if (!text) return "";
+  const fonts = {
+    'a': 'ᴀ','b': 'ʙ','c': 'ᴄ','d':'ᴅ','e':'ᴇ','f':'ғ','g':'ɢ','h':'ʜ',
+    'i':'ɪ','j':'ᴊ','k':'ᴋ','l':'ʟ','m':'ᴍ','n':'ɴ','o':'ᴏ','p':'ᴘ',
+    'q':'ǫ','r':'ʀ','s':'ꜱ','t':'ᴛ','u':'ᴜ','v':'ᴠ','w':'ᴡ','x':'x',
+    'y':'ʏ','z':'ᴢ'
+  };
+  return String(text).toLowerCase().split('').map(c => fonts[c] || c).join('');
+};
+
+// --- DESIGN AGM PRESTIGE (GRAS) ---
+const AGM_CLEAN = (count, target) => {
+  const targetLabel = target ? '@' + target.split('@')[0] : toStyledCaps('ᴛᴏᴜs ʟᴇs ᴍᴇssᴀɢᴇs');
+  return `*╭╼━≪• ${toStyledCaps('ɢʜᴏsᴛ sʏsᴛᴇᴍ ᴄʟᴇᴀɴ')} •≫━╾╮*
+*┃*
+*┃* 🧹 *${toStyledCaps('sᴛᴀᴛᴜs')}* : *${toStyledCaps('ɴᴇᴛᴛᴏʏᴀɢᴇ')}*
+*┃* 👤 *${toStyledCaps('ᴄɪʙʟᴇ')}* : *${targetLabel}*
+*┃* 📦 *${toStyledCaps('ǫᴜᴀɴᴛɪᴛᴇ')}* : *${count} ${toStyledCaps('ᴍsɢs')}*
+*┃*
+*╰━━━━━━━━━━━━━━━╯*
 > *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
+};
 
 module.exports = {
   name: 'clean',
   aliases: ['purge', 'clear', 'del', 'suppr'],
   category: 'admin',
-  description: 'sᴜᴘᴘʀɪᴍᴇʀ ʟᴇs ᴍᴇssᴀɢᴇs ᴅᴜ ɢʀᴏᴜᴘᴇ (ᴛᴏᴜs ᴏᴜ ᴘᴀʀ ᴜᴛɪʟɪsᴀᴛᴇᴜʀ).',
-  usage: '.ᴄʟᴇᴀɴ <ɴᴏᴍʙʀᴇ>',
+  description: 'Supprimer les messages du groupe (tous ou par utilisateur).',
+  usage: '.clean <nombre>',
   groupOnly: true,
   adminOnly: true,
   botAdminNeeded: true,
-  
+
   async execute(sock, msg, args, { from, reply, react }) {
     try {
-      const ᴄᴏᴜɴᴛ = parseInt(args[0]);
-      if (!ᴄᴏᴜɴᴛ || ᴄᴏᴜɴᴛ < 1 || ᴄᴏᴜɴᴛ > 100) {
-        return reply('❌ *ᴠᴇᴜɪʟʟᴇᴢ ᴇɴᴛʀᴇʀ ᴜɴ ɴᴏᴍʙʀᴇ ᴠᴀʟɪᴅᴇ (1-100).*');
+      const count = parseInt(args[0]);
+      if (isNaN(count) || count < 1 || count > 100) {
+        return reply(`❌ *${toStyledCaps('ᴠᴇᴜɪʟʟᴇᴢ ᴇɴᴛʀᴇʀ ᴜɴ ɴᴏᴍʙʀᴇ ᴠᴀʟɪᴅᴇ (1-100)')}*`);
       }
 
-      // ʀᴇ́ᴄᴜᴘᴇ́ʀᴀᴛɪᴏɴ ᴅᴜ sᴛᴏʀᴇ ᴅᴇᴘᴜɪs ʟ'ɪɴᴅᴇx
-      const { store } = require('../../index');
-      const ǫᴜᴏᴛᴇᴅᴊɪᴅ = msg.message?.extendedTextMessage?.contextInfo?.participant;
+      // Récupération du store (vérifie bien ton chemin d'import)
+      const store = global.store; 
+      const quotedJid = msg.message?.extendedTextMessage?.contextInfo?.participant;
 
-      const ᴍsɢs = store.messages[from];
-      if (!ᴍsɢs) {
-        return reply('❌ *ᴀᴜᴄᴜɴ ᴍᴇssᴀɢᴇ ᴇɴʀᴇɢɪsᴛʀᴇ́ ᴅᴀɴs ʟᴇ sᴛᴏʀᴇ.*');
+      if (!store || !store.messages[from]) {
+        return reply(`❌ *${toStyledCaps('ᴀᴜᴄᴜɴ ᴍᴇssᴀɢᴇ ᴇɴʀᴇɢɪsᴛʀᴇ ᴅᴀɴs ʟᴇ sᴛᴏʀᴇ')}*`);
       }
 
-      let ᴍᴇssᴀɢᴇsᴛᴏᴅᴇʟᴇᴛᴇ = [];
-      const ᴀʟʟᴍsɢs = Object.values(ᴍsɢs).sort((a, b) => (b.messageTimestamp || 0) - (a.messageTimestamp || 0));
+      const allMsgs = store.messages[from].array(); // Utilisation de .array() si store Baileys
+      let messagesToDelete = [];
 
-      if (ǫᴜᴏᴛᴇᴅᴊɪᴅ) {
-        // mode : supprimer uniquement les messages de l'utilisateur cité
-        ᴍᴇssᴀɢᴇsᴛᴏᴅᴇʟᴇᴛᴇ = ᴀʟʟᴍsɢs.filter(m => (m.key.participant || m.key.remoteJid) === ǫᴜᴏᴛᴇᴅᴊɪᴅ).slice(0, ᴄᴏᴜɴᴛ);
+      if (quotedJid) {
+        // Mode : messages de l'utilisateur cité
+        messagesToDelete = allMsgs.filter(m => (m.key.participant || m.key.remoteJid) === quotedJid).reverse().slice(0, count);
       } else {
-        // mode : supprimer les derniers messages du chat
-        ᴍᴇssᴀɢᴇsᴛᴏᴅᴇʟᴇᴛᴇ = ᴀʟʟᴍsɢs.slice(0, ᴄᴏᴜɴᴛ);
+        // Mode : derniers messages du chat
+        messagesToDelete = allMsgs.reverse().slice(0, count);
       }
 
-      if (ᴍᴇssᴀɢᴇsᴛᴏᴅᴇʟᴇᴛᴇ.length === 0) {
-        return reply('❌ *ᴀᴜᴄᴜɴ ᴍᴇssᴀɢᴇ ᴛʀᴏᴜᴠᴇ́ ᴀ̀ sᴜᴘᴘʀɪᴍᴇʀ.*');
+      if (messagesToDelete.length === 0) {
+        return reply(`❌ *${toStyledCaps('ᴀᴜᴄᴜɴ ᴍᴇssᴀɢᴇ ᴛʀᴏᴜᴠᴇ')}*`);
       }
 
       await react('🧹');
-      await reply(ᴀɢᴍ_ᴄʟᴇᴀɴ(ᴍᴇssᴀɢᴇsᴛᴏᴅᴇʟᴇᴛᴇ.length, ǫᴜᴏᴛᴇᴅᴊɪᴅ));
+      await reply(AGM_CLEAN(messagesToDelete.length, quotedJid));
 
-      for (const m of ᴍᴇssᴀɢᴇsᴛᴏᴅᴇʟᴇᴛᴇ) {
+      for (const m of messagesToDelete) {
         try {
           await sock.sendMessage(from, { delete: m.key });
-          // petit délai pour éviter le spam-ban de whatsapp
-          await new Promise(resolve => setTimeout(resolve, 250));
+          // Délai de sécurité pour éviter le bannissement
+          await new Promise(resolve => setTimeout(resolve, 500));
         } catch (err) {
-          // ignorer les erreurs de suppression (messages trop vieux, etc.)
+          // On ignore les messages de plus de 24h (insupprimables par le bot)
         }
       }
-      
-    } catch (ᴇ) {
-      console.error('[ᴄʟᴇᴀɴ ᴇʀʀᴏʀ]:', ᴇ);
-      reply('❌ *ᴇʀʀᴇᴜʀ ʟᴏʀs ᴅᴜ ɴᴇᴛᴛᴏʏᴀɢᴇ.*');
+
+    } catch (error) {
+      console.error('[CLEAN ERROR]:', error);
+      reply(`❌ *${toStyledCaps('ᴇʀʀᴇᴜʀ ʟᴏʀs ᴅᴜ ɴᴇᴛᴛᴏʏᴀɢᴇ')}*`);
     }
   }
 };
