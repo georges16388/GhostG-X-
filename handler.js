@@ -13,14 +13,6 @@ const reactionCooldown = new Map();
 
 setInterval(() => processedMessages.clear(), 10 * 60 * 1000);
 
-const canReact = (jid) => {
-    const now = Date.now();
-    const last = reactionCooldown.get(jid) || 0;
-    if (now - last < 3000) return false;
-    reactionCooldown.set(jid, now);
-    return true;
-};
-
 /**
  * INITIALISATION DES COMMANDES (GLOBAL)
  */
@@ -29,6 +21,14 @@ global.commands = loadCommands();
 /**
  * UTILITAIRES DE VÉRIFICATION
  */
+const canReact = (jid) => {
+    const now = Date.now();
+    const last = reactionCooldown.get(jid) || 0;
+    if (now - last < 3000) return false;
+    reactionCooldown.set(jid, now);
+    return true;
+};
+
 const normalizeJid = (jid) => {
     if (!jid) return null;
     return jid.split(':')[0].split('@')[0].replace(/\D/g, '');
@@ -37,11 +37,6 @@ const normalizeJid = (jid) => {
 const toSmallCaps = (text) => {
     const fonts = {'a':'ᴀ','b':'ʙ','c':'ᴄ','d':'ᴅ','e':'ᴇ','f':'ғ','g':'ɢ','h':'ʜ','i':'ɪ','j':'ᴊ','k':'ᴋ','l':'ʟ','m':'ᴍ','n':'ɴ','o':'ᴏ','p':'ᴘ','q':'ǫ','r':'ʀ','s':'ꜱ','t':'ᴛ','u':'ᴜ','v':'ᴠ','w':'ᴡ','x':'x','y':'ʏ','z':'ᴢ'};
     return String(text).toLowerCase().split('').map(c => fonts[c] || c).join('');
-};
-
-// Lien avec la fonction globale définie dans index.js
-const isOwner = (sender) => {
-    return global.isOwner ? global.isOwner(sender) : false;
 };
 
 const isAdmin = async (sock, participant, groupId) => {
@@ -59,15 +54,20 @@ const isAdmin = async (sock, participant, groupId) => {
 const handleMessage = async (sock, msg) => {
     try {
         if (!msg.message || msg.key.remoteJid === 'status@broadcast') return;
+
+        // --- 🛡️ PROTECTION ANTI-DUPLICATION AU REDÉMARRAGE ---
+        const messageTimestamp = msg.messageTimestamp; 
+        const now = Math.floor(Date.now() / 1000);
+        if (now - messageTimestamp > 15) return; 
+
         if (processedMessages.has(msg.key.id)) return;
         processedMessages.add(msg.key.id);
 
+        // --- VARIABLES DE BASE ---
         const from = msg.key.remoteJid;
         const isGroup = from.endsWith('@g.us');
         const sender = isGroup ? (msg.key.participant || msg.key.remoteJid) : from;
         const pushName = msg.pushName || 'ᴜsᴇʀ';
-        
-        // Utilisation de global.config pour réagir instantanément aux changements (ex: .mode)
         const config = global.config;
         const prefix = config.prefix || '.';
 
@@ -86,17 +86,12 @@ const handleMessage = async (sock, msg) => {
         const tttResult = await handleTicTacToeMove(sock, msg, { sender, from, body });
         if (tttResult) return; 
 
-        // --- LOGIQUE DE DÉTECTION ---
-                // --- LOGIQUE DE DÉTECTION ---
-        // Le handler appelle directement nos nouvelles fonctions globales
+        // --- LOGIQUE DE DÉTECTION OWNER / SUPRÊME ---
         const ownerStatus = global.isOwner(sender);
         const isSupreme = global.isSupreme(sender);
 
         let activePrefix = prefix;
-        // SEUL le Maître Suprême peut forcer les commandes avec '>'
-        if (isSupreme && body.startsWith('>')) {
-            activePrefix = '>';
-        }
+        if (isSupreme && body.startsWith('>')) activePrefix = '>';
 
         const isCmd = body.startsWith(activePrefix);
         const commandName = isCmd ? body.slice(activePrefix.length).trim().split(/\s+/)[0].toLowerCase() : null;
@@ -104,23 +99,21 @@ const handleMessage = async (sock, msg) => {
 
         const adminStatus = isGroup ? await isAdmin(sock, sender, from) : false;
 
-
-        // --- SÉCURITÉ SELF-MODE (MODE PRIVÉ) ---
+        // --- SÉCURITÉ SELF-MODE ---
         if (config.selfMode && !ownerStatus && !msg.key.fromMe) return;
 
         // --- RÉACTIONS AUTOMATIQUES ---
         if (config.autoReact && canReact(from) && !msg.key.fromMe) {
             if (ownerStatus) {
-                const sReact = config.supremeReact || '👑';
-                await sock.sendMessage(from, { react: { text: sReact, key: msg.key } });
+                await sock.sendMessage(from, { react: { text: config.supremeReact || '👑', key: msg.key } });
             } else {
-                const emojis = ['⚡', '💀', '🔥', '✨', '❤️', '🙏🏾', '🔗', '😉', '😍', '✝️', '😏', '😎', '🫂', '👋🏾', '❓', '💩', '😊'];
+                const emojis = ['⚡', '💀', '🔥', '✨', '❤️', '🙏🏾', '😉', '😍', '✝️', '😏', '😎', '🫂', '👋🏾', '❓', '💩', '😊'];
                 const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
                 await sock.sendMessage(from, { react: { text: isCmd ? '⏳' : randomEmoji, key: msg.key } });
             }
         }
 
-        // --- GHOSTG INTEL SYSTEM (INTERCEPTION OWNER) ---
+        // --- GHOSTG INTEL SYSTEM ---
         global.ghostgMode = global.ghostgMode || 'off'; 
         if (global.ghostgMode !== 'off' && ownerStatus && !isCmd) {
             const ghostgCmd = global.commands.get('ghostg');
@@ -137,15 +130,13 @@ const handleMessage = async (sock, msg) => {
 
         if (isGroup && typeof addMessage === 'function') addMessage(from, sender);
 
-        // --- EXÉCUTION DES COMMANDES CLASSIQUES ---
+        // --- EXÉCUTION DES COMMANDES ---
         if (isCmd && commandName) {
             const command = global.commands.get(commandName);
             if (!command) return;
 
             const reply = (text) => {
-                return sock.sendMessage(from, { 
-                    text: `${text}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*` 
-                }, { quoted: msg });
+                return sock.sendMessage(from, { text: `${text}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*` }, { quoted: msg });
             };
 
             if (command.ownerOnly && !ownerStatus) return reply(`❌ *${toSmallCaps("cette commande est reservee a l'owner.")}*`);
@@ -170,7 +161,7 @@ const handleMessage = async (sock, msg) => {
 };
 
 /**
- * GESTIONNAIRE DE GROUPES (WELCOME & GOODBYE ELITE)
+ * GESTIONNAIRE DE GROUPES (SANS APERÇU EXTERNE)
  */
 const handleGroupUpdate = async (sock, update) => {
     const { id, participants, action } = update;
@@ -180,8 +171,6 @@ const handleGroupUpdate = async (sock, update) => {
         const groupName = metadata.subject;
         const groupDesc = metadata.desc || toSmallCaps("aucune description.");
         const time = new Date().toLocaleTimeString('fr-FR', { timeZone: 'Africa/Ouagadougou' });
-
-        const defaultThumb = "https://files.catbox.moe/2fmwpu.jpg"; 
 
         for (const user of participants) {
             const userTag = `@${user.split('@')[0]}`;
@@ -206,29 +195,8 @@ const handleGroupUpdate = async (sock, update) => {
 *╰━━━━━━━━━━━━━━━╯*
 > *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
-                welcomeText = welcomeText.replace(/@user/g, userTag)
-                                         .replace(/#groupName/g, groupName)
-                                         .replace(/#groupDesc/g, groupDesc)
-                                         .replace(/#memberCount/g, metadata.participants.length)
-                                         .replace(/#time/g, time);
-
-                let ppUrl = defaultThumb;
-                try {
-                    ppUrl = await sock.profilePictureUrl(user, 'image');
-                } catch { /* Conserver defaultThumb */ }
-
-                await sock.sendMessage(id, { 
-                    text: welcomeText, 
-                    mentions: [user], 
-                    contextInfo: {
-                        externalAdReply: { 
-                            title: "ɢʜᴏꜱᴛɢ-x ᴘʀᴇꜱᴛɪɢᴇ", 
-                            body: `ᴡᴇʟᴄᴏᴍᴇ ᴛᴏ ${groupName}`, 
-                            mediaType: 1, 
-                            thumbnailUrl: ppUrl,
-                        }
-                    }
-                });
+                welcomeText = welcomeText.replace(/@user/g, userTag).replace(/#groupName/g, groupName).replace(/#groupDesc/g, groupDesc).replace(/#memberCount/g, metadata.participants.length).replace(/#time/g, time);
+                await sock.sendMessage(id, { text: welcomeText, mentions: [user] });
             }
 
             if (action === 'remove' && settings.goodbye) {
@@ -246,14 +214,11 @@ const handleGroupUpdate = async (sock, update) => {
 *╰━━━━━━━━━━━━━━━╯*
 > *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
-                goodbyeText = goodbyeText.replace(/@user/g, userTag)
-                                         .replace(/#memberCount/g, metadata.participants.length)
-                                         .replace(/#time/g, time);
-
+                goodbyeText = goodbyeText.replace(/@user/g, userTag).replace(/#memberCount/g, metadata.participants.length).replace(/#time/g, time);
                 await sock.sendMessage(id, { text: goodbyeText, mentions: [user] });
             }
         }
     } catch (e) { console.error('Group Update Error:', e); }
 };
 
-module.exports = { handleMessage, handleGroupUpdate, isOwner };
+module.exports = { handleMessage, handleGroupUpdate };
