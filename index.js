@@ -5,14 +5,17 @@
  */
 
 const Baileys = require('@whiskeysockets/baileys');
-const makeWASocket = Baileys.default;
 const { 
+    default: makeWASocket, 
     useMultiFileAuthState, 
     DisconnectReason, 
     fetchLatestBaileysVersion,
     makeInMemoryStore 
 } = Baileys;
 
+const pino = require('pino');
+const fs = require('fs');
+const path = require('path');
 
 // --- CHARGEMENT DE LA CONFIGURATION ---
 const config = require('./config');
@@ -28,9 +31,9 @@ if (!fs.existsSync(tmpDir)) {
     console.log('✅ [ꜱʏꜱᴛᴇᴍ] ᴅᴏꜱꜱɪᴇʀ ᴛᴍᴘ ᴄʀᴇᴇ ᴀᴠᴇᴄ ꜱᴜᴄᴄᴇꜱ');
 }
 
-// --- INITIALISATION DU STORE (MÉMOIRE DES MESSAGES) ---
+// --- INITIALISATION DU STORE ---
 const store = makeInMemoryStore({ 
-    logger: pino().child({ level: 'silent', stream: 'store' }) 
+    logger: pino({ level: 'silent' }) 
 });
 global.store = store; 
 
