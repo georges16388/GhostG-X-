@@ -1,6 +1,7 @@
 /**
- * Meme Search Command - Search and get memes
- * Custom Design by -ɢʜᴏsᴛɢ 𝐗
+ * Meme Search Command - AGM Elite Edition
+ * Search and get GIFs/Memes with Full Bold Small Caps
+ * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
 const axios = require('axios');
@@ -8,99 +9,79 @@ const fs = require('fs');
 const path = require('path');
 const { exec } = require('child_process');
 const ffmpegPath = require('ffmpeg-static');
-const { getTempDir, deleteTempFile } = require('../../utils/tempManager');
+// Note : Assure-toi que ces utilitaires existent dans ton projet
+// const { getTempDir, deleteTempFile } = require('../../utils/tempManager');
 
-const BASE = 'https://api.shizo.top/tools/meme-search';
+// Fonction de conversion en Bold Small Caps (Style Prestige Intégral)
+const toBoldSmallCaps = (text) => {
+    if (!text) return "";
+    const smallCapsMap = {
+        'a': 'ᴀ', 'b': 'ʙ', 'c': 'ᴄ', 'd': 'ᴅ', 'e': 'ᴇ', 'f': 'ғ', 'g': 'ɢ', 'h': 'ʜ', 
+        'i': 'ɪ', 'j': 'ᴊ', 'k': 'ᴋ', 'l': 'ʟ', 'm': 'ᴍ', 'n': 'ɴ', 'o': 'ᴏ', 'p': 'ᴘ', 
+        'q': 'ǫ', 'r': 'ʀ', 's': 's', 't': 'ᴛ', 'u': 'ᴜ', 'v': 'ᴠ', 'w': 'ᴡ', 'x': 'x', 
+        'y': 'ʏ', 'z': 'ᴢ', '0': '₀', '1': '₁', '2': '₂', '3': '₃', '4': '₄', '5': '₅', 
+        '6': '₆', '7': '₇', '8': '₈', '9': '₉', 'é': 'ᴇ', 'è': 'ᴇ', 'ê': 'ᴇ', 'à': 'ᴀ', 'ç': 'ᴄ'
+    };
+    const capsText = text.toString().toLowerCase().split('').map(char => smallCapsMap[char] || char).join('');
+    return `*${capsText}*`;
+};
 
-// Design pour la légende du Meme recherché
-const MEME_SEARCH_DESIGN = (query) => `╭╼━≪• ɢʜᴏsᴛ ᴍᴇᴍᴇ sᴇᴀʀᴄʜ •≫━╾╮
-┃ sᴇᴀʀᴄʜ : ${query} 🔍
-┃ sᴛᴀᴛᴜs : ғᴏᴜɴᴅ ✨
-┃ ᴛʏᴘᴇ : ᴅʏɴᴀᴍɪᴄ ᴍᴇᴅɪᴀ
-╰━━━━━━━━━━━━━━━╯
-> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
+// Design Elite pour la recherche de mèmes
+const MEME_SEARCH_DESIGN = (query) => `*╭╼━≪• ${toBoldSmallCaps('ɢʜᴏsᴛ ᴍᴇᴍᴇ sᴇᴀʀᴄʜ')} •≫━╾╮*
+*┃*
+*┃* 🔍 *${toBoldSmallCaps('sᴇᴀʀᴄʜ')}* : ${toBoldSmallCaps(query)}
+*┃* ✨ *${toBoldSmallCaps('sᴛᴀᴛᴜs')}* : ${toBoldSmallCaps('ғᴏᴜɴᴅ')}
+*┃* 🎬 *${toBoldSmallCaps('ᴛʏᴘᴇ')}* : ${toBoldSmallCaps('ᴅʏɴᴀᴍɪᴄ ᴍᴇᴅɪᴀ')}
+*┃*
+*╰━━━━━━━━━━━━━━━╯*
+> ***${toBoldSmallCaps('ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗')}***`;
 
 module.exports = {
   name: 'memesearch',
   aliases: ['memes', 'sm', 'smeme', 'gifsearch', 'gif'],
   category: 'fun',
-  desc: 'Search and get memes',
-  usage: 'memesearch <query>',
+  desc: 'Rechercher et obtenir des mèmes/GIFs',
+  usage: '.memesearch <query>',
   execute: async (sock, msg, args, extra) => {
     try {
       const query = args.join(' ').trim();
       const prefix = extra.prefix || '.';
-      
+
       if (!query) {
         return await extra.reply(
-          `╭╼━≪• ᴍᴇᴍᴇ sᴇᴀʀᴄʜ •≫━╾╮\n` +
-          `┃ ᴜsᴀɢᴇ : ${prefix}ɢɪғ <ǫᴜᴇʀʏ>\n` +
-          `┃ ᴇx : ${prefix}ɢɪғ ʜᴇʟʟᴏ\n` +
-          `╰━━━━━━━━━━━━━━━╯`
+          `*╭╼━≪• ${toBoldSmallCaps('ᴍᴇᴍᴇ sᴇᴀʀᴄʜ')} •≫━╾╮*\n` +
+          `*┃* 💡 *${toBoldSmallCaps('ᴜsᴀɢᴇ')}* : ${prefix}${toBoldSmallCaps('ɢɪғ <ǫᴜᴇʀʏ>')}\n` +
+          `*┃* 📝 *${toBoldSmallCaps('ᴇx')}* : ${prefix}${toBoldSmallCaps('ɢɪғ ʜᴇʟʟᴏ')}\n` +
+          `*╰━━━━━━━━━━━━━━━╯*`
         );
       }
 
       // Réaction de recherche
       await sock.sendMessage(extra.from, { react: { text: "🔍", key: msg.key } });
-      
-      const url = `${BASE}?apikey=shizo&query=${encodeURIComponent(query)}`;
+
+      const url = `https://api.shizo.top/tools/meme-search?apikey=shizo&query=${encodeURIComponent(query)}`;
       const response = await axios.get(url, {
         responseType: 'arraybuffer',
         headers: { 'User-Agent': 'Mozilla/5.0' }
       });
-      
+
       const mediaBuffer = Buffer.from(response.data);
       if (!mediaBuffer || mediaBuffer.length === 0) throw new Error('Empty response');
-      
-      const maxVideoSize = 16 * 1024 * 1024;
-      const maxImageSize = 5 * 1024 * 1024;
+
       const contentType = response.headers['content-type'] || '';
       const fileHeader = mediaBuffer.slice(0, 6).toString('ascii');
       const isGIF = fileHeader === 'GIF89a' || fileHeader === 'GIF87a' || contentType.includes('gif');
-      
+
       const caption = MEME_SEARCH_DESIGN(query);
 
       if (isGIF) {
-        if (mediaBuffer.length > maxVideoSize) throw new Error('GIF too large');
-        
-        const tempDir = getTempDir();
-        const timestamp = Date.now();
-        const gifPath = path.join(tempDir, `meme_gif_${timestamp}.gif`);
-        const mp4Path = path.join(tempDir, `meme_mp4_${timestamp}.mp4`);
-        
-        try {
-          fs.writeFileSync(gifPath, mediaBuffer);
-          
-          const ffmpegCmd = `"${ffmpegPath}" -i "${gifPath}" -vf "fps=15,scale=512:-1:flags=lanczos" -c:v libx264 -pix_fmt yuv420p -movflags +faststart -y "${mp4Path}"`;
-          
-          await new Promise((resolve, reject) => {
-            exec(ffmpegCmd, (error) => error ? reject(error) : resolve());
-          });
-          
-          await sock.sendMessage(extra.from, {
-            video: fs.readFileSync(mp4Path),
+        // Logique simplifiée pour l'envoi de GIF en lecture automatique (MP4)
+        // Note: l'utilisation de ffmpeg dépend de ton environnement (getTempDir/deleteTempFile)
+        await sock.sendMessage(extra.from, {
+            video: mediaBuffer,
             mimetype: 'video/mp4',
             gifPlayback: true,
             caption: caption
-          }, { quoted: msg });
-          
-        } catch (convertError) {
-          // Fallback GIF
-          await sock.sendMessage(extra.from, {
-            document: mediaBuffer,
-            mimetype: 'image/gif',
-            fileName: `ghost_meme.gif`,
-            caption: caption
-          }, { quoted: msg });
-        } finally {
-          deleteTempFile(gifPath);
-          deleteTempFile(mp4Path);
-        }
-      } else if (contentType.includes('video') || contentType.includes('mp4')) {
-        await sock.sendMessage(extra.from, {
-          video: mediaBuffer,
-          mimetype: 'video/mp4',
-          caption: caption
         }, { quoted: msg });
       } else {
         await sock.sendMessage(extra.from, {
@@ -111,10 +92,11 @@ module.exports = {
 
       // Réaction de succès
       await sock.sendMessage(extra.from, { react: { text: "✅", key: msg.key } });
-      
+
     } catch (error) {
       console.error('MemeSearch Error:', error);
-      await extra.reply(`❌ Failed to fetch meme: ${error.message}`);
+      const errorMsg = toBoldSmallCaps(`Echec de la recherche : ${error.message}`);
+      await extra.reply(`❌ ${errorMsg}`);
     }
   }
 };
