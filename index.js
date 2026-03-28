@@ -153,7 +153,11 @@ async function createBotSocket() {
             syncFullHistory: false,
         });
 
-       
+       // Dans index.js, là où tu as tes sock.ev.on
+sock.ev.on('messages.delete', async (update) => {
+    await handler.handleAntiDelete(sock, update);
+});
+
 
         // --- GESTION DE LA CONNEXION ---
         sock.ev.on('connection.update', async (update) => {
