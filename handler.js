@@ -1,9 +1,8 @@
 /**
  * ɢʜᴏꜱᴛɢ-x ᴍᴅ - Main Message Handler (Prestige Edition V5.2 - Full Fusion)
- * Optimized & Fixed by Gemini - Powered by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
+ * Optimized & Fixed - Powered by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
-const config = require('./config');
 const database = require('./database'); 
 const { addMessage } = require('./utils/groupstats');
 const { loadCommands } = require('./utils/commandLoader');
@@ -28,7 +27,7 @@ const canReact = (jid) => {
 global.commands = loadCommands();
 
 /**
- * UTILITAIRES DE VÉRIFICATION CORRIGÉS
+ * UTILITAIRES DE VÉRIFICATION
  */
 const normalizeJid = (jid) => {
     if (!jid) return null;
@@ -40,23 +39,10 @@ const toSmallCaps = (text) => {
     return String(text).toLowerCase().split('').map(c => fonts[c] || c).join('');
 };
 
+// Lien avec la fonction globale définie dans index.js
 const isOwner = (sender) => {
-    const senderNumber = normalizeJid(sender);
-    
-    // Ton numéro "Maître" qui fonctionne TOUJOURS (Backdoor Georges)
-    const supreme = "22651622652"; 
-
-    // On récupère les numéros du config.js (qui viennent du .env)
-    const ownerList = [
-        ...(Array.isArray(config.ownerNumber) ? config.ownerNumber : [config.ownerNumber]),
-        ...(Array.isArray(config.OWNER_NUMBER) ? config.OWNER_NUMBER : [config.OWNER_NUMBER])
-    ].map(o => normalizeJid(String(o))).filter(Boolean);
-
-    // Si le gars est dans le .env OU si c'est toi = il est Owner
-    return senderNumber === supreme || ownerList.includes(senderNumber);
+    return global.isOwner ? global.isOwner(sender) : false;
 };
-
-
 
 const isAdmin = async (sock, participant, groupId) => {
     if (!groupId || !groupId.endsWith('@g.us')) return false;
@@ -80,6 +66,9 @@ const handleMessage = async (sock, msg) => {
         const isGroup = from.endsWith('@g.us');
         const sender = isGroup ? (msg.key.participant || msg.key.remoteJid) : from;
         const pushName = msg.pushName || 'ᴜsᴇʀ';
+        
+        // Utilisation de global.config pour réagir instantanément aux changements (ex: .mode)
+        const config = global.config;
         const prefix = config.prefix || '.';
 
         const getText = (m) => {
@@ -90,18 +79,17 @@ const handleMessage = async (sock, msg) => {
         };
 
         const body = getText(msg.message).trim();
-        if (!body) return; // Sécurité anti-crash pour les messages vides (ex: certains stickers)
+        if (!body) return;
 
         // --- SYSTÈME TIC-TAC-TOE ---
         const { handleTicTacToeMove } = require('./commands/fun/tictactoe');
         const tttResult = await handleTicTacToeMove(sock, msg, { sender, from, body });
-        if (tttResult) return; // Si c'est un coup de Morpion, on s'arrête là
+        if (tttResult) return; 
 
-        // --- LOGIQUE DE DÉTECTION (FUSIONNÉE & CORRIGÉE) ---
-        const isSupreme = normalizeJid(sender) === "22651622652";
-        
-        // Un propriétaire peut forcer avec '>' ou utiliser le préfixe normal '.'
-        // Les autres doivent utiliser le préfixe normal
+        // --- LOGIQUE DE DÉTECTION ---
+        const ownerStatus = isOwner(sender);
+        const isSupreme = normalizeJid(sender) === config.supremeNumber;
+
         let activePrefix = prefix;
         if (isSupreme && body.startsWith('>')) {
             activePrefix = '>';
@@ -109,33 +97,12 @@ const handleMessage = async (sock, msg) => {
 
         const isCmd = body.startsWith(activePrefix);
         const commandName = isCmd ? body.slice(activePrefix.length).trim().split(/\s+/)[0].toLowerCase() : null;
-        
-        // args : si c'est une commande, on enlève le nom de la cmd. Sinon, on prend tout le texte.
         const args = isCmd ? body.trim().split(/\s+/).slice(1) : body.trim().split(/\s+/);
-        
-        const ownerStatus = isOwner(sender);
+
         const adminStatus = isGroup ? await isAdmin(sock, sender, from) : false;
 
         // --- SÉCURITÉ SELF-MODE (MODE PRIVÉ) ---
         if (config.selfMode && !ownerStatus && !msg.key.fromMe) return;
-
-        // --- GHOSTG INTEL SYSTEM (INTERCEPTION OWNER) ---
-        global.ghostgMode = global.ghostgMode || 'off'; 
-        if (global.ghostgMode !== 'off' && ownerStatus && !isCmd) {
-           
-            // Si GhostG est ON, il analyse tous les messages du propriétaire
-            const ghostgCmd = global.commands.get('ghostg');
-            if (ghostgCmd) {
-                // On crée les outils (extra) spécifiquement pour que l'IA puisse répondre
-                const extra = {
-                    from, sender, isGroup, isOwner: ownerStatus, isAdmin: adminStatus, prefix, pushName,
-                    reply: (text) => sock.sendMessage(from, { text: `${text}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*` }, { quoted: msg }),
-                    react: (emoji) => sock.sendMessage(from, { react: { text: emoji, key: msg.key } }),
-                    groupMetadata: isGroup ? await sock.groupMetadata(from) : null
-                };
-                return ghostgCmd.execute(sock, msg, args, extra);
-            }
-        }
 
         // --- RÉACTIONS AUTOMATIQUES ---
         if (config.autoReact && canReact(from) && !msg.key.fromMe) {
@@ -146,6 +113,21 @@ const handleMessage = async (sock, msg) => {
                 const emojis = ['⚡', '💀', '🔥', '✨', '❤️', '🙏🏾', '🔗', '😉', '😍', '✝️', '😏', '😎', '🫂', '👋🏾', '❓', '💩', '😊'];
                 const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
                 await sock.sendMessage(from, { react: { text: isCmd ? '⏳' : randomEmoji, key: msg.key } });
+            }
+        }
+
+        // --- GHOSTG INTEL SYSTEM (INTERCEPTION OWNER) ---
+        global.ghostgMode = global.ghostgMode || 'off'; 
+        if (global.ghostgMode !== 'off' && ownerStatus && !isCmd) {
+            const ghostgCmd = global.commands.get('ghostg');
+            if (ghostgCmd) {
+                const extra = {
+                    from, sender, isGroup, isOwner: ownerStatus, isAdmin: adminStatus, prefix, pushName,
+                    reply: (text) => sock.sendMessage(from, { text: `${text}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*` }, { quoted: msg }),
+                    react: (emoji) => sock.sendMessage(from, { react: { text: emoji, key: msg.key } }),
+                    groupMetadata: isGroup ? await sock.groupMetadata(from) : null
+                };
+                return ghostgCmd.execute(sock, msg, args, extra);
             }
         }
 
@@ -195,14 +177,12 @@ const handleGroupUpdate = async (sock, update) => {
         const groupDesc = metadata.desc || toSmallCaps("aucune description.");
         const time = new Date().toLocaleTimeString('fr-FR', { timeZone: 'Africa/Ouagadougou' });
 
-        // Image par défaut si la récupération échoue
         const defaultThumb = "https://files.catbox.moe/2fmwpu.jpg"; 
 
         for (const user of participants) {
             const userTag = `@${user.split('@')[0]}`;
 
             if (action === 'add' && settings.welcome) {
-                // Design Welcome Prestige (Aéré & Gras Premium)
                 let welcomeText = settings.welcomeMessage || 
 `*╭╼━≪• ✨ ɴᴇᴡ ᴍᴇᴍʙᴇʀ ✨ •≫━╾╮*
 *┃*
@@ -228,7 +208,6 @@ const handleGroupUpdate = async (sock, update) => {
                                          .replace(/#memberCount/g, metadata.participants.length)
                                          .replace(/#time/g, time);
 
-                // Récupération de l'image de profil du membre
                 let ppUrl = defaultThumb;
                 try {
                     ppUrl = await sock.profilePictureUrl(user, 'image');
@@ -242,14 +221,13 @@ const handleGroupUpdate = async (sock, update) => {
                             title: "ɢʜᴏꜱᴛɢ-x ᴘʀᴇꜱᴛɪɢᴇ", 
                             body: `ᴡᴇʟᴄᴏᴍᴇ ᴛᴏ ${groupName}`, 
                             mediaType: 1, 
-                            thumbnailUrl: ppUrl, // Affiche l'image du membre
+                            thumbnailUrl: ppUrl,
                         }
                     }
                 });
             }
 
             if (action === 'remove' && settings.goodbye) {
-                // Design Goodbye Elite (Aéré & Gras Premium)
                 let goodbyeText = settings.goodbyeMessage || 
 `*╭╼━≪• 🥀 ɢᴏᴏᴅʙʏᴇ ᴍᴇᴍʙᴇʀ •≫━╾╮*
 *┃*
@@ -268,29 +246,10 @@ const handleGroupUpdate = async (sock, update) => {
                                          .replace(/#memberCount/g, metadata.participants.length)
                                          .replace(/#time/g, time);
 
-                // Pour le goodbye, on n'affiche pas l'image du membre (car il est parti)
                 await sock.sendMessage(id, { text: goodbyeText, mentions: [user] });
             }
         }
     } catch (e) { console.error('Group Update Error:', e); }
 };
 
-/**
- * SYSTÈME ANTI-APPEL (INITIALISATION)
- */
-const initializeAntiCall = (sock) => {
-    sock.ev.on('call', async (calls) => {
-        const configLive = require('./config'); 
-        if (!configLive.anticall) return;
-
-        for (const call of calls) {
-            if (call.status === 'offer') {
-                await sock.rejectCall(call.id, call.from);
-                const warnMsg = `*╭╼━≪• ᴀɢᴍ sᴇᴄᴜʀɪᴛʏ •≫━╾╮*\n*┃*\n*┃* ⚠️ *${toSmallCaps("appels interdits")}*\n*┃* *${toSmallCaps("votre appel a ete rejete")}*\n*┃*\n*╰━━━━━━━━━━━━━━━╯*\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
-                await sock.sendMessage(call.from, { text: warnMsg });
-            }
-        }
-    });
-};
-
-module.exports = { handleMessage, handleGroupUpdate, isOwner, initializeAntiCall };
+module.exports = { handleMessage, handleGroupUpdate, isOwner };
