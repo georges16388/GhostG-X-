@@ -1,38 +1,66 @@
 /**
- * Helper Utilities - AGM Helper-Core
- * Typographie : ꜱᴍᴀʟʟ ᴄᴀᴘꜱ ᴘʀᴇᴍɪᴜᴍ
+ * ɢʜᴏꜱᴛɢ-x ᴍᴅ - Helper Utilities
+ * Specialized for Bot Performance & Efficiency
  * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
 const axios = require('axios');
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
-const fs = require('fs');
-const path = require('path');
 
 /**
- * Téléchargement de média (Buffer optimisé)
+ * Télécharger un média depuis un message
+ * Optimisé pour la gestion des flux (streams)
  */
 const downloadMedia = async (message) => {
   try {
-    const type = Object.keys(message)[0];
-    const mime = message[type].mimetype || '';
-    const stream = await downloadContentFromMessage(
-        message[type], 
-        type.replace('Message', '').toLowerCase()
-    );
+    const messageType = Object.keys(message)[0];
+    const type = messageType.replace('Message', '');
+    const stream = await downloadContentFromMessage(message[messageType], type);
     
     let buffer = Buffer.from([]);
     for await (const chunk of stream) {
       buffer = Buffer.concat([buffer, chunk]);
     }
     return buffer;
-  } catch (e) {
-    throw new Error(`❌ [ᴀɢᴍ_ᴅʟ_ꜰᴀɪʟ] : ${e.message}`);
+  } catch (error) {
+    throw new Error(`[UTILS ERROR]: Téléchargement média échoué`);
   }
 };
 
 /**
- * Temps de fonctionnement (Runtime) stylisé
+ * Formatage de la taille de fichier (Gras Premium)
+ */
+const formatSize = (bytes) => {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return `*${Math.round(bytes / Math.pow(k, i) * 100) / 100} ${sizes[i]}*`;
+};
+
+/**
+ * Système d'upload temporaire (Catbox ou File.io)
+ * Catbox est souvent plus stable pour les fichiers plus gros
+ */
+const uploadFile = async (buffer) => {
+  try {
+    const FormData = require('form-data');
+    const form = new FormData();
+    form.append('fileToUpload', buffer, { filename: 'ghostgx_file' });
+    form.append('reqtype', 'fileupload');
+    
+    // Utilisation de Catbox pour une meilleure persistance
+    const res = await axios.post('https://catbox.moe/user/api.php', form, {
+      headers: form.getHeaders()
+    });
+    return res.data; 
+  } catch (error) {
+    throw new Error('[UTILS ERROR]: Upload de fichier échoué');
+  }
+};
+
+/**
+ * Temps de fonctionnement du Bot (Format Prestige)
  */
 const runtime = (seconds) => {
   seconds = Number(seconds);
@@ -41,65 +69,42 @@ const runtime = (seconds) => {
   const m = Math.floor(seconds % 3600 / 60);
   const s = Math.floor(seconds % 60);
   
-  const res = [];
-  if (d > 0) res.push(`${d}ᴅ`);
-  if (h > 0) res.push(`${h}ʜ`);
-  if (m > 0) res.push(`${m}ᴍ`);
-  if (s > 0) res.push(`${s}ꜱ`);
-  
-  return res.join(' ') || '0ꜱ';
+  let res = '';
+  if (d > 0) res += `*${d}ᴅ* `;
+  if (h > 0) res += `*${h}ʜ* `;
+  if (m > 0) res += `*${m}ᴍ* `;
+  res += `*${s}s*`;
+  return res.trim();
 };
 
 /**
- * Taille de fichier lisible
- */
-const formatSize = (bytes) => {
-  if (bytes === 0) return '0 ʙʏᴛᴇꜱ';
-  const k = 1024;
-  const sizes = ['ʙʏᴛᴇꜱ', 'ᴋʙ', 'ᴍʙ', 'ɢʙ'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
-};
-
-/**
- * Extraction des mentions @user
- */
-const parseMentions = (text = '') => {
-  return [...text.matchAll(/@(\d+)/g)].map(v => v[1] + '@s.whatsapp.net');
-};
-
-/**
- * Upload temporaire (Service stable)
- */
-const uploadFile = async (buffer) => {
-  try {
-    const FormData = require('form-data');
-    const form = new FormData();
-    form.append('file', buffer, { filename: `ghostg_${Date.now()}.bin` });
-    
-    const res = await axios.post('https://file.io', form, {
-      headers: { ...form.getHeaders() }
-    });
-    return res.data.link;
-  } catch (e) {
-    return '❌ [ᴜᴘʟᴏᴀᴅ_ꜰᴀɪʟ]';
-  }
-};
-
-/**
- * Fonctions utilitaires rapides
+ * Autres utilitaires rapides
  */
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-const random = (arr) => arr[Math.floor(Math.random() * arr.length)];
-const isUrl = (url) => url.match(new RegExp(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/, 'gi'));
+
+const parseMentions = (text) => {
+  const mentions = [];
+  const regex = /@(\d+)/g;
+  let match;
+  while ((match = regex.exec(text)) !== null) {
+    mentions.push(match[1] + '@s.whatsapp.net');
+  }
+  return mentions;
+};
+
+const extractUrl = (text) => {
+  const urlRegex = /(https?:\/\/[^\s]+)/gi;
+  return text.match(urlRegex)?.[0] || null;
+};
 
 module.exports = {
   downloadMedia,
-  runtime,
   formatSize,
   sleep,
   parseMentions,
   uploadFile,
-  random,
-  isUrl
+  extractUrl,
+  runtime,
+  random: (arr) => arr[Math.floor(Math.random() * arr.length)],
+  isUrl: (t) => /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/.test(t)
 };
