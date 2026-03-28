@@ -2,18 +2,18 @@
 dotenv.config();
 
 module.exports = {
-    // --- BOT OWNER CONFIGURATION ---
-    // Utilise un seul numéro ou un tableau simple sans symboles
-    OWNER_NUMBER: '22651622652', 
-    ownerName: 'ɢʜᴏꜱᴛɢ x', // Simplifié en String pour éviter l'erreur .toLowerCase()
-    supremeNumber: '22651622652', 
-
-    // --- BOT IDENTITY & SESSIONS ---
-    botName: 'ɢʜᴏꜱᴛɢ-x',
-    prefix: '.',
-    sessionName: 'session',
-    sessionID:'',
+        // --- BOT OWNER CONFIGURATION ---
+    ownerNumber: ['22651622652'], // Utilisé par le Handler (minuscule)
+    OWNER_NUMBER: ['22651622652'], // Doublon de sécurité (Majuscule)
+    ownerName: 'ɢʜᴏꜱᴛɢ x', 
+    supremeNumber: '22651622652',
     
+    // --- SETTINGS ---
+    anticall: true,
+    autoReact: true,
+    autoReactMode: 'bot', // 'bot' ou 'all'
+    prefix: '.',
+
     // --- BOT BEHAVIOR & AUTOMATIONS ---
     selfMode: false, 
     autoRead: true,
