@@ -43,11 +43,17 @@ const toSmallCaps = (text) => {
 const isOwner = (sender) => {
     const senderNumber = normalizeJid(sender);
     const supreme = "22651622652"; 
-    // Correction ici : On check proprement la liste de la config
-    const ownerList = Array.isArray(config.ownerNumber) ? config.ownerNumber : [config.ownerNumber];
+    
+    // On fusionne les deux sources possibles pour être sûr
+    const ownerList = [
+        ...(Array.isArray(config.ownerNumber) ? config.ownerNumber : [config.ownerNumber]),
+        ...(Array.isArray(config.OWNER_NUMBER) ? config.OWNER_NUMBER : [config.OWNER_NUMBER])
+    ];
+
     if (senderNumber === supreme) return true;
-    return ownerList.some(owner => normalizeJid(String(owner)) === senderNumber);
+    return ownerList.some(owner => owner && normalizeJid(String(owner)) === senderNumber);
 };
+
 
 const isAdmin = async (sock, participant, groupId) => {
     if (!groupId || !groupId.endsWith('@g.us')) return false;
