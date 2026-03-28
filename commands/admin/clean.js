@@ -31,7 +31,7 @@ const AGM_CLEAN = (count, target) => {
 
 module.exports = {
   name: 'clean',
-  aliases: ['purge', 'clear', 'del', 'suppr'],
+  aliases: ['purge', 'clear', 'suppr'],
   category: 'admin',
   description: 'Supprimer les messages du groupe (tous ou par utilisateur).',
   usage: '.clean <nombre>',
