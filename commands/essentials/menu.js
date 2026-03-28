@@ -18,7 +18,7 @@ module.exports = {
   name: 'menu',
   aliases: ['help', 'h', 'm'],
   category: 'essentials',
-  description: 'Menu GhostG-X avec image dynamique.',
+  description: 'Menu GhostG-X avec image dynamique et lien newsletter.',
   usage: '.menu',
 
   async execute(sock, msg, args, extra) {
@@ -29,10 +29,7 @@ module.exports = {
       const prefix = config.prefix || '.';
 
       // --- LOGIQUE D'IMAGE DYNAMIQUE ---
-      // On cherche l'image locale (celle de setmenuimage)
       const localImgPath = path.join(process.cwd(), 'utils', 'bot_image.jpg');
-      
-      // Si l'image locale existe, on l'utilise, sinon on prend ton lien Catbox par défaut
       const menuImage = fs.existsSync(localImgPath) 
         ? fs.readFileSync(localImgPath) 
         : { url: 'https://files.catbox.moe/2fmwpu.jpg' };
@@ -75,20 +72,26 @@ module.exports = {
       menuText += `_“${toStyledCaps('ᴍᴇʀᴄɪ sᴇɪɢɴᴇᴜʀ ᴘᴏᴜʀ ᴛᴀ ɢʀᴀᴄᴇ')}”_\n`;
       menuText += `> > *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
-      // --- ENVOI ---
+      // --- ENVOI AVEC NEWSLETTER ---
       await sock.sendMessage(from, {
-        image: menuImage, // Ici l'image est dynamique (Buffer ou URL)
+        image: menuImage,
         caption: menuText,
         mentions: [senderJid],
         contextInfo: {
           isForwarded: true,
           forwardingScore: 999,
+          // Intégration de la Newsletter
+          forwardedNewsletterMessageInfo: {
+            newsletterJid: '120363425540434745@newsletter',
+            newsletterName: "-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ",
+            serverMessageId: 143
+          },
           externalAdReply: {
             title: botName,
             body: "sʏsᴛᴇᴍ ᴘʀᴇsᴛɪɢᴇ ᴠ5",
             mediaType: 1,
-            thumbnail: menuImage, // Miniature aussi synchronisée
-            sourceUrl: "https://github.com/georges16388",
+            thumbnail: menuImage, 
+            sourceUrl: 'https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c', // Ta chaîne
             showAdAttribution: true
           }
         }
@@ -97,7 +100,7 @@ module.exports = {
       await sock.sendMessage(from, { react: { text: "⚡", key: msg.key } });
 
     } catch (error) {
-      console.error(error);
+      console.error("Erreur Menu:", error);
     }
   }
 };
