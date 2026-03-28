@@ -92,16 +92,22 @@ async function startBot() {
 ┃ *ᴍᴀɪᴛʀᴇ* : @${ownerNumber}
 ┃ *ᴜᴛɪʟɪsᴀᴛᴇᴜʀ* : @${botJid.split('@')[0]}
 ┃ *ᴘʀᴇғɪxᴇ* : [ ${config.prefix || '.'} ]
-┃ *ᴄᴏᴍᴍᴀɴᴅᴇs* : ${totalCmds} ғɪʟᴇs
+┃ *ᴄᴏᴍᴍᴀɴᴅᴇs* : ${totalCmds}
 ┃ *ᴍᴏᴅᴇ* : ${config.selfMode ? '🔒 ᴘʀɪᴠé' : '🌐 ᴘᴜʙʟɪᴄ'}
 ╰━━━━━━━━━━━━━━━━━━━━━━━╯
+
+📢 *ᴄʜᴀɪɴᴇ ᴡʜᴀᴛsᴀᴘᴘ* :
+https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c
+
+👥 *ɢʀᴏᴜᴘᴇ ᴅ'ᴇɴᴛʀᴀɪᴅᴇ* :
+https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf
 
 💻 *ᴅᴇᴠᴇʟᴏᴘᴘᴇᴜʀ* :
 https://wa.me/22651622652
 
 📖 _*“${toSmallCaps("je puis tout par celui qui me fortifie")}”*_ ❤️✝️
 
-> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-x*`;
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
                 await sock.sendMessage(botJid, { 
                     image: { url: 'https://files.catbox.moe/2fmwpu.jpg' }, 
