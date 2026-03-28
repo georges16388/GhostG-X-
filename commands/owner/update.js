@@ -10,10 +10,10 @@ const path = require('path');
 const https = require('https');
 
 // --- DESIGN AGM ---
-const AGM_UPDATE = (status, files = 0) => `╭╼━≪• ᴜᴘᴅᴀᴛᴇ sʏsᴛᴇᴍ •≫━╾╮
-┃ sᴛᴀᴛᴜs : ${status}
-┃ ꜰɪʟᴇs : ${files} 📁
-┃ sᴏᴜʀᴄᴇ : ɢɪᴛʜᴜʙ ☁️
+const AGM_UPDATE = (status, files = 0) => `╭╼━≪• *ᴜᴘᴅᴀᴛᴇ sʏsᴛᴇᴍ* •≫━╾╮
+┃ *sᴛᴀᴛᴜs* : ${status}
+┃ *ꜰɪʟᴇs* : ${files} 📁
+┃ *sᴏᴜʀᴄᴇ* : ɢɪᴛʜᴜʙ ☁️
 ╰━━━━━━━━━━━━━━━╯
 > *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
 
@@ -47,8 +47,8 @@ module.exports = {
       const rootFolder = path.join(extractDir, folders[0]);
 
       // 4. Déploiement sélectif (On ignore les fichiers sensibles)
-      const ignore = ['node_modules', 'session', 'database', 'config.js', '.git', 'tmp', 'temp'];
-      const updatedFiles = [];
+   const ignore = ['node_modules', 'session', 'database', 'config.js', '.env', '.git', 'tmp', 'temp'];
+
       
       deployFiles(rootFolder, process.cwd(), ignore, updatedFiles);
 
