@@ -1,22 +1,27 @@
 /**
- * WhatsApp Channel Info - AGM Newsletter Edition
+ * ɢʜᴏꜱᴛɢ-x ᴍᴅ - WhatsApp Channel Info (AGM Newsletter Edition)
+ * Optimized for Baileys Multi-Device
  * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
-// --- FONCTION DE DESIGN AGM (NEWSLETTER STYLE) ---
-const AGM_NL = (name, subs, id) => `╭╼━≪• ᴀɢᴍ ɴᴇᴡsʟᴇᴛᴛᴇʀ •≫━╾╮
-┃ ɴᴀᴍᴇ : ${name} 📢
-┃ sᴜʙs : ${subs.toLocaleString()} 👥
-┃ ɪᴅ : ${id} 🆔
-╰━━━━━━━━━━━━━━━╯
-> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
+const toSmallCaps = (text) => {
+    const fonts = {'a':'ᴀ','b':'ʙ','c':'ᴄ','d':'ᴅ','e':'ᴇ','f':'ғ','g':'ɢ','h':'ʜ','i':'ɪ','j':'ᴊ','k':'ᴋ','l':'ʟ','m':'ᴍ','n':'ɴ','o':'ᴏ','p':'ᴘ','q':'ǫ','r':'ʀ','s':'s','t':'ᴛ','u':'ᴜ','v':'ᴠ','w':'ᴡ','x':'x','y':'ʏ','z':'ᴢ'};
+    return String(text).toLowerCase().split('').map(c => fonts[c] || c).join('');
+};
 
-// --- EXTRACTION DU CODE D'INVITATION ---
+const AGM_NL_DESIGN = (name, subs, id) => `*╭╼━≪• ᴀɢᴍ ɴᴇᴡsʟᴇᴛᴛᴇʀ •≫━╾╮*
+*┃*
+*┃* 📢 *${toSmallCaps('ɴᴀᴍᴇ')}* : ${name}
+*┃* 👥 *${toSmallCaps('sᴜʙs')}* : *${subs.toLocaleString()}*
+*┃* 🆔 *${toSmallCaps('ɪᴅ')}* : \`${id}\`
+*┃*
+*╰━━━━━━━━━━━━━━━╯*
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+
 function getChannelInviteCode(link) {
   const patterns = [
     /whatsapp\.com\/channel\/([A-Za-z0-9]+)/i,
-    /wa\.me\/channel\/([A-Za-z0-9]+)/i,
-    /([A-Za-z0-9]{10,})/ // Code direct
+    /([A-Za-z0-9]{10,})/ 
   ];
   for (const p of patterns) {
     const match = link.match(p);
@@ -27,62 +32,67 @@ function getChannelInviteCode(link) {
 
 module.exports = {
   name: 'newsletter',
-  aliases: ['nl'],
+  aliases: ['nl', 'channelinfo'],
   category: 'owner',
   description: 'Obtenir les infos d\'un canal WhatsApp',
   usage: '.nl <lien>',
   ownerOnly: true,
 
   async execute(sock, msg, args, extra) {
+    const { from, reply, react } = extra;
+    
     try {
-      const chatId = extra.from;
-      
-      // --- TON CANAL PAR DÉFAUT SI AUCUN ARGUMENT ---
-      // Remplace '0029VaAbCdEfGhIJkL' par TON vrai code d'invitation si besoin
-      const defaultChannel = "0029VaAbCdEfGhIJkL"; 
-      let input = args.join(' ') || defaultChannel;
-
+      // Ton canal GhostG par défaut (Remplace par ton vrai code)
+      const defaultChannel = "0029VagO6vH1dAvvHlSg4r39"; 
+      let input = args[0] || defaultChannel;
       const inviteCode = getChannelInviteCode(input);
-      
-      if (!inviteCode) {
-        return extra.reply('❌ *ʟɪᴇɴ ᴅᴇ ᴄᴀɴᴀʟ ɪɴᴠᴀʟɪᴅᴇ.*');
-      }
 
-      await sock.sendMessage(chatId, { react: { text: '🗞️', key: msg.key } });
+      if (!inviteCode) return reply(`❌ *${toSmallCaps("lien de canal invalide")}*`);
+
+      await react('🗞️');
 
       try {
-        // Récupération des métadonnées via Baileys
+        // Récupération via Baileys (nécessite une version récente)
         const meta = await sock.newsletterMetadata('invite', inviteCode);
-        
         if (!meta) throw new Error('Not found');
 
-        const caption = AGM_DESIGN_NL(meta);
+        let infoBody = AGM_NL_DESIGN(meta.name, meta.subscriberCount || 0, meta.id);
         
-        // Construction du texte détaillé
-        let infoBody = AGM_NL(meta.name || 'Channel', meta.subscriberCount || 0, meta.id);
         if (meta.description) {
-          infoBody += `\n\n📝 *ᴅᴇsᴄʀɪᴘᴛɪᴏɴ :*\n${meta.description}`;
+          infoBody += `\n\n📝 *${toSmallCaps('ᴅᴇsᴄʀɪᴘᴛɪᴏɴ')} :*\n${meta.description}`;
         }
-        infoBody += `\n\n🔗 *ʟɪɴᴋ :* https://whatsapp.com/channel/${meta.invite || inviteCode}`;
+        
+        infoBody += `\n\n🔗 *${toSmallCaps('ʟɪɴᴋ')} :*\nhttps://whatsapp.com/channel/${inviteCode}`;
 
-        if (meta.preview || meta.image) {
-          await sock.sendMessage(chatId, {
-            image: { url: meta.preview || meta.image },
-            caption: infoBody
+        // Gestion de l'image de profil du canal
+        const image = meta.preview || meta.picture || meta.image;
+
+        if (image) {
+          await sock.sendMessage(from, {
+            image: { url: image },
+            caption: infoBody,
+            contextInfo: {
+                externalAdReply: {
+                    title: `ɴᴇᴡsʟᴇᴛᴛᴇʀ: ${meta.name}`,
+                    body: `ɢʜᴏsᴛɢ-x ᴍᴅ sʏsᴛᴇᴍ`,
+                    thumbnailUrl: image,
+                    mediaType: 1
+                }
+            }
           }, { quoted: msg });
         } else {
-          await extra.reply(infoBody);
+          await reply(infoBody);
         }
 
-        await sock.sendMessage(chatId, { react: { text: '✅', key: msg.key } });
+        await react('✅');
 
       } catch (err) {
         console.error(err);
-        await extra.reply('❌ *ɪᴍᴘᴏssɪʙʟᴇ ᴅᴇ ʀéᴄᴜᴘéʀᴇʀ ʟᴇs ɪɴғᴏs. ᴠéʀɪғɪᴇᴢ ʟᴇ ʟɪᴇɴ ᴏᴜ ᴠᴏᴛʀᴇ ᴠᴇʀsɪᴏɴ ᴅᴇ ʙᴀɪʟᴇʏs.*');
+        await reply(`❌ *${toSmallCaps("impossible de recuperer les infos")}*\n${toSmallCaps("verifiez le code ou la connexion")}`);
       }
-      
+
     } catch (error) {
-      await extra.reply(`❌ *ᴇʀʀᴇᴜʀ sʏsᴛᴇ̀ᴍᴇ : ${error.message}*`);
+      await reply(`❌ *${toSmallCaps("erreur systeme")}* : ${error.message}`);
     }
   }
 };
