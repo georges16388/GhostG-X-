@@ -1,12 +1,11 @@
 /**
- * Translate Command - GhostG-X MD
- * Style requested by User (Full SmallCaps Edition)
- * Powered by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
+ * Translate Command - GhostG-X MD (Hybrid Edition)
+ * Fusion: Reply Detection + Direct Input
+ * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
 const APIs = require('../../utils/api');
 
-// --- FONCTION DE CONVERSION EN SMALL CAPS ---
 const toStyledCaps = (text) => {
   if (!text) return "";
   const fonts = {
@@ -20,47 +19,65 @@ const toStyledCaps = (text) => {
 
 module.exports = {
   name: 'translate',
-  aliases: ['tr', 'traduire', 'trans'],
+  aliases: ['tr', 'traduire'],
   category: 'essentials',
-  description: 'Traduire un texte dans une autre langue.',
-  usage: '.tr <texte> <lang>',
+  description: 'Traduire un texte (Direct ou en Réponse).',
+  usage: '.tr <texte> | <lang> OU répondez à un message avec .tr',
 
   async execute(sock, msg, args, { from, react, reply }) {
     try {
-      // --- DESIGN AIDE / USAGE ---
-      if (args.length < 2) {
-        let helpText = `*╭╼━≪• ${toStyledCaps('ᴀɢᴍ ᴛʀᴀɴsʟᴀᴛᴏʀ')} •≫━╾╮*\n`;
-        helpText += `*┃* 📖 *${toStyledCaps('ᴜsᴀɢᴇ')}* : *.ᴛʀ <ᴛᴇxᴛᴇ> <ʟᴀɴɢ>*\n`;
-        helpText += `*┃* 💡 *${toStyledCaps('ᴇxᴇᴍᴘʟᴇ')}* : *.ᴛʀ ʜᴇʟʟᴏ ғʀ*\n`;
-        helpText += `*╰━━━━━━━━━━━━━━━╯*\n`;
-        helpText += `*${toStyledCaps('ᴄᴏᴅᴇs')} :* *ғʀ, ᴇɴ, ᴇs, ᴀʀ, ᴊᴀ, ʀᴜ...*\n\n`;
-        helpText += `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
-        return sock.sendMessage(from, { text: helpText }, { quoted: msg });
+      let textToTranslate = "";
+      let targetLang = "fr"; // Défaut : Français
+
+      // 🔹 1. VÉRIFICATION SI C'EST UNE RÉPONSE (QUOTED)
+      const quoted = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+      
+      if (quoted) {
+        // On récupère le texte du message cité
+        textToTranslate = quoted.conversation || quoted.extendedTextMessage?.text || quoted.imageMessage?.caption || "";
+        // Si l'utilisateur a précisé une langue dans sa réponse (ex: .tr en)
+        if (args[0]) targetLang = args[0].toLowerCase();
+      } else {
+        // 🔹 2. COMMANDE DIRECTE
+        if (args.length === 0) {
+            return reply(`*⚠️ ${toStyledCaps('veuillez fournir un texte ou repondre a un message')}*`);
+        }
+
+        const fullArgs = args.join(' ');
+        if (fullArgs.includes('|')) {
+          const parts = fullArgs.split('|');
+          textToTranslate = parts[0].trim();
+          targetLang = parts[1].trim().toLowerCase();
+        } else {
+          // Si pas de |, on vérifie si le dernier mot est un code langue
+          const lastWord = args[args.length - 1].toLowerCase();
+          if (lastWord.length <= 3) {
+            targetLang = lastWord;
+            textToTranslate = args.slice(0, -1).join(' ');
+          } else {
+            textToTranslate = fullArgs;
+            targetLang = "fr";
+          }
+        }
       }
 
-      const targetLang = args[args.length - 1].toLowerCase();
-      const textToTranslate = args.slice(0, args.length - 1).join(' ');
+      if (!textToTranslate || textToTranslate.trim() === "") {
+        return reply(`*⚠️ ${toStyledCaps('aucun texte detecte a traduire')}*`);
+      }
 
       await react('🌐');
 
-      // Appel API (Supposons que result contient aussi la langue source 'from')
+      // Appel API
       const result = await APIs.translate(textToTranslate, targetLang);
       const translation = result.translation || result.text || result;
-      const sourceLang = result.from || "unknown"; 
+      const sourceLang = result.from || "unknown";
 
-      if (!translation) throw new Error("ᴇᴄʜᴇᴄ");
-
-      // --- DESIGN RESULTAT (FULL SMALLCAPS GRAS) ---
-      let resText = `*╭╼━≪• ${toStyledCaps('ɢʜᴏsᴛɢ-x ᴛʀᴀɴsʟᴀᴛᴏʀ')} •≫━╾╮*\n`;
-      resText += `*┃* 🌐 *${toStyledCaps('ᴛᴏ ʟᴀɴɢ')}* : *${targetLang.toUpperCase()}*\n`;
-      
-      // Texte traduit converti en SmallCaps et mis en Gras
-      const styledTranslation = toStyledCaps(translation);
-      const lines = styledTranslation.split('\n');
-      resText += `*┃* 📝 *${toStyledCaps('ᴛᴇxᴛ')}* : *${lines.map((l, i) => i === 0 ? l : `\n*┃* ${l}`).join('')}*\n`;
-      
+      // --- DESIGN PRESTIGE ---
+      let resText = `*╭╼━≪• ${toStyledCaps('ɢʜᴏsᴛɢ ᴛʀᴀɴsʟᴀᴛᴏʀ')} •≫━╾╮*\n`;
+      resText += `*┃* 🌐 *${toStyledCaps('ᴛᴏ')}* : *${toStyledCaps(targetLang)}*\n`;
+      resText += `*┃* 📝 *${toStyledCaps('ᴛᴇxᴛ')}* : *${toStyledCaps(translation)}*\n`;
       resText += `*┃* ✅ *${toStyledCaps('sᴛᴀᴛᴜs')}* : 🟢 *${toStyledCaps('ᴛʀᴀɴsʟᴀᴛᴇᴅ')}*\n`;
-      resText += `*┃* 🌍 *${toStyledCaps(`ᴛʀᴀɴsʟᴀᴛᴇᴅ ғʀᴏᴍ ${sourceLang}`)}*\n`;
+      resText += `*┃* 🌍 *${toStyledCaps('ғʀᴏᴍ')}* : *${toStyledCaps(sourceLang)}*\n`;
       resText += `*╰━━━━━━━━━━━━━━━╯*\n\n`;
       resText += `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
@@ -69,7 +86,7 @@ module.exports = {
         contextInfo: {
           externalAdReply: {
             title: toStyledCaps("ɢʜᴏsᴛɢ-x ᴛʀᴀɴsʟᴀᴛᴏʀ"),
-            body: toStyledCaps("traduction effectuee"),
+            body: toStyledCaps("ᴛʀᴀᴅᴜᴄᴛɪᴏɴ ᴇʟɪᴛᴇ ᴇꜰꜰᴇᴄᴛᴜᴇᴇ"),
             mediaType: 1,
             thumbnailUrl: "https://files.catbox.moe/2fmwpu.jpg",
             showAdAttribution: false
@@ -79,7 +96,7 @@ module.exports = {
 
     } catch (error) {
       console.error(error);
-      reply(`❌ *${toStyledCaps('ᴇʀʀᴇᴜʀ sʏsᴛᴇᴍᴇ')}*`);
+      reply(`❌ *${toStyledCaps('erreur lors de la traduction')}*`);
     }
   }
 };
