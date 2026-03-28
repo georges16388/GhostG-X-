@@ -35,27 +35,7 @@ module.exports = {
     autoReactMode: 'bot', // 'bot' réagit uniquement aux commandes
     supremeReact: '👑', // Réaction spéciale pour l'owner
 
-    // --- GROUP SETTINGS DEFAULTS ---
-    defaultGroupSettings: {
-      antilink: false,
-      antilinkAction: 'delete', 
-      antitag: false,
-      antitagAction: 'delete',
-      antiall: false, 
-      antiviewonce: false,
-      antibot: true,
-      anticall: true, 
-      antigroupmention: false,
-      welcome: true,
-      welcomeMessage: `╭╼━≪• *ɴᴇᴡ ᴍᴇᴍʙᴇʀ* •≫━╾╮\n┃ *ᴡᴇʟᴄᴏᴍᴇ* : @user 👋🏾\n┃ *ɴᴏᴜs sᴏᴍᴍᴇs ʜᴇᴜʀᴇᴜx ᴅᴇ ᴛ'ᴀᴠᴏɪʀ ᴘᴀʀᴍɪ ɴᴏᴜs*\n┃ *ᴍᴇᴍʙʀᴇs ᴀᴄᴛᴜᴇʟs* : #memberCount\n┃ *ᴛɪᴍᴇ* : #time ⏰\n╰━━━━━━━━━━━━━━━╯\n> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`,
-      goodbye: true,
-      goodbyeMessage: `╭╼━≪• *ɢᴏᴏᴅʙʏᴇ ᴍᴇᴍʙᴇʀ* •≫━╾╮\n┃ *ᴀᴜ ʀᴇᴠᴏɪʀ* : @user 👋\n┃ *ᴛᴜ ɴᴇ ɴᴏᴜs ᴍᴀɴǫᴜᴇʀᴀ ᴊᴀᴍᴀɪs*\n┃ *ᴍᴇᴍʙʀᴇs ʀᴇsᴛᴀɴᴛs* : #memberCount\n┃ *ᴛɪᴍᴇ* : #time ⏰\n╰━━━━━━━━━━━━━━━━━╯\n> ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗`,
-      antiSpam: false,
-      antidelete: false,
-      nsfw: false,
-      detect: false,
-      chatbot: false,
-      autosticker: false 
+    
     },
 
     // --- API KEYS (SÉCURISÉES DANS .ENV) ---
@@ -75,7 +55,30 @@ module.exports = {
       privateOnly: `💬 *ᴄᴏɴᴛᴀᴄᴛᴇᴢ-ᴍᴏɪ ᴇɴ ᴘʀɪᴠᴇ́ ᴘᴏᴜʀ ᴄᴇᴛᴛᴇ ᴄᴏᴍᴍᴀɴᴅᴇ*: https://wa.me/${cleanNumber}`,
       botAdminNeeded: '🤖 *ʟᴇ ʙᴏᴛ ᴅᴏɪᴛ ᴇ̂ᴛʀᴇ ᴀᴅᴍɪɴ ᴘᴏᴜʀ ᴀɢɪʀ !*',
       invalidCommand: '❓ *ᴄᴏᴍᴍᴀɴᴅᴇ ɪɴᴄᴏɴɴᴜᴇ. ᴛᴀᴘᴇᴢ .ᴍᴇɴᴜ*'
+
+        // --- GROUP SETTINGS DEFAULTS (PRESTIGE DESIGN) ---
+    defaultGroupSettings: {
+      antilink: false,
+      antilinkAction: 'delete', 
+      antitag: false,
+      antitagAction: 'delete',
+      antiall: false, 
+      antiviewonce: false,
+      antibot: true,
+      anticall: true, 
+      antigroupmention: false,
+      welcome: true,
+      welcomeMessage: `*╭╼━≪• ✨ ɴᴇᴡ ᴍᴇᴍʙᴇʀ ✨ •≫━╾╮*\n*┃*\n*┃* 👥 *ɢʀᴏᴜᴘ* : *#groupName*\n*┃* 👋🏾 *ᴡᴇʟᴄᴏᴍᴇ* : *@user*\n*┃*\n*┃* 📝 *#groupDesc*\n*┃*\n*┃* 📊 *ᴍᴇᴍʙʀᴇs* : *#memberCount*\n*┃* ⏰ *ᴛɪᴍᴇ* : *#time*\n*┃*\n*┃* 🛡️ *ʀᴇsᴘᴇᴄᴛᴇ ʟᴇs ʀᴇɢʟᴇs ᴘᴏᴜʀ*\n*┃* *ɴᴇ ᴘᴀs ᴇᴛʀᴇ ʀᴇᴛɪʀᴇ...*\n*┃*\n*┃* ❤️ *ᴊᴇsᴜs ᴛᴀɪᴍᴇ*\n*┃*\n*╰━━━━━━━━━━━━━━━╯*\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`,
+      goodbye: true,
+      goodbyeMessage: `*╭╼━≪• 🥀 ɢᴏᴏᴅʙʏᴇ ᴍᴇᴍʙᴇʀ •≫━╾╮*\n*┃*\n*┃* 👋🏾 *ᴀᴜ ʀᴇᴠᴏɪʀ* : *@user*\n*┃*\n*┃* 🚪 *ᴍᴀʟʜᴇᴜʀᴇᴜsᴇᴍᴇɴᴛ ᴛᴜ ɴ'ᴀs*\n*┃* *ᴘᴀs ʀᴇsᴘᴇᴄᴛᴇ ʟᴇs ʀᴇɢʟᴇs...* 🙂‍↔️\n*┃*\n*┃* 📊 *ᴍᴇᴍʙʀᴇs* : *#memberCount*\n*┃* ⏰ *ᴛɪᴍᴇ* : *#time*\n*┃*\n*╰━━━━━━━━━━━━━━━╯*\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`,
+      antiSpam: false,
+      antidelete: false,
+      nsfw: false,
+      detect: false,
+      chatbot: false,
+      autosticker: false 
     },
+
 
     // --- LIMITS & SOCIALS ---
     maxWarnings: 3,
