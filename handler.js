@@ -144,6 +144,38 @@ const handleMessage = async (sock, msg) => {
                 }
             }
         }
+                // --- 🛡️ SYSTÈME ANTI-LINK (LOGIQUE DE DÉTECTION) ---
+        if (isGroup && !ownerStatus && !adminStatus) {
+            const groupSettings = database.getGroupSettings(from) || {};
+            if (groupSettings.antilink) {
+                const linkPattern = /chat.whatsapp.com\/(?:invite\/)?([0-9a-zA-Z]{20,26})/i;
+                const linked = body.match(linkPattern);
+
+                if (linked) {
+                    // On vérifie si c'est le lien du groupe actuel (autorisé)
+                    const groupInvite = await sock.groupInviteCode(from).catch(() => null);
+                    if (groupInvite && linked[0].includes(groupInvite)) {
+                        // C'est le lien de ce groupe, on ne fait rien
+                    } else {
+                        const action = groupSettings.antilinkAction || 'delete';
+                        await sock.sendMessage(from, { delete: msg.key });
+
+                        if (action === 'kick') {
+                            await sock.groupParticipantsUpdate(from, [sender], "remove");
+                            await sock.sendMessage(from, { 
+                                text: `*╭╼━≪• ${toSmallCaps('ᴀɴᴛɪ-ʟɪɴᴋ sᴇᴄᴜʀɪᴛʏ')} •≫━╾╮*\n*┃*\n*┃* 🚫 *${toSmallCaps('ᴜsᴇʀ ᴋɪᴄᴋᴇᴅ')}*\n*┃* 📝 *${toSmallCaps('ʀᴇᴀsᴏɴ')}* : *${toSmallCaps('ᴘᴜʙʟɪᴄɪᴛᴇ ɪɴᴛᴇʀᴅɪᴛᴇ')}*\n*┃*\n*╰━━━━━━━━━━━━━━━╯*`
+                            });
+                        } else {
+                            await sock.sendMessage(from, { 
+                                text: `⚠️ @${sender.split('@')[0]} *${toSmallCaps('les liens ne sont pas autorisés ici.')}*`,
+                                mentions: [sender]
+                            });
+                        }
+                        return; 
+                    }
+                }
+            }
+        }
 
         // --- GHOSTG INTEL SYSTEM ---
         global.ghostgMode = global.ghostgMode || 'off'; 
