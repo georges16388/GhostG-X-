@@ -11,10 +11,12 @@ const config = require('../../config');
 const AGM_WARN = (user, reason, count, max) => {
   const statusLabel = count >= max ? '🚫 ᴇxᴘᴜʟsɪᴏɴ' : '🟡 ᴀᴠᴇʀᴛɪssᴇᴍᴇɴᴛ';
   return `*╭╼━≪• ɢʜᴏsᴛ sʏsᴛᴇᴍ ᴡᴀʀɴ •≫━╾╮*
+*┃*
 *┃* 👤 *ᴜᴛɪʟɪsᴀᴛᴇᴜʀ* : *@${user.split('@')[0]}*
 *┃* 📝 *ʀᴀɪsᴏɴ* : *${reason}*
 *┃* ⚠️ *ᴡᴀʀɴɪɴɢs* : *${count} / ${max}*
 *┃* 🛡️ *sᴛᴀᴛᴜs* : *${statusLabel}*
+*┃*
 *╰━━━━━━━━━━━━━━━╯*
 > *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 };
@@ -49,7 +51,7 @@ module.exports = {
 
       // --- LOGIQUE BASE DE DONNÉES ---
       const warnings = database.addWarning(from, target, reason);
-      
+
       await react('⚠️');
 
       // --- ENVOI DU RAPPORT ---
@@ -61,11 +63,14 @@ module.exports = {
       // --- GESTION DE L'EXPULSION ---
       if (warnings.count >= maxWarns) {
         if (isBotAdmin) {
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          // Petit délai pour laisser l'utilisateur lire son dernier warn
+          await new Promise(resolve => setTimeout(resolve, 1500));
+          
           await sock.sendMessage(from, { 
             text: `🚫 *ʟɪᴍɪᴛᴇ ᴀᴛᴛᴇɪɴᴛᴇ ᴘᴏᴜʀ @${target.split('@')[0]}. ᴇxᴘᴜʟsɪᴏɴ ᴇɴ ᴄᴏᴜʀs...*`, 
             mentions: [target] 
           });
+          
           await sock.groupParticipantsUpdate(from, [target], 'remove');
           database.clearWarnings(from, target);
         } else {
