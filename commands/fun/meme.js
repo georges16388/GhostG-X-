@@ -1,53 +1,65 @@
 /**
- * Meme Command - Send random memes
+ * Meme Command - Envoyer des mèmes aléatoires
  * Custom Design & UX by -ɢʜᴏsᴛɢ 𝐗
  */
 
 const axios = require('axios');
 
+// Fonction de conversion en Small Caps
+const toSmallCaps = (text) => {
+    const smallCapsMap = {
+        'a': 'ᴀ', 'b': 'ʙ', 'c': 'ᴄ', 'd': 'ᴅ', 'e': 'ᴇ', 'f': 'ғ', 'g': 'ɢ', 'h': 'ʜ', 
+        'i': 'ɪ', 'j': 'ᴊ', 'k': 'ᴋ', 'l': 'ʟ', 'm': 'ᴍ', 'n': 'ɴ', 'o': 'ᴏ', 'p': 'ᴘ', 
+        'q': 'ǫ', 'r': 'ʀ', 's': 's', 't': 'ᴛ', 'u': 'ᴜ', 'v': 'ᴠ', 'w': 'ᴡ', 'x': 'x', 
+        'y': 'ʏ', 'z': 'ᴢ'
+    };
+    return text.toString().toLowerCase().split('').map(char => smallCapsMap[char] || char).join('');
+};
+
 // Design pour la légende du Meme
-const MEME_DESIGN = (title, sub, ups) => `╭╼━≪• ɢʜᴏsᴛ ᴍᴇᴍᴇ ʜᴜʙ •≫━╾╮
-┃ ᴛɪᴛʟᴇ : ${title} 😂
-┃ sᴏᴜʀᴄᴇ : r/${sub} 📱
-┃ ᴠᴏᴛᴇs : ${ups} ⬆️
-┃ sᴛᴀᴛᴜs : ғᴜɴɴʏ ᴀғ
+const MEME_DESIGN = (title, sub, ups) => `╭╼━≪• *ɢʜᴏsᴛ ᴍᴇᴍᴇ ʜᴜʙ* •≫━╾╮
+┃ ${toSmallCaps('ᴛɪᴛʀᴇ')} : ${toSmallCaps(title)} 😂
+┃ ${toSmallCaps('sᴏᴜʀᴄᴇ')} : ʀ/${toSmallCaps(sub)} 📱
+┃ ${toSmallCaps('ᴠᴏᴛᴇs')} : ${ups} ⬆️
+┃ ${toSmallCaps('sᴛᴀᴛᴜs')} : ${toSmallCaps('ғᴜɴɴʏ ᴀғ')}
 ╰━━━━━━━━━━━━━━━╯
-> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
 module.exports = {
   name: 'meme',
   aliases: ['memes', 'reddit'],
   category: 'fun',
-  description: 'Get random memes from Reddit',
+  description: 'Obtenir des mèmes aléatoires de Reddit',
   usage: '.meme',
-  
+
   async execute(sock, msg, args, extra) {
     try {
-      // 1. Petit effet sympa : le bot réagit pendant qu'il cherche
+      // 1. Réaction de recherche
       await sock.sendMessage(extra.from, { 
         react: { text: "🔍", key: msg.key } 
       });
 
-      // 2. Récupération du meme via une API publique fiable (ou la tienne)
+      // 2. Récupération du meme (On cible des subreddits de mèmes souvent visuels)
       const res = await axios.get('https://meme-api.com/gimme');
       const meme = res.data;
 
       if (!meme || !meme.url) throw new Error("Meme non trouvé");
 
-      // 3. Téléchargement de l'image
-      const imageBuffer = await axios.get(meme.url, { responseType: 'arraybuffer' });
-      
-      // 4. Envoi avec ton design signature
+      // 3. Téléchargement de l'image via axios
+      const response = await axios.get(meme.url, { responseType: 'arraybuffer' });
+      const buffer = Buffer.from(response.data);
+
+      // 4. Envoi avec le design signature
       await sock.sendMessage(extra.from, {
-        image: Buffer.from(imageBuffer.data),
+        image: buffer,
         caption: MEME_DESIGN(meme.title, meme.subreddit, meme.ups),
-        // On peut ajouter le lien de ta chaîne ici si tu veux
         contextInfo: {
             externalAdReply: {
-                title: "GHOST MEME GENERATOR",
-                body: "Enjoy your daily dose of fun!",
-                thumbnailUrl: meme.url,
+                title: "ɢʜᴏsᴛ ᴍᴇᴍᴇ ɢᴇɴᴇʀᴀᴛᴏʀ",
+                body: "ᴛᴏɴ ᴅᴏsᴇ ǫᴜᴏᴛɪᴅɪᴇɴɴᴇ ᴅᴇ ғᴜɴ !",
+                thumbnail: buffer,
                 mediaType: 1,
+                showAdAttribution: true,
                 renderLargerThumbnail: false
             }
         }
@@ -57,10 +69,11 @@ module.exports = {
       await sock.sendMessage(extra.from, { 
         react: { text: "😂", key: msg.key } 
       });
-      
+
     } catch (error) {
       console.error('Meme Error:', error);
-      await extra.reply(`❌ Error: Impossible de récupérer un meme pour le moment.`);
+      const errorMsg = toSmallCaps("Impossible de récupérer un mème");
+      await extra.reply(`❌ ${errorMsg}`);
     }
   }
 };
