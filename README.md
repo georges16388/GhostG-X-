@@ -2,7 +2,7 @@
   <img src="https://files.catbox.moe/2fmwpu.jpg" alt="ɢʜᴏꜱᴛɢ-x ᴍᴅ ᴘʀᴇsᴛɪɢᴇ" width="100%">
 </p>
 
-<h1 align="center">⚡ ɢʜᴏꜱᴛɢ-x ᴍᴅ ᴠ𝟻.𝟸 — ᴘʀᴇꜱᴛɪɢᴇ ᴇᴅɪᴛɪᴏɴ</h1>
+<h1 align="center">⚡ ɢʜᴏꜱᴛɢ-x ᴍᴅ ᴠ1.1.1 — ᴘʀᴇꜱᴛɪɢᴇ ᴇᴅɪᴛɪᴏɴ</h1>
 
 <p align="center">
   <i>"ʟ'ᴇʟᴇɢᴀɴᴄᴇ ʀᴇᴄᴏɴᴄɪʟɪᴇᴇ ᴀᴠᴇᴄ ʟᴀ ᴘᴜɪssᴀɴᴄᴇ ᴛᴇᴄʜɴɪǫᴜᴇ."</i><br>
@@ -10,14 +10,23 @@
 </p>
 
 <p align="center">
+  <a href="https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf?mode=gi_t">
+    <img src="https://img.shields.io/badge/sᴜᴘᴘᴏʀᴛ-ɢʀᴏᴜᴘ-ɢᴏʟᴅ?style=for-the-badge&logo=whatsapp" alt="Support Group">
+  </a>
+  <a href="https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c">
+    <img src="https://img.shields.io/badge/ᴄʜᴀɴɴᴇʟ-ᴜᴘᴅᴀᴛᴇs-ɢᴏʟᴅ?style=for-the-badge&logo=whatsapp" alt="Channel">
+  </a>
+  <a href="https://wa.me/22651622652?text=Bonjour%20maître,%20j'utilise%20le%20GhostG-X">
+    <img src="https://img.shields.io/badge/ᴏᴡɴᴇʀ-ᴄᴏɴᴛᴀᴄᴛ-ɢᴏʟᴅ?style=for-the-badge&logo=whatsapp" alt="Owner">
+  </a>
+</p>
+
+<p align="center">
   <a href="https://github.com/georges16388/GhostG-X-/">
-    <img src="https://img.shields.io/github/stars/georges16388/GhostG-X-?style=for-the-badge&color=gold" alt="Stars">
+    <img src="https://img.shields.io/github/stars/georges16388/GhostG-X-?style=flat-square&color=black" alt="Stars">
   </a>
   <a href="https://github.com/georges16388/GhostG-X-/network/members">
-    <img src="https://img.shields.io/github/forks/georges16388/GhostG-X-?style=for-the-badge&color=gold" alt="Forks">
-  </a>
-  <a href="https://wa.me/22651622652">
-    <img src="https://img.shields.io/badge/sᴜᴘᴘᴏʀᴛ-ᴏᴡɴᴇʀ-ɢᴏʟᴅ?style=for-the-badge&logo=whatsapp" alt="Owner Support">
+    <img src="https://img.shields.io/github/forks/georges16388/GhostG-X-?style=flat-square&color=black" alt="Forks">
   </a>
 </p>
 
@@ -28,54 +37,15 @@
 
 ---
 
-## 🚀 *ᴅᴇᴘʟᴏɪᴇᴍᴇɴᴛ ᴇʟɪᴛᴇ (ᴇɴ 𝟸 ᴍɪɴᴜᴛᴇs)*
+## 🚀 *ᴅᴇᴘʟᴏɪᴇᴍᴇɴᴛ ᴇʟɪᴛᴇ*
 
-ʟ'ɪɴsᴛᴀʟʟᴀᴛɪᴏɴ ᴇsᴛ sɪᴍᴘʟɪғɪᴇᴇ ᴘᴏᴜʀ ᴠᴏᴜs, ʟᴇ ᴍᴀɪᴛʀᴇ ᴅᴜ ʙᴏᴛ. ᴜɴᴇ sᴇᴜʟᴇ ᴇᴛᴀᴘᴇ ᴅᴇ ᴄᴏɴғɪɢᴜʀᴀᴛɪᴏɴ ᴇsᴛ ɴᴇᴄᴇssᴀɪʀᴇ.
+ʟ'ɪɴsᴛᴀʟʟᴀᴛɪᴏɴ ᴇsᴛ sɪᴍᴘʟɪғɪᴇᴇ ᴘᴏᴜʀ ᴠᴏᴜs, ʟᴇ ᴍᴀɪᴛʀᴇ ᴅᴜ ʙᴏᴛ.
 
 ### 𝟷. ᴄᴏɴғɪɢᴜʀᴀᴛɪᴏɴ ᴅᴜ ғɪᴄʜɪᴇʀ `.ᴇɴᴠ`
 ᴏᴜᴠʀᴇᴢ ᴠᴏᴛʀᴇ ғɪᴄʜɪᴇʀ `.ᴇɴᴠ` ᴇᴛ ɪɴᴅɪǫᴜᴇᴢ ᴠᴏs ᴘᴀʀᴀᴍᴇᴛʀᴇs :
 
 ```env
-SESSION_ID=ʟᴀɪssᴇᴢ ᴠɪᴅᴇ
 OWNER_NUMBER=𝟸𝟸𝟼XXXXXXXX
+SESSION_ID=ʟᴀɪssᴇᴢ_ᴠɪᴅᴇ_ᴘᴏᴜʀ_ᴘᴀɪʀɪɴɢ
 PREFIX=.
 SELF_MODE=false
-
----
-
-
-## 𝟸. *ʟᴀɴᴄᴇᴍᴇɴᴛ sᴇᴄᴜʀɪsᴇ*
-ᴜɴᴇ ғᴏɪs ʟᴇ ɴᴜᴍᴇʀᴏ ᴇɴʀᴇɢɪsᴛʀᴇ, ɪɴɪᴛɪᴀʟɪsᴇᴢ ʟᴇ sʏsᴛᴇᴍᴇ.
-
-
----
-
-##🧠 *ɢʜᴏsᴛɢ ɪɴᴛᴇʟ (ɴʟᴘ sʏsᴛᴇᴍ)*
-ᴠᴏᴛʀᴇ ʙᴏᴛ ᴇsᴛ ᴅᴏᴛᴇ ᴅ'ᴜɴᴇ ɪɴᴛᴇʟʟɪɢᴇɴᴄᴇ sᴀɴs ᴘʀᴇғɪxᴇ ᴜɴɪǫᴜᴇ.
-ᴀᴄᴛɪᴠᴀᴛɪᴏɴ : `.ghostg on`
-ᴜsᴀɢᴇ : ᴘᴀʀʟᴇᴢ-ʟᴜɪ ɴᴀᴛᴜʀᴇʟʟᴇᴍᴇɴᴛ. ᴅɪᴛᴇs "ɢʜᴏsᴛɢ sᴜᴘᴘʀɪᴍᴇ ᴄᴇ ᴍᴇssᴀɢᴇ" ᴏᴜ "ғᴇʀᴍᴇ ʟᴇ ɢʀᴏᴜᴘᴇ", ɪʟ ᴇxᴇᴄᴜᴛᴇʀᴀ ᴠᴏs ᴏʀᴅʀᴇs ᴇɴ ʀᴇᴄᴏɴɴᴀɪssᴀɴᴛ ᴠᴏᴛʀᴇ ᴠᴏɪx sᴜᴘʀᴇᴍᴇ sᴀɴs ᴘᴏɪɴᴛ ɴɪ ᴘʀᴇғɪxᴇ.
-
-
----
-
-##🛠️ *ғᴏɴᴄᴛɪᴏɴɴᴀʟɪᴛᴇs ᴘʀᴇᴍɪᴜᴍ*
-
-⚡ ᴄᴀᴛᴇɢᴏʀɪᴇ 💎 ᴅᴇsᴄʀɪᴘᴛɪᴏɴ
-*ᴀɴᴛɪ-ᴄᴀʟʟ ʀᴇᴊᴇᴛ ᴀᴜᴛᴏᴍᴀᴛɪǫᴜᴇ ᴇᴛ sᴇᴄᴜʀɪsᴇ ᴅᴇs ᴀᴘᴘᴇʟs ᴀᴠᴇᴄ ᴍᴇssᴀɢᴇ ᴅᴇ ᴘʀᴏᴛᴇᴄᴛɪᴏɴ.
-ᴡᴇʟᴄᴏᴍᴇ ᴇʟɪᴛᴇ sʏsᴛᴇᴍᴇ ᴅᴇ ʙɪᴇɴᴠᴇɴᴜᴇ ᴀᴇʀᴇᴇ ᴇᴛ ᴘʀᴇsᴛɪɢᴇ ᴀᴠᴇᴄ ɪᴍᴀɢᴇ ᴅᴇ ᴘʀᴏғɪʟ ᴅᴜ ᴍᴇᴍʙʀᴇ.
-ᴏᴡɴᴇʀ ᴘʀɪᴏʀɪᴛʏ ʟ'ᴏᴡɴᴇʀ sᴜᴘʀᴇᴍᴇ ᴘᴇᴜᴛ ᴜᴛɪʟɪsᴇʀ > ᴘᴏᴜʀ ғᴏʀᴄᴇʀ ʟᴇs ᴏʀᴅʀᴇs ᴇɴ ᴛᴏᴜᴛ ᴛᴇᴍᴘs.
-sᴇʟғ ᴍᴏᴅᴇ ʀᴇɴᴅ ʟᴇ ʙᴏᴛ ɪɴᴠɪsɪʙʟᴇ ᴘᴏᴜʀ ᴛᴏᴜs, sᴀᴜғ ᴘᴏᴜʀ ᴠᴏᴜs, ʟᴇ ᴍᴀɪᴛʀᴇ.
-
-
-
----
-
-## 👑 *ᴄᴏɴᴛᴀᴄᴛ & sᴜᴘᴘᴏʀᴛ ᴇʟɪᴛᴇ*
-ᴇɴ ᴄᴀs ᴅᴇ ʙᴇsᴏɪɴ ᴏᴜ ᴅᴇ ǫᴜᴇsᴛɪᴏɴs ᴄᴏᴍᴍᴇʀᴄɪᴀʟᴇs, ʟᴇ ᴄʀᴇᴀᴛᴇᴜʀ ᴇsᴛ ᴅɪsᴘᴏɴɪʙʟᴇ :
-
-* **ᴅᴇᴠᴇʟᴏᴘᴘᴇᴜʀ** : ɢᴇᴏʀɢᴇs (ᴛʜᴇ ɢʜᴏsᴛ)
-* **ᴡʜᴀᴛsᴀᴘᴘ** : [ᴄʟɪǫᴜᴇᴢ ɪᴄɪ](https://wa.me/22651622652?text=Bonjour%20maître,%20j'utilise%20le%20GhostG-X)
-* **ɢɪᴛʜᴜʙ** : [ɢʜᴏsᴛɢ-x-ʀᴇᴘᴏ](https://github.com/georges16388/GhostG-X-/)
-
----
-> *© 𝟸𝟶𝟸𝟶-𝟸𝟶𝟸𝟼 ɢʜᴏsᴛɢ-x ᴍᴅ - ʟ'ᴀʀᴛ ᴅᴇ ʟ'ᴀᴜᴛᴏᴍᴀᴛɪsᴀᴛɪᴏɴ ᴘʀᴇsᴛɪɢᴇ.*
