@@ -1,107 +1,77 @@
 /**
- * Auto-React System - AGM Elite Configuration
- * Optimized for GhostG-X 100ms Response
- * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
+ * ᴀᴜᴛᴏ-ʀᴇᴀᴄᴛ sʏsᴛᴇᴍ - ᴀɢᴍ ᴇʟɪᴛᴇ ᴄᴏɴғɪɢᴜʀᴀᴛɪᴏɴ
+ * sᴛʏʟᴇ ʙʏ -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
 const fs = require('fs');
 const path = require('path');
 
-// --- FONCTION DE DESIGN AGM (CONFIG STYLE) ---
-const AGM_CONFIG = (status, mode) => `╭╼━≪• ᴀɢᴍ ᴀᴜᴛᴏ-ʀᴇᴀᴄᴛ •≫━╾╮
-┃ sᴛᴀᴛᴜs : ${status ? '🟢 ᴇɴᴀʙʟᴇᴅ' : '🔴 ᴅɪsᴀʙʟᴇᴅ'}
-┃ ᴍᴏᴅᴇ : ${mode.toUpperCase()} ⚡
-┃ sʏsᴛᴇᴍ : ᴏᴘᴇʀᴀᴛɪᴏɴᴀʟ ✅
+const toSmallCaps = (text) => {
+    const fonts = {'a':'ᴀ','b':'ʙ','c':'ᴄ','d':'ᴅ','e':'ᴇ','f':'ғ','g':'ɢ','h':'ʜ','i':'ɪ','j':'ᴊ','k':'ᴋ','l':'ʟ','m':'ᴍ','n':'ɴ','o':'ᴏ','p':'ᴘ','q':'ǫ','r':'ʀ','s':'ꜱ','t':'ᴛ','u':'ᴜ','v':'ᴠ','w':'ᴡ','x':'x','y':'ʏ','z':'ᴢ'};
+    return String(text).toLowerCase().split('').map(c => fonts[c] || c).join('');
+};
+
+const AGM_CONFIG = (status, mode) => `╭╼━≪• *ᴀɢᴍ ᴀᴜᴛᴏ-ʀᴇᴀᴄᴛ* •≫━╾╮
+┃ 
+┃ ${toSmallCaps('sᴛᴀᴛᴜs')} : ${status ? '🟢 ᴇɴᴀʙʟᴇᴅ' : '🔴 ᴅɪsᴀʙʟᴇᴅ'}
+┃ ${toSmallCaps('ᴍᴏᴅᴇ')} : ${toSmallCaps(mode)} ⚡
+┃ ${toSmallCaps('sʏsᴛᴇᴍ')} : ${toSmallCaps('ᴏᴘᴇʀᴀᴛɪᴏɴᴀʟ')} ✅
+┃ 
 ╰━━━━━━━━━━━━━━━╯
-> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
 module.exports = {
   name: 'autoreact',
-  aliases: ['ar', 'react', 'auto-react'],
+  aliases: ['ar', 'react'],
   category: 'owner',
-  description: 'Gérer les réactions automatiques du bot.',
-  usage: '.ar on | off | bot | all',
+  description: 'Gérer les réactions automatiques',
+  usage: '.ar on/off/bot/all',
   ownerOnly: true,
 
   async execute(sock, msg, args, extra) {
     try {
-      const from = extra.from;
-      // On charge la config actuelle (on force la lecture du fichier pour la précision)
-      delete require.cache[require.resolve('../../config')];
-      const config = require('../../config');
-      
-      const opt = args.join(' ').toLowerCase();
+      // 1. Rechargement propre de la config
+      const configPath = path.join(process.cwd(), 'config.js');
+      delete require.cache[require.resolve(configPath)];
+      const config = require(configPath);
+
+      const opt = args[0]?.toLowerCase();
 
       if (!opt) {
         const currentMode = config.autoReactMode || 'bot';
-        return sock.sendMessage(from, { 
-            text: `╭╼━≪• ᴀʀ ᴏᴘᴛɪᴏɴs •≫━╾╮\n` +
-                  `┃ ᴄᴜʀʀᴇɴᴛ : ${config.autoReact ? '✅ ON' : '❌ OFF'}\n` +
-                  `┃ ᴍᴏᴅᴇ : ${currentMode.toUpperCase()}\n` +
-                  `┃ • *on/off* : Activer/Couper\n` +
-                  `┃ • *bot* : Réagit aux commandes\n` +
-                  `┃ • *all* : Réagit à tout\n` +
-                  `╰━━━━━━━━━━━━━━━╯`
-        }, { quoted: msg });
+        const info = `╭╼━≪• *ᴀʀ ᴏᴘᴛɪᴏɴs* •≫━╾╮\n┃\n┃ ${toSmallCaps('ᴄᴜʀʀᴇɴᴛ')} : ${config.autoReact ? '✅ ON' : '❌ OFF'}\n┃ ${toSmallCaps('ᴍᴏᴅᴇ')} : ${toSmallCaps(currentMode)}\n┃\n╰━━━━━━━━━━━━━━━╯`;
+        return extra.reply(info);
       }
-
-      await sock.sendMessage(from, { react: { text: '⚙️', key: msg.key } });
 
       let newStatus = config.autoReact;
       let newMode = config.autoReactMode || 'bot';
 
-      // 1. Logique de sélection
-      if (opt === 'on') {
-        newStatus = true;
-      } else if (opt === 'off') {
-        newStatus = false;
-      } else if (opt === 'bot') {
-        newMode = 'bot';
-        newStatus = true; // On active si on change le mode
-      } else if (opt === 'all') {
-        newMode = 'all';
-        newStatus = true;
-      } else {
-        return sock.sendMessage(from, { text: '❌ *ᴏᴘᴛɪᴏɴs : on, off, bot, all*' }, { quoted: msg });
-      }
+      if (opt === 'on') newStatus = true;
+      else if (opt === 'off') newStatus = false;
+      else if (opt === 'bot') { newMode = 'bot'; newStatus = true; }
+      else if (opt === 'all') { newMode = 'all'; newStatus = true; }
+      else return extra.reply(`❌ *${toSmallCaps("options")} : on, off, bot, all*`);
 
-      // 2. Mise à jour physique (config.js)
-      updateConfigValue('autoReact', newStatus);
-      updateConfigValue('autoReactMode', `'${newMode}'`);
+      // 2. Mise à jour physique du fichier config.js
+      let content = fs.readFileSync(configPath, 'utf8');
+      
+      // Update autoReact (boolean)
+      content = content.replace(/(autoReact\s*:\s*)(true|false)/g, `$1${newStatus}`);
+      // Update autoReactMode (string)
+      content = content.replace(/(autoReactMode\s*:\s*['"])([^'"]+)(['"])/g, `$1${newMode}$3`);
+      
+      fs.writeFileSync(configPath, content);
 
-      // 3. Mise à jour Mémoire (Instantanée pour le Handler)
-      config.autoReact = newStatus;
-      config.autoReactMode = newMode;
-      if (global.config) {
-          global.config.autoReact = newStatus;
-          global.config.autoReactMode = newMode;
-      }
-
-      // 4. Réponse Finale
-      await sock.sendMessage(from, { text: AGM_CONFIG(newStatus, newMode) }, { quoted: msg });
-      await sock.sendMessage(from, { react: { text: '✅', key: msg.key } });
+      await sock.sendMessage(extra.from, { react: { text: '⚙️', key: msg.key } });
+      await extra.reply(AGM_DESIGN_MSG(newStatus, newMode));
 
     } catch (err) {
       console.error('[AUTOREACT ERROR]:', err);
-      await sock.sendMessage(extra.from, { text: '❌ *ᴇʀʀᴇᴜʀ sʏsᴛéᴍᴇ ᴀᴜᴛᴏ-ʀᴇᴀᴄᴛ.*' }, { quoted: msg });
+      await extra.reply(`❌ *${toSmallCaps("erreur systeme")}*`);
     }
   }
 };
 
-/**
- * Fonction utilitaire pour modifier le fichier config.js
- */
-function updateConfigValue(key, value) {
-    try {
-        const configPath = path.join(process.cwd(), 'config.js');
-        let content = fs.readFileSync(configPath, 'utf8');
-        const regex = new RegExp(`(${key}\\s*:\\s*)([^,;\\n}]+)`, 'g');
-        
-        if (regex.test(content)) {
-            content = content.replace(regex, `$1${value}`);
-            fs.writeFileSync(configPath, content, 'utf8');
-        }
-    } catch (e) {
-        console.error('Update Config Error:', e);
-    }
+function AGM_DESIGN_MSG(status, mode) {
+    return AGM_CONFIG(status, mode);
 }
