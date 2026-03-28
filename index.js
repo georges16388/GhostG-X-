@@ -120,7 +120,10 @@ async function startBot() {
         if (connection === 'close') {
             const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
             console.log('🔄 Connexion fermée. Reconnexion en cours...');
-            if (shouldReconnect) startBot();
+            if (shouldReconnect) {
+    console.log("♻️ Reconnexion propre...");
+    setTimeout(() => startBot(), 3000);
+}
         } else if (connection === 'open') {
             console.log('\n✅ ɢʜᴏꜱᴛɢ-x ᴄᴏɴɴᴇᴄᴛᴇ́ ᴀᴠᴇᴄ ꜱᴜᴄᴄᴇ̀ꜱ !');
 
