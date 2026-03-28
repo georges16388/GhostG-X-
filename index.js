@@ -1,5 +1,7 @@
 /**
- * ɢʜᴏꜱᴛɢ-x ᴍᴅ - ᴍᴀɪɴ ᴇɴᴛʀʏ ᴘᴏɪɴᴛ (Prestige Edition V5.2 - FULL FUSION)
+ * ɢʜᴏꜱᴛɢ-x ᴍᴅ - ᴍᴀɪɴ ᴇɴᴛʀʏ ᴘᴏɪɴᴛ (Prestige Edition V5.3 - FULL FUSION)
+ * Optimized for Baileys v6.7.9 & Pino v9+
+ * Powered by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
 const Baileys = require('@whiskeysockets/baileys');
@@ -7,16 +9,18 @@ const {
     useMultiFileAuthState, 
     DisconnectReason, 
     fetchLatestBaileysVersion,
-    makeInMemoryStore // <--- Nécessaire pour les métadonnées
+    makeInMemoryStore,
+    Browsers,
+    makeCacheableSignalKeyStore
 } = Baileys;
 
 const makeWASocket = Baileys.default || Baileys; 
 const pino = require('pino');
-const fs = require('fs');
+const fs = require('fs-extra'); 
 const path = require('path');
 
 // ==========================================
-// MODULE 1 : CONFIGURATION & STORE
+// MODULE 1 : CONFIGURATION & STORE PRO
 // ==========================================
 const config = require('./config');
 const handler = require('./handler');
@@ -26,17 +30,24 @@ const logFile = path.join(__dirname, 'bot-crash.log');
 const logError = (msg, err) => {
     const logStr = `[${new Date().toISOString()}] ❌ ${msg}: ${err.stack || err}\n`;
     console.error(logStr);
-    if (fs.appendFileSync) fs.appendFileSync(logFile, logStr);
+    fs.appendFileSync(logFile, logStr);
 };
 
-const tmpDir = path.join(__dirname, 'tmp');
-if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir);
+fs.ensureDirSync(path.join(__dirname, 'tmp'));
+fs.ensureDirSync(path.join(__dirname, 'database'));
 
-// REMPLACEMENT : On utilise un vrai store pour que isAdmin fonctionne dans le handler
-global.store = makeInMemoryStore({ logger: pino().child({ level: 'silent', stream: 'store' }) });
+// Store avec logger Pino v9 (Indispensable pour isAdmin/Anti-Delete)
+global.store = makeInMemoryStore({ 
+    logger: pino({ level: 'silent' }).child({ level: 'silent', stream: 'store' }) 
+});
+
+// Sauvegarde automatique du store
+setInterval(() => {
+    try { global.store.writeToFile('./database/store.json'); } catch (e) {}
+}, 60000);
 
 // ==========================================
-// MODULE 2 : SÉCURITÉ & UTILITAIRES
+// MODULE 2 : SÉCURITÉ & UTILITAIRES (GARDÉS)
 // ==========================================
 global.isSupreme = (jid) => {
     if (!jid) return false;
@@ -68,11 +79,7 @@ async function processQueue() {
     processing = true;
     while (messageQueue.length) {
         const { sock, msg } = messageQueue.shift();
-        try { 
-            await handler.handleMessage(sock, msg); 
-        } catch (err) { 
-            logError("Handler Message Crash", err); 
-        }
+        try { await handler.handleMessage(sock, msg); } catch (err) { logError("Handler Message Crash", err); }
     }
     processing = false;
 }
@@ -80,48 +87,22 @@ async function processQueue() {
 // ==========================================
 // MODULE 4 : WATCHDOG (HEARTBEAT)
 // ==========================================
+let activeBot = null;
 setInterval(async () => {
     if (!activeBot) return;
     try { 
         await activeBot.presenceSubscribe(global.config.supremeNumber + '@s.whatsapp.net'); 
     } catch (err) { 
-        console.warn('⚠️ Heartbeat fail, force reconnecting...'); 
-        try { activeBot.end?.(); } catch(e){} 
+        console.warn('⚠️ Watchdog: Heartbeat fail, restarting...'); 
         activeBot = null; 
-        await startBot(); 
+        startBot(); 
     }
 }, 30000);
 
 // ==========================================
-// MODULE 5 : GESTION DES INSTANCES
+// MODULE 5 : SOCKET & PAIRING CODE
 // ==========================================
-let activeBot = null;
-let reconnectQueue = false;
-
 async function startBot() {
-    if (activeBot) return activeBot; 
-    activeBot = await createBotSocket(); 
-    return activeBot;
-}
-
-async function safeReconnect(sock, reason) {
-    if (reason === DisconnectReason.loggedOut) {
-        console.log("❌ Déconnecté.");
-        return;
-    }
-    if (reconnectQueue) return;
-    reconnectQueue = true;
-    setTimeout(async () => {
-        reconnectQueue = false;
-        activeBot = null;
-        await startBot();
-    }, 3000);
-}
-
-// ==========================================
-// MODULE 6 : SOCKET & ÉVÉNEMENTS
-// ==========================================
-async function createBotSocket() {
     try {
         const sessionFolder = `./${global.config.sessionName || 'session'}`;
         const { state, saveCreds } = await useMultiFileAuthState(sessionFolder);
@@ -131,48 +112,60 @@ async function createBotSocket() {
             version,
             logger: pino({ level: 'silent' }), 
             printQRInTerminal: false, 
-            browser: ["Ubuntu", "Chrome", "20.0.04"],
-            auth: state,
+            browser: Browsers.ubuntu("Chrome"), 
+            auth: {
+                creds: state.creds,
+                keys: makeCacheableSignalKeyStore(state.keys, pino({ level: 'silent' })),
+            },
             syncFullHistory: false,
+            markOnlineOnConnect: true,
+            generateHighQualityLinkPreview: true,
+            getMessage: async (key) => {
+                if (global.store) {
+                    const msg = await global.store.loadMessage(key.remoteJid, key.id);
+                    return msg?.message || undefined;
+                }
+                return { conversation: "GhostG-X V5.3" };
+            }
         });
 
-        // LIAISON DU STORE AU SOCKET
+        activeBot = sock;
         global.store.bind(sock.ev);
 
-        // ANTI-DELETE HANDLER
-        sock.ev.on('messages.delete', async (update) => {
-            try { await handler.handleAntiDelete(sock, update); } catch (e) { logError("Anti-Delete", e); }
-        });
+        // --- PAIRING CODE LOGIC ---
+        if (!sock.authState.creds.registered) {
+            const phoneNumber = String(global.config.supremeNumber).replace(/\D/g, '');
+            setTimeout(async () => {
+                try {
+                    let code = await sock.requestPairingCode(phoneNumber);
+                    code = code?.match(/.{1,4}/g)?.join("-") || code;
+                    console.log(`\n╔════════════════════════════════════╗\n║      ᴠᴏᴛʀᴇ ᴄᴏᴅᴇ ᴅᴇ ᴊᴜᴍᴇʟᴀɢᴇ :      ║\n║          ${code}          ║\n╚════════════════════════════════════╝\n`);
+                } catch (err) { logError("Pairing Error", err); }
+            }, 3000);
+        }
 
-        // --- GESTION DE LA CONNEXION ---
+        // --- ÉVÉNEMENTS ---
         sock.ev.on('connection.update', async (update) => {
             const { connection, lastDisconnect } = update;
             if (connection === 'close') {
                 const reason = lastDisconnect?.error?.output?.statusCode || lastDisconnect?.error?.toString();
-                await safeReconnect(sock, reason);
-            } 
-            else if (connection === 'open') {
-                console.log('\n✅ ɢʜᴏꜱᴛɢ-x ᴄᴏɴɴᴇᴄᴛᴇ́ !');
-
-                if (!sock.authState.creds.registered) {
-                    const cleanNumber = String(global.config.supremeNumber).replace(/\D/g, '');
-                    try {
-                        let code = await sock.requestPairingCode(cleanNumber);
-                        code = code?.match(/.{1,4}/g)?.join("-") || code;
-                        console.log(`\nCODE DE JUMELAGE : ${code}\n`);
-                    } catch (err) { logError("Pairing Error", err); }
+                if (reason !== DisconnectReason.loggedOut) {
+                    console.log(`⚠️ Reconnexion (Raison: ${reason})...`);
+                    setTimeout(() => startBot(), 5000);
                 }
-
-                // Notification de démarrage (Ta légende personnalisée)
+            } else if (connection === 'open') {
+                console.log('\n✅ ɢʜᴏꜱᴛɢ-x ᴄ_ᴏɴɴᴇᴄᴛᴇ́ !');
+                
                 try {
                     const totalCmds = global.commands ? global.commands.size : 0;
                     const botJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
                     const ownerNum = global.config.supremeNumber;
-                    const welcomeCaption = `╭╼━≪• *ɢʜᴏsᴛɢ-x ɪs ᴀʟɪᴠᴇ* •≫━╾╮\n┃ *sᴛᴀᴛᴜᴛ* : 🟢 ᴏɴʟɪɴᴇ\n┃ *ᴍᴀɪᴛʀᴇ* : @${ownerNum}\n┃ *ᴘʀᴇғɪxᴇ* : [ ${global.config.prefix || '.'} ]\n┃ *ᴄᴏᴍᴍᴀɴᴅᴇs* : ${totalCmds}\n┃ *ᴍᴏᴅᴇ* : ${global.config.selfMode ? '🔒 ᴘʀɪᴠé' : '🌐 ᴘᴜʙʟɪᴄ'}\n╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n📢 *ᴄʜᴀɪɴᴇ* : ${global.config.social.channel}\n\n👥 *ɢʀᴏᴜᴘᴇ ᴅ'ᴇɴᴛʀᴀɪᴅᴇ*: ${global.config.social.group}\n\n💻 *ᴅᴇᴠ* : wa.me/${ownerNum}\n\n📖 _*“ᴊᴇ ᴘᴜɪꜱ ᴛᴏᴜᴛ ᴘᴀʀ ᴄᴇʟᴜɪ ǫᴜɪ ᴍᴇ ғᴏʀᴛɪғɪᴇ”*_ ❤️✝️\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+
+                    const welcomeCaption = `╭╼━≪• *ɢʜᴏsᴛɢ-x ɪs ᴀʟɪᴠᴇ* •≫━╾╮\n┃ *sᴛᴀᴛᴜᴛ* : 🟢 ᴏɴʟɪɴᴇ\n┃ *ᴍᴀɪᴛʀᴇ* : @${ownerNum}\n┃ *ᴘʀᴇғɪxᴇ* : [ ${global.config.prefix || '.'} ]\n┃ *ᴄᴏᴍᴍᴀɴᴅᴇs* : ${totalCmds}\n┃ *ᴍᴏᴅᴇ* : ${global.config.selfMode ? '🔒 ᴘʀɪᴠé' : '🌐 ᴘᴜʙʟɪᴄ'}\n╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n📢 *ᴄʜᴀɪɴᴇ* : ${global.config.social.channel}\n👥 *ɢʀᴏᴜᴘᴇ ᴅ'ᴇɴᴛʀᴀɪᴅᴇ* : ${global.config.social.group}\n💻 *ᴅᴇᴠᴇʟᴏᴘᴘᴇᴜʀ* : wa.me/${ownerNum}\n\n📖 _*“ᴊᴇ ᴘᴜɪꜱ ᴛᴏᴜᴛ ᴘᴀʀ ᴄᴇʟᴜɪ ǫᴜɪ ᴍᴇ ғᴏʀᴛɪғɪᴇ”*_ ❤️✝️\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
                     await sock.sendMessage(botJid, { 
                         image: { url: 'https://files.catbox.moe/2fmwpu.jpg' }, 
-                        caption: welcomeCaption, 
+                        caption: welcomeCaption,
                         contextInfo: {
                             mentionedJid: [botJid, `${ownerNum}@s.whatsapp.net`],
                             forwardingScore: 999,
@@ -188,7 +181,10 @@ async function createBotSocket() {
             }
         });
 
-        // ANTI-CALL
+        sock.ev.on('messages.delete', async (update) => {
+            try { await handler.handleAntiDelete(sock, update); } catch (e) { logError("Anti-Delete", e); }
+        });
+
         sock.ev.on('call', async (node) => {
             if (!global.config.anticall) return;
             try {
@@ -203,7 +199,6 @@ async function createBotSocket() {
 
         sock.ev.on('creds.update', saveCreds);
 
-        // MESSAGES UPSERT
         sock.ev.on('messages.upsert', async ({ messages, type }) => {
             if (type !== 'notify') return;
             for (const msg of messages) {
@@ -215,13 +210,11 @@ async function createBotSocket() {
             processQueue();
         });
 
-        // GROUP UPDATE
         sock.ev.on('group-participants.update', async (u) => {
             try { await handler.handleGroupUpdate(sock, u); } catch (err) { logError("Group Update Crash", err); }
         });
 
-        return sock;
-    } catch (err) { logError("Socket Crash", err); }
+    } catch (err) { logError("Startup Fatal", err); setTimeout(() => startBot(), 10000); }
 }
 
 startBot();
