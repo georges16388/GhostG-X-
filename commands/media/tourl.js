@@ -3,7 +3,7 @@
  * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
-const { downloadMediaMessage } = require('@whiskeysockets/baileys');
+const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 const { uploadByBuffer } = require('../../utils/uploader'); 
 
 // --- FONCTION DE CONVERSION EN SMALL CAPS ---
@@ -18,68 +18,64 @@ const toStyledCaps = (text) => {
   return String(text).toLowerCase().split('').map(c => fonts[c] || c).join('');
 };
 
-// --- FONCTION DE DESIGN AGM ---
+// --- FONCTION DE DESIGN AGM (GRAS & SMALLCAPS) ---
 const AGM_DESIGN = (size, type) => `*╭╼━≪• ${toStyledCaps('ᴍᴇᴅɪᴀ ᴛᴏ ᴜʀʟ')} •≫━╾╮*
-*┃* *┃* ✅ *${toStyledCaps('sᴛᴀᴛᴜs')}* : 🟢 *${toStyledCaps('ᴜᴘʟᴏᴀᴅᴇᴅ')}*
+*┃*
+*┃* ✅ *${toStyledCaps('sᴛᴀᴛᴜs')}* : 🟢 *${toStyledCaps('ᴜᴘʟᴏᴀᴅᴇᴅ')}*
 *┃* ⚖️ *${toStyledCaps('sɪᴢᴇ')}* : *${size}*
 *┃* 🌐 *${toStyledCaps('ᴛʏᴘᴇ')}* : *${toStyledCaps(type)}*
-*┃* *╰━━━━━━━━━━━━━━━╯*
+*┃*
+*╰━━━━━━━━━━━━━━━╯*
 > *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
 module.exports = {
   name: 'tourl',
-  aliases: ['url', 'makeurl', 'upload', 'catbox'],
+  aliases: ['url', 'makeurl', 'catbox'],
   category: 'media',
-  description: 'Convertir un média en lien URL permanent via Catbox',
+  description: 'Convertir un média en lien URL via Catbox',
   usage: '.tourl (répondez à un média)',
 
   async execute(sock, msg, args, extra) {
     try {
       const chatId = extra.from;
 
-      // 1. Vérification de la citation (Quoted)
-      const quoted = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+      // 1. Détection du message cité (Quoted)
+      const quoted = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage || 
+                     msg.message?.imageMessage?.contextInfo?.quotedMessage || 
+                     msg.message?.videoMessage?.contextInfo?.quotedMessage;
+
       if (!quoted) {
         return extra.reply(`⚠️ *${toStyledCaps('ᴠᴇᴜɪʟʟᴇᴢ ʀᴇᴘᴏɴᴅʀᴇ ᴀ ᴜɴ ᴍᴇᴅɪᴀ')}*`);
       }
 
-      // 2. Détection du type de média
-      const mime = Object.keys(quoted)[0];
-      if (!/image|video|audio|sticker|document/.test(mime.toLowerCase())) {
+      // 2. Identification du type de média
+      const mimeType = Object.keys(quoted)[0];
+      if (!/image|video|audio|sticker|document/i.test(mimeType)) {
         return extra.reply(`❌ *${toStyledCaps('ᴄᴇ ᴛʏᴘᴇ ᴅᴇ ғɪᴄʜɪᴇʀ ɴᴇsᴛ ᴘᴀs sᴜᴘᴘᴏʀᴛᴇ')}*`);
       }
 
       await sock.sendMessage(chatId, { react: { text: '☁️', key: msg.key } });
 
-      // 3. Téléchargement manuel sécurisé
-      const targetMessage = {
-        key: msg.message.extendedTextMessage.contextInfo,
-        message: quoted
-      };
-
-      const buffer = await downloadMediaMessage(
-        targetMessage,
-        'buffer',
-        {},
-        { logger: undefined, reuploadRequest: sock.updateMediaMessage }
+      // 3. Téléchargement du buffer
+      const stream = await downloadContentFromMessage(
+        quoted[mimeType],
+        mimeType.replace('Message', '').toLowerCase()
       );
-
-      if (!buffer) {
-        throw new Error('DOWNLOAD_FAILED');
+      
+      let buffer = Buffer.from([]);
+      for await (const chunk of stream) {
+        buffer = Buffer.concat([buffer, chunk]);
       }
 
-      // 4. Calcul de la taille et type propre
+      if (!buffer || buffer.length === 0) throw new Error('DOWNLOAD_FAILED');
+
+      // 4. Calcul de la taille et formatage
       const sizeMB = (buffer.length / (1024 * 1024)).toFixed(2) + ' ᴍʙ';
-      const cleanType = mime.replace('Message', '');
+      const cleanType = mimeType.replace('Message', '');
 
       // 5. Upload sur Catbox
-      let mediaUrl;
-      try {
-        mediaUrl = await uploadByBuffer(buffer); 
-      } catch (uploadErr) {
-        console.error('Upload Error:', uploadErr);
-        return extra.reply(`❌ *${toStyledCaps('ᴇʀʀᴇᴜʀ ʟᴏʀs ᴅᴇ ʟʜᴇʙᴇʀɢᴇᴍᴇɴᴛ ᴄᴀᴛʙᴏx')}*`);
-      }
+      const mediaUrl = await uploadByBuffer(buffer); 
+      if (!mediaUrl) throw new Error('UPLOAD_FAILED');
 
       // 6. Envoi du résultat final
       const caption = `${AGM_DESIGN(sizeMB, cleanType)}\n\n🔗 *${toStyledCaps('ʟɪɴᴋ')} :* ${mediaUrl}`;
@@ -90,10 +86,10 @@ module.exports = {
           externalAdReply: {
             title: "ɢʜᴏsᴛ ᴄʟᴏᴜᴅ sʏsᴛᴇᴍ",
             body: toStyledCaps("conversion catbox reussie"),
-            thumbnail: buffer.length < 2000000 ? buffer : null, 
+            thumbnail: buffer.length < 1000000 ? buffer : null, 
             sourceUrl: mediaUrl,
             mediaType: 1,
-            showAdAttribution: true
+            showAdAttribution: false
           }
         }
       }, { quoted: msg });
@@ -102,7 +98,7 @@ module.exports = {
 
     } catch (error) {
       console.error('ToURL Error:', error);
-      await extra.reply(`❌ *${toStyledCaps('ᴇʀʀᴇᴜʀ sʏsᴛᴇᴍᴇ ʟᴏʀs ᴅᴇ ʟᴜᴘʟᴏᴀᴅ')}*`);
+      await extra.reply(`❌ *${toStyledCaps('ᴇʀʀᴇᴜʀ ʟᴏʀs ᴅᴇ ʟᴜᴘʟᴏᴀᴅ. ᴠᴇʀɪғɪᴇᴢ ᴠᴏᴛʀᴇ ᴜᴘʟᴏᴀᴅᴇʀ.ᴊs')}*`);
     }
   }
 };
