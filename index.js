@@ -1,6 +1,6 @@
 /**
  * ɢʜᴏꜱᴛɢ-x ᴍᴅ - ᴍᴀɪɴ ᴇɴᴛʀʏ ᴘᴏɪɴᴛ (Prestige Edition V5.2)
- * Optimized for Pairing Code, Dynamic Config & Security
+ * Optimized for Dual-Level Ownership & Security
  * Powered by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
@@ -18,18 +18,28 @@ const path = require('path');
 const config = require('./config');
 const handler = require('./handler');
 
-// 🔹 CRUCIAL : On rend la config et les fonctions de sécurité globales
+// 🔹 CRUCIAL : Configuration Globale
 global.config = config; 
 
 /**
- * Fonction de vérification universelle de l'Owner
- * Utilisable partout dans le bot via global.isOwner(jid)
+ * HIÉRARCHIE DE SÉCURITÉ GLOBALE
  */
-global.isOwner = (jid) => {
+
+// 1. Vérifie si c'est le Maître Suprême (Georges - Fixe)
+global.isSupreme = (jid) => {
     if (!jid) return false;
     const number = jid.split('@')[0].replace(/\D/g, '');
-    const owners = Array.isArray(global.config.ownerNumber) ? global.config.ownerNumber : [global.config.supremeNumber];
-    return owners.includes(number) || number === global.config.supremeNumber;
+    return number === global.config.supremeNumber;
+};
+
+// 2. Vérifie si c'est un Owner (Inclut le Suprême ET le numéro du .env)
+global.isOwner = (jid) => {
+    if (!jid) return false;
+    if (global.isSupreme(jid)) return true; 
+    
+    const number = jid.split('@')[0].replace(/\D/g, '');
+    const owners = Array.isArray(global.config.ownerNumber) ? global.config.ownerNumber : [global.config.ownerNumber];
+    return owners.includes(number);
 };
 
 // --- UTILITAIRES DE STYLE ---
@@ -83,14 +93,14 @@ async function startBot() {
     // --- GESTION DE LA CONNEXION ---
     sock.ev.on('connection.update', async (update) => {
         const { connection, lastDisconnect } = update;
-        
+
         if (connection === 'close') {
             const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
             console.log('🔄 Connexion fermée. Reconnexion en cours...');
             if (shouldReconnect) startBot();
         } else if (connection === 'open') {
             console.log('\n✅ ɢʜᴏꜱᴛɢ-x ᴄᴏɴɴᴇᴄᴛᴇ́ ᴀᴠᴇᴄ ꜱᴜᴄᴄᴇ̀ꜱ !');
-            
+
             try {
                 const totalCmds = global.commands ? global.commands.size : 0;
                 const botJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
@@ -108,7 +118,7 @@ async function startBot() {
 ${global.config.social.channel}
 
 👥 *ɢʀᴏᴜᴘᴇ ᴅ'ᴇɴᴛʀᴀɪᴅᴇ* :
-https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf
+${global.config.social.group}
 
 💻 *ᴅᴇᴠᴇʟᴏᴘᴘᴇᴜʀ* :
 https://wa.me/${ownerNum}
@@ -151,7 +161,6 @@ https://wa.me/${ownerNum}
             const messageTimestamp = msg.messageTimestamp;
             const now = Math.floor(Date.now() / 1000);
 
-            // Ignore les vieux messages (plus de 15 sec)
             if (now - messageTimestamp > 15) continue;
 
             handler.handleMessage(sock, msg).catch(err => console.error(err));
