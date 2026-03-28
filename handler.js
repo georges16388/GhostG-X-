@@ -295,4 +295,4 @@ const handleGroupUpdate = async (sock, update) => {
     }
 };
 
-module.exports = { handleMessage, handleGroupUpdate, handleAntidelete };
+module.exports = { handleMessage, handleGroupUpdate, handleAntiDelete };
