@@ -1,91 +1,113 @@
 /**
- * Lyrics Finder - AGM Music Edition
- * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
+ * ʟʏʀɪᴄs & ᴀᴜᴅɪᴏ ғɪɴᴅᴇʀ - ᴀɢᴍ ᴍᴜsɪᴄ ᴇᴅɪᴛɪᴏɴ
+ * sᴛʏʟᴇ ʙʏ -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
 const axios = require('axios');
+const { youtube } = require('btch-downloader'); // Assure-toi d'avoir un scraper YT stable
 
-// --- FONCTION DE DESIGN AGM ADAPTÉE ---
-const AGM_DESIGN = (title, artist) => `╭╼━≪• ʟʏʀɪᴄs ғɪɴᴅᴇʀ •≫━╾╮
-┃ sᴏɴɢ : ${title.length > 15 ? title.substring(0, 12) + '...' : title} 🎵
-┃ ᴀʀᴛɪsᴛ : ${artist.length > 15 ? artist.substring(0, 12) + '...' : artist} 👤
-┃ sᴛᴀᴛᴜs : 🟢 ғᴏᴜɴᴅ
+const toSmallCaps = (text) => {
+    const smallCapsMap = {
+        'a': 'ᴀ', 'b': 'ʙ', 'c': 'ᴄ', 'd': 'ᴅ', 'e': 'ᴇ', 'f': 'ғ', 'g': 'ɢ', 'h': 'ʜ', 
+        'i': 'ɪ', 'j': 'ᴊ', 'k': 'ᴋ', 'l': 'ʟ', 'm': 'ᴍ', 'n': 'ɴ', 'o': 'ᴏ', 'p': 'ᴘ', 
+        'q': 'ǫ', 'r': 'ʀ', 's': 's', 't': 'ᴛ', 'u': 'ᴜ', 'v': 'ᴠ', 'w': 'ᴡ', 'x': 'x', 
+        'y': 'ʏ', 'z': 'ᴢ'
+    };
+    return text.toString().toLowerCase().split('').map(char => smallCapsMap[char] || char).join('');
+};
+
+const AGM_DESIGN = (title, artist) => {
+  const shortTitle = title ? (title.length > 18 ? title.substring(0, 15) + '...' : title) : 'ᴜɴᴋɴᴏᴡɴ';
+  const shortArtist = artist ? (artist.length > 18 ? artist.substring(0, 15) + '...' : artist) : 'ᴜɴᴋɴᴏᴡɴ';
+  
+  return `╭╼━≪• *ʟʏʀɪᴄs & ᴀᴜᴅɪᴏ* •≫━╾╮
+┃ 
+┃ ${toSmallCaps('sᴛᴀᴛᴜs')} : 🟢 ${toSmallCaps('ғᴏᴜɴᴅ')}
+┃ ${toSmallCaps('sᴏɴɢ')} : ${toSmallCaps(shortTitle)} 🎵
+┃ ${toSmallCaps('ᴀʀᴛɪsᴛ')} : ${toSmallCaps(shortArtist)} 👤
+┃ 
 ╰━━━━━━━━━━━━━━━╯
-> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+};
 
 module.exports = {
   name: 'lyrics',
-  aliases: ['lyric', 'lirik'],
+  aliases: ['lyric', 'music'],
   category: 'media',
-  description: 'Get lyrics of a song',
-  usage: '.lyrics <song name>',
-  
+  description: 'Trouver les paroles et l\'audio d\'une chanson',
+  usage: '.lyrics <nom de la chanson>',
+
   async execute(sock, msg, args, extra) {
     try {
       const query = args.join(' ');
-      
       if (!query) {
-        return extra.reply('⚠️ *ᴠᴇᴜɪʟʟᴇᴢ sᴘéᴄɪғɪᴇʀ ᴜɴ ɴᴏᴍ ᴅᴇ ᴄʜᴀɴsᴏɴ.*');
+        return extra.reply(`⚠️ *${toSmallCaps("veuillez specifier un nom de chanson")}*`);
       }
 
       await sock.sendMessage(extra.from, { react: { text: "🔍", key: msg.key } });
-      
+
       let lyricsData = null;
-      
-      // --- API 1: VREDEN ---
+
+      // --- RECHERCHE PAROLES (API VREDEN) ---
       try {
         const res = await axios.get(`https://api.vreden.my.id/api/lyrics?query=${encodeURIComponent(query)}`);
         if (res.data?.result) {
+          const r = res.data.result;
           lyricsData = {
-            title: res.data.result.title,
-            artist: res.data.result.artist,
-            lyrics: res.data.result.lyrics,
-            thumbnail: res.data.result.thumbnail
+            title: r.title || query,
+            artist: r.artist || 'Unknown',
+            lyrics: r.lyrics,
+            thumbnail: r.thumbnail || r.image
           };
         }
-      } catch (err) { /* Silent fallback */ }
-      
-      // --- API 2: SIPUTZX (FALLBACK) ---
-      if (!lyricsData) {
-        try {
-          const res = await axios.get(`https://api.siputzx.my.id/api/s/lyrics?query=${encodeURIComponent(query)}`);
-          if (res.data?.status && res.data?.data) {
-            lyricsData = {
-              title: res.data.data.title,
-              artist: res.data.data.artist,
-              lyrics: res.data.data.lyrics,
-              thumbnail: res.data.data.image
-            };
-          }
-        } catch (err) { /* API Down */ }
-      }
-      
-      if (!lyricsData) {
-        return extra.reply('❌ *ᴀᴜᴄᴜɴᴇ ᴘᴀʀᴏʟᴇ ᴛʀᴏᴜᴠéᴇ ᴘᴏᴜʀ ᴄᴇᴛᴛᴇ ᴄʜᴀɴsᴏɴ.*');
-      }
-      
-      // Limitation pour éviter le crash WhatsApp (max 4000 chars)
-      let lyrics = lyricsData.lyrics;
-      if (lyrics.length > 4000) {
-        lyrics = lyrics.substring(0, 3900) + '...\n\n_ (ᴛᴇxᴛᴇ ᴛʀᴏᴘ ʟᴏɴɢ) _';
-      }
-      
-      const caption = `${AGM_DESIGN(lyricsData.title, lyricsData.artist)}\n\n${lyrics}`;
-      
-      if (lyricsData.thumbnail) {
-        await sock.sendMessage(extra.from, {
-          image: { url: lyricsData.thumbnail },
-          caption: caption
-        }, { quoted: msg });
-      } else {
-        await extra.reply(caption);
+      } catch (e) {}
+
+      if (!lyricsData || !lyricsData.lyrics) {
+        return extra.reply(`❌ *${toSmallCaps("aucune parole trouvee")}*`);
       }
 
-      await sock.sendMessage(extra.from, { react: { text: "🎶", key: msg.key } });
-      
+      // Envoi des paroles
+      const caption = `${AGM_DESIGN(lyricsData.title, lyricsData.artist)}\n\n${lyricsData.lyrics.substring(0, 3500)}`;
+      await sock.sendMessage(extra.from, {
+        image: { url: lyricsData.thumbnail || 'https://files.catbox.moe/2fmwpu.jpg' },
+        caption: caption
+      }, { quoted: msg });
+
+      // --- ENVOI DE L'AUDIO (AUTO-DL) ---
+      await sock.sendMessage(extra.from, { react: { text: "🎧", key: msg.key } });
+
+      try {
+          // On cherche la chanson sur YouTube pour récupérer l'audio
+          const searchTitle = `${lyricsData.title} ${lyricsData.artist}`;
+          const ytSearch = await youtube(searchTitle);
+          const audioUrl = ytSearch.mp3;
+
+          if (audioUrl) {
+              await sock.sendMessage(extra.from, {
+                  audio: { url: audioUrl },
+                  mimetype: 'audio/mp4',
+                  ptt: false, // true si tu veux que ce soit une note vocale
+                  contextInfo: {
+                      externalAdReply: {
+                          title: toSmallCaps(lyricsData.title),
+                          body: toSmallCaps(lyricsData.artist),
+                          mediaType: 2,
+                          thumbnailUrl: lyricsData.thumbnail,
+                          showAdAttribution: true
+                      }
+                  }
+              }, { quoted: msg });
+          }
+      } catch (audioErr) {
+          console.error('Audio DL Error:', audioErr);
+          // On ne stop pas le script si l'audio échoue, les paroles sont déjà envoyées.
+      }
+
+      await sock.sendMessage(extra.from, { react: { text: "✅", key: msg.key } });
+
     } catch (error) {
-      console.error('Lyrics error:', error);
-      await extra.reply('❌ *ᴇʀʀᴇᴜʀ ʟᴏʀs ᴅᴇ ʟᴀ ʀᴇᴄʜᴇʀᴄʜᴇ.*');
+      console.error('Global Error:', error);
+      await extra.reply(`❌ *${toSmallCaps("erreur lors du processus")}*`);
     }
   }
 };
