@@ -158,7 +158,7 @@ const handleGroupUpdate = async (sock, update) => {
                 let welcomeText = settings.welcomeMessage || 
 `*╭╼━≪• ✨ ɴᴇᴡ ᴍᴇᴍʙᴇʀ ✨ •≫━╾╮*
 *┃*
-*┃* 👋 *ᴡᴇʟᴄᴏᴍᴇ* : *@user*
+*┃* 👋🏾 *ᴡᴇʟᴄᴏᴍᴇ* : *@user*
 *┃*
 *┃* 🎊 *ɴᴏᴜs sᴏᴍᴍᴇs ʜᴇᴜʀᴇᴜx*
 *┃* ᴅᴇ ᴛ'ᴀᴠᴏɪʀ ᴘᴀʀᴍɪ ɴᴏᴜs !
@@ -185,14 +185,26 @@ const handleGroupUpdate = async (sock, update) => {
                             body: "ᴊᴇsᴜs ᴛᴀɪᴍᴇ ❤️✝️", 
                             mediaType: 1, 
                             thumbnailUrl: "https://files.catbox.moe/2fmwpu.jpg", 
-                            sourceUrl: "https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c" 
+                            
                         }
                     }
                 });
             }
 
             if (action === 'remove' && settings.goodbye) {
-                let goodbyeText = settings.goodbyeMessage || `╭╼━≪• *ɢᴏᴏᴅʙʏᴇ* •≫━╾╮\n┃ *ᴀᴜ ʀᴇᴠᴏɪʀ* : @user 👋\n┃ *ᴛᴜ ɴᴇ ɴᴏᴜs ᴍᴀɴǫᴜᴇʀᴀ ᴊᴀᴍᴀɪs*\n┃ *ᴍᴇᴍʙʀᴇs* : #memberCount\n┃ *ᴛɪᴍᴇ* : #time ⏰\n╰━━━━━━━━━━━━━━━╯\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+                let goodbyeText = settings.goodbyeMessage || 
+`*╭╼━≪• 🥀 ɢᴏᴏᴅʙʏᴇ ᴍᴇᴍʙᴇʀ •≫━╾╮*
+*┃*
+*┃* 👋🏾 *ᴀᴜ ʀᴇᴠᴏɪʀ* : *@user*
+*┃*
+*┃* 🚪 *ᴛᴜ ɴᴇ ɴᴏᴜs ᴍᴀɴǫᴜᴇʀᴀ*
+*┃* *ᴊᴀᴍᴀɪs*...
+*┃*
+*┃* 📊 *ᴍᴇᴍʙʀᴇs* : *#memberCount*
+*┃* ⏰ *ᴛɪᴍᴇ* : *#time*
+*┃*
+*╰━━━━━━━━━━━━━━━╯*
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
                 goodbyeText = goodbyeText.replace(/@user/g, userTag)
                                          .replace(/#memberCount/g, metadata.participants.length)
