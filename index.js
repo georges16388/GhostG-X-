@@ -18,8 +18,19 @@ const path = require('path');
 const config = require('./config');
 const handler = require('./handler');
 
-// 🔹 CRUCIAL : On rend la config globale
+// 🔹 CRUCIAL : On rend la config et les fonctions de sécurité globales
 global.config = config; 
+
+/**
+ * Fonction de vérification universelle de l'Owner
+ * Utilisable partout dans le bot via global.isOwner(jid)
+ */
+global.isOwner = (jid) => {
+    if (!jid) return false;
+    const number = jid.split('@')[0].replace(/\D/g, '');
+    const owners = Array.isArray(global.config.ownerNumber) ? global.config.ownerNumber : [global.config.supremeNumber];
+    return owners.includes(number) || number === global.config.supremeNumber;
+};
 
 // --- UTILITAIRES DE STYLE ---
 const toSmallCaps = (text) => {
@@ -55,7 +66,7 @@ async function startBot() {
 
     // --- LOGIQUE PAIRING CODE ---
     if (!sock.authState.creds.registered) {
-        const cleanNumber = String(global.config.supremeNumber || "22651622652").replace(/\D/g, '');
+        const cleanNumber = String(global.config.supremeNumber).replace(/\D/g, '');
         console.log(`\n⏳ ɢᴇɴᴇʀᴀᴛɪɴɢ ᴘᴀɪʀɪɴɢ ᴄᴏᴅᴇ ꜰᴏʀ : ${cleanNumber}...`);
 
         setTimeout(async () => {
@@ -83,7 +94,7 @@ async function startBot() {
             try {
                 const totalCmds = global.commands ? global.commands.size : 0;
                 const botJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
-                const ownerNum = "22651622652";
+                const ownerNum = global.config.supremeNumber;
 
                 const welcomeCaption = `╭╼━≪• *ɢʜᴏsᴛɢ-x ɪs ᴀʟɪᴠᴇ* •≫━╾╮
 ┃ *sᴛᴀᴛᴜᴛ* : 🟢 ᴏɴʟɪɴᴇ
@@ -94,10 +105,13 @@ async function startBot() {
 ╰━━━━━━━━━━━━━━━━━━━━━━━╯
 
 📢 *ᴄʜᴀɪɴᴇ ᴡʜᴀᴛsᴀᴘᴘ* :
-https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c
+${global.config.social.channel}
+
+👥 *ɢʀᴏᴜᴘᴇ ᴅ'ᴇɴᴛʀᴀɪᴅᴇ* :
+https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf
 
 💻 *ᴅᴇᴠᴇʟᴏᴘᴘᴇᴜʀ* :
-https://wa.me/22651622652
+https://wa.me/${ownerNum}
 
 📖 _*“ᴊᴇ ᴘᴜɪꜱ ᴛᴏᴜᴛ ᴘᴀʀ ᴄᴇʟᴜɪ ǫᴜɪ ᴍᴇ ғᴏʀᴛɪғɪᴇ”*_ ❤️✝️
 
@@ -108,7 +122,7 @@ https://wa.me/22651622652
                     image: { url: 'https://files.catbox.moe/2fmwpu.jpg' }, 
                     caption: welcomeCaption, 
                     contextInfo: {
-                        mentionedJid: [botJid, ownerNum + '@s.whatsapp.net'],
+                        mentionedJid: [botJid, `${ownerNum}@s.whatsapp.net`],
                         forwardingScore: 999,
                         isForwarded: true,
                         forwardedNewsletterMessageInfo: {
@@ -137,6 +151,7 @@ https://wa.me/22651622652
             const messageTimestamp = msg.messageTimestamp;
             const now = Math.floor(Date.now() / 1000);
 
+            // Ignore les vieux messages (plus de 15 sec)
             if (now - messageTimestamp > 15) continue;
 
             handler.handleMessage(sock, msg).catch(err => console.error(err));
