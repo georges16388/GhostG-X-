@@ -1,18 +1,28 @@
 /**
- * Flirt - Obtenir un message de drague aléatoire
- * Custom Design by -ɢʜᴏsᴛɢ 𝐗
+ * Flirt Command - AGM Elite Edition
+ * Get a random pickup line with Smooth Style
+ * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
-// Fonction de conversion en Small Caps
-const toSmallCaps = (text) => {
+// Fonction de conversion en Bold Small Caps pour le style Prestige
+const toBoldSmallCaps = (text) => {
+    if (!text) return "";
     const smallCapsMap = {
         'a': 'ᴀ', 'b': 'ʙ', 'c': 'ᴄ', 'd': 'ᴅ', 'e': 'ᴇ', 'f': 'ғ', 'g': 'ɢ', 'h': 'ʜ', 
         'i': 'ɪ', 'j': 'ᴊ', 'k': 'ᴋ', 'l': 'ʟ', 'm': 'ᴍ', 'n': 'ɴ', 'o': 'ᴏ', 'p': 'ᴘ', 
         'q': 'ǫ', 'r': 'ʀ', 's': 's', 't': 'ᴛ', 'u': 'ᴜ', 'v': 'ᴠ', 'w': 'ᴡ', 'x': 'x', 
-        'y': 'ʏ', 'z': 'ᴢ'
+        'y': 'ʏ', 'z': 'ᴢ',
+        'é': 'ᴇ', 'è': 'ᴇ', 'ê': 'ᴇ', 'ë': 'ᴇ', 'à': 'ᴀ', 'â': 'ᴀ', 'î': 'ɪ', 'ï': 'ɪ', 'ô': 'ᴏ', 'û': 'ᴜ', 'ù': 'ᴜ', 'ç': 'ᴄ',
+        '?': '?', '!': '!', '.': '.', ',': ',', "'": "'"
     };
-    return text.toLowerCase().split('').map(char => smallCapsMap[char] || char).join('');
+    const capsText = text.toLowerCase().split('').map(char => smallCapsMap[char] || char).join('');
+    return `*${capsText}*`;
 };
+
+// Design Elite pour le flirt
+const FLIRT_DESIGN = (content) => `*╭╼━≪• ${toBoldSmallCaps('ɢʜᴏsᴛ ғʟɪʀᴛ')} •≫━╾╮*
+*┃*\n*┃* 😏 *${toBoldSmallCaps('ᴍsɢ')}* : ${content}\n*┃* ✨ *${toBoldSmallCaps('ᴛʏᴘᴇ')}* : *${toBoldSmallCaps('ᴅʀᴀɢᴜᴇ')}* ✨\n*┃* 😏 *${toBoldSmallCaps('sᴛᴀᴛᴜs')}* : *${toBoldSmallCaps('sᴍᴏᴏᴛʜ...')}* 😏\n*┃*\n*╰━━━━━━━━━━━━━━━╯*
+> ***${toBoldSmallCaps('ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗')}***`;
 
 const flirtPhrases = [
     "Est-ce que tu as un plan ? Je me suis perdu dans tes yeux.",
@@ -27,47 +37,48 @@ const flirtPhrases = [
     "Je ne suis pas photographe, mais je peux très bien nous imaginer ensemble."
 ];
 
-const FLIRT_DESIGN = (text) => `╭╼━≪• *ɢʜᴏsᴛ ғʟɪʀᴛ* •≫━╾╮
-┃ *ᴍsɢ* : ${text}
-┃ *ᴛʏᴘᴇ* : ${toSmallCaps('ᴅʀᴀɢᴜᴇ')} ✨
-┃ *sᴛᴀᴛᴜs* : ${toSmallCaps('sᴍᴏᴏᴛʜ')}... 😏
-╰━━━━━━━━━━━━━━━╯
-> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
-
 module.exports = {
     name: 'flirt',
     aliases: ['drague', 'pickup'],
     category: 'fun',
-    desc: 'Obtenir une phrase de drague aléatoire en français',
-    usage: 'flirt [@user]',
+    desc: 'Obtenir une phrase de drague aléatoire (Smooth Edition)',
+    usage: '.flirt [@user]',
     execute: async (sock, msg, args, extra) => {
       try {
+        const chatId = extra.from;
+        await sock.sendMessage(chatId, { react: { text: '😏', key: msg.key } });
+
         const rawText = flirtPhrases[Math.floor(Math.random() * flirtPhrases.length)];
-        // Conversion de la phrase de drague en Small Caps
-        const flirtText = toSmallCaps(rawText);
-        
+        const styledFlirt = toBoldSmallCaps(rawText);
+
         const ctxInfo = msg.message?.extendedTextMessage?.contextInfo;
         const mentioned = ctxInfo?.mentionedJid || [];
-        const chatId = extra.from;
-        
-        let finalMessage = flirtText;
 
+        let finalContent = styledFlirt;
+        let mentionsList = [...mentioned];
+
+        // Ciblage automatique (Mention, Réponse ou Soi-même)
         if (mentioned.length > 0) {
-            finalMessage = `@${mentioned[0].split('@')[0]}, ${flirtText}`;
+            finalContent = `@${mentioned[0].split('@')[0]} : ${styledFlirt}`;
         } else if (ctxInfo?.participant) {
-            const responder = ctxInfo.participant;
-            finalMessage = `@${responder.split('@')[0]}, ${flirtText}`;
-            if (!mentioned.includes(responder)) mentioned.push(responder);
+            const target = ctxInfo.participant;
+            finalContent = `@${target.split('@')[0]} : ${styledFlirt}`;
+            if (!mentionsList.includes(target)) mentionsList.push(target);
+        } else {
+            const sender = msg.key.participant || msg.key.remoteJid;
+            finalContent = `@${sender.split('@')[0]} : ${styledFlirt}`;
+            if (!mentionsList.includes(sender)) mentionsList.push(sender);
         }
 
         await sock.sendMessage(chatId, {
-          text: FLIRT_DESIGN(finalMessage),
-          mentions: mentioned
+          text: FLIRT_DESIGN(finalContent),
+          mentions: mentionsList
         }, { quoted: msg });
 
       } catch (error) {
         console.error('Flirt Error:', error);
-        await extra.reply(`❌ ${toSmallCaps('ᴇʀʀᴇᴜʀ')} : ${error.message}`);
+        const errorMsg = toBoldSmallCaps(`Erreur Smooth : ${error.message}`);
+        await sock.sendMessage(msg.key.remoteJid, { text: `❌ ${errorMsg}` }, { quoted: msg });
       }
     }
 };
