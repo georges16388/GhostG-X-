@@ -1,70 +1,75 @@
 /**
- * ᴛɪᴄ-ᴛᴀᴄ-ᴛᴏᴇ ɢᴀᴍᴇ ʟᴏɢɪᴄ - ᴘʀᴇᴍɪᴜᴍ ꜱᴍᴀʟʟ ᴄᴀᴘꜱ
+ * ɢʜᴏꜱᴛɢ-x ᴍᴅ - TicTacToe Game Engine
+ * Prestige Edition - Fun & Interactive
  * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
 class TicTacToe {
   constructor(playerX, playerO) {
-    this.playerX = playerX;
-    this.playerO = playerO;
+    this.playerX = playerX; // JID du joueur X
+    this.playerO = playerO; // JID du joueur O
     this.board = Array(9).fill(null);
     this.currentTurn = playerX;
     this.turns = 0;
     this.winner = null;
-    this.isTie = false;
+    this.isDraw = false;
   }
 
   /**
    * Jouer un coup
-   * @param {boolean} isO - true si joueur O, false si X
-   * @param {number} index - position 0-8
+   * @param {string} sender - JID de celui qui joue
+   * @param {number} index - Position (0-8)
    */
-  turn(isO, index) {
-    if (this.winner || this.isTie) return false;
-    if (this.board[index]) return false;
+  play(sender, index) {
+    if (this.winner || this.isDraw) return { status: false, msg: "La partie est terminée." };
+    if (sender !== this.currentTurn) return { status: false, msg: "Ce n'est pas ton tour !" };
+    if (index < 0 || index > 8 || this.board[index]) return { status: false, msg: "Case invalide ou déjà occupée." };
 
-    this.board[index] = isO ? 'O' : 'X';
+    const icon = sender === this.playerX ? '❌' : '⭕';
+    this.board[index] = icon;
     this.turns++;
-
+    
     this.checkWinner();
 
-    if (!this.winner) {
-      if (this.turns === 9) this.isTie = true;
-      else this.currentTurn = isO ? this.playerX : this.playerO;
+    if (!this.winner && this.turns === 9) {
+      this.isDraw = true;
+    } else if (!this.winner) {
+      this.currentTurn = (sender === this.playerX) ? this.playerO : this.playerX;
     }
 
-    return true;
+    return { status: true };
   }
 
   checkWinner() {
     const winConditions = [
-      [0, 1, 2], [3, 4, 5], [6, 7, 8], // lignes
-      [0, 3, 6], [1, 4, 7], [2, 5, 8], // colonnes
-      [0, 4, 8], [2, 4, 6]              // diagonales
+      [0, 1, 2], [3, 4, 5], [6, 7, 8], // Lignes
+      [0, 3, 6], [1, 4, 7], [2, 5, 8], // Colonnes
+      [0, 4, 8], [2, 4, 6]              // Diagonales
     ];
 
     for (const [a, b, c] of winConditions) {
       if (this.board[a] && this.board[a] === this.board[b] && this.board[a] === this.board[c]) {
-        this.winner = this.board[a] === 'X' ? this.playerX : this.playerO;
+        this.winner = this.currentTurn;
         return;
       }
     }
   }
 
   /**
-   * Rendu visuel pour WhatsApp
+   * Rendu visuel du plateau pour WhatsApp
    */
   render() {
-    const icons = { 'X': '❌', 'O': '⭕', null: '⬜' };
-    const grid = this.board.map((cell, i) => cell ? icons[cell] : `*${i + 1}*`);
-
+    const b = this.board.map((cell, i) => cell || `*${i + 1}*`);
     return `
-╭╼━≪• ᴛɪᴄ-ᴛᴀᴄ-ᴛᴏᴇ •≫━╾╮
-┃  ${grid[0]}  ┃  ${grid[1]}  ┃  ${grid[2]}  ┃
-┃  ${grid[3]}  ┃  ${grid[4]}  ┃  ${grid[5]}  ┃
-┃  ${grid[6]}  ┃  ${grid[7]}  ┃  ${grid[8]}  ┃
-╰━━━━━━━━━━━━━━━╯
-`.trim();
+*╭╼━≪• ɢʜᴏsᴛɢ-x ɢᴀᴍᴇ •≫━╾╮*
+*┃*
+*┃* ${b[0]}  |  ${b[1]}  |  ${b[2]}
+*┃* ─────────
+*┃* ${b[3]}  |  ${b[4]}  |  ${b[5]}
+*┃* ─────────
+*┃* ${b[6]}  |  ${b[7]}  |  ${b[8]}
+*┃*
+*╰━━━━━━━━━━━━━━━╯*`.trim();
   }
 }
 
