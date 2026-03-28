@@ -10,9 +10,9 @@
         "install:no-puppeteer": "PUPPETEER_SKIP_DOWNLOAD=true PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true npm install"
     },
     "keywords": [
-        "whatsapp bot",
+        "GhostG-X bot",
         "GhostG-X",
-        "bot",
+        "truth devices dev",
         "baileys",
         "md"
     ],
