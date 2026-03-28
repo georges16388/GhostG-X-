@@ -3,28 +3,27 @@
  * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
-const { uploadByBuffer } = require('../../utils/uploader'); // Vérifie que ton uploader pointe vers Catbox
-const fs = require('fs');
+const { downloadMediaMessage } = require('@whiskeysockets/baileys');
+const { uploadByBuffer } = require('../../utils/uploader'); 
 
-// Fonction de conversion en Small Caps
-const toSmallCaps = (text) => {
-    const smallCapsMap = {
-        'a': 'ᴀ', 'b': 'ʙ', 'c': 'ᴄ', 'd': 'ᴅ', 'e': 'ᴇ', 'f': 'ғ', 'g': 'ɢ', 'h': 'ʜ', 
-        'i': 'ɪ', 'j': 'ᴊ', 'k': 'ᴋ', 'l': 'ʟ', 'm': 'ᴍ', 'n': 'ɴ', 'o': 'ᴏ', 'p': 'ᴘ', 
-        'q': 'ǫ', 'r': 'ʀ', 's': 's', 't': 'ᴛ', 'u': 'ᴜ', 'v': 'ᴠ', 'w': 'ᴡ', 'x': 'x', 
-        'y': 'ʏ', 'z': 'ᴢ'
-    };
-    return text.toString().toLowerCase().split('').map(char => smallCapsMap[char] || char).join('');
+// --- FONCTION DE CONVERSION EN SMALL CAPS ---
+const toStyledCaps = (text) => {
+  if (!text) return "";
+  const fonts = {
+    'a': 'ᴀ','b': 'ʙ','c': 'ᴄ','d':'ᴅ','e':'ᴇ','f':'ғ','g':'ɢ','h':'ʜ',
+    'i':'ɪ','j':'ᴊ','k':'ᴋ','l':'ʟ','m':'ᴍ','n':'ɴ','o':'ᴏ','p':'ᴘ',
+    'q':'ǫ','r':'ʀ','s':'ꜱ','t':'ᴛ','u':'ᴜ','v':'ᴠ','w':'ᴡ','x':'x',
+    'y':'ʏ','z':'ᴢ'
+  };
+  return String(text).toLowerCase().split('').map(c => fonts[c] || c).join('');
 };
 
 // --- FONCTION DE DESIGN AGM ---
-const AGM_DESIGN = (size, type) => `╭╼━≪• *ᴍᴇᴅɪᴀ ᴛᴏ ᴜʀʟ* •≫━╾╮
-┃ 
-┃ ✅ ${toSmallCaps('sᴛᴀᴛᴜs')} : 🟢 ${toSmallCaps('ᴜᴘʟᴏᴀᴅᴇᴅ')}
-┃ ⚖️ ${toSmallCaps('sɪᴢᴇ')} : ${size}
-┃ 🌐 ${toSmallCaps('ᴛʏᴘᴇ')} : ${toSmallCaps(type)}
-┃ 
-╰━━━━━━━━━━━━━━━╯
+const AGM_DESIGN = (size, type) => `*╭╼━≪• ${toStyledCaps('ᴍᴇᴅɪᴀ ᴛᴏ ᴜʀʟ')} •≫━╾╮*
+*┃* *┃* ✅ *${toStyledCaps('sᴛᴀᴛᴜs')}* : 🟢 *${toStyledCaps('ᴜᴘʟᴏᴀᴅᴇᴅ')}*
+*┃* ⚖️ *${toStyledCaps('sɪᴢᴇ')}* : *${size}*
+*┃* 🌐 *${toStyledCaps('ᴛʏᴘᴇ')}* : *${toStyledCaps(type)}*
+*┃* *╰━━━━━━━━━━━━━━━╯*
 > *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
 module.exports = {
@@ -38,57 +37,60 @@ module.exports = {
     try {
       const chatId = extra.from;
 
-      // Vérification de la réponse à un message
-      const isQuoted = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage;
-      if (!isQuoted) {
-        const warn = toSmallCaps("veuillez repondre a une image, video ou audio avec .tourl");
-        return extra.reply(`⚠️ *${warn}*`);
+      // 1. Vérification de la citation (Quoted)
+      const quoted = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+      if (!quoted) {
+        return extra.reply(`⚠️ *${toStyledCaps('ᴠᴇᴜɪʟʟᴇᴢ ʀᴇᴘᴏɴᴅʀᴇ ᴀ ᴜɴ ᴍᴇᴅɪᴀ')}*`);
       }
 
-      // Détecter le type de média cité
-      const quotedMsg = msg.message.extendedTextMessage.contextInfo.quotedMessage;
-      const mime = Object.keys(quotedMsg)[0];
-      
-      if (!/image|video|audio|sticker|document/.test(mime)) {
-        const errType = toSmallCaps("ce type de fichier n'est pas supporte");
-        return extra.reply(`❌ *${errType}*`);
+      // 2. Détection du type de média
+      const mime = Object.keys(quoted)[0];
+      if (!/image|video|audio|sticker|document/.test(mime.toLowerCase())) {
+        return extra.reply(`❌ *${toStyledCaps('ᴄᴇ ᴛʏᴘᴇ ᴅᴇ ғɪᴄʜɪᴇʀ ɴᴇsᴛ ᴘᴀs sᴜᴘᴘᴏʀᴛᴇ')}*`);
       }
 
-      // Réaction de chargement (Nuage)
       await sock.sendMessage(chatId, { react: { text: '☁️', key: msg.key } });
 
-      // Téléchargement du média via l'utilitaire extra
-      const buffer = await extra.downloadQuotedMedia();
+      // 3. Téléchargement manuel sécurisé
+      const targetMessage = {
+        key: msg.message.extendedTextMessage.contextInfo,
+        message: quoted
+      };
+
+      const buffer = await downloadMediaMessage(
+        targetMessage,
+        'buffer',
+        {},
+        { logger: undefined, reuploadRequest: sock.updateMediaMessage }
+      );
+
       if (!buffer) {
-        const errDown = toSmallCaps("echec du telechargement du media");
-        return extra.reply(`❌ *${errDown}*`);
+        throw new Error('DOWNLOAD_FAILED');
       }
 
-      // Calcul de la taille
-      const sizeMB = (buffer.length / (1024 * 1024)).toFixed(2) + ' MB';
-      const cleanType = mime.replace('Message', '').replace('Video', 'Vidéo').replace('Image', 'Image').replace('Audio', 'Audio');
+      // 4. Calcul de la taille et type propre
+      const sizeMB = (buffer.length / (1024 * 1024)).toFixed(2) + ' ᴍʙ';
+      const cleanType = mime.replace('Message', '');
 
-      // --- UPLOAD SUR CATBOX ---
+      // 5. Upload sur Catbox
       let mediaUrl;
       try {
-        // On suppose que uploadByBuffer est configuré pour Catbox
         mediaUrl = await uploadByBuffer(buffer); 
       } catch (uploadErr) {
         console.error('Upload Error:', uploadErr);
-        const errCloud = toSmallCaps("erreur lors de l'hebergement sur catbox");
-        return extra.reply(`❌ *${errCloud}*`);
+        return extra.reply(`❌ *${toStyledCaps('ᴇʀʀᴇᴜʀ ʟᴏʀs ᴅᴇ ʟʜᴇʙᴇʀɢᴇᴍᴇɴᴛ ᴄᴀᴛʙᴏx')}*`);
       }
 
-      // Construction du message final
-      const caption = `${AGM_DESIGN(sizeMB, cleanType)}\n\n🔗 *${toSmallCaps('ʟɪɴᴋ')} :* ${mediaUrl}`;
+      // 6. Envoi du résultat final
+      const caption = `${AGM_DESIGN(sizeMB, cleanType)}\n\n🔗 *${toStyledCaps('ʟɪɴᴋ')} :* ${mediaUrl}`;
 
       await sock.sendMessage(chatId, {
         text: caption,
         contextInfo: {
           externalAdReply: {
             title: "ɢʜᴏsᴛ ᴄʟᴏᴜᴅ sʏsᴛᴇᴍ",
-            body: toSmallCaps("conversion catbox reussie"),
-            thumbnail: buffer.length < 1000000 ? buffer : null, // Miniature seulement si < 1MB pour éviter les lags
+            body: toStyledCaps("conversion catbox reussie"),
+            thumbnail: buffer.length < 2000000 ? buffer : null, 
             sourceUrl: mediaUrl,
             mediaType: 1,
             showAdAttribution: true
@@ -96,13 +98,11 @@ module.exports = {
         }
       }, { quoted: msg });
 
-      // Réaction de succès
       await sock.sendMessage(chatId, { react: { text: '✅', key: msg.key } });
 
     } catch (error) {
-      console.error('ToURL Global Error:', error);
-      const errGen = toSmallCaps("une erreur est survenue lors de la generation du lien");
-      await extra.reply(`❌ *${errGen}*`);
+      console.error('ToURL Error:', error);
+      await extra.reply(`❌ *${toStyledCaps('ᴇʀʀᴇᴜʀ sʏsᴛᴇᴍᴇ ʟᴏʀs ᴅᴇ ʟᴜᴘʟᴏᴀᴅ')}*`);
     }
   }
 };
