@@ -6,12 +6,24 @@
 const { downloadMediaMessage } = require('@whiskeysockets/baileys');
 const { webp2png } = require('../../utils/webp2mp4');
 
-// --- FONCTION DE DESIGN AGM ADAPTÉE ---
-const AGM_DESIGN = (type) => `╭╼━≪• *ᴍᴇᴅɪᴀ ᴄᴏɴᴠᴇʀᴛᴇʀ* •≫━╾╮
-┃ *sᴛᴀᴛᴜs* : 🟢 sᴜᴄᴄᴇss
-┃ *ᴏᴜᴛᴘᴜᴛ* : ${type.toUpperCase()} ⚡
-┃ *ᴍᴏᴅᴇ* : sʏsᴛᴇᴍ 🛡️
-╰━━━━━━━━━━━━━━━╯
+// --- FONCTION DE CONVERSION EN SMALL CAPS ---
+const toStyledCaps = (text) => {
+  if (!text) return "";
+  const fonts = {
+    'a': 'ᴀ','b': 'ʙ','c': 'ᴄ','d':'ᴅ','e':'ᴇ','f':'ғ','g':'ɢ','h':'ʜ',
+    'i':'ɪ','j':'ᴊ','k':'ᴋ','l':'ʟ','m':'ᴍ','n':'ɴ','o':'ᴏ','p':'ᴘ',
+    'q':'ǫ','r':'ʀ','s':'ꜱ','t':'ᴛ','u':'ᴜ','v':'ᴠ','w':'ᴡ','x':'x',
+    'y':'ʏ','z':'ᴢ'
+  };
+  return String(text).toLowerCase().split('').map(c => fonts[c] || c).join('');
+};
+
+// --- FONCTION DE DESIGN AGM AJUSTÉE (GRAS & SMALLCAPS) ---
+const AGM_DESIGN = (type) => `*╭╼━≪• ${toStyledCaps('ᴍᴇᴅɪᴀ ᴄᴏɴᴠᴇʀᴛᴇʀ')} •≫━╾╮*
+*┃* *┃* *${toStyledCaps('sᴛᴀᴛᴜs')}* : 🟢 *${toStyledCaps('sᴜᴄᴄᴇss')}*
+*┃* *${toStyledCaps('ᴏᴜᴛᴘᴜᴛ')}* : *${toStyledCaps(type)}* ⚡
+*┃* *${toStyledCaps('ᴍᴏᴅᴇ')}* : *${toStyledCaps('sʏsᴛᴇᴍ')}* 🛡️
+*┃* *╰━━━━━━━━━━━━━━━╯*
 > *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
 
 module.exports = {
@@ -25,7 +37,7 @@ module.exports = {
     try {
       const ctxInfo = msg.message?.extendedTextMessage?.contextInfo;
       if (!ctxInfo?.quotedMessage) {
-        return await extra.reply('⚠️ *ʀéᴘᴏɴᴅᴇᴢ à ᴜɴ sᴛɪᴄᴋᴇʀ ᴘᴏᴜʀ ʟᴇ ᴄᴏɴᴠᴇʀᴛɪʀ.*');
+        return await extra.reply(`⚠️ *${toStyledCaps('ʀᴇᴘᴏɴᴅᴇᴢ ᴀ ᴜɴ sᴛɪᴄᴋᴇʀ ᴘᴏᴜʀ ʟᴇ ᴄᴏɴᴠᴇʀᴛɪʀ')}.*`);
       }
       
       const targetMessage = {
@@ -39,7 +51,7 @@ module.exports = {
       
       const stickerMessage = targetMessage.message?.stickerMessage;
       if (!stickerMessage) {
-        return await extra.reply('⚠️ *ᴄᴇ ᴍᴇssᴀɢᴇ ɴ\'ᴇsᴛ ᴘᴀs ᴜɴ sᴛɪᴄᴋᴇʀ.*');
+        return await extra.reply(`⚠️ *${toStyledCaps('ᴄᴇ ᴍᴇssᴀɢᴇ ɴᴇsᴛ ᴘᴀs ᴜɴ sᴛɪᴄᴋᴇʀ')}.*`);
       }
 
       await sock.sendMessage(extra.from, { react: { text: "🔄", key: msg.key } });
@@ -81,7 +93,7 @@ module.exports = {
 
     } catch (error) {
       console.error('Error in simage command:', error);
-      await extra.reply(`❌ ᴇʀʀᴇᴜʀ : ${error.message}`);
+      await extra.reply(`❌ *${toStyledCaps('ᴇʀʀᴇᴜʀ')}* : ${error.message}`);
     }
   }
 };
