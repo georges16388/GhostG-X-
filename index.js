@@ -6,13 +6,14 @@
 
 const Baileys = require('@whiskeysockets/baileys');
 
-// On extrait proprement les fonctions
 const makeWASocket = Baileys.default || Baileys;
-const makeInMemoryStore = Baileys.makeInMemoryStore
+const {
+    useMultiFileAuthState,
+    fetchLatestBaileysVersion,
+    DisconnectReason
+} = Baileys;
 
-const pino = require('pino');
-const fs = require('fs');
-const path = require('path');
+const makeInMemoryStore = Baileys.makeInMemoryStore;
 
 // --- CHARGEMENT DE LA CONFIGURATION ---
 const config = require('./config');
