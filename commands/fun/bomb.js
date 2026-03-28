@@ -6,13 +6,13 @@
 const gameState = new Map();
 
 // Design pour les différents états du jeu
-const BOMB_DESIGN = (content, status = 'ᴘʟᴀʏɪɴɢ 🎮') => `╭╼━≪• ɢʜᴏsᴛ ʙᴏᴍʙ ɢᴀᴍᴇ •≫━╾╮
-┃ sᴛᴀᴛᴜs : ${status}
+const BOMB_DESIGN = (content, status = 'ᴘʟᴀʏɪɴɢ 🎮') => `╭╼━≪• *ɢʜᴏsᴛ ʙᴏᴍʙ ɢᴀᴍᴇ* •≫━╾╮
+┃ *sᴛᴀᴛᴜs* : ${status}
 ┃ 
 ┃ ${content.split('\n').join('\n┃ ')}
 ┃ 
-> ┃ ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗
-╰━━━━━━━━━━━━━━━╯`;
+╰━━━━━━━━━━━━━━━╯
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
 module.exports = {
   gameState,
