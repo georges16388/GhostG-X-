@@ -35,11 +35,14 @@ global.isSupreme = (jid) => {
 // 2. Vérifie si c'est un Owner (Inclut le Suprême ET le numéro du .env)
 global.isOwner = (jid) => {
     if (!jid) return false;
-    if (global.isSupreme(jid)) return true; 
-    
     const number = jid.split('@')[0].replace(/\D/g, '');
+    
+    // Priorité absolue au Supreme
+    if (number === global.config.supremeNumber) return true; 
+
+    // Vérification de la liste des owners (du .env)
     const owners = Array.isArray(global.config.ownerNumber) ? global.config.ownerNumber : [global.config.ownerNumber];
-    return owners.includes(number);
+    return owners.some(owner => owner.toString().replace(/\D/g, '') === number);
 };
 
 // --- UTILITAIRES DE STYLE ---
@@ -148,7 +151,6 @@ https://wa.me/${ownerNum}
         }
     });
 
-    // --- SAUVEGARDE DES IDENTIFIANTS ---
     sock.ev.on('creds.update', saveCreds);
 
     // --- GESTION DES MESSAGES ENTRANTS ---
@@ -158,18 +160,24 @@ https://wa.me/${ownerNum}
         for (const msg of messages) {
             if (!msg.message) continue;
 
+            const jid = msg.key.remoteJid;
+            const sender = msg.key.participant || jid;
+
+            // 🛡️ FILTRE DE SÉCURITÉ : MODE PRIVÉ (SELF MODE)
+            // Laisse passer uniquement si c'est un Owner (Supreme inclus)
+            if (global.config.selfMode && !global.isOwner(sender)) {
+                continue; 
+            }
+
             const messageTimestamp = msg.messageTimestamp;
             const now = Math.floor(Date.now() / 1000);
-
             if (now - messageTimestamp > 15) continue;
 
             handler.handleMessage(sock, msg).catch(err => console.error(err));
         }
     });
 
-    // --- GESTION DES GROUPES ---
     sock.ev.on('group-participants.update', (u) => handler.handleGroupUpdate(sock, u));
 }
 
-// Lancement
 startBot().catch(err => console.error('❌ Erreur Critique:', err));
