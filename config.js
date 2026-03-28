@@ -1,31 +1,39 @@
+/**
+ * ɢʜᴏꜱᴛɢ-x ᴍᴅ - Configuration Master File
+ * Optimized for Katabump & Local Environments
+ * Powered by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
+ */
+
 const dotenv = require('dotenv');
 dotenv.config();
 
-// Extraction propre du numéro depuis le .env ou valeur par défaut
+// Extraction et nettoyage du numéro (OWNER)
 const ownerRaw = process.env.OWNER_NUMBER || '22651622652';
 const cleanNumber = ownerRaw.replace(/\D/g, '');
 
 module.exports = {
-    // --- BOT OWNER CONFIGURATION (FUSION .ENV) ---
-    ownerNumber: [cleanNumber], // Utilisé par le Handler (format tableau)
-    OWNER_NUMBER: [cleanNumber], // Doublon de sécurité
+    // --- BOT OWNER CONFIGURATION ---
+    ownerNumber: [cleanNumber], // Utilisé pour les vérifications de sécurité
+    OWNER_NUMBER: [cleanNumber], // Compatibilité ascendante
     ownerName: 'ɢʜᴏꜱᴛɢ x', 
-    supremeNumber: cleanNumber,
-    sessionName: process.env.SESSION_ID || 'session', // Nom du dossier session
-    pairingCode: process.env.PAIRING_CODE === 'true', // Active le code de jumelage
+    supremeNumber: cleanNumber, // Utilisé pour le lien wa.me et le pairing
+    
+    // --- SESSIONS & CONNECTION ---
+    sessionName: process.env.SESSION_ID || 'session',
+    pairingCode: process.env.PAIRING_CODE === 'true', 
 
-    // --- SETTINGS PRINCIPAUX ---
-    prefix: process.env.PREFIX || '.',
+    // --- SETTINGS PRINCIPAUX (DYNAMIC) ---
+    prefix: process.env.PREFIX || '.', // Chargé depuis .env
     timezone: 'Africa/Ouagadougou',
     selfMode: process.env.SELF_MODE === 'true' || false, 
 
     // --- AUTOMATIONS & BEHAVIOR ---
-    autoRead: true,
-    autoTyping: true,
-    anticall: true, 
-    autoReact: true, // Activé par défaut
-    autoReactMode: 'bot', // 'bot' (réagit aux cmds) ou 'all' (réagit à tout)
-    supremeReact: '👑', 
+    autoRead: true, // Marquer les messages comme vus
+    autoTyping: true, // "En train d'écrire..."
+    anticall: true, // Rejet automatique des appels
+    autoReact: true, 
+    autoReactMode: 'bot', // 'bot' réagit uniquement aux commandes
+    supremeReact: '👑', // Réaction spéciale pour l'owner
 
     // --- GROUP SETTINGS DEFAULTS ---
     defaultGroupSettings: {
@@ -41,7 +49,7 @@ module.exports = {
       welcome: true,
       welcomeMessage: `╭╼━≪• *ɴᴇᴡ ᴍᴇᴍʙᴇʀ* •≫━╾╮\n┃ *ᴡᴇʟᴄᴏᴍᴇ* : @user 👋🏾\n┃ *ɴᴏᴜs sᴏᴍᴍᴇs ʜᴇᴜʀᴇᴜx ᴅᴇ ᴛ'ᴀᴠᴏɪʀ ᴘᴀʀᴍɪ ɴᴏᴜs*\n┃ *ᴍᴇᴍʙʀᴇs ᴀᴄᴛᴜᴇʟs* : #memberCount\n┃ *ᴛɪᴍᴇ* : #time ⏰\n╰━━━━━━━━━━━━━━━╯\n> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`,
       goodbye: true,
-      goodbyeMessage: `╭╼━≪• *ɢᴏᴏᴅʙʏᴇ ᴍᴇᴍʙᴇʀ* •≫━╾╮\n┃ *ᴀᴜ ʀᴇᴠᴏɪʀ* : @user 👋\n┃ *ᴛᴜ ɴᴇ ɴᴏᴜs ᴍᴀɴǫᴜᴇʀᴀ ᴊᴀᴍᴀɪs*\n┃ *ᴍᴇᴍʙʀᴇs ʀᴇsᴛᴀɴᴛs* : #memberCount\n┃ *ᴛɪᴍᴇ* : #time ⏰\n╰━━━━━━━━━━━━━━━━━╯\n> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`,
+      goodbyeMessage: `╭╼━≪• *ɢᴏᴏᴅʙʏᴇ ᴍᴇᴍʙᴇʀ* •≫━╾╮\n┃ *ᴀᴜ ʀᴇᴠᴏɪʀ* : @user 👋\n┃ *ᴛᴜ ɴᴇ ɴᴏᴜs ᴍᴀɴǫᴜᴇʀᴀ ᴊᴀᴍᴀɪs*\n┃ *ᴍᴇᴍʙʀᴇs ʀᴇsᴛᴀɴᴛs* : #memberCount\n┃ *ᴛɪᴍᴇ* : #time ⏰\n╰━━━━━━━━━━━━━━━━━╯\n> ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗`,
       antiSpam: false,
       antidelete: false,
       nsfw: false,
@@ -50,7 +58,7 @@ module.exports = {
       autosticker: false 
     },
 
-    // --- API KEYS (DEPUIS .ENV) ---
+    // --- API KEYS (SÉCURISÉES DANS .ENV) ---
     apiKeys: {
       openai: process.env.OPENAI_API_KEY || '',
       remove_bg: process.env.REMOVE_BG_KEY || ''
