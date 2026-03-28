@@ -1,9 +1,14 @@
 /**
  * ɢʜᴏꜱᴛɢ-x ᴍᴅ - Intelligence Artificielle GhostG (NLP & Command Redirection)
  * Version : Prestige V5.2 - Full Power (Design Small Caps)
+ * Powered by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
-const { toSmallCaps } = require('../../utils/format'); 
+// --- UTILITAIRE LOCAL ---
+const toSmallCaps = (text) => {
+    const fonts = {'a':'ᴀ','b':'ʙ','c':'ᴄ','d':'ᴅ','e':'ᴇ','f':'ғ','g':'ɢ','h':'ʜ','i':'ɪ','j':'ᴊ','k':'ᴋ','l':'ʟ','m':'ᴍ','n':'ɴ','o':'ᴏ','p':'ᴘ','q':'ǫ','r':'ʀ','s':'ꜱ','t':'ᴛ','u':'ᴜ','v':'ᴠ','w':'ᴡ','x':'x','y':'ʏ','z':'ᴢ'};
+    return String(text).toLowerCase().split('').map(c => fonts[c] || c).join('');
+};
 
 module.exports = {
     name: "ghostg",
@@ -12,12 +17,16 @@ module.exports = {
     ownerOnly: true,
 
     async execute(sock, msg, args, extra) {
-        const { from, reply, isOwner, react, prefix, body } = extra;
-        const input = args.join(' ').toLowerCase();
+        const { from, reply, react, prefix, body, isOwner } = extra;
+        
+        // Sécurité supplémentaire
+        if (!isOwner) return;
+
+        const input = body ? body.toLowerCase() : "";
         const firstWord = args[0]?.toLowerCase();
 
-        // --- CAS 1 : CONFIGURATION (AVEC PRÉFIXE) ---
-        if (msg.body && msg.body.startsWith(prefix)) {
+        // --- CAS 1 : CONFIGURATION (AVEC PRÉFIXE EX: .ghostg on) ---
+        if (body.startsWith(prefix)) {
             if (firstWord === 'on') {
                 global.ghostgMode = 'on';
                 await react('🧠');
@@ -31,14 +40,14 @@ module.exports = {
             return reply(`🤖 *ɢʜᴏsᴛɢ ᴄᴏɴᴛʀᴏʟ* : *${global.ghostgMode === 'on' ? '🟢 ᴏɴ' : '🔴 ᴏғғ'}*`);
         }
 
-        // --- CAS 2 : NLP & RÉPONSES AUTOMATIQUES (DESIGN SMALL CAPS) ---
-        
-        // 1. Salutations & Présence
-        if (input.includes("bonjour") || input.includes("salut") || input.includes("hey") || input.includes("ghostg ?")) {
+        // --- CAS 2 : NLP & RÉPONSES AUTOMATIQUES ---
+
+        // 1. Salutations
+        if (input.includes("bonjour") || input.includes("salut") || input.includes("hey") || input === "ghostg") {
             return reply(`👋🏾 *${toSmallCaps("présent, mon maître georges. j'attends tes ordres.")}*`);
         }
 
-        // 2. Antidelete / Suppression rapide
+        // 2. Suppression (Répondre à un message et dire "supprime")
         if (input.includes("supprime") || input.includes("efface") || input.includes("delete")) {
             const quoted = msg.message.extendedTextMessage?.contextInfo;
             if (quoted?.stanzaId) {
@@ -63,41 +72,30 @@ module.exports = {
             return reply(`🔓 *${toSmallCaps("groupe ouvert. la parole est libre.")}*`);
         }
 
-        // 4. Informations système rapides
-        if (input.includes("état du bot") || input.includes("ca va") || input.includes("tu dors")) {
-            const uptime = process.uptime();
-            const hours = Math.floor(uptime / 3600);
-            return reply(`⚡ *${toSmallCaps("en ligne depuis")}* ${hours}ʜ. *${toSmallCaps("prêt à tout dévaster.")}*`);
+        // 4. Informations système / Humour
+        if (input.includes("état du bot") || input.includes("tu dors") || input.includes("ça va")) {
+            return reply(`⚡ *${toSmallCaps("opérationnel. prêt à tout dévaster sur tes ordres.")}*`);
         }
 
-        // 5. Humour / Prestige
-        if (input.includes("qui est ton créateur") || input.includes("qui t'a fait")) {
+        if (input.includes("créateur") || input.includes("qui t'a fait")) {
             return reply(`👑 *${toSmallCaps("je suis l'œuvre de truth devices, l'élite de fada.")}*`);
         }
 
-        // 6. Protection & Sécurité
-        if (input.includes("bloque cet utilisateur") || input.includes("block user")) {
-            const target = msg.message.extendedTextMessage?.contextInfo?.participant;
-            if (target) {
-                await sock.updateBlockStatus(target, "block");
-                return reply(`🚫 *${toSmallCaps("utilisateur banni de mes circuits.")}*`);
-            }
-        }
-
-        // --- CAS 3 : MOTEUR DE REDIRECTION (EXÉCUTION AUTOMATIQUE) ---
+        // --- CAS 3 : MOTEUR DE REDIRECTION (DANGER / PUISSANCE) ---
+        // Si tu dis juste "Menu" ou "Infos", GhostG cherche si une commande existe
         const possibleCmd = global.commands.get(firstWord) || global.commands.find(c => c.aliases && c.aliases.includes(firstWord));
 
-        if (possibleCmd) {
+        if (possibleCmd && global.ghostgMode === 'on') {
             const newArgs = args.slice(1); 
             try {
                 await react('⚡'); 
                 return await possibleCmd.execute(sock, msg, newArgs, extra);
             } catch (err) {
                 console.error(err);
-                return reply(`❌ *${toSmallCaps("erreur lors de l'exécution automatique de")}* ${firstWord.toUpperCase()}`);
+                return reply(`❌ *${toSmallCaps("erreur lors de l'exécution automatique")}*`);
             }
         }
 
-        return; // Silence si rien n'est matché
+        return; 
     }
 };
