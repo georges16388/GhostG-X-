@@ -58,7 +58,7 @@ module.exports = {
 
     } catch (error) {
       console.error('GroupLink Error:', error);
-      await reply(`❌ *${toStyledCaps('ᴇʀʀᴇᴜʀ ʟᴏʀs ᴅᴇ ʟ'ᴏᴘᴇʀᴀᴛɪᴏɴ')}*`);
+      await reply(`❌ *${toStyledCaps(`ᴇʀʀᴇᴜʀ ʟᴏʀs ᴅᴇ ʟ'ᴏᴘᴇʀᴀᴛɪᴏɴ`)}*`);
     }
   }
 };
