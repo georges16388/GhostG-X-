@@ -1,51 +1,72 @@
 /**
- * sᴇᴛᴡᴇʟᴄᴏᴍᴇ ᴄᴏᴍᴍᴀɴᴅ - ᴀɢᴍ sʏsᴛᴇᴍ ᴄᴏʀᴇ
- * ᴄᴜsᴛᴏᴍɪᴢᴇ ᴡᴇʟᴄᴏᴍᴇ ᴍᴇssᴀɢᴇ ᴛᴇxᴛ
- * sᴛʏʟᴇ ʙʏ -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
+ * SETWELCOME COMMAND - AGM SYSTEM CORE
+ * CUSTOMIZE WELCOME MESSAGE TEXT
+ * STYLE BY -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
-const ᴅʙ = require('../../database');
+const db = require('../../database');
+
+// --- DESIGN SETTINGS AGM (LABELS FIXES) ---
+const SETWELCOME_DESIGN = (preview) => `*╭╼━≪• ᴡᴇʟᴄᴏᴍᴇ sᴇᴛᴛɪɴɢ •≫━╾╮*
+*┃*
+*┃* ✅ *sᴛᴀᴛᴜs* : *ᴜᴘᴅᴀᴛᴇᴅ*
+*┃* 📝 *ᴛʏᴘᴇ* : *ᴄᴜsᴛᴏᴍ ᴛᴇxᴛ*
+*┃* 👀 *ᴘʀᴇᴠɪᴇᴡ* : *${preview}*
+*┃*
+*╰━━━━━━━━━━━━━━━╯*
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
 module.exports = {
   name: 'setwelcome',
-  aliases: ['changewelcome'],
+  aliases: ['welcometext', 'changewelcome'],
   category: 'admin',
-  description: 'ᴍᴏᴅɪꜰɪᴇʀ ʟᴇ ᴍᴇssᴀɢᴇ ᴅᴇ ʙɪᴇɴᴠᴇɴᴜᴇ ᴅᴜ ɢʀᴏᴜᴘᴇ.',
-  usage: '.sᴇᴛᴡᴇʟᴄᴏᴍᴇ <ᴛᴇxᴛᴇ>',
+  description: 'Modifier le message de bienvenue du groupe.',
+  usage: '.setwelcome <texte>',
   groupOnly: true,
   adminOnly: true,
 
-  execute: async (sock, msg, args, { from, reply, react }) => {
+  async execute(sock, msg, args, { from, reply, react }) {
     try {
-      const ɴᴇᴡᴛᴇxᴛ = args.join(' ');
+      const newText = args.join(' ');
+      const settings = db.getGroupSettings(from) || {};
 
-      if (!ɴᴇᴡᴛᴇxᴛ) {
+      // --- AFFICHAGE DE L'AIDE SI VIDE ---
+      if (!newText) {
+        await react('ℹ️');
+        const currentMsg = settings.welcomeMessage || "ᴀᴜᴄᴜɴ ᴍᴇssᴀɢᴇ ᴅᴇꜰɪɴɪ";
         return reply(
-          `❌ *ᴠᴇᴜɪʟʟᴇᴢ ᴇɴᴛʀᴇʀ ᴜɴ ᴍᴇssᴀɢᴇ.* \n\n` +
+          `📝 *ᴍᴇssᴀɢᴇ ᴅᴇ ʙɪᴇɴᴠᴇɴᴜᴇ ᴀᴄᴛᴜᴇʟ :*\n\n${currentMsg}\n\n` +
           `💡 *ᴠᴀʀɪᴀʙʟᴇs ᴅɪsᴘᴏɴɪʙʟᴇs :*\n` +
-          `  > @user : ᴄɪᴛᴇ ʟᴇ ᴍᴇᴍʙʀᴇ\n` +
-          `  > #memberCount : ɴᴏᴍʙʀᴇ ᴅᴇ ᴍᴇᴍʙʀᴇs\n` +
-          `  > #time : ʜᴇᴜʀᴇ ᴀᴄᴛᴜᴇʟʟᴇ`
+          `  > *@user* : ᴄɪᴛᴇ ʟᴇ ᴍᴇᴍʙʀᴇ\n` +
+          `  > *#memberCount* : ɴᴏᴍʙʀᴇ ᴅᴇ ᴍᴇᴍʙʀᴇs\n` +
+          `  > *#time* : ʜᴇᴜʀᴇ ᴀᴄᴛᴜᴇʟʟᴇ`
         );
       }
 
+      // --- SÉCURITÉ LONGUEUR ---
+      if (newText.length > 500) {
+        return reply('❌ *ᴍᴇssᴀɢᴇ ᴛʀᴏᴘ ʟᴏɴɢ ! (ᴍᴀx 500 ᴄᴀʀᴀᴄᴛᴇʀᴇs).*');
+      }
+
       await react('✍️');
-      ᴅʙ.updateGroupSettings(from, { 
-        welcomeMessage: ɴᴇᴡᴛᴇxᴛ,
-        welcome: true // ᴀᴄᴛɪᴠᴇ ᴀᴜᴛᴏᴍᴀᴛɪǫᴜᴇᴍᴇɴᴛ
+
+      // --- MISE À JOUR DB ---
+      db.updateGroupSettings(from, { 
+        welcomeMessage: newText,
+        welcome: true 
       });
 
-      return reply(
-        `╭╼━≪• *ᴡᴇʟᴄᴏᴍᴇ ᴜᴘᴅᴀᴛᴇᴅ* •≫━╾╮\n` +
-        `┃ ✅ *ɴᴏᴜᴠᴇᴀᴜ ᴍᴇssᴀɢᴇ ᴇɴʀᴇɢɪsᴛʀᴇ́ !*\n` +
-        `╰━━━━━━━━━━━━━━━╯\n\n` +
-        `📝 *ᴀᴘᴇʀᴄ̧ᴜ :*\n${ɴᴇᴡᴛᴇxᴛ}\n\n` +
-        `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`
-      );
+      // --- GÉNÉRATION DE L'APERÇU ---
+      const previewText = newText
+        .replace('@user', '@' + (msg.key.participant || from).split('@')[0])
+        .replace('#memberCount', '150')
+        .replace('#time', new Date().toLocaleTimeString());
 
-    } catch (ᴇʀʀᴏʀ) {
-      console.error('[sᴇᴛᴡᴇʟᴄᴏᴍᴇ ᴇʀʀᴏʀ]:', ᴇʀʀᴏʀ);
-      reply(`❌ *ᴇʀʀᴇᴜʀ :* ${ᴇʀʀᴏʀ.ᴍᴇssᴀɢᴇ}`);
+      return reply(SETWELCOME_DESIGN(previewText), { mentions: [msg.key.participant || from] });
+
+    } catch (error) {
+      console.error('[SETWELCOME ERROR]:', error);
+      reply(`❌ *ᴇʀʀᴇᴜʀ sʏsᴛᴇᴍᴇ ʟᴏʀs ᴅᴇ ʟᴀ ᴍᴏᴅɪꜰɪᴄᴀᴛɪᴏɴ*`);
     }
   }
 };
