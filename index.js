@@ -78,7 +78,9 @@ async function startBot() {
         syncFullHistory: false,
     });
 
+    if (store) {
     store.bind(sock.ev);
+}
 
     // --- SYSTÈME ANTI-CALL ---
     sock.ev.on('call', async (node) => {
