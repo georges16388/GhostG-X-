@@ -18,7 +18,7 @@ const path = require('path');
 const config = require('./config');
 const handler = require('./handler');
 
-// 🔹 CRUCIAL : On rend la config globale pour la synchronisation avec setprefix
+// 🔹 CRUCIAL : On rend la config globale pour la synchronisation
 global.config = config; 
 
 // --- UTILITAIRES DE STYLE ---
@@ -35,7 +35,7 @@ async function startBot() {
     const sock = makeWASocket({
         version,
         logger: pino({ level: 'silent' }),
-        printQRInTerminal: false, // On utilise uniquement le Pairing Code
+        printQRInTerminal: false, 
         browser: ["Ubuntu", "Chrome", "20.0.04"],
         auth: state,
         syncFullHistory: false,
@@ -44,7 +44,6 @@ async function startBot() {
     // --- SYSTÈME ANTI-CALL (SÉCURITÉ AGM) ---
     sock.ev.on('call', async (node) => {
         if (!global.config.anticall) return;
-
         for (let call of node) {
             if (call.status === 'offer') {
                 await sock.rejectCall(call.id, call.from);
@@ -54,12 +53,11 @@ async function startBot() {
         }
     });
 
-    // --- LOGIQUE PAIRING CODE (KATABUMP / HEROKU READY) ---
+    // --- LOGIQUE PAIRING CODE ---
     if (!sock.authState.creds.registered) {
         const cleanNumber = String(global.config.supremeNumber || "22651622652").replace(/\D/g, '');
-        
         console.log(`\n⏳ ɢᴇɴᴇʀᴀᴛɪɴɢ ᴘᴀɪʀɪɴɢ ᴄᴏᴅᴇ ꜰᴏʀ : ${cleanNumber}...`);
-        
+
         setTimeout(async () => {
             try {
                 let code = await sock.requestPairingCode(cleanNumber);
@@ -68,87 +66,74 @@ async function startBot() {
             } catch (err) { 
                 console.error('❌ Pairing Error:', err.message); 
             }
-        }, 6000); // Délai de sécurité pour l'initialisation socket
+        }, 6000);
     }
 
     // --- GESTION DE LA CONNEXION ---
     sock.ev.on('connection.update', async (update) => {
         const { connection, lastDisconnect } = update;
-
         if (connection === 'close') {
             const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
             console.log('🔄 Connexion fermée. Reconnexion en cours...');
             if (shouldReconnect) startBot();
         } else if (connection === 'open') {
             console.log('\n✅ ɢʜᴏꜱᴛɢ-x ᴄᴏɴɴᴇᴄᴛᴇ́ ᴀᴠᴇᴄ ꜱᴜᴄᴄᴇ̀ꜱ !');
-
             try {
-                // On récupère le nombre de commandes via la globale déjà chargée dans le handler
-                const totalCmds = global.commands ? global.commands.size : 0;
-                const botJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
-                const ownerNum = "22651622652";
+                // --- DANS LA SECTION 'connection === open' ---
+try {
+    const totalCmds = global.commands ? global.commands.size : 0;
+    const botJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
+    const ownerNum = "22651622652";
 
-                const welcomeCaption = `╭╼━≪• *ɢʜᴏsᴛɢ-x ɪs ᴀʟɪᴠᴇ* •≫━╾╮
+    const welcomeCaption = `╭╼━≪• *ɢʜᴏsᴛɢ-x ɪs ᴀʟɪᴠᴇ* •≫━╾╮
 ┃ *sᴛᴀᴛᴜᴛ* : 🟢 ᴏɴʟɪɴᴇ
 ┃ *ᴍᴀɪᴛʀᴇ* : @${ownerNum}
-┃ *ᴜᴛɪʟɪsᴀᴛᴇᴜʀ* : @${botJid.split('@')[0]}
 ┃ *ᴘʀᴇғɪxᴇ* : [ ${global.config.prefix || '.'} ]
 ┃ *ᴄᴏᴍᴍᴀɴᴅᴇs* : ${totalCmds}
 ┃ *ᴍᴏᴅᴇ* : ${global.config.selfMode ? '🔒 ᴘʀɪᴠé' : '🌐 ᴘᴜʙʟɪᴄ'}
 ╰━━━━━━━━━━━━━━━━━━━━━━━╯
 
-📢 *ᴄʜᴀɪɴᴇ ᴡʜᴀᴛsᴀᴘᴘ* :
-https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c
-
-👥 *ɢʀᴏᴜᴘᴇ ᴅ'ᴇɴᴛʀᴀɪᴅᴇ* :
-https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf
-
-💻 *ᴅᴇᴠᴇʟᴏᴘᴘᴇᴜʀ* :
-https://wa.me/22651622652
-
-📖 _*“${toSmallCaps("je puis tout par celui qui me fortifie")}”*_ᴘʜɪʟɪᴘᴘɪᴇɴs 4.13❤️✝️
-
 > *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
-                await sock.sendMessage(botJid, { 
-                    image: { url: 'https://files.catbox.moe/2fmwpu.jpg' }, 
-                    caption: welcomeCaption, 
-                    contextInfo: {
-                        mentionedJid: [botJid, ownerNum + '@s.whatsapp.net'],
-                        forwardingScore: 999,
-                        isForwarded: true,
-                        forwardedNewsletterMessageInfo: {
-                            newsletterJid: '120363425540434745@newsletter',
-                            newsletterName: "-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ",
-                            serverMessageId: 143
-                        }
-                    }
-                });
-            } catch (err) { console.error('❌ Notification Error:', err.message); }
+    await sock.sendMessage(botJid, { 
+        image: { url: 'https://files.catbox.moe/2fmwpu.jpg' }, 
+        caption: welcomeCaption, 
+        contextInfo: {
+            mentionedJid: [botJid, ownerNum + '@s.whatsapp.net'],
+            forwardingScore: 999,
+            isForwarded: true,
+            // --- CONFIGURATION NEWSLETTER ---
+            forwardedNewsletterMessageInfo: {
+                newsletterJid: '120363425540434745@newsletter',
+                newsletterName: "-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ",
+                serverMessageId: 143
+            }
         }
     });
+} catch (err) { 
+    console.error('❌ Notification Error:', err.message); 
+}
 
+
+    // --- SAUVEGARDE DES IDENTIFIANTS ---
     sock.ev.on('creds.update', saveCreds);
 
-    
-                sock.ev.on('messages.upsert', async ({ messages, type }) => {
+    // --- GESTION DES MESSAGES ENTRANTS ---
+    sock.ev.on('messages.upsert', async ({ messages, type }) => {
         if (type !== 'notify') return;
-        
+
         for (const msg of messages) {
             if (!msg.message) continue;
 
-            // 🕒 ANTI-REPLAY : Ignore les messages de plus de 15 secondes
             const messageTimestamp = msg.messageTimestamp;
             const now = Math.floor(Date.now() / 1000);
-            if (now - messageTimestamp > 15) {
-                console.log(`[REPLAY IGNORED] Message trop ancien : ${msg.key.id}`);
-                continue;
-            }
+            
+            // On ignore les messages vieux de plus de 15 sec pour éviter le spam au redémarrage
+            if (now - messageTimestamp > 15) continue;
 
             handler.handleMessage(sock, msg).catch(err => console.error(err));
         }
     });
-
 
     // --- GESTION DES GROUPES (WELCOME/GOODBYE) ---
     sock.ev.on('group-participants.update', (u) => handler.handleGroupUpdate(sock, u));
