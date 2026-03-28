@@ -1,67 +1,72 @@
 /**
- * Joke Command - Envoyer des blagues aléatoires
- * Custom Design by -ɢʜᴏsᴛɢ 𝐗
+ * Joke Command - AGM Elite Edition
+ * Envoyer des blagues avec style Prestige
+ * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
-// Fonction de conversion en Small Caps pour le style visuel
-const toSmallCaps = (text) => {
+// Fonction de conversion en Bold Small Caps (incluant accents et ponctuation)
+const toBoldSmallCaps = (text) => {
+    if (!text) return "";
     const smallCapsMap = {
         'a': 'ᴀ', 'b': 'ʙ', 'c': 'ᴄ', 'd': 'ᴅ', 'e': 'ᴇ', 'f': 'ғ', 'g': 'ɢ', 'h': 'ʜ', 
         'i': 'ɪ', 'j': 'ᴊ', 'k': 'ᴋ', 'l': 'ʟ', 'm': 'ᴍ', 'n': 'ɴ', 'o': 'ᴏ', 'p': 'ᴘ', 
         'q': 'ǫ', 'r': 'ʀ', 's': 's', 't': 'ᴛ', 'u': 'ᴜ', 'v': 'ᴠ', 'w': 'ᴡ', 'x': 'x', 
-        'y': 'ʏ', 'z': 'ᴢ'
+        'y': 'ʏ', 'z': 'ᴢ',
+        'é': 'ᴇ', 'è': 'ᴇ', 'ê': 'ᴇ', 'ë': 'ᴇ', 'à': 'ᴀ', 'â': 'ᴀ', 'î': 'ɪ', 'ï': 'ɪ', 'ô': 'ᴏ', 'û': 'ᴜ', 'ù': 'ᴜ', 'ç': 'ᴄ'
     };
-    return text.toLowerCase().split('').map(char => smallCapsMap[char] || char).join('');
+    const capsText = text.toLowerCase().split('').map(char => smallCapsMap[char] || char).join('');
+    return `*${capsText}*`;
 };
 
-// Base de données locale de blagues (Question / Réponse)
+// Design Elite pour l'humour
+const JOKE_DESIGN = (setup, punchline) => `*╭╼━≪• ${toBoldSmallCaps('ɢʜᴏsᴛ ʜᴜᴍᴏʀ')} •≫━╾╮*
+*┃*
+*┃* 🤔 *${toBoldSmallCaps('ǫᴜᴇsᴛɪᴏɴ')}* : ${setup}
+*┃*
+*┃* 😂 *${toBoldSmallCaps('ʀᴇᴘᴏɴsᴇ')}* : ${punchline}
+*┃*
+*╰━━━━━━━━━━━━━━━╯*
+> ***${toBoldSmallCaps('ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-x')}***`;
+
 const frenchJokes = [
     { q: "Pourquoi les plongeurs plongent-ils toujours en arrière ?", r: "Parce que sinon ils tombent dans le bateau." },
     { q: "Qu'est-ce qui est petit, rond, vert et qui monte et qui descend ?", r: "Un petit pois dans un ascenseur." },
     { q: "Quel est le comble pour un électricien ?", r: "De ne pas être au courant." },
     { q: "Pourquoi les oiseaux volent-ils vers le sud en hiver ?", r: "Parce que c'est trop loin pour y aller à pied." },
     { q: "Comment appelle-t-on un boomerang qui ne revient pas ?", r: "Un bâton." },
-    { q: "Qu'est-ce qu'une Cindy Sanders qui fait du ski ?", r: "Une avalanche de papillons." },
     { q: "Quel est le sport le plus silencieux ?", r: "Le para-chuuuut !" },
     { q: "Pourquoi les boulangers sont-ils toujours de bonne humeur ?", r: "Parce qu'ils ont du pain sur la planche." },
     { q: "Que dit un citron qui fait un braquage ?", r: "Pas un zeste, je suis pressé !" },
     { q: "Comment appelle-t-on un chien qui fait de la magie ?", r: "Un Abracadabrador." }
 ];
 
-// Design pour la blague
-const JOKE_DESIGN = (setup, punchline) => `╭╼━≪• *ɢʜᴏsᴛ ʜᴜᴍᴏʀ* •≫━╾╮
-┃ 
-┃ ${toSmallCaps('ǫᴜᴇsᴛɪᴏɴ')} : ${setup} 🤔
-┃ 
-┃ ${toSmallCaps('ʀᴇᴘᴏɴsᴇ')} : ${punchline} 😂
-┃ 
-╰━━━━━━━━━━━━━━━╯
-> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
-
 module.exports = {
   name: 'joke',
   aliases: ['jokes', 'blague'],
   category: 'fun',
-  description: 'Obtenir une blague aléatoire en français',
+  description: 'Obtenir une blague aléatoire (Elite Style)',
   usage: '.joke',
 
   async execute(sock, msg, args, extra) {
     try {
-      // Sélection aléatoire d'une blague française
+      const chatId = extra.from;
+      
+      // Réaction pour l'ambiance
+      await sock.sendMessage(chatId, { react: { text: '🤣', key: msg.key } });
+
       const randomJoke = frenchJokes[Math.floor(Math.random() * frenchJokes.length)];
 
-      // Conversion des textes en Small Caps
-      const setup = toSmallCaps(randomJoke.q);
-      const punchline = toSmallCaps(randomJoke.r);
+      // Conversion des textes en Bold Small Caps
+      const setup = toBoldSmallCaps(randomJoke.q);
+      const punchline = toBoldSmallCaps(randomJoke.r);
 
-      // Envoi avec le design signature
-      await sock.sendMessage(extra.from, {
+      await sock.sendMessage(chatId, {
         text: JOKE_DESIGN(setup, punchline)
       }, { quoted: msg });
 
     } catch (error) {
       console.error('Joke Error:', error);
-      const errorMsg = toSmallCaps(`Erreur Humour : ${error.message}`);
+      const errorMsg = toBoldSmallCaps(`Erreur Humour : ${error.message}`);
       await extra.reply(`❌ ${errorMsg}`);
     }
   }
