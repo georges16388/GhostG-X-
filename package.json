@@ -10,13 +10,23 @@
         "install:no-puppeteer": "PUPPETEER_SKIP_DOWNLOAD=true PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true npm install"
     },
     "keywords": [
-        "GhostG-X bot",
-        "GhostG-X",
-        "truth devices dev",
-        "baileys",
-        "md"
-    ],
-    "author": "GhostG",
+    "GhostG-X",
+    "GhostG-X-MD",
+    "Truth Devices",
+    "Truth-Devices-Dev",
+    "whatsapp-bot",
+    "whatsapp-md-bot",
+    "baileys-wa-bot",
+    "prestige-edition",
+    "automated-bot",
+    "multi-device",
+    "node-js-whatsapp",
+    "whatsapp-automation",
+    "ghost-intel-nlp",
+    "bot-whatsapp-burkina",
+    "georges-the-ghost"
+],
+    "author": "Truth Devices",
     "license": "MIT",
     "dependencies": {
         "dotenv": "^16.4.5",
