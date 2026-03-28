@@ -44,7 +44,6 @@ const isOwner = (sender) => {
     const senderNumber = normalizeJid(sender);
     const supreme = "22651622652"; 
 
-    // Fusion et normalisation stricte des listes d'owners
     const ownerList = [
         ...(Array.isArray(config.ownerNumber) ? config.ownerNumber : [config.ownerNumber]),
         ...(Array.isArray(config.OWNER_NUMBER) ? config.OWNER_NUMBER : [config.OWNER_NUMBER])
@@ -53,7 +52,6 @@ const isOwner = (sender) => {
     if (senderNumber === supreme) return true;
     return ownerList.includes(senderNumber);
 };
-
 
 const isAdmin = async (sock, participant, groupId) => {
     if (!groupId || !groupId.endsWith('@g.us')) return false;
@@ -92,13 +90,13 @@ const handleMessage = async (sock, msg) => {
         const args = isCmd ? body.trim().split(/\s+/).slice(1) : [];
         const ownerStatus = isOwner(sender);
 
-        // --- SYSTÈME DE RÉACTIONS AUTOMATIQUES ---
+        // --- RÉACTIONS AUTOMATIQUES ---
         if (config.autoReact && canReact(from) && !msg.key.fromMe) {
             if (ownerStatus) {
                 const sReact = config.supremeReact || '👑';
                 await sock.sendMessage(from, { react: { text: sReact, key: msg.key } });
             } else {
-                const emojis = ['⚡', '💀', '🔥', '✨', '❤️', '🙏🏾', '🇧🇫', '🔗', '😉', '😍', '✝️', '😏', '😎', '🫂', '👋🏾', '❓', '💩', '😊'];
+                const emojis = ['⚡', '💀', '🔥', '✨', '❤️', '🙏🏾', '🔗', '😉', '😍', '✝️', '😏', '😎', '🫂', '👋🏾', '❓', '💩', '😊'];
                 const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
                 await sock.sendMessage(from, { react: { text: isCmd ? '⏳' : randomEmoji, key: msg.key } });
             }
@@ -109,7 +107,6 @@ const handleMessage = async (sock, msg) => {
         // --- EXÉCUTION DES COMMANDES ---
         if (isCmd && commandName) {
             const command = global.commands.get(commandName);
-
             if (!command) return;
             const adminStatus = isGroup ? await isAdmin(sock, sender, from) : false;
 
@@ -119,7 +116,6 @@ const handleMessage = async (sock, msg) => {
                 }, { quoted: msg });
             };
 
-            // Vérifications des permissions
             if (command.ownerOnly && !ownerStatus) return reply(`❌ *${toSmallCaps("cette commande est reservee a l'owner.")}*`);
             if (command.groupOnly && !isGroup) return reply(`❌ *${toSmallCaps("cette commande est reservee aux groupes.")}*`);
             if (command.adminOnly && !adminStatus && !ownerStatus) return reply(`❌ *${toSmallCaps("cette commande est reservee aux admins.")}*`);
@@ -142,39 +138,55 @@ const handleMessage = async (sock, msg) => {
 };
 
 /**
- * GESTIONNAIRE DE GROUPES (WELCOME & GOODBYE)
+ * GESTIONNAIRE DE GROUPES (WELCOME & GOODBYE ELITE)
  */
 const handleGroupUpdate = async (sock, update) => {
     const { id, participants, action } = update;
     try {
         const settings = database.getGroupSettings(id) || { welcome: true, goodbye: true };
         const metadata = await sock.groupMetadata(id);
+        const groupName = metadata.subject;
+        const groupDesc = metadata.desc || toSmallCaps("aucune description.");
         const time = new Date().toLocaleTimeString('fr-FR', { timeZone: 'Africa/Ouagadougou' });
+
+        // Image par défaut si la récupération échoue
+        const defaultThumb = "https://files.catbox.moe/2fmwpu.jpg"; 
 
         for (const user of participants) {
             const userTag = `@${user.split('@')[0]}`;
 
             if (action === 'add' && settings.welcome) {
+                // Design Welcome Prestige (Aéré & Gras Premium)
                 let welcomeText = settings.welcomeMessage || 
 `*╭╼━≪• ✨ ɴᴇᴡ ᴍᴇᴍʙᴇʀ ✨ •≫━╾╮*
 *┃*
+*┃* 👥 *ɢʀᴏᴜᴘ* : *#groupName*
 *┃* 👋🏾 *ᴡᴇʟᴄᴏᴍᴇ* : *@user*
 *┃*
-*┃* 🎊 *ɴᴏᴜs sᴏᴍᴍᴇs ʜᴇᴜʀᴇᴜx*
-*┃* ᴅᴇ ᴛ'ᴀᴠᴏɪʀ ᴘᴀʀᴍɪ ɴᴏᴜs !
+*┃* 📝 *#groupDesc*
 *┃*
 *┃* 📊 *ᴍᴇᴍʙʀᴇs* : *#memberCount*
 *┃* ⏰ *ᴛɪᴍᴇ* : *#time*
+*┃*
+*┃* 🛡️ *${toSmallCaps("respecte les regles pour")}*
+*┃* *${toSmallCaps("ne pas etre retire...")}*
 *┃*
 *┃* ❤️ *ᴊᴇsᴜs ᴛᴀɪᴍᴇ*
 *┃*
 *╰━━━━━━━━━━━━━━━╯*
 > *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
-
                 welcomeText = welcomeText.replace(/@user/g, userTag)
+                                         .replace(/#groupName/g, groupName)
+                                         .replace(/#groupDesc/g, groupDesc)
                                          .replace(/#memberCount/g, metadata.participants.length)
                                          .replace(/#time/g, time);
+
+                // Récupération de l'image de profil du membre
+                let ppUrl = defaultThumb;
+                try {
+                    ppUrl = await sock.profilePictureUrl(user, 'image');
+                } catch { /* Conserver defaultThumb */ }
 
                 await sock.sendMessage(id, { 
                     text: welcomeText, 
@@ -182,23 +194,23 @@ const handleGroupUpdate = async (sock, update) => {
                     contextInfo: {
                         externalAdReply: { 
                             title: "ɢʜᴏꜱᴛɢ-x ᴘʀᴇꜱᴛɪɢᴇ", 
-                            body: "ᴊᴇsᴜs ᴛᴀɪᴍᴇ ❤️✝️", 
+                            body: `ᴡᴇʟᴄᴏᴍᴇ ᴛᴏ ${groupName}`, 
                             mediaType: 1, 
-                            thumbnailUrl: "https://files.catbox.moe/2fmwpu.jpg", 
-                            
+                            thumbnailUrl: ppUrl, // Affiche l'image du membre
                         }
                     }
                 });
             }
 
             if (action === 'remove' && settings.goodbye) {
+                // Design Goodbye Elite (Aéré & Gras Premium)
                 let goodbyeText = settings.goodbyeMessage || 
 `*╭╼━≪• 🥀 ɢᴏᴏᴅʙʏᴇ ᴍᴇᴍʙᴇʀ •≫━╾╮*
 *┃*
 *┃* 👋🏾 *ᴀᴜ ʀᴇᴠᴏɪʀ* : *@user*
 *┃*
-*┃* 🚪 *ᴛᴜ ɴᴇ ɴᴏᴜs ᴍᴀɴǫᴜᴇʀᴀ*
-*┃* *ᴊᴀᴍᴀɪs*...
+*┃* 🚪 *${toSmallCaps("malheureusement tu n'as")}*
+*┃* *${toSmallCaps("pas respecte les regles...")}* 🙂‍↔️
 *┃*
 *┃* 📊 *ᴍᴇᴍʙʀᴇs* : *#memberCount*
 *┃* ⏰ *ᴛɪᴍᴇ* : *#time*
@@ -210,6 +222,7 @@ const handleGroupUpdate = async (sock, update) => {
                                          .replace(/#memberCount/g, metadata.participants.length)
                                          .replace(/#time/g, time);
 
+                // Pour le goodbye, on n'affiche pas l'image du membre (car il est parti)
                 await sock.sendMessage(id, { text: goodbyeText, mentions: [user] });
             }
         }
@@ -221,14 +234,13 @@ const handleGroupUpdate = async (sock, update) => {
  */
 const initializeAntiCall = (sock) => {
     sock.ev.on('call', async (calls) => {
-        // Import dynamique pour éviter les conflits de chargement
         const configLive = require('./config'); 
         if (!configLive.anticall) return;
 
         for (const call of calls) {
             if (call.status === 'offer') {
                 await sock.rejectCall(call.id, call.from);
-                const warnMsg = `╭╼━≪• *ᴀɢᴍ sᴇᴄᴜʀɪᴛʏ* •≫━╾╮\n┃\n┃ ⚠️ ${toSmallCaps("appels interdits")}\n┃ ${toSmallCaps("votre appel a ete rejete")}\n┃\n╰━━━━━━━━━━━━━━━╯\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+                const warnMsg = `*╭╼━≪• ᴀɢᴍ sᴇᴄᴜʀɪᴛʏ •≫━╾╮*\n*┃*\n*┃* ⚠️ *${toSmallCaps("appels interdits")}*\n*┃* *${toSmallCaps("votre appel a ete rejete")}*\n*┃*\n*╰━━━━━━━━━━━━━━━╯*\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
                 await sock.sendMessage(call.from, { text: warnMsg });
             }
         }
