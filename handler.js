@@ -55,7 +55,7 @@ const handleMessage = async (sock, msg) => {
     try {
         if (!msg.message || msg.key.remoteJid === 'status@broadcast') return;
 
-        // --- 🛡️ PROTECTION ANTI-DUPLICATION AU REDÉMARRAGE ---
+        // --- 🛡️ PROTECTION ANTI-DUPLICATION ---
         const messageTimestamp = msg.messageTimestamp; 
         const now = Math.floor(Date.now() / 1000);
         if (now - messageTimestamp > 15) return; 
@@ -81,11 +81,10 @@ const handleMessage = async (sock, msg) => {
         const body = getText(msg.message).trim();
         if (!body) return;
 
-        // --- LOGIQUE DE DÉTECTION OWNER / SUPRÊME ---
         const ownerStatus = global.isOwner(sender);
         const isSupreme = global.isSupreme(sender);
 
-        // --- SÉCURITÉ SELF-MODE (MODE PRIVÉ) ---
+        // --- SÉCURITÉ SELF-MODE ---
         if (config.selfMode && !ownerStatus && !msg.key.fromMe) return;
 
         // --- SYSTÈME TIC-TAC-TOE ---
@@ -93,7 +92,7 @@ const handleMessage = async (sock, msg) => {
         const tttResult = await handleTicTacToeMove(sock, msg, { sender, from, body });
         if (tttResult) return; 
 
-        // --- RÉTABLISSEMENT DU PRÉFIXE SPÉCIAL (>) ---
+        // --- DÉTECTION PRÉFIXE ET COMMANDE ---
         let activePrefix = prefix;
         if (isSupreme && body.startsWith('>')) activePrefix = '>';
 
@@ -103,18 +102,25 @@ const handleMessage = async (sock, msg) => {
 
         const adminStatus = isGroup ? await isAdmin(sock, sender, from) : false;
 
-        // --- RÉACTIONS AUTOMATIQUES ---
-        if (config.autoReact && canReact(from) && !msg.key.fromMe) {
-            if (ownerStatus) {
+        // --- 🎭 SYSTÈME DE RÉACTIONS AUTOMATIQUES (OPTIMISÉ) ---
+        if (config.autoReact && canReact(from)) {
+            // 1. Si c'est une commande (même lancée par toi)
+            if (isCmd) {
+                await sock.sendMessage(from, { react: { text: '⏳', key: msg.key } });
+            } 
+            // 2. Si c'est un message du Maître/Owner (React Spécial)
+            else if (ownerStatus) {
                 await sock.sendMessage(from, { react: { text: config.supremeReact || '👑', key: msg.key } });
-            } else {
+            }
+            // 3. Si c'est un utilisateur lambda (Réaction Aléatoire) et PAS moi
+            else if (!msg.key.fromMe) {
                 const emojis = ['⚡', '💀', '🔥', '✨', '❤️', '🙏🏾', '😉', '😍', '✝️', '😏', '😎', '🫂', '👋🏾', '❓', '💩', '😊'];
                 const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
-                await sock.sendMessage(from, { react: { text: isCmd ? '⏳' : randomEmoji, key: msg.key } });
+                await sock.sendMessage(from, { react: { text: randomEmoji, key: msg.key } });
             }
         }
 
-        // --- GHOSTG INTEL SYSTEM (RÉTABLI) ---
+        // --- GHOSTG INTEL SYSTEM ---
         global.ghostgMode = global.ghostgMode || 'off'; 
         if (global.ghostgMode !== 'off' && ownerStatus && !isCmd) {
             const ghostgCmd = global.commands.get('ghostg');
@@ -140,7 +146,6 @@ const handleMessage = async (sock, msg) => {
                 return sock.sendMessage(from, { text: `${text}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*` }, { quoted: msg });
             };
 
-            // Vérifications de permissions avec messages personnalisés
             if (command.ownerOnly && !ownerStatus) return reply(config.messages.ownerOnly);
             if (command.groupOnly && !isGroup) return reply(config.messages.groupOnly);
             if (command.adminOnly && !adminStatus && !ownerStatus) return reply(config.messages.adminOnly);
@@ -163,7 +168,7 @@ const handleMessage = async (sock, msg) => {
 };
 
 /**
- * GESTIONNAIRE DE GROUPES (RÉTABLI INTÉGRALEMENT)
+ * GESTIONNAIRE DE GROUPES
  */
 const handleGroupUpdate = async (sock, update) => {
     const { id, participants, action } = update;
