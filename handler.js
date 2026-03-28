@@ -83,6 +83,12 @@ const handleMessage = async (sock, msg) => {
                    m?.listResponseMessage?.singleSelectReply?.selectedRowId ||
                    m?.templateButtonReplyMessage?.selectedId || "";
         };
+        
+        // Dans ton handler.js, juste avant la détection des commandes (isCmd)
+const { handleTicTacToeMove } = require('./commands/fun/tictactoe');
+const tttResult = await handleTicTacToeMove(sock, msg, { sender, from, body });
+if (tttResult) return; // Si c'est un coup de Morpion, on s'arrête là
+
 
         const body = getText(msg.message).trim();
         const isCmd = body.startsWith(prefix);
