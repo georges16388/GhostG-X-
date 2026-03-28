@@ -1,6 +1,6 @@
 /**
- * ɢʜᴏꜱᴛɢ-x ᴍᴅ - ᴍᴀɪɴ ᴇɴᴛʀʏ ᴘᴏɪɴᴛ (Prestige Edition V5.2)
- * Optimized for Dual-Level Ownership & Security
+ * ɢʜᴏꜱᴛɢ-x ᴍᴅ - ᴍᴀɪɴ ᴇɴᴛʀʏ ᴘᴏɪɴᴛ (Prestige Edition V5.2 - FULL FUSION)
+ * Optimized for Dual-Level Ownership, Security & Store History
  * Powered by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
@@ -8,7 +8,8 @@ const {
     default: makeWASocket, 
     useMultiFileAuthState, 
     DisconnectReason, 
-    fetchLatestBaileysVersion 
+    fetchLatestBaileysVersion,
+    makeInMemoryStore // Intégration du Store
 } = require('@whiskeysockets/baileys');
 const pino = require('pino');
 const fs = require('fs');
@@ -18,29 +19,28 @@ const path = require('path');
 const config = require('./config');
 const handler = require('./handler');
 
-// 🔹 CRUCIAL : Configuration Globale
+// 🔹 Configuration Globale
 global.config = config; 
+
+// --- INITIALISATION DU STORE (MÉMOIRE DES MESSAGES) ---
+const store = makeInMemoryStore({ 
+    logger: pino().child({ level: 'silent', stream: 'store' }) 
+});
+global.store = store; // Utilisé par clean.js
 
 /**
  * HIÉRARCHIE DE SÉCURITÉ GLOBALE
  */
-
-// 1. Vérifie si c'est le Maître Suprême (Georges - Fixe)
 global.isSupreme = (jid) => {
     if (!jid) return false;
     const number = jid.split('@')[0].replace(/\D/g, '');
     return number === global.config.supremeNumber;
 };
 
-// 2. Vérifie si c'est un Owner (Inclut le Suprême ET le numéro du .env)
 global.isOwner = (jid) => {
     if (!jid) return false;
     const number = jid.split('@')[0].replace(/\D/g, '');
-    
-    // Priorité absolue au Supreme
     if (number === global.config.supremeNumber) return true; 
-
-    // Vérification de la liste des owners (du .env)
     const owners = Array.isArray(global.config.ownerNumber) ? global.config.ownerNumber : [global.config.ownerNumber];
     return owners.some(owner => owner.toString().replace(/\D/g, '') === number);
 };
@@ -64,6 +64,9 @@ async function startBot() {
         auth: state,
         syncFullHistory: false,
     });
+
+    // --- LIAISON DU STORE (CRUCIAL POUR .CLEAN) ---
+    store.bind(sock.ev);
 
     // --- SYSTÈME ANTI-CALL (SÉCURITÉ AGM) ---
     sock.ev.on('call', async (node) => {
@@ -164,7 +167,6 @@ https://wa.me/${ownerNum}
             const sender = msg.key.participant || jid;
 
             // 🛡️ FILTRE DE SÉCURITÉ : MODE PRIVÉ (SELF MODE)
-            // Laisse passer uniquement si c'est un Owner (Supreme inclus)
             if (global.config.selfMode && !global.isOwner(sender)) {
                 continue; 
             }
