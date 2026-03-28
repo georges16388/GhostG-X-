@@ -155,7 +155,22 @@ const handleGroupUpdate = async (sock, update) => {
             const userTag = `@${user.split('@')[0]}`;
 
             if (action === 'add' && settings.welcome) {
-                let welcomeText = settings.welcomeMessage || `╭╼━≪• *ɴᴇᴡ ᴍᴇᴍʙᴇʀ* •≫━╾╮\n┃ *ᴡᴇʟᴄᴏᴍᴇ* : @user 👋🏾\n┃ *ɴᴏᴜs sᴏᴍᴍᴇs ʜᴇᴜʀᴇᴜx\n┃ ᴅᴇ ᴛ'ᴀᴠᴏɪʀ ᴘᴀʀᴍɪ ɴᴏᴜs*\n┃ *ᴍᴇᴍʙʀᴇs* : #memberCount\n┃ *ᴛɪᴍᴇ* : #time ⏰\n┃ *ᴊᴇsᴜs ᴛᴀɪᴍᴇ ❤️*\n╰━━━━━━━━━━━━━━━╯\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
+                let welcomeText = settings.welcomeMessage || 
+`*╭╼━≪• ✨ ɴᴇᴡ ᴍᴇᴍʙᴇʀ ✨ •≫━╾╮*
+*┃*
+*┃* 👋 *ᴡᴇʟᴄᴏᴍᴇ* : *@user*
+*┃*
+*┃* 🎊 *ɴᴏᴜs sᴏᴍᴍᴇs ʜᴇᴜʀᴇᴜx*
+*┃* ᴅᴇ ᴛ'ᴀᴠᴏɪʀ ᴘᴀʀᴍɪ ɴᴏᴜs !
+*┃*
+*┃* 📊 *ᴍᴇᴍʙʀᴇs* : *#memberCount*
+*┃* ⏰ *ᴛɪᴍᴇ* : *#time*
+*┃*
+*┃* ❤️ *ᴊᴇsᴜs ᴛᴀɪᴍᴇ*
+*┃*
+*╰━━━━━━━━━━━━━━━╯*
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+
 
                 welcomeText = welcomeText.replace(/@user/g, userTag)
                                          .replace(/#memberCount/g, metadata.participants.length)
