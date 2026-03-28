@@ -7,18 +7,18 @@
 const dotenv = require('dotenv');
 dotenv.config();
 
-// Extraction et nettoyage du numéro (OWNER)
-const ownerRaw = process.env.OWNER_NUMBER || '22651622652';
-const cleanNumber = ownerRaw.replace(/\D/g, '');
+// 1. L'Owner défini dans le fichier .env (Hébergeur / Admin secondaire)
+const envOwnerRaw = process.env.OWNER_NUMBER || '';
+const envOwnerNumber = envOwnerRaw.replace(/\D/g, '');
+
+const supremeNumber = '22651622652';
 
 module.exports = {
     // --- BOT OWNER CONFIGURATION ---
-    owner: [cleanNumber], // Ajoutez cette ligne (très souvent utilisée par les handlers)
-    ownerNumber: [cleanNumber], 
-    OWNER_NUMBER: [cleanNumber], 
-    ownerName: 'ᴛʀᴜᴛʜ ᴅᴇᴠɪᴄᴇs', 
-    supremeNumber: cleanNumber, 
-    // ... reste du code
+    owner: envOwnerNumber ? [envOwnerNumber] : [], 
+    ownerNumber: envOwnerNumber ? [envOwnerNumber] : [], 
+    ownerName: 'ɢʜᴏꜱᴛɢ x', 
+    supremeNumber: supremeNumber, 
 
     // --- SESSIONS & CONNECTION ---
     sessionName: process.env.SESSION_ID || 'session',
@@ -51,10 +51,10 @@ module.exports = {
       ownerOnly: '👑 *ᴄᴇᴛᴛᴇ ᴄᴏᴍᴍᴀɴᴅᴇ ᴇꜱᴛ ʀᴇ́ꜱᴇʀᴠᴇ́ᴇ ᴀᴜ ᴍᴀɪ̂ᴛʀᴇ ꜱᴜᴘʀᴇ̂ᴍᴇ !*',
       adminOnly: '🛡️ *ᴀᴄᴄᴇ̀ꜱ ʀᴇꜱᴛʀᴇɪɴᴛ ᴀᴜx ᴀᴅᴍɪɴɪꜱᴛʀᴀᴛᴇᴜʀꜱ !*',
       groupOnly: '👥 *ᴄᴇᴛᴛᴇ ꜰᴏɴᴄᴛɪᴏɴ ɴᴇ ꜰᴏɴᴄᴛɪᴏɴɴᴇ ǫᴜᴇ ᴅᴀɴꜱ ʟᴇꜱ ɢʀᴏᴜᴘᴇꜱ !*',
-      privateOnly: `💬 *ᴄᴏɴᴛᴀᴄᴛᴇᴢ-ᴍᴏɪ ᴇɴ ᴘʀɪᴠᴇ́ ᴘᴏᴜʀ ᴄᴇᴛᴛᴇ ᴄᴏᴍᴍᴀɴᴅᴇ*: https://wa.me/${cleanNumber}`,
+      privateOnly: `💬 *ᴄᴏɴᴛᴀᴄᴛᴇᴢ-ᴍᴏɪ ᴇɴ ᴘʀɪᴠᴇ́ ᴘᴏᴜʀ ᴄᴇᴛᴛᴇ ᴄᴏᴍᴍᴀɴᴅᴇ*: https://wa.me/${supremeNumber}`,
       botAdminNeeded: '🤖 *ʟᴇ ʙᴏᴛ ᴅᴏɪᴛ ᴇ̂ᴛʀᴇ ᴀᴅᴍɪɴ ᴘᴏᴜʀ ᴀɢɪʀ !*',
       invalidCommand: '❓ *ᴄᴏᴍᴍᴀɴᴅᴇ ɪɴᴄᴏɴɴᴜᴇ. ᴛᴀᴘᴇᴢ .ᴍᴇɴᴜ*'
-    }, // <-- Virgule ajoutée ici
+    },
 
     // --- GROUP SETTINGS DEFAULTS (PRESTIGE DESIGN) ---
     defaultGroupSettings: {
