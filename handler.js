@@ -81,15 +81,19 @@ const handleMessage = async (sock, msg) => {
         const body = getText(msg.message).trim();
         if (!body) return;
 
+        // --- LOGIQUE DE DÉTECTION OWNER / SUPRÊME ---
+        const ownerStatus = global.isOwner(sender);
+        const isSupreme = global.isSupreme(sender);
+
+        // --- SÉCURITÉ SELF-MODE (MODE PRIVÉ) ---
+        if (config.selfMode && !ownerStatus && !msg.key.fromMe) return;
+
         // --- SYSTÈME TIC-TAC-TOE ---
         const { handleTicTacToeMove } = require('./commands/fun/tictactoe');
         const tttResult = await handleTicTacToeMove(sock, msg, { sender, from, body });
         if (tttResult) return; 
 
-        // --- LOGIQUE DE DÉTECTION OWNER / SUPRÊME ---
-        const ownerStatus = global.isOwner(sender);
-        const isSupreme = global.isSupreme(sender);
-
+        // --- RÉTABLISSEMENT DU PRÉFIXE SPÉCIAL (>) ---
         let activePrefix = prefix;
         if (isSupreme && body.startsWith('>')) activePrefix = '>';
 
@@ -98,9 +102,6 @@ const handleMessage = async (sock, msg) => {
         const args = isCmd ? body.trim().split(/\s+/).slice(1) : body.trim().split(/\s+/);
 
         const adminStatus = isGroup ? await isAdmin(sock, sender, from) : false;
-
-        // --- SÉCURITÉ SELF-MODE ---
-        if (config.selfMode && !ownerStatus && !msg.key.fromMe) return;
 
         // --- RÉACTIONS AUTOMATIQUES ---
         if (config.autoReact && canReact(from) && !msg.key.fromMe) {
@@ -113,13 +114,13 @@ const handleMessage = async (sock, msg) => {
             }
         }
 
-        // --- GHOSTG INTEL SYSTEM ---
+        // --- GHOSTG INTEL SYSTEM (RÉTABLI) ---
         global.ghostgMode = global.ghostgMode || 'off'; 
         if (global.ghostgMode !== 'off' && ownerStatus && !isCmd) {
             const ghostgCmd = global.commands.get('ghostg');
             if (ghostgCmd) {
                 const extra = {
-                    from, sender, isGroup, isOwner: ownerStatus, isAdmin: adminStatus, prefix, pushName,
+                    from, sender, isGroup, isOwner: ownerStatus, isSupreme, isAdmin: adminStatus, prefix, pushName,
                     reply: (text) => sock.sendMessage(from, { text: `${text}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*` }, { quoted: msg }),
                     react: (emoji) => sock.sendMessage(from, { react: { text: emoji, key: msg.key } }),
                     groupMetadata: isGroup ? await sock.groupMetadata(from) : null
@@ -132,22 +133,23 @@ const handleMessage = async (sock, msg) => {
 
         // --- EXÉCUTION DES COMMANDES ---
         if (isCmd && commandName) {
-            const command = global.commands.get(commandName);
+            const command = global.commands.get(commandName) || [...global.commands.values()].find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
             if (!command) return;
 
             const reply = (text) => {
                 return sock.sendMessage(from, { text: `${text}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*` }, { quoted: msg });
             };
 
-            if (command.ownerOnly && !ownerStatus) return reply(`❌ *${toSmallCaps("cette commande est reservee a l'owner.")}*`);
-            if (command.groupOnly && !isGroup) return reply(`❌ *${toSmallCaps("cette commande est reservee aux groupes.")}*`);
-            if (command.adminOnly && !adminStatus && !ownerStatus) return reply(`❌ *${toSmallCaps("cette commande est reservee aux admins.")}*`);
+            // Vérifications de permissions avec messages personnalisés
+            if (command.ownerOnly && !ownerStatus) return reply(config.messages.ownerOnly);
+            if (command.groupOnly && !isGroup) return reply(config.messages.groupOnly);
+            if (command.adminOnly && !adminStatus && !ownerStatus) return reply(config.messages.adminOnly);
 
             if (config.autoTyping) await sock.sendPresenceUpdate('composing', from);
 
             try {
                 await command.execute(sock, msg, args, {
-                    from, sender, isGroup, isOwner: ownerStatus, isAdmin: adminStatus, prefix, pushName,
+                    from, sender, isGroup, isOwner: ownerStatus, isSupreme, isAdmin: adminStatus, prefix, pushName,
                     reply,
                     react: (emoji) => sock.sendMessage(from, { react: { text: emoji, key: msg.key } }),
                     groupMetadata: isGroup ? await sock.groupMetadata(from) : null
@@ -161,7 +163,7 @@ const handleMessage = async (sock, msg) => {
 };
 
 /**
- * GESTIONNAIRE DE GROUPES (SANS APERÇU EXTERNE)
+ * GESTIONNAIRE DE GROUPES (RÉTABLI INTÉGRALEMENT)
  */
 const handleGroupUpdate = async (sock, update) => {
     const { id, participants, action } = update;
@@ -176,45 +178,20 @@ const handleGroupUpdate = async (sock, update) => {
             const userTag = `@${user.split('@')[0]}`;
 
             if (action === 'add' && settings.welcome) {
-                let welcomeText = settings.welcomeMessage || 
-`*╭╼━≪• ✨ ɴᴇᴡ ᴍᴇᴍʙᴇʀ ✨ •≫━╾╮*
-*┃*
-*┃* 👥 *ɢʀᴏᴜᴘ* : *#groupName*
-*┃* 👋🏾 *ᴡᴇʟᴄᴏᴍᴇ* : *@user*
-*┃*
-*┃* 📝 *#groupDesc*
-*┃*
-*┃* 📊 *ᴍᴇᴍʙʀᴇs* : *#memberCount*
-*┃* ⏰ *ᴛɪᴍᴇ* : *#time*
-*┃*
-*┃* 🛡️ *${toSmallCaps("respecte les regles pour")}*
-*┃* *${toSmallCaps("ne pas etre retire...")}*
-*┃*
-*┃* ❤️ *ᴊᴇsᴜs ᴛᴀɪᴍᴇ*
-*┃*
-*╰━━━━━━━━━━━━━━━╯*
-> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
-
-                welcomeText = welcomeText.replace(/@user/g, userTag).replace(/#groupName/g, groupName).replace(/#groupDesc/g, groupDesc).replace(/#memberCount/g, metadata.participants.length).replace(/#time/g, time);
+                let welcomeText = settings.welcomeMessage || global.config.defaultGroupSettings.welcomeMessage;
+                welcomeText = welcomeText.replace(/@user/g, userTag)
+                                         .replace(/#groupName/g, groupName)
+                                         .replace(/#groupDesc/g, groupDesc)
+                                         .replace(/#memberCount/g, metadata.participants.length)
+                                         .replace(/#time/g, time);
                 await sock.sendMessage(id, { text: welcomeText, mentions: [user] });
             }
 
             if (action === 'remove' && settings.goodbye) {
-                let goodbyeText = settings.goodbyeMessage || 
-`*╭╼━≪• 🥀 ɢᴏᴏᴅʙʏᴇ ᴍᴇᴍʙᴇʀ •≫━╾╮*
-*┃*
-*┃* 👋🏾 *ᴀᴜ ʀᴇᴠᴏɪʀ* : *@user*
-*┃*
-*┃* 🚪 *${toSmallCaps("malheureusement tu n'as")}*
-*┃* *${toSmallCaps("pas respecte les regles...")}* 🙂‍↔️
-*┃*
-*┃* 📊 *ᴍᴇᴍʙʀᴇs* : *#memberCount*
-*┃* ⏰ *ᴛɪᴍᴇ* : *#time*
-*┃*
-*╰━━━━━━━━━━━━━━━╯*
-> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
-
-                goodbyeText = goodbyeText.replace(/@user/g, userTag).replace(/#memberCount/g, metadata.participants.length).replace(/#time/g, time);
+                let goodbyeText = settings.goodbyeMessage || global.config.defaultGroupSettings.goodbyeMessage;
+                goodbyeText = goodbyeText.replace(/@user/g, userTag)
+                                         .replace(/#memberCount/g, metadata.participants.length)
+                                         .replace(/#time/g, time);
                 await sock.sendMessage(id, { text: goodbyeText, mentions: [user] });
             }
         }
