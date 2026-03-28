@@ -1,100 +1,96 @@
 /**
- * Bot Mode Controller - AGM System Core (V5.2)
- * Dual Update: Config + ENV (Persistence)
+ * ɢʜᴏꜱᴛɢ-x ᴍᴅ - Bot Mode Controller (AGM System Core V5.2)
+ * Persistence System: Config + ENV Sync
  * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
 const fs = require('fs');
 const path = require('path');
 
-// --- DESIGN AGM ---
-const AGM_MODE = (mode) => `╭╼━≪• *ᴀɢᴍ sʏsᴛᴇᴍ ᴍᴏᴅᴇ* •≫━╾╮
-┃ *sᴛᴀᴛᴜs* : 🟢 ᴜᴘᴅᴀᴛᴇᴅ
-┃ *ᴍᴏᴅᴇ* : ${mode === 'private' ? '🔒 ᴘʀɪᴠᴀᴛᴇ' : '🌐 ᴘᴜʙʟɪᴄ'}
-┃ *ᴀᴄᴄᴇss* : ${mode === 'private' ? 'ᴏᴡɴᴇʀ ᴏɴʟʏ' : 'ᴇᴠᴇʀʏᴏɴᴇ'}
-╰━━━━━━━━━━━━━━━╯
+const toSmallCaps = (text) => {
+    const fonts = {'a':'ᴀ','b':'ʙ','c':'ᴄ','d':'ᴅ','e':'ᴇ','f':'ғ','g':'ɢ','h':'ʜ','i':'ɪ','j':'ᴊ','k':'ᴋ','l':'ʟ','m':'ᴍ','n':'ɴ','o':'ᴏ','p':'ᴘ','q':'ǫ','r':'ʀ','s':'s','t':'ᴛ','u':'ᴜ','v':'ᴠ','w':'ᴡ','x':'x','y':'ʏ','z':'ᴢ'};
+    return String(text).toLowerCase().split('').map(c => fonts[c] || c).join('');
+};
+
+const AGM_MODE_DESIGN = (mode) => `*╭╼━≪• ᴀɢᴍ sʏsᴛᴇᴍ ᴍᴏᴅᴇ •≫━╾╮*
+*┃*
+*┃* 💡 *${toSmallCaps('sᴛᴀᴛᴜs')}* : 🟢 ᴜᴘᴅᴀᴛᴇᴅ
+*┃* ⚙️ *${toSmallCaps('ᴍᴏᴅᴇ')}* : ${mode === 'private' ? '🔒 ᴘʀɪᴠᴀᴛᴇ' : '🌐 ᴘᴜʙʟɪᴄ'}
+*┃* 🛡️ *${toSmallCaps('ᴀᴄᴄᴇss')}* : ${mode === 'private' ? 'ᴏᴡɴᴇʀ ᴏɴʟʏ' : 'ᴇᴠᴇʀʏᴏɴᴇ'}
+*┃*
+*╰━━━━━━━━━━━━━━━╯*
 > *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
 module.exports = {
   name: 'mode',
-  aliases: ['botmode', 'selfmode', 'public', 'private'],
+  aliases: ['botmode', 'self', 'public', 'private'],
   category: 'owner',
-  description: 'Basculer le bot entre mode privé (Owner) et public (Tous).',
+  description: 'Bascule entre mode privé et public',
   usage: '.mode public/private',
   ownerOnly: true,
 
   async execute(sock, msg, args, { reply, react }) {
-    // On utilise la config globale pour la synchronisation immédiate
     const config = global.config || require('../../config');
+    let input = args[0]?.toLowerCase();
+
+    // --- ÉTAT ACTUEL ---
+    if (!input) {
+        const current = config.selfMode ? 'PRIVATE 🔒' : 'PUBLIC 🌐';
+        return reply(`*╭╼━≪• ʙᴏᴛ ᴍᴏᴅᴇ •≫━╾╮*\n*┃* 🏷️ *${toSmallCaps('ᴄᴜʀʀᴇɴᴛ')}* : ${current}\n*┃* 💡 *${toSmallCaps('ᴜsᴀɢᴇ')}* : .mode pub/priv\n*╰━━━━━━━━━━━━━━━╯*`);
+    }
+
+    await react('⚙️');
+
+    let targetMode;
+    if (['private', 'priv', 'self', '1'].includes(input)) targetMode = true;
+    else if (['public', 'pub', '0'].includes(input)) targetMode = false;
+    else return reply(`❌ *${toSmallCaps("option invalide (pub/priv)")}*`);
 
     try {
-      let input = args[0]?.toLowerCase();
-
-      // --- AFFICHAGE ÉTAT ACTUEL ---
-      if (!input) {
-        const current = config.selfMode ? 'PRIVATE 🔒' : 'PUBLIC 🌐';
-        return reply(
-          `╭╼━≪• ʙᴏᴛ ᴍᴏᴅᴇ •≫━╾╮\n` +
-          `┃ ᴄᴜʀʀᴇɴᴛ : ${current}\n` +
-          `┃ ᴜsᴀɢᴇ : .ᴍᴏᴅᴇ ᴘᴜʙ/ᴘʀɪᴠ\n` +
-          `╰━━━━━━━━━━━━━━━╯\n` +
-          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`
-        );
-      }
-
-      await react('⚙️');
-
-      let targetMode;
-      if (['private', 'priv', 'self'].includes(input)) targetMode = true;
-      else if (['public', 'pub'].includes(input)) targetMode = false;
-      else return reply('❌ *ᴏᴘᴛɪᴏɴ ɪɴᴠᴀʟɪᴅᴇ (ᴘᴜʙ/ᴘʀɪᴠ)*');
-
-      // --- MISE À JOUR PHYSIQUE (config.js + .env) ---
-      const success = updateModeSystem(targetMode);
+      const success = updatePersistence(targetMode);
 
       if (success) {
-        // Mise à jour de la mémoire vive (Runtime)
+        // Mise à jour immédiate en mémoire (Runtime)
         config.selfMode = targetMode;
         if (global.config) global.config.selfMode = targetMode;
 
         await react('✅');
-        return reply(AGM_MODE(targetMode ? 'private' : 'public'));
+        return reply(AGM_MODE_DESIGN(targetMode ? 'private' : 'public'));
       } else {
-        throw new Error("Impossible de modifier les fichiers de configuration.");
+        throw new Error("Échec de l'écriture des fichiers.");
       }
-
     } catch (error) {
       console.error('[MODE ERROR]:', error);
-      reply(`❌ *ᴇʀʀᴇᴜʀ sʏsᴛᴇ̀ᴍᴇ :* ${error.message}`);
+      reply(`❌ *${toSmallCaps("erreur systeme")}* : ${error.message}`);
     }
   }
 };
 
 /**
- * Fonction d'écriture Robuste (Dual-Update : Config + ENV)
+ * Mise à jour physique des fichiers (Config & ENV)
  */
-function updateModeSystem(value) {
+function updatePersistence(value) {
   const configPath = path.join(process.cwd(), 'config.js');
   const envPath = path.join(process.cwd(), '.env');
 
   try {
-    // 1. Mise à jour de config.js (Regex améliorée pour les booléens)
+    // 1. Update config.js
     if (fs.existsSync(configPath)) {
-      let configContent = fs.readFileSync(configPath, 'utf8');
-      const configRegex = /(\bselfMode\b\s*:\s*)(true|false|process\.env\.SELF_MODE(?:\s*===\s*'true'|'true'|true)?(?:\s*\|\|\s*(?:true|false))?)/i;
+      let content = fs.readFileSync(configPath, 'utf8');
+      // Regex flexible pour attraper selfMode peu importe les espaces ou guillemets
+      const regex = /selfMode\s*:\s*(true|false|['"]true['"]|['"]false['"])/i;
       
-      if (configRegex.test(configContent)) {
-        configContent = configContent.replace(configRegex, `$1${value}`);
-        fs.writeFileSync(configPath, configContent, 'utf8');
-        delete require.cache[require.resolve(configPath)];
+      if (regex.test(content)) {
+        content = content.replace(regex, `selfMode: ${value}`);
+        fs.writeFileSync(configPath, content, 'utf8');
       }
     }
 
-    // 2. Mise à jour du fichier .env (Persistence Katabump)
+    // 2. Update .env
     if (fs.existsSync(envPath)) {
       let envContent = fs.readFileSync(envPath, 'utf8');
       const envRegex = /^SELF_MODE\s*=\s*.*/m;
-      
+
       if (envRegex.test(envContent)) {
         envContent = envContent.replace(envRegex, `SELF_MODE=${value}`);
       } else {
@@ -102,10 +98,9 @@ function updateModeSystem(value) {
       }
       fs.writeFileSync(envPath, envContent, 'utf8');
     }
-    
+
     return true;
   } catch (e) {
-    console.error("Critical Write Error:", e);
     return false;
   }
 }
