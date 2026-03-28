@@ -9,7 +9,7 @@ const {
     useMultiFileAuthState, 
     DisconnectReason, 
     fetchLatestBaileysVersion,
-    makeInMemoryStore // 🔹 EXTRACTION DIRECTE : Règle l'erreur "is not a function"
+    makeInMemoryStore // ✅ AJOUTÉ ICI : C'est la seule modification nécessaire
 } = require('@whiskeysockets/baileys');
 
 const pino = require('pino');
@@ -27,11 +27,10 @@ global.config = config;
 const tmpDir = path.join(__dirname, 'tmp');
 if (!fs.existsSync(tmpDir)) {
     fs.mkdirSync(tmpDir);
-    console.log('✅ [ꜱʏꜱᴛᴇᴍ] ᴅᴏꜱꜱɪᴇʀ ᴛᴍᴘ ᴄʀᴇᴇ ᴀᴠᴇᴄ ꜱᴜᴄᴄᴇꜱ');
+    console.log('✅ [ꜱʏꜱᴛᴇᴍ] ᴅᴏꜱꜱɪᴇʀ ᴛᴍᴘ ᴄʀᴇᴇ ᴀᴠᴇᴄ ꜱᴜᴄᴄᴇ̀ꜱ');
 }
 
 // --- INITIALISATION DU STORE ---
-// Le store permet de garder en mémoire les contacts et messages
 const store = makeInMemoryStore({ 
     logger: pino({ level: 'silent' }) 
 });
@@ -74,7 +73,6 @@ async function startBot() {
         syncFullHistory: false,
     });
 
-    // Liaison du store à l'instance du bot
     store.bind(sock.ev);
 
     // --- SYSTÈME ANTI-CALL ---
@@ -172,7 +170,6 @@ https://wa.me/${ownerNum}
             if (!msg.message) continue;
             const sender = msg.key.participant || msg.key.remoteJid;
 
-            // Vérification via la hiérarchie globale
             if (global.config.selfMode && !global.isOwner(sender)) continue;
 
             const messageTimestamp = msg.messageTimestamp;
