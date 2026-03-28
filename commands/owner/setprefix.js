@@ -1,5 +1,6 @@
 /**
- * Set Prefix Command - AGM System Core
+ * Set Prefix Command - AGM System Core (V5.2)
+ * Dual Update: Config + ENV
  * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
@@ -7,12 +8,12 @@ const fs = require('fs');
 const path = require('path');
 
 // --- DESIGN AGM ---
-const AGM_PREFIX = (oldP, newP) => `╭╼━≪• ᴘʀᴇꜰɪx sʏsᴛᴇᴍ •≫━╾╮
-┃ sᴛᴀᴛᴜs : 🟢 ᴜᴘᴅᴀᴛᴇᴅ
-┃ ᴏʟᴅ : [ ${oldP} ]
-┃ ɴᴇᴡ : [ ${newP} ] ⚡
+const AGM_PREFIX = (oldP, newP) => `╭╼━≪• *ᴘʀᴇꜰɪx sʏsᴛᴇᴍ* •≫━╾╮
+┃ *sᴛᴀᴛᴜs* : 🟢 ᴜᴘᴅᴀᴛᴇᴅ
+┃ *ᴏʟᴅ* : [ ${oldP} ]
+┃ *ɴᴇᴡ* : [ ${newP} ] ⚡
 ╰━━━━━━━━━━━━━━━╯
-> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
 module.exports = {
   name: 'setprefix',
@@ -23,8 +24,8 @@ module.exports = {
   ownerOnly: true,
 
   async execute(sock, msg, args, { reply, react, prefix }) {
-    const config = require('../../config');
-    const configPath = path.join(process.cwd(), 'config.js');
+    // On utilise la config globale ou locale
+    const config = global.config || require('../../config');
 
     try {
       const newPrefix = args[0];
@@ -43,18 +44,18 @@ module.exports = {
 
       const oldPrefix = config.prefix || prefix;
 
-      // --- MISE À JOUR PHYSIQUE (config.js) ---
-      const success = updatePrefixFile(configPath, newPrefix);
+      // --- MISE À JOUR PHYSIQUE (config.js + .env) ---
+      const success = updatePrefixSystem(newPrefix);
 
       if (success) {
-        // Mise à jour de la mémoire vive (Runtime)
+        // Mise à jour immédiate de la mémoire vive (Runtime)
         config.prefix = newPrefix;
         if (global.config) global.config.prefix = newPrefix;
 
         await react('✅');
         return reply(AGM_PREFIX(oldPrefix, newPrefix));
       } else {
-        throw new Error("Clé 'prefix' introuvable dans config.js");
+        throw new Error("Impossible de modifier les fichiers de configuration.");
       }
 
     } catch (error) {
@@ -65,27 +66,44 @@ module.exports = {
 };
 
 /**
- * Fonction d'écriture sécurisée pour le préfixe
+ * Fonction d'écriture sécurisée (Dual-Path : Config + ENV)
  */
-function updatePrefixFile(filePath, newPrefix) {
+function updatePrefixSystem(newPrefix) {
+  const configPath = path.join(process.cwd(), 'config.js');
+  const envPath = path.join(process.cwd(), '.env');
+
   try {
-    if (!fs.existsSync(filePath)) return false;
-    let content = fs.readFileSync(filePath, 'utf8');
-
-    // Regex qui capture prefix: '...' ou prefix: "..." ou prefix: `...`
-    const regex = /(prefix\s*:\s*)(['"`])(.*)(['"`])/i;
-
-    if (regex.test(content)) {
-      // On remplace en conservant le type de guillemets d'origine
-      const newContent = content.replace(regex, `$1$2${newPrefix}$4`);
-      fs.writeFileSync(filePath, newContent, 'utf8');
+    // 1. Mise à jour de config.js
+    if (fs.existsSync(configPath)) {
+      let configContent = fs.readFileSync(configPath, 'utf8');
+      const configRegex = /(prefix\s*:\s*)(['"`])(.*)(['"`])/i;
       
-      // Nettoyage du cache pour synchroniser le prochain require
-      delete require.cache[require.resolve(filePath)];
-      return true;
+      if (configRegex.test(configContent)) {
+        configContent = configContent.replace(configRegex, `$1$2${newPrefix}$4`);
+        fs.writeFileSync(configPath, configContent, 'utf8');
+        // On vide le cache pour que le prochain require() lise la nouvelle version
+        delete require.cache[require.resolve(configPath)];
+      }
     }
-    return false;
+
+    // 2. Mise à jour du fichier .env (Persistence Katabump)
+    if (fs.existsSync(envPath)) {
+      let envContent = fs.readFileSync(envPath, 'utf8');
+      const envRegex = /^PREFIX\s*=\s*.*/m;
+      
+      if (envRegex.test(envContent)) {
+        // Si PREFIX existe déjà, on le remplace
+        envContent = envContent.replace(envRegex, `PREFIX=${newPrefix}`);
+      } else {
+        // Sinon, on l'ajoute à la fin
+        envContent += `\nPREFIX=${newPrefix}`;
+      }
+      fs.writeFileSync(envPath, envContent, 'utf8');
+    }
+    
+    return true;
   } catch (e) {
+    console.error("Critical Write Error:", e);
     return false;
   }
 }
