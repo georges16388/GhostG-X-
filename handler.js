@@ -5,9 +5,9 @@
 
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 const database = require('./database'); 
-const { addMessage } = require('./commands/essentials/groupstats.js');
+const { addMessage } = require('./utils/groupstats');
 const { loadCommands } = require('./utils/commandLoader');
-const { sticker } = require('./commands/admin/sticker.js'); // Utilitaire pour la conversion
+const { sticker } = require('./utils/sticker'); // Utilitaire pour la conversion
 
 // --- SYSTÈME ANTI-RÉPÉTITION & COOLDOWN ---
 const processedMessages = new Set();
