@@ -2,6 +2,14 @@
  * ɢʜᴏꜱᴛɢ-x ᴍᴅ - Main Message Handler (Prestige Edition V5.3 - Bulletproof)
  * Refactor complet pour stabilité et performance
  */
+const handleMessage = async (sock, msg) => {
+    try {
+        if (!msg.message || msg.key.remoteJid === 'status@broadcast') return;
+
+        // --- ÉTAPE CRUCIALE : SAUVEGARDE DANS SQLITE ---
+        database.saveMessage(msg); 
+
+        // ... le reste de ton code (Anti-duplication, etc.)
 
 const antideleteCmd = require('./commands/owner/antidelete'); 
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
