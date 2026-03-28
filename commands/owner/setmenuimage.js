@@ -1,5 +1,6 @@
 /**
- * Menu Interface Controller - AGM Visual Core
+ * ɢʜᴏꜱᴛɢ-x ᴍᴅ - Menu Interface Controller (AGM Visual Core V5.2)
+ * Instant Media Update System
  * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
@@ -7,58 +8,66 @@ const fs = require('fs');
 const path = require('path');
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 
-const AGM_VISUAL = (status) => `╭╼━≪• ᴀɢᴍ ᴠɪsᴜᴀʟ ᴄᴏʀᴇ •≫━╾╮
-┃ sʏsᴛᴇᴍ : ᴍᴇɴᴜ ɪɴᴛᴇʀғᴀᴄᴇ 🖼️
-┃ sᴛᴀᴛᴜs : ${status}
-┃ ᴀᴄᴛɪᴏɴ : sʏɴᴄɪɴɢ...
-╰━━━━━━━━━━━━━━━╯
-> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
+const toSmallCaps = (text) => {
+    const fonts = {'a':'ᴀ','b':'ʙ','c':'ᴄ','d':'ᴅ','e':'ᴇ','f':'ғ','g':'ɢ','h':'ʜ','i':'ɪ','j':'ᴊ','k':'ᴋ','l':'ʟ','m':'ᴍ','n':'ɴ','o':'ᴏ','p':'ᴘ','q':'ǫ','r':'ʀ','s':'s','t':'ᴛ','u':'ᴜ','v':'ᴠ','w':'ᴡ','x':'x','y':'ʏ','z':'ᴢ'};
+    return String(text).toLowerCase().split('').map(c => fonts[c] || c).join('');
+};
+
+const AGM_VISUAL_DESIGN = (status) => `*╭╼━≪• ᴀɢᴍ ᴠɪsᴜᴀʟ ᴄᴏʀᴇ •≫━╾╮*
+*┃*
+*┃* 🖼️ *${toSmallCaps('sʏsᴛᴇᴍ')}* : ᴍᴇɴᴜ ɪɴᴛᴇʀғᴀᴄᴇ
+*┃* ✨ *${toSmallCaps('sᴛᴀᴛᴜs')}* : ${status}
+*┃* ⚡ *${toSmallCaps('ᴀᴄᴛɪᴏɴ')}* : sʏɴᴄ ᴄᴏᴍᴘʟᴇᴛᴇ
+*┃*
+*╰━━━━━━━━━━━━━━━╯*
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
 module.exports = {
   name: 'setmenuimage',
-  aliases: ['setmenuimg', 'setmenu'],
+  aliases: ['setmenuimg', 'setmenu', 'setimage'],
   category: 'owner',
   description: 'Changer l\'image d\'en-tête du menu',
   usage: '.setmenuimage (répondre à une image)',
   ownerOnly: true,
 
-  async execute(sock, msg, args, extra) {
+  async execute(sock, msg, args, { from, reply, react }) {
     try {
-      const from = extra.from;
       const quoted = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage;
-      
-      // On récupère l'image (normale ou vue unique)
-      const img = quoted?.imageMessage || quoted?.viewOnceMessageV2?.message?.imageMessage;
 
-      if (!img) {
-        return sock.sendMessage(from, { text: '📷 *ᴠᴇᴜɪʟʟᴇᴢ ʀéᴘᴏɴᴅʀᴇ à ᴜɴᴇ ɪᴍᴀɢᴇ.*' }, { quoted: msg });
+      // Détection de l'image (normale, vue unique V1 ou V2)
+      const imageMsg = quoted?.imageMessage || 
+                       quoted?.viewOnceMessageV2?.message?.imageMessage || 
+                       quoted?.viewOnceMessage?.message?.imageMessage;
+
+      if (!imageMsg) {
+        return reply(`📷 *${toSmallCaps("veuillez répondre a une image")}*`);
       }
 
-      await sock.sendMessage(from, { react: { text: '🎨', key: msg.key } });
-      
-      // Téléchargement ultra-rapide via Stream
-      const stream = await downloadContentFromMessage(img, 'image');
+      await react('🎨');
+
+      // Téléchargement sécurisé
+      const stream = await downloadContentFromMessage(imageMsg, 'image');
       let buffer = Buffer.from([]);
       for await (const chunk of stream) {
         buffer = Buffer.concat([buffer, chunk]);
       }
 
-      // Chemin vers l'image utilisée par ta commande .menu
-      const imagePath = path.join(__dirname, '../../utils/bot_image.jpg');
+      // Chemin absolu vers l'image du menu
+      const imagePath = path.join(process.cwd(), 'utils', 'bot_image.jpg');
 
-      // Vérification du dossier utils (sécurité)
-      const utilsDir = path.dirname(imagePath);
-      if (!fs.existsSync(utilsDir)) fs.mkdirSync(utilsDir, { recursive: true });
+      // Création du dossier si manquant
+      const dir = path.dirname(imagePath);
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 
-      // Sauvegarde et écrasement immédiat
+      // Écriture du fichier
       fs.writeFileSync(imagePath, buffer);
 
-      await sock.sendMessage(from, { react: { text: '✅', key: msg.key } });
-      await sock.sendMessage(from, { text: AGM_VISUAL('✅ ᴍᴇɴᴜ ɪᴍᴀɢᴇ ᴜᴘᴅᴀᴛᴇᴅ') }, { quoted: msg });
+      await react('✅');
+      return reply(AGM_VISUAL_DESIGN('✅ ᴍᴇɴᴜ ɪᴍᴀɢᴇ ᴜᴘᴅᴀᴛᴇᴅ'));
 
     } catch (error) {
-      console.error('SetMenuImg Error:', error);
-      await sock.sendMessage(extra.from, { text: `❌ *ᴇʀʀᴇᴜʀ : ${error.message}*` }, { quoted: msg });
+      console.error('[SETMENUIMG ERROR]:', error);
+      reply(`❌ *${toSmallCaps("erreur")} :* ${error.message}`);
     }
   }
 };
