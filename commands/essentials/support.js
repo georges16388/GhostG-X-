@@ -1,21 +1,20 @@
 /**
- * Support Command - AGM HQ
- * Typographie : ꜱᴍᴀʟʟ ᴄᴀᴘꜱ ᴘʀᴇᴍɪᴜᴍ
+ * Support Command - AGM HQ (Elite Edition)
  * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
-const AGM_SUPPORT = () => `╭╼━≪• *ɢʜᴏsᴛɢ 𝐗 ꜱᴜᴘᴘᴏʀᴛ* •≫━╾╮
-┃ 👤 *ᴏᴡɴᴇʀ* : ɢʜᴏꜱᴛɢ x
-┃ 🌐 *ɢʀᴏᴜᴘ* : ʜǫ ᴄᴏᴍᴍᴜɴɪᴛʏ
-┃ *ꜱᴛᴀᴛᴜꜱ* : 🟢 ᴏɴʟɪɴᴇ
-╰━━━━━━━━━━━━━━━╯
+const AGM_SUPPORT = () => `*╭╼━≪• ɢʜᴏsᴛɢ 𝐗 ꜱᴜᴘᴘᴏʀᴛ •≫━╾╮*
+*┃* 👤 *ᴏᴡɴᴇʀ* : *ɢʜᴏꜱᴛɢ x*
+*┃* 🌐 *ɢʀᴏᴜᴘ* : *ᴄᴏᴍᴍᴜɴɪᴛʏ*
+*┃* ✅ *ꜱᴛᴀᴛᴜꜱ* : 🟢 *ᴏɴʟɪɴᴇ*
+*╰━━━━━━━━━━━━━━━╯*
 
 *ʀᴇᴊᴏɪɢɴᴇᴢ ɴᴏᴛʀᴇ ᴄᴏᴍᴍᴜɴᴀᴜᴛᴇ́ :*
-https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf?mode=gi_t
+https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf
 
 *_ʙᴇꜱᴏɪɴ ᴅ'ᴀɪᴅᴇ ᴏᴜ ᴅᴇ ɴᴏᴜᴠᴇᴀᴜx ᴇꜰꜰᴇᴛꜱ ? ᴏɴ ᴠᴏᴜꜱ ᴀᴛᴛᴇɴᴅ !_*
 
-> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
 module.exports = {
   name: 'support',
@@ -31,24 +30,23 @@ module.exports = {
       // Réaction d'accueil
       await sock.sendMessage(chatId, { react: { text: '🫂', key: msg.key } });
 
-      // Envoi du message avec typographie SmallCaps et l'image 2fmwpu.jpg
+      // Envoi du message avec image large et sans lien bleu
       await sock.sendMessage(chatId, {
         text: AGM_SUPPORT(),
         contextInfo: {
           externalAdReply: {
             title: "ɢʜᴏꜱᴛɢ-x ᴏꜰꜰɪᴄɪᴀʟ ʜǫ",
-            body: "ᴄʟɪǫᴜᴇᴢ ᴘᴏᴜʀ ʀᴇᴊᴏɪɴᴅʀᴇ ʟᴀ ᴄᴏᴍᴍᴜɴᴀᴜᴛᴇ́",
-            thumbnailUrl: "https://files.catbox.moe/2fmwpu.jpg",
-           
+            body: "ᴄᴏᴍᴍᴜɴᴀᴜᴛᴇ ᴅᴇs ᴅᴏᴍɪɴᴀɴᴛs",
             mediaType: 1,
-            renderLargerThumbnail: true
+            thumbnailUrl: "https://files.catbox.moe/2fmwpu.jpg",
+            renderLargerThumbnail: true,
+            showAdAttribution: false // Désactive l'étiquette et cache le lien
           }
         }
       }, { quoted: msg });
 
     } catch (error) {
       console.error('Error in support command:', error);
-      await extra.reply(`❌ *ᴇʀʀᴇᴜʀ ꜱᴜᴘᴘᴏʀᴛ :* ${error.message}`);
     }
   }
 };
