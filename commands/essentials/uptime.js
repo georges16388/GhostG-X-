@@ -5,49 +5,81 @@
 
 const config = require('../../config');
 
+// --- FONCTION DE CONVERSION EN SMALL CAPS ---
+const toStyledCaps = (text) => {
+  if (!text) return "";
+  const fonts = {
+    'a': 'ᴀ','b': 'ʙ','c': 'ᴄ','d':'ᴅ','e':'ᴇ','f':'ғ','g':'ɢ','h':'ʜ',
+    'i':'ɪ','j':'ᴊ','k':'ᴋ','l':'ʟ','m':'ᴍ','n':'ɴ','o':'ᴏ','p':'ᴘ',
+    'q':'ǫ','r':'ʀ','s':'ꜱ','t':'ᴛ','u':'ᴜ','v':'ᴠ','w':'ᴡ','x':'x',
+    'y':'ʏ','z':'ᴢ'
+  };
+  return String(text).toLowerCase().split('').map(c => fonts[c] || c).join('');
+};
+
 /**
- * Formatage ultra-propre pour le design AGM
+ * Formatage ultra-propre pour le design AGM (SmallCaps)
  */
 function formatUptime(seconds) {
   const d = Math.floor(seconds / 86400);
   const h = Math.floor((seconds % 86400) / 3600);
   const m = Math.floor((seconds % 3600) / 60);
   const s = Math.floor(seconds % 60);
-  return `${d > 0 ? d + 'ᴅ ' : ''}${h > 0 ? h + 'ʜ ' : ''}${m > 0 ? m + 'ᴍ ' : ''}${s}s`;
+  
+  let result = "";
+  if (d > 0) result += `${d}ᴅ `;
+  if (h > 0) result += `${h}ʜ `;
+  if (m > 0) result += `${m}ᴍ `;
+  result += `${s}s`;
+  return result;
 }
 
-// --- FONCTION DE DESIGN AGM ADAPTÉE ---
-const AGM_DESIGN = (uptime, version) => `╭╼━≪• sʏsᴛᴇᴍ ᴀʟɪᴠᴇ •≫━╾╮
-┃ sᴛᴀᴛᴜs : 🟢 ᴏɴʟɪɴᴇ
-┃ ᴜᴘᴛɪᴍᴇ : ${uptime} ⏱️
-┃ ᴠᴇʀsɪᴏɴ : ${version} 🧬
-┃ sᴘᴇᴇᴅ : 🛡️ ᴇʟɪᴛᴇ
-╰━━━━━━━━━━━━━━━╯
-> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
+// --- FONCTION DE DESIGN AGM PRESTIGE (GRAS) ---
+const AGM_DESIGN = (uptime, version) => {
+  return `*╭╼━≪• ${toStyledCaps('sʏsᴛᴇᴍ ᴀʟɪᴠᴇ')} •≫━╾╮*
+*┃*
+*┃* ✅ *${toStyledCaps('sᴛᴀᴛᴜs')}* : 🟢 *${toStyledCaps('ᴏɴʟɪɴᴇ')}*
+*┃* ⏳ *${toStyledCaps('ᴜᴘᴛɪᴍᴇ')}* : *${uptime}*
+*┃* 🧬 *${toStyledCaps('ᴠᴇʀsɪᴏɴ')}* : *${toStyledCaps(version)}*
+*┃* 🛡️ *${toStyledCaps('sᴘᴇᴇᴅ')}* : *${toStyledCaps('ᴇʟɪᴛᴇ')}*
+*┃*
+*╰━━━━━━━━━━━━━━━╯*`;
+};
 
 module.exports = {
   name: 'uptime',
   aliases: ['runtime', 'alive', 'status'],
   category: 'essentials',
-  description: 'Show how long the bot has been running',
+  description: 'Afficher le temps de fonctionnement du bot',
   usage: '.uptime',
-  
+
   async execute(sock, msg, args, extra) {
     try {
       // Temps de fonctionnement du processus
       const uptimeSeconds = process.uptime();
       const uptimeFormatted = formatUptime(uptimeSeconds);
-      const botVersion = 'V1.0.2';
-      
+      const botVersion = '3.0.0 ᴍᴅ';
+
       // Réaction de monitoring
       await sock.sendMessage(extra.from, { react: { text: "⏳", key: msg.key } });
 
-      // Envoi du cadre AGM
-      await extra.reply(AGM_DESIGN(uptimeFormatted, botVersion));
-      
+      // Envoi du cadre AGM (Le handler ajoutera le Powered By)
+      await sock.sendMessage(extra.from, {
+        text: AGM_DESIGN(uptimeFormatted, botVersion),
+        contextInfo: {
+          externalAdReply: {
+            title: toStyledCaps("ɢʜᴏsᴛɢ-x sʏsᴛᴇᴍ sᴛᴀᴛᴜs"),
+            body: toStyledCaps("surveillance du serveur en temps reel"),
+            mediaType: 1,
+            thumbnailUrl: "https://files.catbox.moe/2fmwpu.jpg",
+            showAdAttribution: false
+          }
+        }
+      }, { quoted: msg });
+
     } catch (error) {
       console.error('Uptime error:', error);
-      await extra.reply('❌ *ᴇᴄʜᴇᴄ ᴅᴜ ᴄʜᴀʀɢᴇᴍᴇɴᴛ ᴅᴇs ᴅᴏɴɴéᴇs sʏsᴛèᴍᴇ.*');
+      await extra.reply(`❌ *${toStyledCaps("ᴇᴄʜᴇᴄ ᴅᴜ ᴄʜᴀʀɢᴇᴍᴇɴᴛ ᴅᴇs ᴅᴏɴɴᴇᴇs")}*`);
     }
   }
 };
