@@ -37,10 +37,9 @@ if (!fs.existsSync(tmpDir)) {
 }
 
 // --- INITIALISATION DU STORE ---
-const store = makeInMemoryStore({ 
-    logger: pino({ level: 'silent' }) 
-});
-global.store = store; 
+const Baileys = require('@whiskeysockets/baileys');
+// ... 
+const makeInMemoryStore = Baileys.makeInMemoryStore; 
 
 /**
  * HIÉRARCHIE DE SÉCURITÉ GLOBALE
