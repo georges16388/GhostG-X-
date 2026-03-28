@@ -6,27 +6,29 @@
 const yts = require('yt-search');
 const APIs = require('../../utils/api');
 
-// Fonction de conversion en Small Caps
-const toSmallCaps = (text) => {
-    const smallCapsMap = {
-        'a': 'ᴀ', 'b': 'ʙ', 'c': 'ᴄ', 'd': 'ᴅ', 'e': 'ᴇ', 'f': 'ғ', 'g': 'ɢ', 'h': 'ʜ', 
-        'i': 'ɪ', 'j': 'ᴊ', 'k': 'ᴋ', 'l': 'ʟ', 'm': 'ᴍ', 'n': 'ɴ', 'o': 'ᴏ', 'p': 'ᴘ', 
-        'q': 'ǫ', 'r': 'ʀ', 's': 's', 't': 'ᴛ', 'u': 'ᴜ', 'v': 'ᴠ', 'w': 'ᴡ', 'x': 'x', 
-        'y': 'ʏ', 'z': 'ᴢ'
-    };
-    return text.toString().toLowerCase().split('').map(char => smallCapsMap[char] || char).join('');
+// --- FONCTION DE CONVERSION EN SMALL CAPS ---
+const toStyledCaps = (text) => {
+  if (!text) return "";
+  const fonts = {
+    'a': 'ᴀ','b': 'ʙ','c': 'ᴄ','d':'ᴅ','e':'ᴇ','f':'ғ','g':'ɢ','h':'ʜ',
+    'i':'ɪ','j':'ᴊ','k':'ᴋ','l':'ʟ','m':'ᴍ','n':'ɴ','o':'ᴏ','p':'ᴘ',
+    'q':'ǫ','r':'ʀ','s':'ꜱ','t':'ᴛ','u':'ᴜ','v':'ᴠ','w':'ᴡ','x':'x',
+    'y':'ʏ','z':'ᴢ'
+  };
+  return String(text).toLowerCase().split('').map(c => fonts[c] || c).join('');
 };
 
-// --- FONCTION DE DESIGN AGM ---
-const AGM_DESIGN = (title, status) => {
-  const shortTitle = title.length > 20 ? title.substring(0, 17) + '...' : title;
-  return `╭╼━≪• *ʏᴏᴜᴛᴜʙᴇ ᴠɪᴅᴇᴏ* •≫━╾╮
-┃ 
-┃ 🎬 ${toSmallCaps('ᴠɪᴅᴇᴏ')} : ${toSmallCaps(shortTitle)}
-┃ 🟢 ${toSmallCaps('sᴛᴀᴛᴜs')} : ${toSmallCaps(status)}
-┃ ⚡ ${toSmallCaps('ᴍᴏᴅᴇ')} : ${toSmallCaps('ʜɪɢʜ-ǫᴜᴀʟɪᴛʏ')}
-┃ 
-╰━━━━━━━━━━━━━━━╯
+// --- FONCTION DE DESIGN AGM (GRAS & SMALLCAPS) ---
+const AGM_DESIGN = (title, status, url) => {
+  const shortTitle = title.length > 25 ? title.substring(0, 22) + '...' : title;
+  return `*╭╼━≪• ${toStyledCaps('ʏᴏᴜᴛᴜʙᴇ ᴠɪᴅᴇᴏ')} •≫━╾╮*
+*┃*
+*┃* 🎬 *${toStyledCaps('ᴠɪᴅᴇᴏ')}* : *${toStyledCaps(shortTitle)}*
+*┃* 🟢 *${toStyledCaps('sᴛᴀᴛᴜs')}* : *${toStyledCaps(status)}*
+*┃* ⚡ *${toStyledCaps('ᴍᴏᴅᴇ')}* : *${toStyledCaps('ʜɪɢʜ-ǫᴜᴀʟɪᴛʏ')}*
+*┃* 🔗 *${toStyledCaps('ʟɪᴇɴ')}* : ${url}
+*┃*
+*╰━━━━━━━━━━━━━━━╯*
 > *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 };
 
@@ -43,11 +45,9 @@ module.exports = {
 
     try {
       if (!text) {
-        const warn = toSmallCaps("veuillez entrer un nom ou un lien youtube");
-        return extra.reply(`⚠️ *${warn}*`);
+        return extra.reply(`⚠️ *${toStyledCaps("ᴠᴇᴜɪʟʟᴇᴢ ᴇɴᴛʀᴇʀ ᴜɴ ɴᴏᴍ ᴏᴜ ᴜɴ ʟɪᴇɴ ʏᴏᴜᴛᴜʙᴇ")}*`);
       }
 
-      // Réaction de lancement
       await sock.sendMessage(chatId, { react: { text: '🎥', key: msg.key } });
 
       let video;
@@ -55,38 +55,29 @@ module.exports = {
 
       if (ytUrlPattern.test(text)) {
         const videoId = text.match(/(?:youtu\.be\/|v=|embed\/|shorts\/|watch\?v=)([a-zA-Z0-9_-]{11})/)?.[1];
+        if (!videoId) throw new Error("Invalid ID");
 
-        if (!videoId) {
-            const errLink = toSmallCaps("lien youtube invalide");
-            return extra.reply(`❌ *${errLink}*`);
-        }
-
-        video = { 
-          url: `https://www.youtube.com/watch?v=${videoId}`, 
-          title: 'ʏᴏᴜᴛᴜʙᴇ ᴄᴏɴᴛᴇɴᴛ', 
-          thumbnail: `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg` 
-        };
+        const search = await yts({ videoId });
+        video = search;
       } else {
-        // Recherche par mots-clés
         const search = await yts(text);
         if (!search || !search.videos.length) {
-          const noRes = toSmallCaps("aucune video trouvee");
-          return extra.reply(`❌ *${noRes}*`);
+          return extra.reply(`❌ *${toStyledCaps("ᴀᴜᴄᴜɴᴇ ᴠɪᴅᴇᴏ ᴛʀᴏᴜᴠᴇᴇ")}*`);
         }
         video = search.videos[0];
       }
 
-      // 1. Envoi de l'aperçu avec le design Ghost
+      // 1. Envoi de l'aperçu (URL masquée du caption, miniature YouTube pure)
       await sock.sendMessage(chatId, {
         image: { url: video.thumbnail || video.image },
-        caption: AGM_DESIGN(video.title || text, 'ᴅᴏᴡɴʟᴏᴀᴅɪɴɢ...'),
+        caption: AGM_DESIGN(video.title, 'ᴅᴏᴡɴʟᴏᴀᴅɪɴɢ...', video.url),
         contextInfo: {
           externalAdReply: {
-            title: "ɢʜᴏsᴛ ᴠɪᴅᴇᴏ ᴘʟᴀʏᴇʀ",
-            body: toSmallCaps("preparation du fichier mp4"),
+            title: "ɢʜᴏsᴛ ᴠɪᴅᴇᴏ sʏsᴛᴇᴍ",
+            body: toStyledCaps("preparation du fichier hd"),
             mediaType: 2,
             thumbnailUrl: video.thumbnail || video.image,
-            showAdAttribution: true
+            showAdAttribution: false
           }
         }
       }, { quoted: msg });
@@ -109,22 +100,21 @@ module.exports = {
       }
 
       const finalUrl = videoData?.download || videoData?.dl || videoData?.url;
-
       if (!finalUrl) throw new Error('No download URL');
 
-      // 3. Envoi de la vidéo finale avec le statut Succès
+      // 3. Envoi de la vidéo finale
       await sock.sendMessage(chatId, {
         video: { url: finalUrl },
         mimetype: 'video/mp4',
-        fileName: `${(video.title || 'video')}.mp4`,
-        caption: AGM_DESIGN(videoData?.title || video.title, 'sᴜᴄᴄᴇss ✅'),
+        fileName: `${video.title}.mp4`,
+        caption: AGM_DESIGN(video.title, 'sᴜᴄᴄᴇss ✅', video.url),
         contextInfo: {
             externalAdReply: {
-              title: videoData?.title || video.title,
-              body: toSmallCaps("ghostg-x high definition"),
+              title: video.title,
+              body: toStyledCaps("ɢʜᴏsᴛɢ-x ʜɪɢʜ ᴅᴇғɪɴɪᴛɪᴏɴ"),
               mediaType: 2,
               thumbnailUrl: video.thumbnail || video.image,
-              showAdAttribution: true
+              showAdAttribution: false
             }
           }
       }, { quoted: msg });
@@ -133,8 +123,7 @@ module.exports = {
 
     } catch (error) {
       console.error('[VIDEO ERROR]:', error);
-      const fail = toSmallCaps("echec du telechargement. contenu trop lourd ou indisponible.");
-      await extra.reply(`❌ *${fail}*`);
+      await extra.reply(`❌ *${toStyledCaps("ᴇᴄʜᴇᴄ ᴅᴜ ᴛᴇʟᴇᴄʜᴀʀɢᴇᴍᴇɴᴛ. ᴄᴏɴᴛᴇɴᴜ ɪɴᴅɪsᴘᴏɴɪʙʟᴇ")}*`);
       await sock.sendMessage(chatId, { react: { text: '❌', key: msg.key } });
     }
   }
