@@ -1,5 +1,5 @@
 /**
- * TikTok Downloader - AGM Elite Edition
+ * TikTok Downloader - AGM Elite Edition (Dual Mode)
  * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
@@ -19,51 +19,65 @@ const toSmallCaps = (text) => {
 // --- FONCTION DE DESIGN AGM ADAPTÉE ---
 const AGM_DESIGN = (title, type) => {
   const shortTitle = title ? (title.length > 15 ? title.substring(0, 12) + '...' : title) : 'ɴ/ᴀ';
-  return `╭╼━≪• *ᴛɪᴋᴛᴏᴋ ᴅᴏᴡɴʟᴏᴀᴅ* •≫━╾╮
+  return `╭╼━≪• *ᴛɪᴋᴛᴏᴋ sʏsᴛᴇᴍ* •≫━╾╮
 ┃ 
 ┃ ${toSmallCaps('sᴛᴀᴛᴜs')} : 🟢 ${toSmallCaps('ᴅᴏᴡɴʟᴏᴀᴅᴇᴅ')}
 ┃ ${toSmallCaps('ᴛʏᴘᴇ')} : ${toSmallCaps(type)} ⚡
 ┃ ${toSmallCaps('ᴛɪᴛʟᴇ')} : ${toSmallCaps(shortTitle)}
 ┃ 
 ╰━━━━━━━━━━━━━━━╯
-> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
 };
 
 module.exports = {
   name: 'tiktok',
-  aliases: ['tt', 'ttdl', 'tiktokdl'],
+  aliases: ['tt', 'ttdl', 'ttmp3'],
   category: 'media',
-  description: 'Télécharger des vidéos ou diaporamas TikTok sans watermark',
-  usage: '.tt <URL>',
+  description: 'Télécharger Vidéo ou Audio TikTok',
+  usage: '.tt <URL> [audio]',
 
   async execute(sock, msg, args, extra) {
     try {
-      const url = args[0] || (msg.message?.extendedTextMessage?.text?.split(' ')[1]);
+      const url = args.find(a => a.includes('tiktok.com'));
+      const isAudioMode = args.some(a => a.toLowerCase() === 'audio') || extra.prefix.includes('mp3');
 
       if (!url) {
-        const warn = toSmallCaps("veuillez fournir un lien tiktok");
+        const warn = toSmallCaps("usage : .tt <lien> ou .tt <lien> audio");
         return extra.reply(`⚠️ *${warn}*`);
       }
 
-      if (!url.includes('tiktok.com')) {
-        const errLink = toSmallCaps("lien tiktok invalide");
-        return extra.reply(`❌ *${errLink}*`);
-      }
+      // Réaction selon le mode
+      await sock.sendMessage(extra.from, { react: { text: isAudioMode ? '🎶' : '⏳', key: msg.key } });
 
-      // Réaction de chargement (Sablier)
-      await sock.sendMessage(extra.from, { react: { text: '⏳', key: msg.key } });
-
-      // Extraction via Ruhend-Scraper
       const res = await ttdl(url);
+      if (!res || !res.data) throw new Error("No data");
 
-      if (!res || !res.data) {
-        throw new Error("No data found");
-      }
+      const { title, video, nowm, photos, audio } = res.data;
 
-      const { title, video, nowm, photos } = res.data;
-
-      // --- CAS 1 : DIAPORAMA (PHOTOS) ---
-      if (photos && Array.isArray(photos) && photos.length > 0) {
+      // --- OPTION 1 : UNIQUEMENT L'AUDIO ---
+      if (isAudioMode) {
+        if (!audio) throw new Error("Audio not found");
+        
+        await sock.sendMessage(extra.from, {
+          audio: { url: audio },
+          mimetype: 'audio/mp4',
+          ptt: false, // Envoi en tant que fichier audio (pas vocal)
+          contextInfo: {
+            externalAdReply: {
+              title: toSmallCaps("tiktok mp3 player"),
+              body: toSmallCaps(title || "Musique TikTok"),
+              mediaType: 1,
+              thumbnailUrl: "https://files.catbox.moe/2fmwpu.jpg",
+              showAdAttribution: true
+            }
+          }
+        }, { quoted: msg });
+        
+        await extra.reply(AGM_DESIGN(title, "audio mp3"));
+      } 
+      
+      // --- OPTION 2 : DIAPORAMA PHOTOS ---
+      else if (photos && Array.isArray(photos) && photos.length > 0) {
         for (let i = 0; i < Math.min(10, photos.length); i++) {
           await sock.sendMessage(extra.from, {
             image: { url: photos[i] },
@@ -71,10 +85,10 @@ module.exports = {
           }, { quoted: msg });
         }
       } 
-      // --- CAS 2 : VIDÉO ---
+      
+      // --- OPTION 3 : VIDÉO (PAR DÉFAUT) ---
       else {
-        const videoUrl = nowm || video; // Priorité au No-Watermark
-
+        const videoUrl = nowm || video;
         await sock.sendMessage(extra.from, {
           video: { url: videoUrl },
           mimetype: 'video/mp4',
@@ -82,7 +96,7 @@ module.exports = {
           contextInfo: {
             externalAdReply: {
               title: "ɢʜᴏsᴛ ᴛɪᴋᴛᴏᴋ ᴘʟᴀʏᴇʀ",
-              body: toSmallCaps("telechargement reussi"),
+              body: toSmallCaps("video sans watermark"),
               mediaType: 2,
               thumbnailUrl: "https://files.catbox.moe/2fmwpu.jpg",
               showAdAttribution: true
@@ -95,10 +109,8 @@ module.exports = {
 
     } catch (error) {
       console.error('TikTok DL Error:', error);
-      const failMsg = toSmallCaps("impossible de telecharger ce contenu");
-      const apiMsg = toSmallCaps("l'api est peut-etre saturee");
-      await extra.reply(`❌ *${failMsg}*\n_${apiMsg}_`);
-      await sock.sendMessage(extra.from, { react: { text: '❌', key: msg.key } });
+      const failMsg = toSmallCaps("echec du telechargement");
+      await extra.reply(`❌ *${failMsg}*`);
     }
   }
 };
