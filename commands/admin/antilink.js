@@ -5,68 +5,89 @@
 
 const database = require('../../database');
 
-// --- FONCTION DE DESIGN AGM ---
-const AGM_DESIGN = (status, action) => `╭╼━≪• *ᴀɴᴛɪ-ʟɪɴᴋ sʏsᴛᴇᴍ* •≫━╾╮
-┃ *sᴛᴀᴛᴜs* : ${status === 'ON' ? '🟢*ᴀᴄᴛɪᴠᴀᴛᴇᴅ* : '🔴 *ᴅᴇᴀᴄᴛɪᴠᴀᴛᴇᴅ*'}
-┃ *ᴀᴄᴛɪᴏɴ* : ${action.toUpperCase()} ⚡
-┃ *ɢᴜᴀʀᴅ* : 🛡️ ᴀᴄᴛɪᴠᴇ
-╰━━━━━━━━━━━━━━━╯
-> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗*`;
+// --- FONCTION DE CONVERSION EN SMALL CAPS ---
+const toStyledCaps = (text) => {
+  if (!text) return "";
+  const fonts = {
+    'a': 'ᴀ','b': 'ʙ','c': 'ᴄ','d':'ᴅ','e':'ᴇ','f':'ғ','g':'ɢ','h':'ʜ',
+    'i':'ɪ','j':'ᴊ','k':'ᴋ','l':'ʟ','m':'ᴍ','n':'ɴ','o':'ᴏ','p':'ᴘ',
+    'q':'ǫ','r':'ʀ','s':'ꜱ','t':'ᴛ','u':'ᴜ','v':'ᴠ','w':'ᴡ','x':'x',
+    'y':'ʏ','z':'ᴢ'
+  };
+  return String(text).toLowerCase().split('').map(c => fonts[c] || c).join('');
+};
+
+// --- FONCTION DE DESIGN AGM PRESTIGE (GRAS) ---
+const AGM_DESIGN = (status, action) => {
+  const sLabel = status === 'ON' ? '🟢 ᴀᴄᴛɪᴠᴀᴛᴇᴅ' : '🔴 ᴅᴇᴀᴄᴛɪᴠᴀᴛᴇᴅ';
+  return `*╭╼━≪• ${toStyledCaps('ᴀɴᴛɪ-ʟɪɴᴋ sʏsᴛᴇᴍ')} •≫━╾╮*
+*┃*
+*┃* 🛡️ *${toStyledCaps('sᴛᴀᴛᴜs')}* : *${toStyledCaps(sLabel)}*
+*┃* ⚙️ *${toStyledCaps('ᴀᴄᴛɪᴏɴ')}* : *${toStyledCaps(action)}*
+*┃* ⚡ *${toStyledCaps('ɢᴜᴀʀᴅ')}* : *${toStyledCaps('ᴀᴄᴛɪᴠᴇ')}*
+*┃*
+*╰━━━━━━━━━━━━━━━╯*
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+};
 
 module.exports = {
   name: 'antilink',
   aliases: ['anti-link'],
   category: 'admin',
-  description: 'Configure antilink protection (delete/kick)',
+  description: 'Configure la protection antilink (delete/kick).',
   usage: '.antilink <on/off/set>',
   groupOnly: true,
   adminOnly: true,
   botAdminNeeded: true,
 
-  async execute(sock, msg, args, extra) {
+  async execute(sock, msg, args, { from, reply, react }) {
     try {
-      const settings = database.getGroupSettings(extra.from);
+      const settings = database.getGroupSettings(from) || {};
       let status = settings.antilink ? 'ON' : 'OFF';
       let action = settings.antilinkAction || 'delete';
 
+      // --- AFFICHAGE DU STATUT ---
       if (!args[0] || args[0].toLowerCase() === 'get') {
-        return extra.reply(AGM_DESIGN(status, action));
+        await react('🛡️');
+        return reply(AGM_DESIGN(status, action));
       }
 
       const opt = args[0].toLowerCase();
 
+      // --- ACTIVATION ---
       if (opt === 'on') {
-        database.updateGroupSettings(extra.from, { antilink: true });
-        return extra.reply(AGM_DESIGN('ON', action));
+        await react('✅');
+        database.updateGroupSettings(from, { antilink: true });
+        return reply(AGM_DESIGN('ON', action));
       }
 
+      // --- DÉSACTIVATION ---
       if (opt === 'off') {
-        database.updateGroupSettings(extra.from, { antilink: false });
-        return extra.reply(AGM_DESIGN('OFF', action));
+        await react('⚠️');
+        database.updateGroupSettings(from, { antilink: false });
+        return reply(AGM_DESIGN('OFF', action));
       }
 
+      // --- CONFIGURATION ACTION ---
       if (opt === 'set') {
-        if (!args[1]) {
-          return extra.reply('⚠️ *Veuillez spécifier une action : delete ou kick.*');
-        }
-
-        const setAction = args[1].toLowerCase();
+        const setAction = args[1]?.toLowerCase();
         if (!['delete', 'kick'].includes(setAction)) {
-          return extra.reply('⚠️ *Action invalide. Choisissez entre delete ou kick.*');
+          return reply(`❌ *${toStyledCaps('ᴠᴇᴜɪʟʟᴇᴢ sᴘᴇᴄɪғɪᴇʀ : ᴅᴇʟᴇᴛᴇ ᴏᴜ ᴋɪᴄᴋ')}*`);
         }
 
-        database.updateGroupSettings(extra.from, { 
+        await react('⚙️');
+        database.updateGroupSettings(from, { 
           antilinkAction: setAction,
           antilink: true 
         });
-        return extra.reply(AGM_DESIGN('ON', setAction));
+        return reply(AGM_DESIGN('ON', setAction));
       }
 
-      await sock.sendMessage(extra.from, { react: { text: "🛡️", key: msg.key } });
+      return reply(`⚠️ *${toStyledCaps('ᴜsᴀɢᴇ')}* : *.ᴀɴᴛɪʟɪɴᴋ ᴏɴ | ᴏꜰꜰ | sᴇᴛ ᴅᴇʟᴇᴛᴇ/ᴋɪᴄᴋ*`);
 
     } catch (error) {
       console.error('Antilink Error:', error);
-      await extra.reply(`❌ ᴇʀʀᴇᴜʀ : ${error.message}`);
+      await reply(`❌ *${toStyledCaps('ᴇʀʀᴇᴜʀ sʏsᴛᴇᴍᴇ')}*`);
     }
   }
 };
