@@ -5,77 +5,100 @@
 
 const { ttdl } = require('ruhend-scraper');
 
+// Fonction de conversion en Small Caps
+const toSmallCaps = (text) => {
+    const smallCapsMap = {
+        'a': 'ᴀ', 'b': 'ʙ', 'c': 'ᴄ', 'd': 'ᴅ', 'e': 'ᴇ', 'f': 'ғ', 'g': 'ɢ', 'h': 'ʜ', 
+        'i': 'ɪ', 'j': 'ᴊ', 'k': 'ᴋ', 'l': 'ʟ', 'm': 'ᴍ', 'n': 'ɴ', 'o': 'ᴏ', 'p': 'ᴘ', 
+        'q': 'ǫ', 'r': 'ʀ', 's': 's', 't': 'ᴛ', 'u': 'ᴜ', 'v': 'ᴠ', 'w': 'ᴡ', 'x': 'x', 
+        'y': 'ʏ', 'z': 'ᴢ'
+    };
+    return text.toString().toLowerCase().split('').map(char => smallCapsMap[char] || char).join('');
+};
+
 // --- FONCTION DE DESIGN AGM ADAPTÉE ---
-const AGM_DESIGN = (title, type) => `╭╼━≪• ᴛɪᴋᴛᴏᴋ ᴅᴏᴡɴʟᴏᴀᴅ •≫━╾╮
-┃ sᴛᴀᴛᴜs : 🟢 ᴅᴏᴡɴʟᴏᴀᴅᴇᴅ
-┃ ᴛʏᴘᴇ : ${type.toUpperCase()} ⚡
-┃ ᴛɪᴛʟᴇ : ${title ? (title.length > 15 ? title.substring(0, 12) + '...' : title) : 'ɴ/ᴀ'}
+const AGM_DESIGN = (title, type) => {
+  const shortTitle = title ? (title.length > 15 ? title.substring(0, 12) + '...' : title) : 'ɴ/ᴀ';
+  return `╭╼━≪• *ᴛɪᴋᴛᴏᴋ ᴅᴏᴡɴʟᴏᴀᴅ* •≫━╾╮
+┃ 
+┃ ${toSmallCaps('sᴛᴀᴛᴜs')} : 🟢 ${toSmallCaps('ᴅᴏᴡɴʟᴏᴀᴅᴇᴅ')}
+┃ ${toSmallCaps('ᴛʏᴘᴇ')} : ${toSmallCaps(type)} ⚡
+┃ ${toSmallCaps('ᴛɪᴛʟᴇ')} : ${toSmallCaps(shortTitle)}
+┃ 
 ╰━━━━━━━━━━━━━━━╯
-> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+};
 
 module.exports = {
   name: 'tiktok',
   aliases: ['tt', 'ttdl', 'tiktokdl'],
   category: 'media',
-  description: 'Télécharger des vidéos ou diaporamas TikTok',
+  description: 'Télécharger des vidéos ou diaporamas TikTok sans watermark',
   usage: '.tt <URL>',
 
   async execute(sock, msg, args, extra) {
-    const chatId = msg.key.remoteJid;
-    const url = args[0] || (msg.message?.extendedTextMessage?.text?.split(' ')[1]);
-
-    if (!url) {
-      return sock.sendMessage(chatId, { text: '⚠️ *ᴠᴇᴜɪʟʟᴇᴢ ғᴏᴜʀɴɪʀ ᴜɴ ʟɪᴇɴ ᴛɪᴋᴛᴏᴋ.*' }, { quoted: msg });
-    }
-
-    // Validation simple du lien
-    if (!url.includes('tiktok.com')) {
-      return sock.sendMessage(chatId, { text: '❌ *ʟɪᴇɴ ᴛɪᴋᴛᴏᴋ ɪɴᴠᴀʟɪᴅᴇ.*' }, { quoted: msg });
-    }
-
-    await sock.sendMessage(chatId, { react: { text: '⏳', key: msg.key } });
-
     try {
-      // Utilisation du scraper Ruhend (très stable pour Vidéos + Photos)
+      const url = args[0] || (msg.message?.extendedTextMessage?.text?.split(' ')[1]);
+
+      if (!url) {
+        const warn = toSmallCaps("veuillez fournir un lien tiktok");
+        return extra.reply(`⚠️ *${warn}*`);
+      }
+
+      if (!url.includes('tiktok.com')) {
+        const errLink = toSmallCaps("lien tiktok invalide");
+        return extra.reply(`❌ *${errLink}*`);
+      }
+
+      // Réaction de chargement (Sablier)
+      await sock.sendMessage(extra.from, { react: { text: '⏳', key: msg.key } });
+
+      // Extraction via Ruhend-Scraper
       const res = await ttdl(url);
 
       if (!res || !res.data) {
-        throw new Error("Aucune donnée trouvée");
+        throw new Error("No data found");
       }
 
-      const data = res.data;
+      const { title, video, nowm, photos } = res.data;
 
-      // --- CAS 1 : C'EST UN DIAPORAMA (PHOTOS) ---
-      if (Array.isArray(data)) {
-        for (let i = 0; i < Math.min(10, data.length); i++) {
-          await sock.sendMessage(chatId, {
-            image: { url: data[i].url },
-            caption: i === 0 ? AGM_DESIGN("Slideshow", "photo") : ""
+      // --- CAS 1 : DIAPORAMA (PHOTOS) ---
+      if (photos && Array.isArray(photos) && photos.length > 0) {
+        for (let i = 0; i < Math.min(10, photos.length); i++) {
+          await sock.sendMessage(extra.from, {
+            image: { url: photos[i] },
+            caption: i === 0 ? AGM_DESIGN(title || "Slideshow", "photo") : ""
           }, { quoted: msg });
         }
       } 
-      // --- CAS 2 : C'EST UNE VIDÉO ---
-      else if (data.video || data.nowm) {
-        const videoUrl = data.video || data.nowm;
-        
-        await sock.sendMessage(chatId, {
-          video: { url: videoUrl }, // Baileys gère le téléchargement via URL directement (plus stable)
+      // --- CAS 2 : VIDÉO ---
+      else {
+        const videoUrl = nowm || video; // Priorité au No-Watermark
+
+        await sock.sendMessage(extra.from, {
+          video: { url: videoUrl },
           mimetype: 'video/mp4',
-          caption: AGM_DESIGN(data.title || "TikTok Video", "video")
+          caption: AGM_DESIGN(title || "TikTok Video", "video"),
+          contextInfo: {
+            externalAdReply: {
+              title: "ɢʜᴏsᴛ ᴛɪᴋᴛᴏᴋ ᴘʟᴀʏᴇʀ",
+              body: toSmallCaps("telechargement reussi"),
+              mediaType: 2,
+              thumbnailUrl: "https://files.catbox.moe/2fmwpu.jpg",
+              showAdAttribution: true
+            }
+          }
         }, { quoted: msg });
       }
 
-      await sock.sendMessage(chatId, { react: { text: '✅', key: msg.key } });
+      await sock.sendMessage(extra.from, { react: { text: '✅', key: msg.key } });
 
     } catch (error) {
       console.error('TikTok DL Error:', error);
-      
-      // Fallback si Ruhend échoue : on tente une extraction manuelle simple si possible
-      await sock.sendMessage(chatId, { 
-        text: "❌ *ɪᴍᴘᴏssɪʙʟᴇ ᴅᴇ ᴛéʟéᴄʜᴀʀɢᴇʀ ᴄᴇᴛᴛᴇ ᴠɪᴅéᴏ.* \n_L'API est peut-être saturée._" 
-      }, { quoted: msg });
-      
-      await sock.sendMessage(chatId, { react: { text: '❌', key: msg.key } });
+      const failMsg = toSmallCaps("impossible de telecharger ce contenu");
+      const apiMsg = toSmallCaps("l'api est peut-etre saturee");
+      await extra.reply(`❌ *${failMsg}*\n_${apiMsg}_`);
+      await sock.sendMessage(extra.from, { react: { text: '❌', key: msg.key } });
     }
   }
 };
