@@ -265,8 +265,51 @@ const handleGroupUpdate = async (sock, update) => {
 // --- ANTI-DELETE HANDLER (ASYNC SAFE + BULLETPROOF) ---
 
 const handleAntiDelete = async (sock, update) => {
-    // On laisse vide car sans store, on ne peut pas récupérer le message effacé
-    return;
+    const keys = update.keys || [];
+    for (const key of keys) {
+        try {
+            const from = key.remoteJid;
+            if (!from.endsWith('@g.us')) continue; // Uniquement pour les groupes
+
+            // On vérifie si l'Anti-Delete est activé pour ce groupe (via ton JSON)
+            const groupSettings = database.getGroupSettings(from) || {};
+            if (groupSettings.antidelete === false) continue;
+
+            // --- RÉCUPÉRATION DEPUIS SQLITE ---
+            const msgStore = await database.getMessage(key.id);
+            if (!msgStore) continue; // Message non trouvé en base
+
+            const sender = msgStore.participant;
+            const pushName = msgStore.pushName || 'ᴜsᴇʀ';
+            
+            // On prépare le contenu textuel pour l'alerte
+            const messageContent = msgStore.content.conversation || 
+                                   msgStore.content.extendedTextMessage?.text || 
+                                   (msgStore.content.imageMessage ? "📷 [Image]" : 
+                                    msgStore.content.videoMessage ? "🎥 [Vidéo]" : "ᴍᴇᴅɪᴀ");
+
+            let caption = `*╭╼━≪• ${toSmallCaps('ᴀɴᴛɪ-ᴅᴇʟᴇᴛᴇ ᴅᴇᴛᴇᴄᴛᴇᴅ')} •≫━╾╮*\n` +
+                          `*┃* 👤 *${toSmallCaps('ᴜsᴇʀ')}* : @${sender.split('@')[0]}\n` +
+                          `*┃* 💬 *${toSmallCaps('ᴄᴏɴᴛᴇɴᴜ')}* :\n` +
+                          `*┃* _${messageContent}_\n` +
+                          `*╰━━━━━━━━━━━━━━━╼*\n\n` +
+                          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+
+            // 1. Envoyer l'alerte textuelle
+            await sock.sendMessage(from, { text: caption, mentions: [sender] });
+
+            // 2. Renvoyer le message original (Image, Vidéo, ou Texte)
+            await sock.sendMessage(from, { 
+                forward: { 
+                    key: { remoteJid: from, id: key.id }, 
+                    message: msgStore.content 
+                } 
+            });
+
+        } catch (e) { 
+            console.error('❌ AntiDelete SQLite Error:', e); 
+        }
+    }
 };
 
 
