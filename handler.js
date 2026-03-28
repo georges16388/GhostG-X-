@@ -1,29 +1,19 @@
 /**
  * ɢʜᴏꜱᴛɢ-x ᴍᴅ - Main Message Handler (Prestige Edition V5.3 - Bulletproof)
- * Refactor complet pour stabilité et performance
+ * Refactor complet pour stabilité et performance - SQLite & JSON Hybrid
  */
-const handleMessage = async (sock, msg) => {
-    try {
-        if (!msg.message || msg.key.remoteJid === 'status@broadcast') return;
 
-        // --- ÉTAPE CRUCIALE : SAUVEGARDE DANS SQLITE ---
-        database.saveMessage(msg); 
-
-        // ... le reste de ton code (Anti-duplication, etc.)
-
-const antideleteCmd = require('./commands/owner/antidelete'); 
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 const database = require('./database'); 
 const { addMessage } = require('./utils/groupstats');
 const { loadCommands } = require('./utils/commandLoader');
 const { createStickerBuffer } = require('./utils/sticker'); 
 
-// --- SYSTÈME ANTI-RÉPÉTITION & COOLDOWN (TTL Map pour mémoire limitée) ---
-const processedMessages = new Map(); // key: msgId, value: timestamp
+// --- SYSTÈME ANTI-RÉPÉTITION & COOLDOWN ---
+const processedMessages = new Map();
 const reactionCooldown = new Map();
-
-const MESSAGE_TTL = 15 * 1000; // 15 sec
-const PROCESSED_CLEAN_INTERVAL = 60 * 1000; // clean every minute
+const MESSAGE_TTL = 15 * 1000;
+const PROCESSED_CLEAN_INTERVAL = 60 * 1000;
 
 setInterval(() => {
     const now = Date.now();
@@ -32,7 +22,7 @@ setInterval(() => {
     }
 }, PROCESSED_CLEAN_INTERVAL);
 
-// --- INITIALISATION DES COMMANDES (GLOBAL + aliasMap) ---
+// --- INITIALISATION DES COMMANDES ---
 global.commands = loadCommands();
 global.aliasMap = new Map();
 for (const [name, cmd] of global.commands) {
@@ -62,24 +52,25 @@ const toSmallCaps = (text) => {
 const isAdmin = async (sock, participant, groupId) => {
     if (!groupId?.endsWith('@g.us')) return false;
     try {
-        // On vérifie si on a déjà les infos en mémoire vive
         let metadata = global.store.groupMetadata[groupId];
         if (!metadata) {
             metadata = await sock.groupMetadata(groupId);
-            global.store.groupMetadata[groupId] = metadata; // On stocke pour 1 heure par ex.
+            global.store.groupMetadata[groupId] = metadata;
         }
         const p = metadata.participants.find(v => v.id === participant);
         return p?.admin === 'admin' || p?.admin === 'superadmin';
     } catch { return false; }
 };
 
-
 // --- HANDLER PRINCIPAL ---
 const handleMessage = async (sock, msg) => {
     try {
         if (!msg.message || msg.key.remoteJid === 'status@broadcast') return;
 
-        // --- ANTI-DUPLICATION / TTL CHECK ---
+        // 💾 ÉTAPE CRUCIALE : SAUVEGARDE DANS SQLITE (Pour Anti-Delete)
+        database.saveMessage(msg); 
+
+        // --- ANTI-DUPLICATION ---
         const msgId = msg.key.id;
         const now = Date.now();
         if (processedMessages.has(msgId)) return;
@@ -104,13 +95,13 @@ const handleMessage = async (sock, msg) => {
 
         if (config.selfMode && !ownerStatus && !msg.key.fromMe) return;
 
-        // --- TIC-TAC-TOE ---
+        // --- TIC-TAC-TOE (Sandboxed) ---
         try {
             const { handleTicTacToeMove } = require('./commands/fun/tictactoe');
             if (await handleTicTacToeMove(sock, msg, { sender, from, body })) return;
         } catch (e) { console.error("❌ TicTacToe Error:", e); }
 
-        // --- COMMANDE ---
+        // --- COMMANDE PRE-REQUIS ---
         let activePrefix = prefix;
         if (isSupreme && body.startsWith('>')) activePrefix = '>';
         const isCmd = body.startsWith(activePrefix);
@@ -132,7 +123,7 @@ const handleMessage = async (sock, msg) => {
             }
         } catch {}
 
-        // --- ANTI-MENTION ---
+        // --- ANTI-MENTION (Sandboxed) ---
         if (isGroup && !ownerStatus && !adminStatus) {
             try {
                 const groupSettings = database.getGroupSettings(from) || {};
@@ -140,13 +131,9 @@ const handleMessage = async (sock, msg) => {
                     const mentions = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
                     const isMentioningAll = body.includes('@everyone') || body.includes('@all') || mentions.length > 10;
                     if (isMentioningAll && isBotAdmin) {
-                        const action = groupSettings.antigroupmentionaction || 'delete';
                         await sock.sendMessage(from, { delete: msg.key });
-                        if (action === 'kick') {
+                        if (groupSettings.antigroupmentionaction === 'kick') {
                             await sock.groupParticipantsUpdate(from, [sender], "remove");
-                            await sock.sendMessage(from, { text: `*🚫 ${toSmallCaps('ᴜsᴇʀ ᴋɪᴄᴋᴇᴅ')}*`, mentions:[sender] });
-                        } else {
-                            await sock.sendMessage(from, { text: `⚠️ @${sender.split('@')[0]} ${toSmallCaps('les mentions de groupe sont interdites ici.')}`, mentions:[sender] });
                         }
                         return;
                     }
@@ -154,29 +141,21 @@ const handleMessage = async (sock, msg) => {
             } catch (e) { console.error("❌ Anti-Mention Error:", e); }
         }
 
-        // --- ANTI-LINK ---
+        // --- ANTI-LINK (Sandboxed) ---
         if (isGroup && !ownerStatus && !adminStatus) {
             try {
                 const groupSettings = database.getGroupSettings(from) || {};
                 if (groupSettings.antilink) {
                     const linkPattern = /(https?:\/\/)?(chat\.whatsapp\.com\/[0-9a-zA-Z]{20,26}|bit\.ly\/\w+)/i;
-                    const linked = body.match(linkPattern);
-                    if (linked && isBotAdmin) {
-                        const action = groupSettings.antilinkAction || 'delete';
+                    if (body.match(linkPattern) && isBotAdmin) {
                         await sock.sendMessage(from, { delete: msg.key });
-                        if (action === 'kick') {
-                            await sock.groupParticipantsUpdate(from, [sender], "remove");
-                            await sock.sendMessage(from, { text: `*🚫 ${toSmallCaps('ᴜsᴇʀ ᴋɪᴄᴋᴇᴅ')}*`, mentions:[sender] });
-                        } else {
-                            await sock.sendMessage(from, { text: `⚠️ @${sender.split('@')[0]} ${toSmallCaps('les liens ne sont pas autorisés ici.')}`, mentions:[sender] });
-                        }
                         return;
                     }
                 }
             } catch (e) { console.error("❌ Anti-Link Error:", e); }
         }
 
-        // --- AUTO-STICKER (STREAM SAFE) ---
+        // --- AUTO-STICKER ---
         const isMedia = msg.message?.imageMessage || msg.message?.videoMessage;
         if (isGroup && isMedia && !isCmd) {
             try {
@@ -184,42 +163,38 @@ const handleMessage = async (sock, msg) => {
                 if (groupSettings.autosticker) {
                     const mediaKey = msg.message.imageMessage ? 'imageMessage' : 'videoMessage';
                     const stream = await downloadContentFromMessage(msg.message[mediaKey], mediaKey.replace('Message',''));
-                    const chunks = [];
-                    for await (const chunk of stream) chunks.push(chunk);
-                    const buffer = Buffer.concat(chunks);
-
+                    let buffer = Buffer.from([]);
+                    for await (const chunk of stream) buffer = Buffer.concat([buffer, chunk]);
                     const stickerBuffer = await createStickerBuffer(buffer, { pack:"ɢʜᴏsᴛɢ-x ᴍᴅ", author: pushName });
                     await sock.sendMessage(from, { sticker: stickerBuffer }, { quoted: msg });
                 }
             } catch (e) { console.error("❌ AutoSticker Error:", e); }
         }
 
-        // --- GHOSTG INTEL ---
+        // --- GHOSTG INTEL (NLP) ---
         try {
             global.ghostgMode = global.ghostgMode || 'off';
             if (global.ghostgMode !== 'off' && ownerStatus && !isCmd && body) {
                 const ghostgCmd = global.commands.get('ghostg');
                 if (ghostgCmd) {
-                    const extra = { from, sender, isGroup, isOwner:ownerStatus, isSupreme, isAdmin:adminStatus, isBotAdmin, prefix, pushName,
+                    await ghostgCmd.execute(sock, msg, args, { from, sender, isGroup, isOwner:ownerStatus, isSupreme, isAdmin:adminStatus, isBotAdmin, prefix, pushName,
                                     reply:(text)=>sock.sendMessage(from,{text:`${text}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`},{quoted:msg}),
                                     react:(emoji)=>sock.sendMessage(from,{react:{text:emoji,key:msg.key}}),
-                                    groupMetadata: isGroup ? await sock.groupMetadata(from) : null };
-                    return ghostgCmd.execute(sock, msg, args, extra);
+                                    groupMetadata: isGroup ? await sock.groupMetadata(from) : null });
                 }
             }
         } catch (e){ console.error("❌ GhostG Intel Error:", e); }
 
-        // --- ADD STATS ---
-        try { if (isGroup) addMessage(from,sender); } catch {}
+        // --- STATS & EXECUTION COMMANDE ---
+        if (isGroup) try { addMessage(from,sender); } catch {}
 
-        // --- EXECUTION COMMANDE ---
         if (isCmd && commandName) {
             const cmdName = global.commands.has(commandName) ? commandName : global.aliasMap.get(commandName);
             if (!cmdName) return;
             const command = global.commands.get(cmdName);
             const reply = (text) => sock.sendMessage(from, { text:`${text}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`},{quoted:msg});
 
-            if ((command.ownerOnly && !ownerStatus) || (command.groupOnly && !isGroup) || (command.adminOnly && !adminStatus && !ownerStatus)) return reply(config.messages.commandDenied || '❌ Accès refusé');
+            if ((command.ownerOnly && !ownerStatus) || (command.groupOnly && !isGroup) || (command.adminOnly && !adminStatus && !ownerStatus)) return reply('❌ Accès refusé');
 
             if (config.autoTyping) await sock.sendPresenceUpdate('composing', from);
 
@@ -234,84 +209,90 @@ const handleMessage = async (sock, msg) => {
     } catch (err) { console.error("❌ Critical Handler Error:", err); }
 };
 
-// --- GROUP UPDATE HANDLER ---
-const handleGroupUpdate = async (sock, update) => {
-    const { id, participants, action } = update;
-    try {
-        const settings = database.getGroupSettings(id) || { welcome:true, goodbye:true };
-        const metadata = await sock.groupMetadata(id);
-        const groupName = metadata.subject;
-        const groupDesc = metadata.desc || toSmallCaps("aucune description.");
-        const time = new Date().toLocaleTimeString('fr-FR', { timeZone:'Africa/Ouagadougou' });
-
-        for (const user of participants) {
-            const userTag = `@${user.split('@')[0]}`;
-            try {
-                if (action==='add' && settings.welcome) {
-                    let text = settings.welcomeMessage || global.config.defaultGroupSettings.welcomeMessage;
-                    text = text.replace(/@user/g,userTag).replace(/#groupName/g,groupName).replace(/#groupDesc/g,groupDesc).replace(/#memberCount/g,metadata.participants.length).replace(/#time/g,time);
-                    await sock.sendMessage(id,{text, mentions:[user]});
-                }
-                if (action==='remove' && settings.goodbye) {
-                    let text = settings.goodbyeMessage || global.config.defaultGroupSettings.goodbyeMessage;
-                    text = text.replace(/@user/g,userTag).replace(/#memberCount/g,metadata.participants.length).replace(/#time/g,time);
-                    await sock.sendMessage(id,{text, mentions:[user]});
-                }
-            } catch(e){ console.error(`❌ Welcome/Goodbye Error ${user}:`, e); }
-        }
-    } catch(e){ console.error('❌ Critical Group Update Error:', e); }
-};
-
-// --- ANTI-DELETE HANDLER (ASYNC SAFE + BULLETPROOF) ---
-
+// --- HANDLER ANTI-DELETE (SQLITE) ---
 const handleAntiDelete = async (sock, update) => {
     const keys = update.keys || [];
     for (const key of keys) {
         try {
             const from = key.remoteJid;
-            if (!from.endsWith('@g.us')) continue; // Uniquement pour les groupes
+            if (!from.endsWith('@g.us')) continue;
 
-            // On vérifie si l'Anti-Delete est activé pour ce groupe (via ton JSON)
             const groupSettings = database.getGroupSettings(from) || {};
             if (groupSettings.antidelete === false) continue;
 
-            // --- RÉCUPÉRATION DEPUIS SQLITE ---
             const msgStore = await database.getMessage(key.id);
-            if (!msgStore) continue; // Message non trouvé en base
+            if (!msgStore) continue;
 
             const sender = msgStore.participant;
-            const pushName = msgStore.pushName || 'ᴜsᴇʀ';
-            
-            // On prépare le contenu textuel pour l'alerte
-            const messageContent = msgStore.content.conversation || 
-                                   msgStore.content.extendedTextMessage?.text || 
-                                   (msgStore.content.imageMessage ? "📷 [Image]" : 
-                                    msgStore.content.videoMessage ? "🎥 [Vidéo]" : "ᴍᴇᴅɪᴀ");
+            const messageContent = msgStore.content.conversation || msgStore.content.extendedTextMessage?.text || (msgStore.content.imageMessage ? "📷 [Image]" : "ᴍᴇᴅɪᴀ");
 
-            let caption = `*╭╼━≪• ${toSmallCaps('ᴀɴᴛɪ-ᴅᴇʟᴇᴛᴇ ᴅᴇᴛᴇᴄᴛᴇᴅ')} •≫━╾╮*\n` +
-                          `*┃* 👤 *${toSmallCaps('ᴜsᴇʀ')}* : @${sender.split('@')[0]}\n` +
-                          `*┃* 💬 *${toSmallCaps('ᴄᴏɴᴛᴇɴᴜ')}* :\n` +
-                          `*┃* _${messageContent}_\n` +
-                          `*╰━━━━━━━━━━━━━━━╼*\n\n` +
-                          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+            let caption = `*╭╼━≪• ${toSmallCaps('ᴀɴᴛɪ-ᴅᴇʟᴇᴛᴇ ᴅᴇᴛᴇᴄᴛᴇᴅ')} •≫━╾╮*\n┃ 👤 *ᴜsᴇʀ* : @${sender.split('@')[0]}\n┃ 💬 *ᴄᴏɴᴛᴇɴᴜ* : _${messageContent}_\n*╰━━━━━━━━━━━━━━━╼*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
-            // 1. Envoyer l'alerte textuelle
             await sock.sendMessage(from, { text: caption, mentions: [sender] });
-
-            // 2. Renvoyer le message original (Image, Vidéo, ou Texte)
-            await sock.sendMessage(from, { 
-                forward: { 
-                    key: { remoteJid: from, id: key.id }, 
-                    message: msgStore.content 
-                } 
-            });
-
-        } catch (e) { 
-            console.error('❌ AntiDelete SQLite Error:', e); 
-        }
+            await sock.sendMessage(from, { forward: { key: { remoteJid: from, id: key.id }, message: msgStore.content } });
+        } catch (e) { console.error('❌ AntiDelete Error:', e); }
     }
 };
 
+// --- GROUP UPDATE HANDLER (WELCOME / GOODBYE) ---
+const handleGroupUpdate = async (sock, update) => {
+    const { id, participants, action } = update;
+    try {
+        // 1. Récupération des réglages du groupe (JSON)
+        const groupSettings = database.getGroupSettings(id) || {};
+        
+        // On récupère la config globale pour les messages par défaut
+        const config = global.config; 
 
-// --- EXPORTS ---
-module.exports = { handleMessage, handleGroupUpdate, handleAntiDelete };
+        const metadata = await sock.groupMetadata(id);
+        const groupName = metadata.subject;
+        const groupDesc = metadata.desc || toSmallCaps("aucune description.");
+        const time = new Date().toLocaleTimeString('fr-FR', { timeZone: 'Africa/Ouagadougou' });
+
+        for (const user of participants) {
+            const userTag = `@${user.split('@')[0]}`;
+            
+            try {
+                // --- CAS : ENTRÉE (WELCOME) ---
+                // On vérifie si activé dans le groupe OU activé par défaut dans config
+                const isWelcomeOn = groupSettings.welcome !== undefined ? groupSettings.welcome : config.defaultGroupSettings.welcome;
+
+                if (action === 'add' && isWelcomeOn) {
+                    // Priorité : Message du groupe > Message par défaut de config.js > Texte brut
+                    let text = groupSettings.welcomeMessage || config.defaultGroupSettings.welcomeMessage || "Bienvenue @user sur #groupName";
+                    
+                    text = text
+                        .replace(/@user/g, userTag)
+                        .replace(/#groupName/g, groupName)
+                        .replace(/#groupDesc/g, groupDesc)
+                        .replace(/#memberCount/g, metadata.participants.length)
+                        .replace(/#time/g, time);
+
+                    await sock.sendMessage(id, { text, mentions: [user] });
+                }
+
+                // --- CAS : SORTIE (GOODBYE) ---
+                const isGoodbyeOn = groupSettings.goodbye !== undefined ? groupSettings.goodbye : config.defaultGroupSettings.goodbye;
+
+                if (action === 'remove' && isGoodbyeOn) {
+                    // Priorité : Message du groupe > Message par défaut de config.js > Texte brut
+                    let text = groupSettings.goodbyeMessage || config.defaultGroupSettings.goodbyeMessage || "Au revoir @user !";
+                    
+                    text = text
+                        .replace(/@user/g, userTag)
+                        .replace(/#groupName/g, groupName)
+                        .replace(/#memberCount/g, metadata.participants.length)
+                        .replace(/#time/g, time);
+
+                    await sock.sendMessage(id, { text, mentions: [user] });
+                }
+            } catch (innerError) {
+                console.error(`❌ Welcome/Goodbye individual error for ${user}:`, innerError);
+            }
+        }
+    } catch (e) {
+        console.error('❌ Critical Group Update Error:', e);
+    }
+};
+
+module.exports = { handleMessage, handleGroupUpdate, handleAntidelete };
