@@ -34,15 +34,14 @@ if (!fs.existsSync(tmpDir)) {
 }
 
 // --- INITIALISATION DU STORE ---
-const store = typeof makeInMemoryStore === 'function' 
-    ? makeInMemoryStore({ logger: pino({ level: 'silent' }) }) 
-    : null;
+let store;
 
-if (!store) {
-    console.error("❌ Erreur : Impossible d'initialiser le Store. Vérifiez l'import Baileys.");
-} else {
+if (typeof makeInMemoryStore === 'function') {
+    store = makeInMemoryStore({ logger: pino({ level: 'silent' }) });
     global.store = store;
-    console.log("✅ [ꜱʏꜱᴛᴇᴍ] Store initialisé");
+    console.log("✅ Store initialisé");
+} else {
+    console.warn("⚠️ makeInMemoryStore indisponible — Store désactivé");
 }
 
 /**
