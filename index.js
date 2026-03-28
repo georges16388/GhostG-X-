@@ -12,11 +12,7 @@ const {
     fetchLatestBaileysVersion
 } = Baileys;
 
-// On récupère explicitement la fonction depuis l'objet Baileys
 const makeInMemoryStore = Baileys.makeInMemoryStore; 
-
-const pino = require('pino');
-
 
 const pino = require('pino');
 const fs = require('fs');
@@ -37,9 +33,10 @@ if (!fs.existsSync(tmpDir)) {
 }
 
 // --- INITIALISATION DU STORE ---
-const Baileys = require('@whiskeysockets/baileys');
-// ... 
-const makeInMemoryStore = Baileys.makeInMemoryStore; 
+const store = makeInMemoryStore({ 
+    logger: pino({ level: 'silent' }) 
+});
+global.store = store; 
 
 /**
  * HIÉRARCHIE DE SÉCURITÉ GLOBALE
