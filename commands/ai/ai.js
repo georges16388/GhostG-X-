@@ -5,11 +5,11 @@
 const APIs = require('../../utils/api');
 
 // Design pour la réponse de l'IA
-const AI_DESIGN = (answer) => `╭╼━≪• ɢʜᴏsᴛ ᴀɪ ʀᴇsᴘᴏɴsᴇ •≫━╾╮
+const AI_DESIGN = (answer) => `╭╼━≪• *ɢʜᴏsᴛ ᴀɪ ʀᴇsᴘᴏɴsᴇ* •≫━╾╮
 ┃ 
 ┃ ${answer.replace(/\n/g, '\n┃ ')}
 ╰━━━━━━━━━━━━━━━╯
-> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
 module.exports = {
   name: 'ai',
@@ -22,9 +22,9 @@ module.exports = {
     try {
       if (args.length === 0) {
         return extra.reply(
-          `╭╼━≪• ᴀɪ ᴀssɪsᴛᴀɴᴛ •≫━╾╮\n` +
-          `┃ ᴜsᴀɢᴇ : .ᴀɪ <ǫᴜᴇsᴛɪᴏɴ>\n` +
-          `┃ ᴇx : .ᴀɪ ʜᴇʟʟᴏ ᴡᴏʀʟᴅ!\n` +
+          `╭╼━≪• *ᴀɪ ᴀssɪsᴛᴀɴᴛ* •≫━╾╮\n` +
+          `┃ *ᴜsᴀɢᴇ* : .ᴀɪ <ǫᴜᴇsᴛɪᴏɴ>\n` +
+          `┃ *ᴇx* : .ᴀɪ ʜᴇʟʟᴏ ᴡᴏʀʟᴅ!\n` +
           `╰━━━━━━━━━━━━━━━╯`
         );
       }
