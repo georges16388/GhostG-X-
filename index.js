@@ -8,8 +8,7 @@ const Baileys = require('@whiskeysockets/baileys');
 const { 
     useMultiFileAuthState, 
     DisconnectReason, 
-    fetchLatestBaileysVersion, 
-    makeInMemoryStore 
+    fetchLatestBaileysVersion,
 } = Baileys;
 
 const makeWASocket = Baileys.default || Baileys; 
