@@ -1,21 +1,32 @@
 /**
- * Divine Blessing Command - Glorify God and Jesus
+ * Divine Blessing Command - Glorifier Dieu et Jésus
  * Custom Design by -ɢʜᴏsᴛɢ 𝐗
  */
 
+// Fonction de conversion en Small Caps pour le style visuel
+const toSmallCaps = (text) => {
+    const smallCapsMap = {
+        'a': 'ᴀ', 'b': 'ʙ', 'c': 'ᴄ', 'd': 'ᴅ', 'e': 'ᴇ', 'f': 'ғ', 'g': 'ɢ', 'h': 'ʜ', 
+        'i': 'ɪ', 'j': 'ᴊ', 'k': 'ᴋ', 'l': 'ʟ', 'm': 'ᴍ', 'n': 'ɴ', 'o': 'ᴏ', 'p': 'ᴘ', 
+        'q': 'ǫ', 'r': 'ʀ', 's': 's', 't': 'ᴛ', 'u': 'ᴜ', 'v': 'ᴠ', 'w': 'ᴡ', 'x': 'x', 
+        'y': 'ʏ', 'z': 'ᴢ'
+    };
+    return text.toLowerCase().split('').map(char => smallCapsMap[char] || char).join('');
+};
+
 // Design pour la bénédiction divine
-const BLESS_DESIGN = (text) => `╭╼━≪• ɢʜᴏsᴛ ʙʟᴇssɪɴɢ •≫━╾╮
-┃ ᴍsɢ : ${text}
-┃ ᴛʏᴘᴇ : ɢʟᴏʀʏ ᴛᴏ ɢᴏᴅ 🙌
-┃ ғʀᴏᴍ : ɢʜᴏsᴛ ᴀɪ 🕊️
-> ┃ ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗
-╰━━━━━━━━━━━━━━━╯`;
+const BLESS_DESIGN = (text) => `╭╼━≪• *ɢʜᴏsᴛ ʙʟᴇssɪɴɢ* •≫━╾╮
+┃ ${toSmallCaps('ᴍsɢ')} : ${text}
+┃ ${toSmallCaps('ᴛʏᴘᴇ')} : ${toSmallCaps('ɢʟᴏɪʀᴇ ᴀ ᴅɪᴇᴜ')} 🙌
+┃ ${toSmallCaps('ғʀᴏᴍ')} : ${toSmallCaps('ɢʜᴏsᴛ ᴀɪ')} 🕊️
+╰━━━━━━━━━━━━━━━╯
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
 module.exports = {
     name: 'bless',
-    aliases: ['compliment', 'grace', 'amen'],
+    aliases: ['compliment', 'grace', 'amen', 'benir'],
     category: 'faith',
-    desc: 'Send a divine blessing glorifying God',
+    desc: 'Envoyer une bénédiction divine glorifiant Dieu',
     usage: 'bless [@user]',
     execute: async (sock, msg, args, extra) => {
       try {
@@ -33,32 +44,35 @@ module.exports = {
           "Tu es précieu(x/se) aux yeux de Dieu, Il t'aime infiniment. ❤️",
           "Que la paix de Christ, qui surpasse toute intelligence, garde ton cœur. 🛡️"
         ];
-        
+
         const ctxInfo = msg.message?.extendedTextMessage?.contextInfo;
         const mentioned = ctxInfo?.mentionedJid || [];
-        const randomBlessing = blessings[Math.floor(Math.random() * blessings.length)];
         
-        const chatId = msg.key.remoteJid;
-        let finalMessage = randomBlessing;
+        // Sélection aléatoire et conversion de la bénédiction en Small Caps
+        const rawBlessing = blessings[Math.floor(Math.random() * blessings.length)];
+        const styledBlessing = toSmallCaps(rawBlessing);
 
-        // Ciblage automatique de la personne mentionnée ou de la réponse
+        const chatId = extra.from;
+        let finalMessage = styledBlessing;
+
+        // Ciblage automatique (Mention ou Réponse)
         if (mentioned.length > 0) {
-            finalMessage = `@${mentioned[0].split('@')[0]}, ${randomBlessing.charAt(0).toLowerCase() + randomBlessing.slice(1)}`;
+            finalMessage = `@${mentioned[0].split('@')[0]}, ${styledBlessing}`;
         } else if (ctxInfo?.participant) {
-            finalMessage = `@${ctxInfo.participant.split('@')[0]}, ${randomBlessing.charAt(0).toLowerCase() + randomBlessing.slice(1)}`;
-            mentioned.push(ctxInfo.participant);
+            const responder = ctxInfo.participant;
+            finalMessage = `@${responder.split('@')[0]}, ${styledBlessing}`;
+            if (!mentioned.includes(responder)) mentioned.push(responder);
         }
 
         await sock.sendMessage(chatId, {
           text: BLESS_DESIGN(finalMessage),
-          mentions: mentioned.length > 0 ? mentioned : []
+          mentions: mentioned
         }, { quoted: msg });
-        
+
       } catch (error) {
         console.error('Blessing Error:', error);
-        await sock.sendMessage(msg.key.remoteJid, {
-          text: `❌ Error: ${error.message}`
-        }, { quoted: msg });
+        const errorMsg = toSmallCaps(`Erreur Divine : ${error.message}`);
+        await extra.reply(`❌ ${errorMsg}`);
       }
     }
   };
