@@ -9,7 +9,7 @@ const {
     useMultiFileAuthState, 
     DisconnectReason, 
     fetchLatestBaileysVersion,
-    makeInMemoryStore // Intégration du Store
+    makeInMemoryStore 
 } = require('@whiskeysockets/baileys');
 const pino = require('pino');
 const fs = require('fs');
@@ -22,11 +22,18 @@ const handler = require('./handler');
 // 🔹 Configuration Globale
 global.config = config; 
 
+// --- VÉRIFICATION DU DOSSIER TEMPORAIRE ---
+const tmpDir = path.join(__dirname, 'tmp');
+if (!fs.existsSync(tmpDir)) {
+    fs.mkdirSync(tmpDir);
+    console.log('✅ [ꜱʏꜱᴛᴇᴍ] ᴅᴏꜱꜱɪᴇʀ ᴛᴍᴘ ᴄʀᴇᴇ ᴀᴠᴇᴄ ꜱᴜᴄᴄᴇꜱ');
+}
+
 // --- INITIALISATION DU STORE (MÉMOIRE DES MESSAGES) ---
 const store = makeInMemoryStore({ 
     logger: pino().child({ level: 'silent', stream: 'store' }) 
 });
-global.store = store; // Utilisé par clean.js
+global.store = store; 
 
 /**
  * HIÉRARCHIE DE SÉCURITÉ GLOBALE
@@ -65,10 +72,9 @@ async function startBot() {
         syncFullHistory: false,
     });
 
-    // --- LIAISON DU STORE (CRUCIAL POUR .CLEAN) ---
     store.bind(sock.ev);
 
-    // --- SYSTÈME ANTI-CALL (SÉCURITÉ AGM) ---
+    // --- SYSTÈME ANTI-CALL ---
     sock.ev.on('call', async (node) => {
         if (!global.config.anticall) return;
         for (let call of node) {
@@ -131,7 +137,6 @@ https://wa.me/${ownerNum}
 
 📖 _*“ᴊᴇ ᴘᴜɪꜱ ᴛᴏᴜᴛ ᴘᴀʀ ᴄᴇʟᴜɪ ǫᴜɪ ᴍᴇ ғᴏʀᴛɪғɪᴇ”*_ ❤️✝️
 
-
 > *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
                 await sock.sendMessage(botJid, { 
@@ -162,14 +167,9 @@ https://wa.me/${ownerNum}
 
         for (const msg of messages) {
             if (!msg.message) continue;
+            const sender = msg.key.participant || msg.key.remoteJid;
 
-            const jid = msg.key.remoteJid;
-            const sender = msg.key.participant || jid;
-
-            // 🛡️ FILTRE DE SÉCURITÉ : MODE PRIVÉ (SELF MODE)
-            if (global.config.selfMode && !global.isOwner(sender)) {
-                continue; 
-            }
+            if (global.config.selfMode && !global.isOwner(sender)) continue;
 
             const messageTimestamp = msg.messageTimestamp;
             const now = Math.floor(Date.now() / 1000);
