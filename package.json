@@ -10,22 +10,22 @@
         "install:no-puppeteer": "PUPPETEER_SKIP_DOWNLOAD=true PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true npm install"
     },
     "keywords": [
-    "GhostG-X",
-    "GhostG-X-MD",
-    "Truth Devices",
-    "Truth-Devices-Dev",
-    "whatsapp-bot",
-    "whatsapp-md-bot",
-    "baileys-wa-bot",
-    "prestige-edition",
-    "automated-bot",
-    "multi-device",
-    "node-js-whatsapp",
-    "whatsapp-automation",
-    "ghost-intel-nlp",
-    "bot-whatsapp-burkina",
-    "georges-the-ghost"
-],
+        "GhostG-X",
+        "GhostG-X-MD",
+        "Truth Devices",
+        "Truth-Devices-Dev",
+        "whatsapp-bot",
+        "whatsapp-md-bot",
+        "baileys-wa-bot",
+        "prestige-edition",
+        "automated-bot",
+        "multi-device",
+        "node-js-whatsapp",
+        "whatsapp-automation",
+        "ghost-intel-nlp",
+        "bot-whatsapp-burkina",
+        "georges-the-ghost"
+    ],
     "author": "Truth Devices",
     "license": "MIT",
     "dependencies": {
@@ -59,8 +59,9 @@
         "sharp": "^0.33.4",
         "yt-search": "^2.13.1",
         "ytdl-core": "^4.11.5",
-        "btch-downloader": "^2.3.1"
-
+        "btch-downloader": "^2.3.1",
+        "wa-sticker-formatter": "^4.4.4",
+        "fs-extra": "^11.2.0"
     },
     "devDependencies": {
         "nodemon": "^3.1.0"
