@@ -1,18 +1,29 @@
 /**
- * Instagram Downloader - AGM Elite Edition
- * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
- * Role : ᴅᴇᴠᴇʟᴏᴘᴘᴇʀ ⚡
+ * ɪɴsᴛᴀɢʀᴀᴍ ᴅᴏᴡɴʟᴏᴀᴅᴇʀ - ᴀɢᴍ ᴇʟɪᴛᴇ ᴇᴅɪᴛɪᴏɴ
+ * sᴛʏʟᴇ ʙʏ -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
+ * Optimized for V5.3 - Link Integration
  */
 
 const { igdl } = require('ruhend-scraper');
 
-// --- FONCTION DE DESIGN AGM ADAPTÉE ---
-const AGM_DESIGN = (count, index) => `╭╼━≪• ɪɴsᴛᴀɢʀᴀᴍ ᴅʟ •≫━╾╮
-┃ sᴛᴀᴛᴜs : 🟢 ᴅᴏᴡɴʟᴏᴀᴅᴇᴅ
-┃ ɪᴛᴇᴍ : ${index + 1}/${count} 📸
-┃ ᴍᴏᴅᴇ : ʜɪɢʜ-ǫᴜᴀʟɪᴛʏ ⚡
-╰━━━━━━━━━━━━━━━╯
-> ᴘᴏᴡᴇʀᴇᴅ ʙʏ -ɢʜᴏsᴛɢ 𝐗`;
+const toStyledCaps = (text) => {
+  if (!text) return "";
+  const fonts = {'a':'ᴀ','b':'ʙ','c':'ᴄ','d':'ᴅ','e':'ᴇ','f':'ғ','g':'ɢ','h':'ʜ','i':'ɪ','j':'ᴊ','k':'ᴋ','l':'ʟ','m':'ᴍ','n':'ɴ','o':'ᴏ','p':'ᴘ','q':'ǫ','r':'ʀ','s':'ꜱ','t':'ᴛ','u':'ᴜ','v':'ᴠ','w':'ᴡ','x':'x','y':'ʏ','z':'ᴢ'};
+  return String(text).toLowerCase().split('').map(c => fonts[c] || c).join('');
+};
+
+// --- DESIGN MIS À JOUR (Ajout du paramètre url) ---
+const AGM_DESIGN = (count, index, url) => (
+  `*╭╼━≪• ${toStyledCaps('ɪɴsᴛᴀɢʀᴀᴍ sʏsᴛᴇᴍ')} •≫━╾╮*\n` +
+  `*┃*\n` +
+  `*┃* ✅ *${toStyledCaps('sᴛᴀᴛᴜs')}* : 🟢 *${toStyledCaps('ᴄᴏᴍᴘʟᴇᴛᴇᴅ')}*\n` +
+  `*┃* 📦 *${toStyledCaps('ɪᴛᴇᴍ')}* : ${index + 1}/${count} 📸\n` +
+  `*┃* ⚡ *${toStyledCaps('ᴍᴏᴅᴇ')}* : *${toStyledCaps('ʜɪɢʜ-ǫᴜᴀʟɪᴛʏ')}*\n` +
+  `*┃* 🔗 *${toStyledCaps('ʟɪᴇɴ')}* : ${url}\n` +
+  `*┃*\n` +
+  `*╰━━━━━━━━━━━━━━━╯*\n` +
+  `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+);
 
 module.exports = {
   name: 'instagram',
@@ -22,44 +33,40 @@ module.exports = {
   usage: '.ig <URL>',
 
   async execute(sock, msg, args, extra) {
-    const chatId = msg.key.remoteJid;
-    const url = args[0] || (msg.message?.extendedTextMessage?.text?.split(' ')[1]);
-
-    if (!url) {
-      return sock.sendMessage(chatId, { text: '⚠️ *ᴠᴇᴜɪʟʟᴇᴢ ғᴏᴜʀɴɪʀ ᴜɴ ʟɪᴇɴ ɪɴsᴛᴀɢʀᴀᴍ.*' }, { quoted: msg });
-    }
-
-    // Regex élargie pour inclure les nouveaux formats de partage (/share/, /s/, etc.)
-    const igPattern = /(https?:\/\/(?:www\.)?instagram\.com\/([a-zA-Z0-9_.]+\/)?(p|reel|tv|stories|share|s)\/|[a-zA-Z0-9_.]+\/)/;
-    
-    if (!igPattern.test(url)) {
-      return sock.sendMessage(chatId, { text: '❌ *ʟɪᴇɴ ɪɴsᴛᴀɢʀᴀᴍ ɪɴᴠᴀʟɪᴅᴇ.*' }, { quoted: msg });
-    }
-
-    await sock.sendMessage(chatId, { react: { text: '📥', key: msg.key } });
+    const chatId = extra.from;
+    const text = args.join(' ');
 
     try {
-      const downloadData = await igdl(url);
-      
-      if (!downloadData || !downloadData.data || downloadData.data.length === 0) {
-        throw new Error("Aucun média trouvé ou compte privé.");
+      const urlMatch = text.match(/https?:\/\/(?:www\.)?instagram\.com\/[^\s]+/i);
+      const url = urlMatch ? urlMatch[0].split('?')[0] : null;
+
+      if (!url) {
+        return extra.reply(`⚠️ *${toStyledCaps('ᴠᴇᴜɪʟʟᴇᴢ ғᴏᴜʀɴɪʀ ᴜɴ ʟɪᴇɴ ɪɴsᴛᴀɢʀᴀᴍ ᴠᴀʟɪᴅᴇ')}*`);
       }
 
-      const mediaList = downloadData.data.slice(0, 10); // Limite à 10 pour éviter le spam
+      await sock.sendMessage(chatId, { react: { text: '📥', key: msg.key } });
+
+      const res = await igdl(url);
+
+      if (!res || !res.data || res.data.length === 0) {
+        throw new Error("Contenu introuvable.");
+      }
+
+      const mediaList = res.data.slice(0, 5);
 
       for (let i = 0; i < mediaList.length; i++) {
-        const item = mediaList[i];
-        const mediaUrl = item.url || item.downloadUrl;
+        const mediaUrl = mediaList[i].url;
+        const isVideo = mediaUrl.includes('.mp4') || mediaUrl.includes('video');
         
-        // Détection intelligente du type de média
-        const isVideo = item.type === 'video' || /\.(mp4|mov|avi)$/i.test(mediaUrl);
-        const caption = AGM_DESIGN(mediaList.length, i);
+        // --- APPEL DU DESIGN AVEC L'URL ---
+        const caption = AGM_DESIGN(mediaList.length, i, url);
 
         if (isVideo) {
           await sock.sendMessage(chatId, {
             video: { url: mediaUrl },
+            caption: caption,
             mimetype: 'video/mp4',
-            caption: caption
+            fileName: `ghostgx_ig_${i}.mp4`
           }, { quoted: msg });
         } else {
           await sock.sendMessage(chatId, {
@@ -68,17 +75,14 @@ module.exports = {
           }, { quoted: msg });
         }
 
-        // Délai de sécurité pour éviter le spam/ban
-        if (mediaList.length > 1) await new Promise(resolve => setTimeout(resolve, 1500));
+        if (mediaList.length > 1) await new Promise(r => setTimeout(r, 1000));
       }
 
       await sock.sendMessage(chatId, { react: { text: '✅', key: msg.key } });
 
     } catch (error) {
-      console.error('IG DL Error:', error);
-      await sock.sendMessage(chatId, { 
-        text: `❌ *ᴇʀʀᴇᴜʀ* : ${error.message.includes('privé') ? 'ʟᴇ ᴄᴏᴍᴘᴛᴇ ᴇsᴛ ᴘʀɪᴠé.' : 'ɪᴍᴘᴏssɪʙʟᴇ ᴅᴇ ᴛéʟéᴄʜᴀʀɢᴇʀ ᴄᴇ ᴍéᴅɪᴀ.'}` 
-      }, { quoted: msg });
+      console.error('[IG ERROR]:', error.message);
+      await extra.reply(`❌ *${toStyledCaps('ᴇᴄʜᴇᴄ')}* : ${toStyledCaps('ɪɴsᴛᴀɢʀᴀᴍ ᴀ ʙʟᴏǫᴜᴇ ʟᴀ ᴄᴏɴɴᴇxɪᴏɴ')}`);
       await sock.sendMessage(chatId, { react: { text: '❌', key: msg.key } });
     }
   }
