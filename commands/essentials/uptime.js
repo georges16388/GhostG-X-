@@ -37,12 +37,10 @@ function formatUptime(seconds) {
 // --- FONCTION DE DESIGN AGM PRESTIGE (GRAS) ---
 const AGM_DESIGN = (uptime, version) => {
   return `*╭╼━≪• ${toStyledCaps('sʏsᴛᴇᴍ ᴀʟɪᴠᴇ')} •≫━╾╮*
-*┃*
 *┃* ✅ *${toStyledCaps('sᴛᴀᴛᴜs')}* : 🟢 *${toStyledCaps('ᴏɴʟɪɴᴇ')}*
 *┃* ⏳ *${toStyledCaps('ᴜᴘᴛɪᴍᴇ')}* : *${uptime}*
 *┃* 🧬 *${toStyledCaps('ᴠᴇʀsɪᴏɴ')}* : *${toStyledCaps(version)}*
 *┃* 🛡️ *${toStyledCaps('sᴘᴇᴇᴅ')}* : *${toStyledCaps('ᴇʟɪᴛᴇ')}*
-*┃*
 *╰━━━━━━━━━━━━━━━╯*`;
 };
 
