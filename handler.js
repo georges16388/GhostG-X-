@@ -190,11 +190,7 @@ const handleMessage = async (sock, msg) => {
             m?.pollUpdateMessage?.pollUpdate?.name ||
             m?.interactiveResponseMessage?.body?.text || "";
 
-        const body = getText(msg.message).trim();
-
-        // ✅ Guard fromMe : ignore les messages envoyés par le bot lui-même
-        // (évite les boucles de réponse sur certaines commandes)
-        if (msg.key.fromMe) return;
+                const body = getText(msg.message).trim();
 
         // ✅ Vérification owner/supreme avec fix multi-device
         const senderNorm = normalizeJid(sender);
@@ -205,6 +201,15 @@ const handleMessage = async (sock, msg) => {
 
         const isSupreme = senderNorm === supremeNorm;
         const ownerStatus = isSupreme || ownerNumbers.some(o => String(o).replace(/\D/g, '') === senderNorm);
+
+        // 👇 LA NOUVELLE LIGNE VA EXACTEMENT ICI 👇
+        // ✅ Guard fromMe : autorise les propres messages du Supreme/Owner
+        if (msg.key.fromMe && !ownerStatus) return; 
+        // 👆 ===================================== 👆
+
+        // Préfixe & parsing commande
+        let activePrefix = prefix;
+
 
         // Préfixe & parsing commande
         let activePrefix = prefix;
