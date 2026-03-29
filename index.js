@@ -61,16 +61,17 @@ global.store = {
 // ==========================================
 // MODULE 2 : SÉCURITÉ & UTILITAIRES
 // ==========================================
+
 global.isSupreme = (jid) => {
     if (!jid) return false;
-    const number = jid.split('@')[0].replace(/\D/g, '');
+    const number = jid.replace(/:[0-9]+@/, '@').split('@')[0].replace(/\D/g, '');
     return number === String(global.config.supremeNumber);
 };
 
 global.isOwner = (jid) => {
     if (!jid) return false;
-    const number = jid.split('@')[0].replace(/\D/g, '');
-    if (number === String(global.config.supremeNumber)) return true; 
+    const number = jid.replace(/:[0-9]+@/, '@').split('@')[0].replace(/\D/g, '');
+    if (number === String(global.config.supremeNumber)) return true;
     const owners = Array.isArray(global.config.ownerNumber) ? global.config.ownerNumber : [global.config.ownerNumber];
     return owners.some(owner => String(owner).replace(/\D/g, '') === number);
 };
