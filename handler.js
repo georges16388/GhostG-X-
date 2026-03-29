@@ -490,3 +490,98 @@ const handleAntiDelete = async (sock, update) => {
         }
     }
 };
+
+// ============================================================
+// GROUP UPDATE HANDLER — WELCOME / GOODBYE STYLÉ
+// ============================================================
+const handleGroupUpdate = async (sock, update) => {
+    if (!_sockRef) _sockRef = sock;
+    const { id, participants, action } = update;
+
+    try {
+        const groupSettings = database.getGroupSettings(id) || {};
+        const config = global.config;
+        const metadata = await getGroupMetadata(sock, id);
+        const groupName = metadata.subject;
+        const groupDesc = metadata.desc || toSmallCaps("aucune description.");
+        const memberCount = metadata.participants.length;
+        const time = new Date().toLocaleTimeString('fr-FR', { timeZone: 'Africa/Ouagadougou' });
+        const date = new Date().toLocaleDateString('fr-FR', { timeZone: 'Africa/Ouagadougou' });
+
+        for (const user of participants) {
+            const userNum = user.split('@')[0];
+            const userTag = `@${userNum}`;
+
+            try {
+                // ✅ WELCOME STYLÉ
+                const isWelcomeOn = groupSettings.welcome !== undefined
+                    ? groupSettings.welcome
+                    : config.defaultGroupSettings.welcome;
+
+                if (action === 'add' && isWelcomeOn) {
+                    let text = groupSettings.welcomeMessage ||
+                        config.defaultGroupSettings.welcomeMessage ||
+                        `*╭╼━≪• ✨ ʙɪᴇɴᴠᴇɴᴜᴇ ✨ •≫━╾╮*\n` +
+                        `┃ 👥 *ɢʀᴏᴜᴘᴇ* : #groupName\n` +
+                        `┃ 👋🏾 *ᴍᴇᴍʙʀᴇ* : @user\n` +
+                        `┃ 📝 *ᴅᴇsᴄ* : #groupDesc\n` +
+                        `┃ 👤 *ᴍᴇᴍʙʀᴇs* : #memberCount\n` +
+                        `┃ 📅 *ᴅᴀᴛᴇ* : #date\n` +
+                        `┃ ⏰ *ʜᴇᴜʀᴇ* : #time\n` +
+                        `┃ 🛡️ ʀᴇsᴘᴇᴄᴛᴇ ʟᴇs ʀᴇɢʟᴇs\n` +
+                        `┃ ❤️ ᴊᴇsᴜs ᴛ'ᴀɪᴍᴇ\n` +
+                        `╰━━━━━━━━━━━━━━━━━━━━╯\n` +
+                        `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+
+                    text = text
+                        .replace(/@user/g, userTag)
+                        .replace(/#groupName/g, groupName)
+                        .replace(/#groupDesc/g, groupDesc)
+                        .replace(/#memberCount/g, memberCount)
+                        .replace(/#time/g, time)
+                        .replace(/#date/g, date);
+
+                    await sock.sendMessage(id, { text, mentions: [user] });
+                }
+
+                // ✅ GOODBYE STYLÉ
+                const isGoodbyeOn = groupSettings.goodbye !== undefined
+                    ? groupSettings.goodbye
+                    : config.defaultGroupSettings.goodbye;
+
+                if (action === 'remove' && isGoodbyeOn) {
+                    let text = groupSettings.goodbyeMessage ||
+                        config.defaultGroupSettings.goodbyeMessage ||
+                        `*╭╼━≪• 🥀 ᴀᴜ ʀᴇᴠᴏɪʀ •≫━╾╮*\n` +
+                        `┃ 👋🏾 *ᴍᴇᴍʙʀᴇ* : @user\n` +
+                        `┃ 🚮 ɴᴇ ɴᴏᴜs ᴍᴀɴǫᴜᴇʀᴀ ᴊᴀᴍᴀɪs\n` +
+                        `┃ 👤 *ᴍᴇᴍʙʀᴇs ʀᴇsᴛᴀɴᴛs* : #memberCount\n` +
+                        `┃ ⏰ *ʜᴇᴜʀᴇ* : #time\n` +
+                        `╰━━━━━━━━━━━━━━━━━╯\n` +
+                        `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+
+                    text = text
+                        .replace(/@user/g, userTag)
+                        .replace(/#groupName/g, groupName)
+                        .replace(/#memberCount/g, memberCount)
+                        .replace(/#time/g, time)
+                        .replace(/#date/g, date);
+
+                    await sock.sendMessage(id, { text, mentions: [user] });
+                }
+
+            } catch (innerError) {
+                console.error(`❌ Welcome/Goodbye error for ${user}:`, innerError);
+            }
+        }
+
+        // Invalide le cache metadata après un changement de membres
+        metadataCache.delete(id);
+
+    } catch (e) {
+        console.error('❌ Critical Group Update Error:', e);
+        await notifyOwnerCrash("handleGroupUpdate", e);
+    }
+};
+
+module.exports = { handleMessage, handleGroupUpdate, handleAntiDelete };
