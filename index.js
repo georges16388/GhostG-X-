@@ -11,7 +11,8 @@ const { makeInMemoryStore } = require('@whiskeysockets/baileys');
 
 
 
-const makeWASocket = Baileys.default || Baileys; 
+const makeWASocket = require('@whiskeysockets/baileys').default;
+
 const pino = require('pino');
 const fs = require('fs-extra'); 
 const path = require('path');
