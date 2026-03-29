@@ -102,7 +102,8 @@ const downloadAudioBuffer = (url) =>
 // RÉSOLUTION AUDIO (3 sources + fallback APIs)
 // ─────────────────────────────────────────────
 
-const resolveAudio = async (videoUrl) => {
+
+    const resolveAudio = async (videoUrl) => {
     // ── Source 1 : ytdl-core (buffer) ──
     try {
         console.log('[SONG] Tentative ytdl-core...');
@@ -114,6 +115,40 @@ const resolveAudio = async (videoUrl) => {
     } catch (e) {
         console.warn('[SONG] ytdl-core échoué:', e.message);
     }
+
+    // ── Source 2 : btch-downloader (URL) ──
+    try {
+        console.log('[SONG] Tentative btch-downloader...');
+        const res = await ytmp3(videoUrl);
+        const url = res?.dl ?? res?.url ?? res?.download ?? null;
+        if (url?.startsWith('http')) {
+            console.log('[SONG] btch-downloader ✅');
+            return { type: 'url', data: url };
+        }
+    } catch (e) {
+        console.warn('[SONG] btch-downloader échoué:', e.message);
+    }
+
+    // ── Source 3 : APIs fallback (noms corrects) ──
+    const methods = [
+        APIs.getIzumiDownloadByUrl,
+        APIs.getYupraDownloadByUrl
+    ].filter(Boolean);
+
+    for (const method of methods) {
+        try {
+            console.log('[SONG] Tentative API fallback...');
+            const res = await method(videoUrl);
+            const audioUrl = res?.download ?? res?.url ?? null;
+            if (audioUrl?.startsWith('http')) {
+                console.log('[SONG] API fallback ✅');
+                return { type: 'url', data: audioUrl };
+            }
+        } catch (_) { /* tentative suivante */ }
+    }
+
+    return null;
+};
 
     // ── Source 2 : btch-downloader (URL) ──
     try {
