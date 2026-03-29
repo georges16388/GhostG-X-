@@ -222,7 +222,7 @@ async function startBot() {
                     `┃ *sᴛᴀᴛᴜᴛ* : 🟢 ᴏɴʟɪɴᴇ\n` +
                     `┃ *ᴍᴀɪᴛʀᴇ* : @${ownerNum}\n` +
                     `┃ *ᴘʀᴇғɪxᴇ* : [ ${global.config.prefix || '.'} ]\n` +
-                    `┃ *ᴄᴏᴍᴍᴀɴᴅᴇs* : ${totalFilesCount} ${toStyledCaps('files')}\n`; // Compteur réel ici +
+                    `┃ *ᴄᴏᴍᴍᴀɴᴅᴇs* : ${totalCmds}\n`; // Compteur réel ici +
                     `┃ *ᴍᴏᴅᴇ* : ${global.config.selfMode ? '🔒 ᴘʀɪᴠé' : '🌐 ᴘᴜʙʟɪᴄ'}\n` +
                     `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
                    `📢 *ᴄʜᴀɪɴᴇ ᴡʜᴀᴛsᴀᴘᴘ* : ${global.config.social.channel}\n\n` +
