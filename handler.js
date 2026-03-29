@@ -223,30 +223,63 @@ if (isCmd && commandName) {
     } catch (err) { console.error("❌ Critical Handler Error:", err); }
 };
 
-// --- HANDLER ANTI-DELETE (SQLITE) ---
+            // --- HANDLER ANTI-DELETE (PROTOCOLE JSON + KEY) ---
 const handleAntiDelete = async (sock, update) => {
     const keys = update.keys || [];
     for (const key of keys) {
         try {
             const from = key.remoteJid;
+            // On n'active l'anti-delete que dans les groupes
             if (!from.endsWith('@g.us')) continue;
 
             const groupSettings = database.getGroupSettings(from) || {};
             if (groupSettings.antidelete === false) continue;
 
+            // Récupération du message dans notre nouvelle DB JSON
             const msgStore = await database.getMessage(key.id);
             if (!msgStore) continue;
 
-            const sender = msgStore.participant;
-            const messageContent = msgStore.content.conversation || msgStore.content.extendedTextMessage?.text || (msgStore.content.imageMessage ? "📷 [Image]" : "ᴍᴇᴅɪᴀ");
+            const sender = msgStore.participant; // Celui qui a envoyé le message
+            const deleter = update.sender || "ᴜɴᴋɴᴏᴡɴ"; // Celui qui a supprimé le message
+            
+            // Extraction intelligente du contenu texte
+            const content = msgStore.content;
+            let messageContent = content.conversation || content.extendedTextMessage?.text;
+            
+            // Si c'est un média, on met un label stylé
+            if (!messageContent) {
+                if (content.imageMessage) messageContent = "📷 [ ɪᴍᴀɢᴇ ]";
+                else if (content.videoMessage) messageContent = "🎥 [ ᴠɪᴅᴇᴏ ]";
+                else if (content.stickerMessage) messageContent = "🗿 [ sᴛɪᴄᴋᴇʀ ]";
+                else if (content.audioMessage) messageContent = "🎵 [ ᴀᴜᴅɪᴏ ]";
+                else if (content.documentMessage) messageContent = "📄 [ ᴅᴏᴄᴜᴍᴇɴᴛ ]";
+                else messageContent = "📦 [ ᴍᴇᴅɪᴀ ]";
+            }
 
-            let caption = `*╭╼━≪• ${toSmallCaps('ᴀɴᴛɪ-ᴅᴇʟᴇᴛᴇ ᴅᴇᴛᴇᴄᴛᴇᴅ')} •≫━╾╮*\n┃ 👤 *ᴜsᴇʀ* : @${sender.split('@')[0]}\n┃ 💬 *ᴄᴏɴᴛᴇɴᴜ* : _${messageContent}_\n*╰━━━━━━━━━━━━━━━╼*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+            // Design Uniformisé GhostG-X (Gras, SmallCaps)
+            let caption = `*╭╼━≪• ${toSmallCaps('ᴀɴᴛɪ-ᴅᴇʟᴇᴛᴇ ᴅᴇᴛᴇᴄᴛᴇᴅ')} •≫━╾╮*\n`;
+            caption += `┃\n`;
+            caption += `┃ 👤 *${toSmallCaps('ᴇxᴘᴇᴅɪᴛᴇᴜʀ')}* : @${sender.split('@')[0]}\n`;
+            caption += `┃ 🗑️ *${toSmallCaps('sᴜᴘᴘʀɪᴍᴇᴜʀ')}* : @${deleter.split('@')[0]}\n`;
+            caption += `┃ 💬 *${toSmallCaps('ᴄᴏɴᴛᴇɴᴜ')}* : _${messageContent}_\n`;
+            caption += `┃ 🔑 *${toSmallCaps('ᴋᴇʏ ɪᴅ')}* : \`${key.id}\`\n`;
+            caption += `┃\n`;
+            caption += `╰━━━━━━━━━━━━━━━━━━━━━╼━╮\n`;
+            caption += `💡 *${toSmallCaps('ɪɴғᴏ')}* : ${toSmallCaps('ᴘᴏᴜʀ ʀᴇᴄᴜᴘᴇʀᴇʀ ʟᴇ ᴍᴇᴅɪᴀ, ᴜᴛɪʟɪsᴇᴢ ʟᴀ ᴋᴇʏ ɪᴅ.')}\n`;
+            caption += `\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
-            await sock.sendMessage(from, { text: caption, mentions: [sender] });
-            await sock.sendMessage(from, { forward: { key: { remoteJid: from, id: key.id }, message: msgStore.content } });
-        } catch (e) { console.error('❌ AntiDelete Error:', e); }
+            // Envoi du message protocole avec les mentions des deux acteurs
+            await sock.sendMessage(from, { 
+                text: caption, 
+                mentions: [sender, deleter] 
+            });
+
+        } catch (e) { 
+            console.error('❌ AntiDelete Error:', e); 
+        }
     }
 };
+
 
 // --- GROUP UPDATE HANDLER (WELCOME / GOODBYE) ---
 const handleGroupUpdate = async (sock, update) => {
