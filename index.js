@@ -1,3 +1,10 @@
+process.env.PUPPETEER_SKIP_DOWNLOAD = 'true';
+process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = 'true';
+process.env.PUPPETEER_CACHE_DIR = '/tmp/puppeteer_cache_disabled';
+
+// ============================================================
+// IMPORTS SYSTÈME
+// ============================================================
 const {
     default: makeWASocket,
     useMultiFileAuthState,
@@ -6,40 +13,66 @@ const {
     Browsers,
 } = require('@whiskeysockets/baileys');
 
-const pino = require('pino');
-const fs = require('fs-extra');
-const path = require('path');
+const pino   = require('pino');
+const fs     = require('fs-extra');
+const path   = require('path');
+const zlib   = require('zlib');
+const os     = require('os');
 
-// ==========================================
-// MODULE 1 : CONFIGURATION & STORE
-// ==========================================
-const config = require('./config');
+// ============================================================
+// MODULES INTERNES
+// ============================================================
+const config  = require('./config');
 const handler = require('./handler');
 global.config = config;
 
+// Utils optionnels (ne crashent pas si absents)
+try { const { initializeTempSystem } = require('./utils/tempManager'); initializeTempSystem(); } catch {}
+try { const { startCleanup }         = require('./utils/cleanup');     startCleanup();         } catch {}
+
+// ============================================================
+// FILTRAGE INTELLIGENT DES LOGS (conservé de l'ancien index)
+// ============================================================
+const _log   = console.log.bind(console);
+const _error = console.error.bind(console);
+const _warn  = console.warn.bind(console);
+
+const NOISE = ['closing session','sessionentry','prekey bundle','ratchet','signal protocol','ephemeralkeypair'];
+const filterLog = (fn, args) => {
+    const str = args.map(a => typeof a === 'string' ? a : JSON.stringify(a)).join(' ').toLowerCase();
+    if (!NOISE.some(p => str.includes(p))) fn(...args);
+};
+console.log   = (...a) => filterLog(_log,   a);
+console.error = (...a) => filterLog(_error, a);
+console.warn  = (...a) => filterLog(_warn,  a);
+
+// ============================================================
+// LOG FICHIER CRASH
+// ============================================================
 const logFile = path.join(__dirname, 'bot-crash.log');
 const logError = (msg, err) => {
-    const logStr = `[${new Date().toISOString()}] ❌ ${msg}: ${err.stack || err}\n`;
-    console.error(logStr);
-    try { fs.appendFileSync(logFile, logStr); } catch (e) {}
+    const s = `[${new Date().toISOString()}] ❌ ${msg}: ${err?.stack || err}\n`;
+    _error(s);
+    try { fs.appendFileSync(logFile, s); } catch {}
 };
 
 fs.ensureDirSync(path.join(__dirname, 'tmp'));
 fs.ensureDirSync(path.join(__dirname, 'database'));
 
-// ✅ STORE MAISON
+// ============================================================
+// STORE MAISON
+// ============================================================
 global.store = {
     messages: {},
     bind: (ev) => {
         ev.on('messages.upsert', ({ messages }) => {
             for (const msg of messages) {
-                const jid = msg.key.remoteJid;
+                const jid = msg.key?.remoteJid;
                 if (!jid) continue;
                 if (!global.store.messages[jid]) global.store.messages[jid] = [];
                 global.store.messages[jid].push(msg);
-                if (global.store.messages[jid].length > 100) {
+                if (global.store.messages[jid].length > 100)
                     global.store.messages[jid].shift();
-                }
             }
         });
     },
@@ -47,53 +80,44 @@ global.store = {
         if (!jid || !global.store.messages[jid]) return null;
         return global.store.messages[jid].find(m => m.key.id === id) || null;
     },
-    readFromFile: () => {},
-    writeToFile: () => {}
 };
 
-// ==========================================
-// MODULE 2 : SÉCURITÉ & UTILITAIRES
-// ==========================================
+// ============================================================
+// SÉCURITÉ OWNER / SUPREME
+// ============================================================
 global.isSupreme = (jid) => {
     if (!jid) return false;
-    const number = jid.replace(/:[0-9]+@/, '@').split('@')[0].replace(/\D/g, '');
-    return number === String(global.config.supremeNumber);
+    const n = jid.replace(/:[0-9]+@/, '@').split('@')[0].replace(/\D/g, '');
+    return n === String(global.config.supremeNumber);
 };
 
 global.isOwner = (jid) => {
     if (!jid) return false;
-    const number = jid.replace(/:[0-9]+@/, '@').split('@')[0].replace(/\D/g, '');
-    if (number === String(global.config.supremeNumber)) return true;
+    const n = jid.replace(/:[0-9]+@/, '@').split('@')[0].replace(/\D/g, '');
+    if (n === String(global.config.supremeNumber)) return true;
     const owners = Array.isArray(global.config.ownerNumber)
-        ? global.config.ownerNumber
-        : [global.config.ownerNumber];
-    return owners.some(owner => String(owner).replace(/\D/g, '') === number);
+        ? global.config.ownerNumber : [global.config.ownerNumber];
+    return owners.some(o => String(o).replace(/\D/g, '') === n);
 };
 
 const toSmallCaps = (text) => {
-    const fonts = {
-        'a':'ᴀ','b':'ʙ','c':'ᴄ','d':'ᴅ','e':'ᴇ','f':'ғ','g':'ɢ','h':'ʜ',
-        'i':'ɪ','j':'ᴊ','k':'ᴋ','l':'ʟ','m':'ᴍ','n':'ɴ','o':'ᴏ','p':'ᴘ',
-        'q':'ǫ','r':'ʀ','s':'ꜱ','t':'ᴛ','u':'ᴜ','v':'ᴠ','w':'ᴡ','x':'x',
-        'y':'ʏ','z':'ᴢ'
-    };
-    return String(text).toLowerCase().split('').map(c => fonts[c] || c).join('');
+    const f = {'a':'ᴀ','b':'ʙ','c':'ᴄ','d':'ᴅ','e':'ᴇ','f':'ғ','g':'ɢ','h':'ʜ','i':'ɪ','j':'ᴊ','k':'ᴋ','l':'ʟ','m':'ᴍ','n':'ɴ','o':'ᴏ','p':'ᴘ','q':'ǫ','r':'ʀ','s':'ꜱ','t':'ᴛ','u':'ᴜ','v':'ᴠ','w':'ᴡ','x':'x','y':'ʏ','z':'ᴢ'};
+    return String(text).toLowerCase().split('').map(c => f[c] || c).join('');
 };
 
-// ==========================================
-// MODULE 3 : QUEUE ANTI-DOUBLON
-// ==========================================
+// ============================================================
+// QUEUE ANTI-DOUBLON
+// ============================================================
 const MAX_QUEUE_SIZE = 50;
-const messageQueue = [];
-let processing = false;
+const messageQueue  = [];
+let processing          = false;
 let processingStartedAt = 0;
 
-// ✅ IDs traités persistants GLOBALEMENT (survit aux reconnexions)
-const globalProcessedIds = new Set();
-const GLOBAL_TTL = 10 * 60 * 1000; // 10 minutes
+// ✅ IDs persistants entre reconnexions (TTL 10 min)
+const globalProcessedIds        = new Set();
 const globalProcessedTimestamps = new Map();
+const GLOBAL_TTL = 10 * 60 * 1000;
 
-// Nettoyage des IDs expirés toutes les 5 minutes
 setInterval(() => {
     const now = Date.now();
     for (const [id, ts] of globalProcessedTimestamps) {
@@ -104,14 +128,9 @@ setInterval(() => {
     }
 }, 5 * 60 * 1000);
 
-const markProcessed = (id) => {
-    globalProcessedIds.add(id);
-    globalProcessedTimestamps.set(id, Date.now());
-};
-
+const markProcessed      = (id) => { globalProcessedIds.add(id); globalProcessedTimestamps.set(id, Date.now()); };
 const isAlreadyProcessed = (id) => globalProcessedIds.has(id);
 
-// ✅ Timeout 25s par message + finally garanti + déblocage auto
 async function processQueue() {
     if (processing) return;
     processing = true;
@@ -122,13 +141,9 @@ async function processQueue() {
             try {
                 await Promise.race([
                     handler.handleMessage(sock, msg),
-                    new Promise((_, reject) =>
-                        setTimeout(() => reject(new Error('Handler timeout 25s')), 25000)
-                    )
+                    new Promise((_, rej) => setTimeout(() => rej(new Error('Handler timeout 25s')), 25000))
                 ]);
-            } catch (err) {
-                logError("Handler Message Crash", err);
-            }
+            } catch (err) { logError("Handler Crash", err); }
             processingStartedAt = Date.now();
         }
     } finally {
@@ -137,32 +152,39 @@ async function processQueue() {
     }
 }
 
-// ✅ Vide la queue proprement lors d'une reconnexion
 function clearQueue() {
     messageQueue.length = 0;
     processing = false;
     processingStartedAt = 0;
 }
 
-// ✅ Déblocage automatique toutes les 30s si la queue est bloquée
+// Déblocage automatique toutes les 30s
 setInterval(() => {
     const now = Date.now();
     if (!processing && messageQueue.length > 0) {
-        console.log('⚠️ [Queue] Relance automatique détectée.');
-        processQueue().catch(err => logError("Queue Recovery Error", err));
+        processQueue().catch(err => logError("Queue Recovery", err));
         return;
     }
     if (processing && processingStartedAt > 0 && now - processingStartedAt > 30000) {
-        console.log('⚠️ [Queue] Blocage détecté — reset forcé.');
         processing = false;
         processingStartedAt = 0;
-        processQueue().catch(err => logError("Queue Force Reset Error", err));
+        processQueue().catch(err => logError("Queue Force Reset", err));
     }
-}, 30 * 1000);
+}, 30000);
 
-// ==========================================
-// MODULE 4 : SOCKET & PAIRING CODE
-// ==========================================
+// ============================================================
+// NETTOYAGE PUPPETEER
+// ============================================================
+function cleanupPuppeteerCache() {
+    try {
+        const d = path.join(os.homedir(), '.cache', 'puppeteer');
+        if (fs.existsSync(d)) fs.rmSync(d, { recursive: true, force: true });
+    } catch {}
+}
+
+// ============================================================
+// DÉMARRAGE BOT
+// ============================================================
 let reconnectAttempts = 0;
 const MAX_RECONNECT_DELAY = 30000;
 
@@ -170,69 +192,71 @@ async function startBot() {
     const sessionFolder = path.join(__dirname, global.config.sessionName || 'session');
     fs.ensureDirSync(sessionFolder);
 
-    // ✅ FIX BAD MAC : purge UNIQUEMENT les sender-keys corrompues
-    // sans jamais toucher aux creds, pre-keys ou app-state-sync
+    // ── Injection session via sessionID compressé (héritage ancien index) ──
+    if (config.sessionID && config.sessionID.includes('!')) {
+        try {
+            const b64 = config.sessionID.split('!')[1];
+            const dec = zlib.gunzipSync(Buffer.from(b64, 'base64'));
+            fs.writeFileSync(path.join(sessionFolder, 'creds.json'), dec);
+            console.log('📡 [Session] Clés injectées depuis sessionID.');
+        } catch (e) { console.error('❌ [Session] Injection error:', e.message); }
+    }
+
+    // ✅ FIX BAD MAC : purge clés Signal corrompues SANS toucher creds.json
     try {
         const credsPath = path.join(sessionFolder, 'creds.json');
         if (!fs.existsSync(credsPath)) {
             fs.emptyDirSync(sessionFolder);
-            console.log('🛡️ [Session] Première installation — session vierge initialisée.');
+            console.log('🛡️ [Session] Première installation — session vierge.');
         } else {
-            const senderKeyPattern = /^sender-key-/;
             const files = fs.readdirSync(sessionFolder);
             let purged = 0;
             for (const file of files) {
-                if (senderKeyPattern.test(file)) {
+                if (
+                    file.startsWith('sender-key-') ||
+                    file.startsWith('session-') ||
+                    file.startsWith('app-state-sync-key-')
+                ) {
                     fs.removeSync(path.join(sessionFolder, file));
                     purged++;
                 }
             }
-            if (purged > 0) {
-                console.log(`🧹 [Session] ${purged} sender-key(s) purgée(s) — re-sync en cours.`);
-            } else {
-                console.log('✅ [Session] Session propre — déchiffrement actif.');
-            }
+            if (purged > 0) console.log(`🧹 [Session] ${purged} clé(s) Signal purgée(s) — re-sync en cours.`);
+            else console.log('✅ [Session] Session propre — déchiffrement actif.');
         }
-    } catch (e) {
-        console.error('❌ [Session] Erreur nettoyage:', e);
-    }
+    } catch (e) { console.error('❌ [Session] Erreur nettoyage:', e); }
 
     const { state, saveCreds } = await useMultiFileAuthState(sessionFolder);
     const { version } = await fetchLatestBaileysVersion();
 
     const sock = makeWASocket({
         version,
-        logger: pino({ level: 'fatal' }),
+        logger: pino({ level: 'silent' }),
         printQRInTerminal: false,
         browser: Browsers.ubuntu("Chrome"),
-
-        // ✅ auth complet (inclut signalCreds pour déchiffrement E2E)
         auth: state,
 
         syncFullHistory: false,
         markOnlineOnConnect: true,
         generateHighQualityLinkPreview: true,
 
-        // ✅ FIX BAD MAC : retry augmenté
+        // ✅ FIX BAD MAC — retry + sync désactivée
+        shouldSyncHistoryMessage: () => false,
         retryRequestDelayMs: 500,
         maxMsgRetryCount: 10,
+  // ✅ Cache groupe unifié avec handler.js via global.groupMetadataCache
+        cachedGroupMetadata: async (jid) => {
+            const cached = global.groupMetadataCache?.get(jid);
+            if (cached && Date.now() - cached.ts < 5 * 60 * 1000) return cached.data;
+            return undefined;
+        },
 
-        // ✅ FIX BAD MAC : désactive la synchro d'historique (source de clés corrompues)
-        shouldSyncHistoryMessage: () => false,
-
-        // ✅ FIX BAD MAC : pas de cache groupe (force re-fetch des clés)
-        cachedGroupMetadata: async () => undefined,
-
-        // ✅ FIX : patch messages boutons/listes pour compatibilité WA multi-device
+        // ✅ FIX messages boutons/listes multi-device
         patchMessageBeforeSending: (msg) => {
-            const requiresPatch = !!(msg.buttonsMessage || msg.listMessage);
-            if (requiresPatch) {
+            if (msg.buttonsMessage || msg.listMessage) {
                 msg = {
                     viewOnceMessage: {
-                        message: {
-                            messageContextInfo: { deviceListMetadataVersion: 2 },
-                            ...msg
-                        }
+                        message: { messageContextInfo: { deviceListMetadataVersion: 2 }, ...msg }
                     }
                 };
             }
@@ -242,57 +266,58 @@ async function startBot() {
         shouldIgnoreJid: () => false,
 
         getMessage: async (key) => {
-            if (global.store) {
-                const msg = await global.store.loadMessage(key.remoteJid, key.id);
-                return msg?.message || undefined;
-            }
-            return { conversation: "GhostG-X V5.3" };
+            const msg = await global.store.loadMessage(key.remoteJid, key.id);
+            return msg?.message || { conversation: "GhostG-X V5.3" };
         }
     });
 
     sock.ev.on('creds.update', saveCreds);
     global.store.bind(sock.ev);
 
-    // --- LOGIQUE PAIRING CODE ---
+    // ── Pairing Code ──
     if (!sock.authState.creds.registered) {
-        const phoneNumber = String(global.config.supremeNumber).replace(/\D/g, '');
-        if (phoneNumber) {
+        const phone = String(global.config.supremeNumber || '').replace(/\D/g, '');
+        if (phone) {
             setTimeout(async () => {
                 try {
-                    let code = await sock.requestPairingCode(phoneNumber);
-                    code = code?.match(/.{1,4}/g)?.join("-") || code;
+                    let code = await sock.requestPairingCode(phone);
+                    code = code?.match(/.{1,4}/g)?.join('-') || code;
                     console.log(`\n╔════════════════════════════════════╗\n║      ᴠᴏᴛʀᴇ ᴄᴏᴅᴇ ᴅᴇ ᴊᴜᴍᴇʟᴀɢᴇ :      ║\n║          ${code}          ║\n╚════════════════════════════════════╝\n`);
                 } catch (err) { logError("Pairing Error", err); }
             }, 3000);
         }
     }
-// --- ÉVÉNEMENTS CONNEXION ---
+
+    // ── Événements connexion ──
     sock.ev.on('connection.update', async (update) => {
         const { connection, lastDisconnect } = update;
 
         if (connection === 'close') {
             clearQueue();
-
             const statusCode = lastDisconnect?.error?.output?.statusCode;
             const reason = statusCode || lastDisconnect?.error?.toString();
 
             if (statusCode === DisconnectReason.loggedOut) {
-                console.log('🔴 Bot déconnecté définitivement (logged out).');
+                console.log('🔴 [Bot] Déconnecté définitivement (logged out).');
                 return;
             }
 
             reconnectAttempts++;
             const delay = Math.min(5000 * reconnectAttempts, MAX_RECONNECT_DELAY);
-            console.log(`⚠️ Déconnexion (${reason}). Reconnexion dans ${delay / 1000}s... (tentative ${reconnectAttempts})`);
+            console.log(`⚠️ [Bot] Déconnexion (${reason}). Reconnexion dans ${delay / 1000}s... (tentative ${reconnectAttempts})`);
             setTimeout(() => startBot(), delay);
 
         } else if (connection === 'open') {
             reconnectAttempts = 0;
             console.log('\n✅ ɢʜᴏꜱᴛɢ-x ᴄᴏɴɴᴇᴄᴛᴇ́ !');
 
+            // initializeAntiCall si dispo dans le handler
+            try { handler.initializeAntiCall(sock); } catch {}
+
             try {
                 const totalCmds = global.commands ? global.commands.size : 0;
-                const ownerNum = global.config.supremeNumber;
+                const ownerNum  = global.config.supremeNumber;
+                const botJid    = sock.user.id.split(':')[0] + '@s.whatsapp.net';
 
                 const welcomeCaption =
                     `╭╼━≪• *ɢʜᴏsᴛɢ-x ɪs ᴀʟɪᴠᴇ* •≫━╾╮\n` +
@@ -302,120 +327,135 @@ async function startBot() {
                     `┃ *ᴄᴏᴍᴍᴀɴᴅᴇs* : ${totalCmds}\n` +
                     `┃ *ᴍᴏᴅᴇ* : ${global.config.selfMode ? '🔒 ᴘʀɪᴠé' : '🌐 ᴘᴜʙʟɪᴄ'}\n` +
                     `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
-                    `📢 *ᴄʜᴀɪɴᴇ ᴡʜᴀᴛsᴀᴘᴘ* : ${global.config.social.channel}\n\n` +
+                    `📢 *ᴄʜᴀɪɴᴇ ᴡʜᴀᴛsᴀᴘᴘ* : ${global.config.social?.channel || 'https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c'}\n\n` +
                     `📢 *ᴄʜᴀɪɴᴇ ᴛᴇʟᴇɢʀᴀᴍ* : https://t.me/ghostgxbot\n\n` +
-                    `👥 *ɢʀᴏᴜᴘᴇ* : ${global.config.social.group}\n\n` +
+                    `👥 *ɢʀᴏᴜᴘᴇ* : ${global.config.social?.group || 'https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf'}\n\n` +
                     `💻 *ᴅᴇᴠ* : wa.me/${ownerNum}\n\n` +
-                    `📖 _*"ᴊᴇ ᴘᴜɪꜱ ᴛᴏᴜᴛ ᴘᴀʀ ᴄᴇʟᴜɪ ǫᴜɪ ᴍᴇ ғᴏʀᴛɪғɪᴇ"*_ ❤️✝️\n\n` +
+                    `📖 _*"ᴊᴇ ᴘᴜɪs ᴛᴏᴜᴛ ᴘᴀʀ ᴄᴇʟᴜɪ ǫᴜɪ ᴍᴇ ғᴏʀᴛɪғɪᴇ"*_ ❤️✝️\n\n` +
                     `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
-                await sock.sendMessage(sock.user.id, {
+                await sock.sendMessage(botJid, {
                     image: { url: 'https://files.catbox.moe/2fmwpu.jpg' },
                     caption: welcomeCaption,
-                    mentions: [`${ownerNum}@s.whatsapp.net`]
-                });
-
-                const ownerJid = `${ownerNum}@s.whatsapp.net`;
-                await sock.sendMessage(ownerJid, {
-                    text: `📢 *ᴀʟᴇʀᴛᴇ ᴅᴇ ᴅᴇ́ᴍᴀʀʀᴀɢᴇ*\n\nLe bot *ɢʜᴏsᴛɢ-x* vient de s'allumer avec succès !\nMode : ${global.config.selfMode ? 'Privé 🔒' : 'Public 🌐'}`,
                     contextInfo: {
+                        mentionedJid: [botJid, `${ownerNum}@s.whatsapp.net`],
                         isForwarded: true,
+                        forwardingScore: 999,
                         forwardedNewsletterMessageInfo: {
-                            newsletterJid: global.config.social.channelJid || '120363425540434745@newsletter',
-                            newsletterName: global.config.social.channelName || 'ɢʜᴏsᴛɢ-x',
-                            serverMessageId: -1
+                            newsletterJid: global.config.social?.channelJid || '120363425540434745@newsletter',
+                            newsletterName: global.config.social?.channelName || 'ɢʜᴏsᴛɢ-x',
+                            serverMessageId: 143
                         }
                     }
                 });
 
-                // ✅ MESSAGE COMMUNAUTÉ — envoyé UNE SEULE FOIS au premier déploiement
+                await sock.sendMessage(`${ownerNum}@s.whatsapp.net`, {
+                    text: `📢 *ᴀʟᴇʀᴛᴇ ᴅᴇ ᴅᴇ́ᴍᴀʀʀᴀɢᴇ*\n\nLe bot *ɢʜᴏsᴛɢ-x* vient de s'allumer !\nMode : ${global.config.selfMode ? 'Privé 🔒' : 'Public 🌐'}`
+                });
+
+                // Message communauté — une seule fois au premier déploiement
                 const deployFlagPath = path.join(__dirname, 'database', '.deployed');
                 if (!fs.existsSync(deployFlagPath)) {
                     try {
                         await new Promise(r => setTimeout(r, 2000));
-                        await sock.sendMessage(ownerJid, {
+                        await sock.sendMessage(`${ownerNum}@s.whatsapp.net`, {
                             text:
                                 `╭╼━≪• 🌐 *ʙɪᴇɴᴠᴇɴᴜᴇ ᴅᴀɴs ɢʜᴏsᴛɢ-x* •≫━╾╮\n` +
-                                `┃\n` +
-                                `┃ Merci d'avoir déployé *ɢʜᴏsᴛɢ-x* ! 🙏🏾\n` +
-                                `┃\n` +
-                                `┃ Pour recevoir les mises à jour,\n` +
-                                `┃ obtenir du support, rejoins\n` +
-                                `┃ la communauté des déployeurs :\n` +
-                                `┃\n` +
+                                `┃ Merci d'avoir déployé *ɢʜᴏsᴛɢ-x* ! 🙏🏾\n┃\n` +
                                 `┃ 👥 *ɢʀᴏᴜᴘᴇ ᴏғғɪᴄɪᴇʟ* :\n` +
-                                `┃ https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf\n` +
-                                `┃\n` +
+                                `┃ https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf\n┃\n` +
                                 `┃ 📢 *ᴄʜᴀɪɴᴇ ᴏғғɪᴄɪᴇʟʟᴇ* :\n` +
-                                `┃ https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c\n` +
-                                `┃\n` +
+                                `┃ https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c\n┃\n` +
                                 `┃ ❤️ _Ce message ne s'affiche qu'une seule fois._\n` +
-                                `┃\n` +
-                                `*╰━━━━━━━━━━━━━━━━━━━━━━━╯*\n` +
+                                `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n` +
                                 `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
                         });
                         fs.writeFileSync(deployFlagPath, new Date().toISOString());
-                        console.log('✅ [Community] Message de bienvenue déployeur envoyé.');
-                    } catch (e) {
-                        console.error('❌ [Community] Erreur envoi message déployeur:', e);
-                    }
+                        console.log('✅ [Community] Message déployeur envoyé.');
+                    } catch (e) { console.error('❌ [Community] Erreur:', e); }
                 }
 
             } catch (err) { logError("Notification Error", err); }
         }
     });
 
-    // --- ÉVÉNEMENTS MESSAGES ---
+    // ── Messages entrants ──
     sock.ev.on('messages.upsert', async ({ messages, type }) => {
         if (type !== 'notify') return;
 
+        const now    = Date.now();
+        const prefix = global.config.prefix || '.';
+
         for (const msg of messages) {
-            if (!msg.message) continue;
+            try {
+                if (!msg.message || !msg.key?.id) continue;
+                if (msg.key.remoteJid === 'status@broadcast') continue;
 
-            const msgId = msg.key.id;
+                // Extraction du texte
+                const getText = (m) =>
+                    m?.conversation ||
+                    m?.extendedTextMessage?.text ||
+                    m?.imageMessage?.caption ||
+                    m?.videoMessage?.caption ||
+                    m?.buttonsResponseMessage?.selectedButtonId ||
+                    m?.listResponseMessage?.singleSelectReply?.selectedRowId ||
+                    m?.templateButtonReplyMessage?.selectedId || '';
 
-            if (isAlreadyProcessed(msgId)) continue;
+                const text      = getText(msg.message);
+                const senderJid = msg.key.participant || msg.key.remoteJid;
 
-            // ✅ FIX BAD MAC : fenêtre élargie à 60s pour tolérer les décalages d'horloge
-            const msgTimestamp = (msg.messageTimestamp || 0) * 1000;
-            const age = Date.now() - msgTimestamp;
-            if (age > 60000) {
-                markProcessed(msgId);
-                continue;
-            }
+                // ✅ fromMe INTELLIGENT (clé du fonctionnement de l'ancien index) :
+                // Laisse passer les commandes du bot lui-même (supreme en self-reply)
+                // Bloque uniquement ses messages normaux pour éviter les boucles
+                const isCommand = text.startsWith(prefix) ||
+                    (text.startsWith('>') && global.isSupreme(senderJid));
 
-            if (messageQueue.length >= MAX_QUEUE_SIZE) {
-                console.warn(`⚠️ [Queue] Saturée (${messageQueue.length}), message ignoré.`);
-                markProcessed(msgId);
-                continue;
-            }
+                if (msg.key.fromMe && !isCommand) continue;
 
-            markProcessed(msgId);
-            messageQueue.push({ sock, msg });
+                // ✅ Filtre d'âge 60s (tolérance décalage horloge serveur)
+                const msgTimestamp = (msg.messageTimestamp || 0) * 1000;
+                if (msgTimestamp && now - msgTimestamp > 60000) {
+                    markProcessed(msg.key.id);
+                    continue;
+                }
+
+                // ✅ Anti-doublon persistant — survit aux reconnexions
+                if (isAlreadyProcessed(msg.key.id)) continue;
+
+                // ✅ Saturation queue
+                if (messageQueue.length >= MAX_QUEUE_SIZE) {
+                    console.warn(`⚠️ [Queue] Saturée (${messageQueue.length}), message ignoré.`);
+                    markProcessed(msg.key.id);
+                    continue;
+                }
+
+                markProcessed(msg.key.id);
+                messageQueue.push({ sock, msg });
+
+            } catch (e) { logError("Upsert Loop Error", e); }
         }
 
         await processQueue().catch(err => logError("processQueue Error", err));
     });
 
-    // ✅ Gestion des updates de statut (retry WhatsApp natif)
     sock.ev.on('messages.update', async (updates) => {
-        for (const { key, update } of updates) {
+        for (const { update } of updates) {
             if (update.status !== undefined && Object.keys(update).length === 1) continue;
         }
     });
 
     sock.ev.on('messages.delete', async (update) => {
-        try { await handler.handleAntiDelete(sock, update); } catch (e) {}
+        try { await handler.handleAntiDelete(sock, update); } catch {}
     });
 
     sock.ev.on('group-participants.update', async (u) => {
-        try { await handler.handleGroupUpdate(sock, u); } catch (e) {}
+        try { await handler.handleGroupUpdate(sock, u); } catch {}
     });
 
     sock.ev.on('call', async (node) => {
         if (!global.config.anticall) return;
         try {
-            for (let call of node) {
+            for (const call of node) {
                 if (call.status === 'offer') {
                     await sock.rejectCall(call.id, call.from);
                     await sock.sendMessage(call.from, {
@@ -423,8 +463,24 @@ async function startBot() {
                     });
                 }
             }
-        } catch (e) {}
+        } catch {}
     });
+
+    return sock;
 }
 
+// ============================================================
+// LANCEMENT
+// ============================================================
+cleanupPuppeteerCache();
 startBot().catch(err => logError("Global Boot Error", err));
+
+process.on('uncaughtException', (err) => {
+    if (!err.message?.includes('ENOSPC')) logError('UncaughtException', err);
+});
+
+process.on('unhandledRejection', (err) => {
+    logError('UnhandledRejection', err);
+});
+
+module.exports = { store: global.store };
