@@ -3,7 +3,7 @@
  * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
-const { getStats } = require('../../utils/groupstats');
+const groupStats = require('../../utils/groupstats'); // Correction du require pour matcher votre handler
 
 // --- FONCTION DE CONVERSION EN SMALL CAPS ---
 const toStyledCaps = (text) => {
@@ -12,7 +12,8 @@ const toStyledCaps = (text) => {
     'a': 'ᴀ','b': 'ʙ','c': 'ᴄ','d':'ᴅ','e':'ᴇ','f':'ғ','g':'ɢ','h':'ʜ',
     'i':'ɪ','j':'ᴊ','k':'ᴋ','l':'ʟ','m':'ᴍ','n':'ɴ','o':'ᴏ','p':'ᴘ',
     'q':'ǫ','r':'ʀ','s':'ꜱ','t':'ᴛ','u':'ᴜ','v':'ᴠ','w':'ᴡ','x':'x',
-    'y':'ʏ','z':'ᴢ', '0':'₀','1':'₁','2':'₂','3':'₃','4':'₄','5':'₅','6':'₆','7':'₇','8':'₈','9':'₉'
+    'y':'ʏ','z':'ᴢ' 
+    // Retrait des chiffres en indices pour une meilleure lisibilité des stats
   };
   return String(text).toLowerCase().split('').map(c => fonts[c] || c).join('');
 };
@@ -29,7 +30,8 @@ module.exports = {
         try {
             let stats;
             try {
-                stats = getStats(from);
+                // Utilisation de la méthode appropriée selon votre export
+                stats = groupStats.getStats ? groupStats.getStats(from) : groupStats(from);
             } catch (e) {
                 console.error("Stats File Error:", e);
                 return sock.sendMessage(from, { 
@@ -37,13 +39,16 @@ module.exports = {
                 });
             }
 
-            if (!stats || stats.total === 0) {
+            // Sécurité si les stats n'existent pas ou si le total est à 0
+            if (!stats || !stats.users || Object.keys(stats.users).length === 0) {
                 return sock.sendMessage(from, { text: `📊 *${toStyledCaps("ᴀᴜᴄᴜɴᴇ ᴀᴄᴛɪᴠɪᴛᴇ ᴇɴʀᴇɢɪsᴛʀᴇᴇ ᴘᴏᴜʀ ʟᴇ ᴍᴏᴍᴇɴᴛ")}*` });
             }
 
             await react('📊');
 
-            const { total, users } = stats;
+            const total = stats.total || 0;
+            const users = stats.users;
+            
             const sortedUsers = Object.entries(users)
                 .sort((a, b) => b[1] - a[1])
                 .slice(0, 5);
@@ -55,11 +60,14 @@ module.exports = {
             text += `*┃* 📅 *${toStyledCaps('ᴘᴇʀɪᴏᴅᴇ')} :* *${toStyledCaps('ᴀᴜᴊᴏᴜʀᴅʜᴜɪ')}*\n`;
             text += `*┃* 👥 *${toStyledCaps('ᴍᴇᴍʙʀᴇs ᴀᴄᴛɪғs')} :* *${Object.keys(users).length}*\n`;
             text += `*┃*\n`;
-            text += `*┃* 🏆 *${toStyledCaps('ᴛᴏᴘ ₅ ᴅᴇs ᴅᴏᴍɪɴᴀɴᴛs')} :*\n`;
+            text += `*┃* 🏆 *${toStyledCaps('ᴛᴏᴘ 5 ᴅᴇs ᴅᴏᴍɪɴᴀɴᴛs')} :*\n`; // Chiffre normal pour la lisibilité
 
             sortedUsers.forEach(([id, count], index) => {
                 const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '👤';
-                const percentage = ((count / total) * 100).toFixed(1);
+                
+                // Sécurité anti division par zéro
+                const percentage = total > 0 ? ((count / total) * 100).toFixed(1) : "0.0";
+                
                 text += `*┃* ${medal} @${id.split('@')[0]} : *${count}* ${toStyledCaps('ᴍsɢs')} *(${percentage}%)*\n`;
             });
 
