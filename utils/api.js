@@ -1,6 +1,6 @@
 /**
  * ɢʜᴏꜱᴛɢ-x ᴍᴅ - API Integration Utilities
- * Optimized for Prestige Edition
+ * Optimized for Prestige Edition V5.3 (Fixed YouTube Video Mismatch)
  * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
@@ -13,7 +13,6 @@ const api = axios.create({
   }
 });
 
-// Utilitaire de répétition (Retry) pour les APIs instables
 const tryRequest = async (getter, attempts = 3) => {
   let lastError;
   for (let attempt = 1; attempt <= attempts; attempt++) {
@@ -28,6 +27,35 @@ const tryRequest = async (getter, attempts = 3) => {
 };
 
 const APIs = {
+  // --- YOUTUBE VIDEO (FIXED FOR YTVIDEO.JS) ---
+  getEliteProTechVideoByUrl: async (url) => {
+    try {
+      const res = await api.get(`https://api.siputzx.my.id/api/d/ytmp4?url=${encodeURIComponent(url)}`);
+      if (res.data?.status && res.data.data) {
+        return { download: res.data.data.dl || res.data.data.url, title: res.data.data.title };
+      }
+      throw new Error('Elite Source down');
+    } catch (e) { throw e; }
+  },
+
+  getYupraVideoByUrl: async (url) => {
+    try {
+      const res = await api.get(`https://api.yupra.my.id/api/downloader/ytmp4?url=${encodeURIComponent(url)}`);
+      if (res.data?.success) {
+        return { download: res.data.data.download_url, title: res.data.data.title };
+      }
+      throw new Error('Yupra Source down');
+    } catch (e) { throw e; }
+  },
+
+  getOkatsuVideoByUrl: async (url) => {
+    try {
+      const res = await api.get(`https://api.ryzendesu.vip/api/downloader/ytmp4?url=${encodeURIComponent(url)}`);
+      if (res.data?.url) return { download: res.data.url };
+      throw new Error('Okatsu Source down');
+    } catch (e) { throw e; }
+  },
+
   // --- AI & CHAT ---
   generateImage: async (prompt) => {
     try {
@@ -43,7 +71,7 @@ const APIs = {
     } catch (e) { throw new Error('ɢʜᴏsᴛɢ-x : Échec réponse AI'); }
   },
 
-  // --- YOUTUBE (MULTI-SOURCE) ---
+  // --- YOUTUBE AUDIO ---
   getIzumiDownloadByUrl: async (url) => {
     const apiUrl = `https://izumiiiiiiii.dpdns.org/downloader/youtube?url=${encodeURIComponent(url)}&format=mp3`;
     const res = await tryRequest(() => axios.get(apiUrl));
@@ -105,17 +133,6 @@ const APIs = {
       const res = await api.get(`https://tinyurl.com/api-create.php`, { params: { url } });
       return res.data;
     } catch (e) { throw new Error('ɢʜᴏsᴛɢ-x : Échec Shorten'); }
-  },
-
-  // --- RANDOM CONTENT ---
-  getMeme: async () => {
-    const res = await api.get('https://meme-api.com/gimme');
-    return res.data;
-  },
-
-  getWeather: async (city) => {
-    const res = await api.get(`https://api.siputzx.my.id/api/tools/weather`, { params: { city } });
-    return res.data;
   }
 };
 
