@@ -5,6 +5,7 @@
  */
 
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
+// Assure-toi que ce chemin est correct selon ton architecture de dossiers
 const { uploadByBuffer } = require('../../utils/uploader');
 
 // ─────────────────────────────────────────────
@@ -42,12 +43,10 @@ const getTypeIcon = (type) => {
 
 const AGM_DESIGN = (size, type, url) =>
     `*╭╼━≪• ${toStyledCaps('ᴍᴇᴅɪᴀ ᴛᴏ ᴜʀʟ')} •≫━╾╮*\n` +
-    `*┃*\n` +
     `*┃* ✅ *${toStyledCaps('sᴛᴀᴛᴜs')}* : 🟢 *${toStyledCaps('ᴜᴘʟᴏᴀᴅᴇᴅ')}*\n` +
-    `*┃* ${getTypeIcon(type)} *${toStyledCaps('ᴛʏᴘᴇ')}*  : *${toStyledCaps(type)}*\n` +
-    `*┃* ⚖️ *${toStyledCaps('sɪᴢᴇ')}*  : *${size}*\n` +
-    `*┃* 🔗 *${toStyledCaps('ʟɪɴᴋ')}*  : ${url}\n` +
-    `*┃*\n` +
+    `*┃* ${getTypeIcon(type)} *${toStyledCaps('ᴛʏᴘᴇ')}* : *${toStyledCaps(type)}*\n` +
+    `*┃* ⚖️ *${toStyledCaps('sɪᴢᴇ')}* : *${size}*\n` +
+    `*┃* 🔗 *${toStyledCaps('ʟɪɴᴋ')}* : ${url}\n` +
     `*╰━━━━━━━━━━━━━━━╯*\n` +
     `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
@@ -60,22 +59,21 @@ const MEDIA_TYPE_MAP = {
     videoMessage:    'video',
     audioMessage:    'audio',
     stickerMessage:  'sticker',
-    documentMessage: 'document',
-    // Vignettes dans viewOnceMessage, etc.
-    viewOnceMessageV2: null  // on drill plus bas si besoin
+    documentMessage: 'document'
 };
 
 /**
- * Récupère { messageContent, downloadType, labelType } depuis un objet message,
- * qu'il soit direct ou imbriqué (viewOnce, ephemeral…)
+ * Récupère { messageContent, downloadType, labelType } depuis un objet message
  */
 function detectMedia(msgObj) {
+    if (!msgObj) return null;
+    
     for (const [key, dlType] of Object.entries(MEDIA_TYPE_MAP)) {
         if (msgObj[key]) {
             return {
                 messageContent: msgObj[key],
                 downloadType:   dlType,
-                labelType:      key.replace('Message', '')
+                labelType:      dlType // Utilise directement la valeur propre ('image' au lieu de 'imageMessage')
             };
         }
     }
@@ -97,17 +95,18 @@ module.exports = {
         const from = extra.from;
 
         try {
-            // ── 1. DÉTECTION DU MÉDIA (message cité OU message direct) ──
-            const quotedMsg =
-                msg.message?.extendedTextMessage?.contextInfo?.quotedMessage ??
-                msg.message?.imageMessage      && msg.message ??
-                msg.message?.videoMessage      && msg.message ??
-                msg.message?.audioMessage      && msg.message ??
-                msg.message?.stickerMessage    && msg.message ??
-                msg.message?.documentMessage   && msg.message ??
-                null;
+            // ── 1. DÉTECTION DU MÉDIA (Cité ou Direct) ──
+            
+            // On regarde d'abord si l'utilisateur répond à un message contenant un média
+            let targetMessage = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+            
+            // Si ce n'est pas une réponse, on regarde si le message actuel contient directement le média
+            if (!targetMessage) {
+                targetMessage = msg.message;
+            }
 
-            const detected = quotedMsg ? detectMedia(quotedMsg) : null;
+            // On extrait le contenu via notre fonction de détection
+            const detected = detectMedia(targetMessage);
 
             if (!detected) {
                 return extra.reply(
@@ -135,7 +134,7 @@ module.exports = {
             const sizeStr  = formatSize(buffer.length);
             const mediaUrl = await uploadByBuffer(buffer);
 
-            // ── 5. RÉPONSE FINALE (le bug corrigé ✅) ──
+            // ── 5. RÉPONSE FINALE ──
             await sock.sendMessage(from, {
                 text: AGM_DESIGN(sizeStr, labelType, mediaUrl)
             }, { quoted: msg });
@@ -145,7 +144,8 @@ module.exports = {
         } catch (error) {
             console.error('❌ [ᴛᴏᴜʀʟ ᴇʀʀᴏʀ]:', error.message);
 
-            const isUploadFail = error.message.includes('TOUTES_SOURCES');
+            const isUploadFail = error.message.includes('TOUTES_SOURCES') || error.message.includes('upload');
+            
             await extra.reply(
                 `❌ *${toStyledCaps('ᴇᴄʜᴇᴄ')}*\n\n` +
                 `> ${toStyledCaps(isUploadFail
