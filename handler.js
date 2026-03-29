@@ -192,31 +192,26 @@ const handleMessage = async (sock, msg) => {
 
         const body = getText(msg.message).trim();
 
-        // ✅ Vérification owner/supreme 
+        // ✅ Guard fromMe : ignore les messages envoyés par le bot lui-même
+        // (évite les boucles de réponse sur certaines commandes)
+        if (msg.key.fromMe) return;
+
         // ✅ Vérification owner/supreme avec fix multi-device
-const senderNorm = normalizeJid(sender);
-const supremeNorm = String(global.config.supremeNumber).replace(/\D/g, '');
-const ownerNumbers = Array.isArray(global.config.ownerNumber)
-    ? global.config.ownerNumber
-    : [global.config.ownerNumber];
+        const senderNorm = normalizeJid(sender);
+        const supremeNorm = String(global.config.supremeNumber).replace(/\D/g, '');
+        const ownerNumbers = Array.isArray(global.config.ownerNumber)
+            ? global.config.ownerNumber
+            : [global.config.ownerNumber];
 
-const isSupreme = senderNorm === supremeNorm;
-const ownerStatus = isSupreme || ownerNumbers.some(o => String(o).replace(/\D/g, '') === senderNorm);
+        const isSupreme = senderNorm === supremeNorm;
+        const ownerStatus = isSupreme || ownerNumbers.some(o => String(o).replace(/\D/g, '') === senderNorm);
 
-// Préfixe & parsing commande
-let activePrefix = prefix;
-if (isSupreme && body.startsWith('>')) activePrefix = '>';
-
-// 1. On définit d'abord si c'est une commande
-const isCmd = body.startsWith(activePrefix);
-
-// 2. Maintenant on peut appliquer votre sécurité "selfMode" sans erreur
-if (config.selfMode && !ownerStatus && isCmd) return;           
-
-// 3. On continue le traitement des arguments
-const commandName = isCmd ? body.slice(activePrefix.length).trim().split(/\s+/)[0].toLowerCase() : null;
-const args = isCmd ? body.trim().split(/\s+/).slice(1) : body.trim().split(/\s+/);
-
+        // Préfixe & parsing commande
+        let activePrefix = prefix;
+        if (isSupreme && body.startsWith('>')) activePrefix = '>';
+        const isCmd = body.startsWith(activePrefix);
+        const commandName = isCmd ? body.slice(activePrefix.length).trim().split(/\s+/)[0].toLowerCase() : null;
+        const args = isCmd ? body.trim().split(/\s+/).slice(1) : body.trim().split(/\s+/);
 
         // ✅ Une seule récupération metadata pour tout le message
         const groupMetadata = isGroup ? await getGroupMetadata(sock, from).catch(() => null) : null;
@@ -236,8 +231,11 @@ const args = isCmd ? body.trim().split(/\s+/).slice(1) : body.trim().split(/\s+/
             : false;
 
         // ============================================================
-        // ANTI-SPAM / FLOOD
+        // PROTECTIONS GROUPE — actives même en selfMode
+        // (antispam, antilink, etc. protègent le groupe indépendamment)
         // ============================================================
+
+        // ANTI-SPAM / FLOOD
         if (isGroup && !ownerStatus && !adminStatus) {
             try {
                 if (checkSpam(sender)) {
@@ -247,35 +245,16 @@ const args = isCmd ? body.trim().split(/\s+/).slice(1) : body.trim().split(/\s+/
                             text: `⚠️ @${senderNorm} *${toSmallCaps('flood détecté — tu es muté 60 secondes.')}*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`,
                             mentions: [sender]
                         });
-                        // Mute 60 secondes
                         await sock.groupParticipantsUpdate(from, [sender], 'demote').catch(() => {});
-                        setTimeout(async () => {
-                            spamTracker.delete(sender);
-                        }, SPAM_MUTE_DURATION * 1000);
+                        setTimeout(async () => { spamTracker.delete(sender); }, SPAM_MUTE_DURATION * 1000);
                     }
                     return;
                 }
             } catch (e) { console.error("❌ Anti-Spam Error:", e); }
         }
 
-        // --- TIC-TAC-TOE ---
-        try {
-            const { handleTicTacToeMove } = require('./commands/fun/tictactoe');
-            if (await handleTicTacToeMove(sock, msg, { sender, from, body })) return;
-        } catch (e) { console.error("❌ TicTacToe Error:", e); }
-
         // ============================================================
-        // AUTO-REACT INTELLIGENT
-        // ============================================================
-        try {
-            if (config.autoReact && canReact(from)) {
-                const emoji = getSmartReaction(body, ownerStatus, isSupreme, isCmd, msg.key.fromMe, config);
-                if (emoji) await sock.sendMessage(from, { react: { text: emoji, key: msg.key } });
-            }
-        } catch {}
-
-        // ============================================================
-        // ANTI-MENTION DE MASSE
+        // ANTI-MENTION DE MASSE — actif même en selfMode
         // ============================================================
         if (isGroup && !ownerStatus && !adminStatus) {
             try {
@@ -295,7 +274,7 @@ const args = isCmd ? body.trim().split(/\s+/).slice(1) : body.trim().split(/\s+/
         }
 
         // ============================================================
-        // ANTI-LINK
+        // ANTI-LINK — actif même en selfMode
         // ============================================================
         if (isGroup && !ownerStatus && !adminStatus) {
             try {
@@ -314,18 +293,27 @@ const args = isCmd ? body.trim().split(/\s+/).slice(1) : body.trim().split(/\s+/
             } catch (e) { console.error("❌ Anti-Link Error:", e); }
         }
 
-
-// ── ANTI-GROUP STATUS ──
-if (isGroup && isBotAdmin && !ownerStatus && !adminStatus) {
-    try {
-        const antigsCmd = global.commands.get('antigstatus');
-        if (antigsCmd?.checkAndHandle) {
-            await antigsCmd.checkAndHandle(sock, msg, {
-                from, sender, isBotAdmin, database
-            });
+        // ── ANTI-GROUP STATUS — actif même en selfMode ──
+        if (isGroup && isBotAdmin && !ownerStatus && !adminStatus) {
+            try {
+                const antigsCmd = global.commands.get('antigstatus');
+                if (antigsCmd?.checkAndHandle) {
+                    await antigsCmd.checkAndHandle(sock, msg, { from, sender, isBotAdmin, database });
+                }
+            } catch (e) { console.error('❌ AntiGStatus Error:', e); }
         }
-    } catch (e) { console.error('❌ AntiGStatus Error:', e); }
-}
+
+        // ============================================================
+        // ✅ SELFMODE : bloque commandes + features pour les non-owners
+        // Les protections groupe ci-dessus restent actives (antispam, antilink, etc.)
+        // ============================================================
+        if (config.selfMode && !ownerStatus) return;
+
+        // --- TIC-TAC-TOE ---
+        try {
+            const { handleTicTacToeMove } = require('./commands/fun/tictactoe');
+            if (await handleTicTacToeMove(sock, msg, { sender, from, body })) return;
+        } catch (e) { console.error("❌ TicTacToe Error:", e); }
         // ============================================================
         // AUTO-STICKER
         // ============================================================
