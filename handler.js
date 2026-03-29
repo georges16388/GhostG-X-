@@ -192,23 +192,31 @@ const handleMessage = async (sock, msg) => {
 
         const body = getText(msg.message).trim();
 
+        // ✅ Vérification owner/supreme 
         // ✅ Vérification owner/supreme avec fix multi-device
-        const senderNorm = normalizeJid(sender);
-        const supremeNorm = String(global.config.supremeNumber).replace(/\D/g, '');
-        const ownerNumbers = Array.isArray(global.config.ownerNumber)
-            ? global.config.ownerNumber
-            : [global.config.ownerNumber];
+const senderNorm = normalizeJid(sender);
+const supremeNorm = String(global.config.supremeNumber).replace(/\D/g, '');
+const ownerNumbers = Array.isArray(global.config.ownerNumber)
+    ? global.config.ownerNumber
+    : [global.config.ownerNumber];
 
-        const isSupreme = senderNorm === supremeNorm;
-        const ownerStatus = isSupreme || ownerNumbers.some(o => String(o).replace(/\D/g, '') === senderNorm);
+const isSupreme = senderNorm === supremeNorm;
+const ownerStatus = isSupreme || ownerNumbers.some(o => String(o).replace(/\D/g, '') === senderNorm);
 
-        if (config.selfMode && !ownerStatus && isCmd) return;           // ✅ nouvelle ligne
-        // Préfixe & parsing commande
-        let activePrefix = prefix;
-        if (isSupreme && body.startsWith('>')) activePrefix = '>';
-        const isCmd = body.startsWith(activePrefix);
-        const commandName = isCmd ? body.slice(activePrefix.length).trim().split(/\s+/)[0].toLowerCase() : null;
-        const args = isCmd ? body.trim().split(/\s+/).slice(1) : body.trim().split(/\s+/);
+// Préfixe & parsing commande
+let activePrefix = prefix;
+if (isSupreme && body.startsWith('>')) activePrefix = '>';
+
+// 1. On définit d'abord si c'est une commande
+const isCmd = body.startsWith(activePrefix);
+
+// 2. Maintenant on peut appliquer votre sécurité "selfMode" sans erreur
+if (config.selfMode && !ownerStatus && isCmd) return;           
+
+// 3. On continue le traitement des arguments
+const commandName = isCmd ? body.slice(activePrefix.length).trim().split(/\s+/)[0].toLowerCase() : null;
+const args = isCmd ? body.trim().split(/\s+/).slice(1) : body.trim().split(/\s+/);
+
 
         // ✅ Une seule récupération metadata pour tout le message
         const groupMetadata = isGroup ? await getGroupMetadata(sock, from).catch(() => null) : null;
