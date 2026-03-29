@@ -73,7 +73,7 @@ module.exports = {
       const sourceLang = result.from || "unknown";
 
       // --- DESIGN PRESTIGE ---
-      let resText = `*╭╼━≪• ${toStyledCaps('ɢʜᴏsᴛɢ ᴛʀᴀɴsʟᴀᴛᴏʀ')} •≫━╾╮*\n`;
+      let resText = `*╭╼━≪•*ɢʜᴏsᴛɢ ᴛʀᴀɴsʟᴀᴛᴏʀ* •≫━╾╮*\n`;
       resText += `*┃* 🌐 *${toStyledCaps('ᴛᴏ')}* : *${toStyledCaps(targetLang)}*\n`;
       resText += `*┃* 📝 *${toStyledCaps('ᴛᴇxᴛ')}* : *${toStyledCaps(translation)}*\n`;
       resText += `*┃* ✅ *${toStyledCaps('sᴛᴀᴛᴜs')}* : 🟢 *${toStyledCaps('ᴛʀᴀɴsʟᴀᴛᴇᴅ')}*\n`;
