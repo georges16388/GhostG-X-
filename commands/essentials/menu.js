@@ -59,7 +59,9 @@ module.exports = {
       const totalFilesCount = countFiles(commandsPath);
 
       // 🔹 3. CHARGEMENT DES COMMANDES POUR LES CATÉGORIES
-      const commands = loadCommands();
+      // Au lieu de : const commands = loadCommands();
+const commands = global.commands; 
+
       const categories = {};
 
       commands.forEach((cmd, name) => {
