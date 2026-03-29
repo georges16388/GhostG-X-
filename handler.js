@@ -332,13 +332,15 @@ const handleMessage = async (sock, msg) => {
             if (global.ghostgMode !== 'off' && ownerStatus && !isCmd && body) {
                 const ghostgCmd = global.commands.get('ghostg');
                 if (ghostgCmd) {
-                    await ghostgCmd.execute(sock, msg, args, {
-                        from, sender, isGroup,
-                        isOwner: ownerStatus, isSupreme, isAdmin: adminStatus,
-                        isBotAdmin, prefix, pushName, groupMetadata,
-                        reply: (text) => sock.sendMessage(from, { text: `${text}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*` }, { quoted: msg }),
-                        react: (emoji) => sock.sendMessage(from, { react: { text: emoji, key: msg.key } })
-                    });
+                    const nlpArgs = body.trim().split(/\s+/);
+await ghostgCmd.execute(sock, msg, nlpArgs, {
+    from, sender, isGroup,
+    isOwner: ownerStatus, isSupreme, isAdmin: adminStatus,
+    isBotAdmin, prefix, pushName, groupMetadata,
+    body,
+    reply: (text) => sock.sendMessage(from, { text: `${text}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*` }, { quoted: msg }),
+    react: (emoji) => sock.sendMessage(from, { react: { text: emoji, key: msg.key } })
+});
                 }
             }
         } catch (e) { console.error("❌ GhostG Intel Error:", e); }
