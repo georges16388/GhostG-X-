@@ -11,13 +11,11 @@ const toSmallCaps = (text) => {
     return String(text).toLowerCase().split('').map(c => fonts[c] || c).join('');
 };
 
-const AGM_CONFIG = (status, mode) => `╭╼━≪• *ᴀɢᴍ ᴀᴜᴛᴏ-ʀᴇᴀᴄᴛ* •≫━╾╮
-┃ 
+const AGM_CONFIG = (status, mode) => `*╭╼━≪• *ᴀɢᴍ ᴀᴜᴛᴏ-ʀᴇᴀᴄᴛ* •≫━╾╮*
 ┃ ${toSmallCaps('sᴛᴀᴛᴜs')} : ${status ? '🟢 ᴇɴᴀʙʟᴇᴅ' : '🔴 ᴅɪsᴀʙʟᴇᴅ'}
 ┃ ${toSmallCaps('ᴍᴏᴅᴇ')} : ${toSmallCaps(mode)} ⚡
 ┃ ${toSmallCaps('sʏsᴛᴇᴍ')} : ${toSmallCaps('ᴏᴘᴇʀᴀᴛɪᴏɴᴀʟ')} ✅
-┃ 
-╰━━━━━━━━━━━━━━━╯
+*╰━━━━━━━━━━━━━━━╯*
 > *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
 module.exports = {
@@ -39,7 +37,7 @@ module.exports = {
 
       if (!opt) {
         const currentMode = config.autoReactMode || 'bot';
-        const info = `╭╼━≪• *ᴀʀ ᴏᴘᴛɪᴏɴs* •≫━╾╮\n┃\n┃ ${toSmallCaps('ᴄᴜʀʀᴇɴᴛ')} : ${config.autoReact ? '✅ ON' : '❌ OFF'}\n┃ ${toSmallCaps('ᴍᴏᴅᴇ')} : ${toSmallCaps(currentMode)}\n┃\n╰━━━━━━━━━━━━━━━╯`;
+        const info = `╭╼━≪• *ᴀʀ ᴏᴘᴛɪᴏɴs* •≫━╾╮\n┃\n┃ ${toSmallCaps('ᴄᴜʀʀᴇɴᴛ')} : ${config.autoReact ? '✅ ON' : '❌ OFF'}\n┃ ${toSmallCaps('ᴍᴏᴅᴇ')} : ${toSmallCaps(currentMode)}\n┃\n*╰━━━━━━━━━━━━━━━╯*`;
         return extra.reply(info);
       }
 
