@@ -4,7 +4,8 @@
  * Optimized for GhostG-X V5.3 (Dual Mode Video/Audio)
  */
 
-const { facebookdl } = require('@bochilteam/scraper-facebook');
+// On utilise Ruhend-Scraper qui est plus stable
+const { fbdown } = require('ruhend-scraper');
 
 const toStyledCaps = (text) => {
   if (!text) return "";
@@ -17,7 +18,6 @@ const toStyledCaps = (text) => {
   return String(text).toLowerCase().split('').map(c => fonts[c] || c).join('');
 };
 
-// ✅ url ajouté en 3ème paramètre
 const AGM_DESIGN = (quality, type, url) => {
   return (
     `*╭╼━≪• ${toStyledCaps('ғᴀᴄᴇʙᴏᴏᴋ sʏsᴛᴇᴍ')} •≫━╾╮*\n` +
@@ -62,23 +62,17 @@ module.exports = {
 
       await sock.sendMessage(chatId, { react: { text: '⏳', key: msg.key } });
 
-      const data = await facebookdl(url);
+      // --- APPEL À RUHEND SCRAPER ---
+      const data = await fbdown(url);
 
-      if (!data || !data.length) {
+      if (!data || !data.url) {
         throw new Error('Aucune vidéo trouvée');
-      }
-
-      // HD en priorité, sinon premier résultat
-      const videoRes = data.find(v => v.quality === 'hd') || data[0];
-
-      if (!videoRes?.url) {
-        throw new Error('URL vidéo introuvable');
       }
 
       if (isAudioMode) {
         // --- MODE AUDIO ---
         await sock.sendMessage(chatId, {
-          audio: { url: videoRes.url },
+          audio: { url: data.url },
           mimetype: 'audio/mpeg',
           ptt: false,
           contextInfo: {
@@ -86,17 +80,20 @@ module.exports = {
               title: toStyledCaps('ɢʜᴏsᴛ ғᴀᴄᴇʙᴏᴏᴋ ᴀᴜᴅɪᴏ'),
               body: toStyledCaps('ᴀᴜᴅɪᴏ ᴇxᴛʀᴀɪᴛ ᴀᴠᴇᴄ sᴜᴄᴄᴇs'),
               mediaType: 1,
-              showAdAttribution: false
+              showAdAttribution: false,
+              renderLargerThumbnail: false,
+              thumbnailUrl: 'https://files.catbox.moe/2fmwpu.jpg'
             }
           }
         }, { quoted: msg });
 
       } else {
         // --- MODE VIDÉO ---
+        // Ruhend fournit souvent une URL directe, on l'envoie en MP4
         await sock.sendMessage(chatId, {
-          video: { url: videoRes.url },
+          video: { url: data.url },
           mimetype: 'video/mp4',
-          caption: AGM_DESIGN(videoRes.quality, 'ᴠɪᴅᴇᴏ ʜᴅ', url), // ✅ url passé ici
+          caption: AGM_DESIGN('HD/Normal', 'ᴠɪᴅᴇᴏ', url),
           contextInfo: {
             externalAdReply: {
               title: toStyledCaps('ɢʜᴏsᴛ ғᴀᴄᴇʙᴏᴏᴋ ᴘʟᴀʏᴇʀ'),
@@ -114,7 +111,7 @@ module.exports = {
       console.error('[FB ERROR]:', error.message);
       await extra.reply(
         `❌ *${toStyledCaps('ᴇᴄʜᴇᴄ ᴅᴜ ᴛᴇʟᴇᴄʜᴀʀɢᴇᴍᴇɴᴛ')}*\n\n` +
-        `> ${toStyledCaps('sᴏᴜʀᴄᴇ ɪɴᴛʀᴏᴜᴠᴀʙʟᴇ ᴏᴜ ʟɪᴇɴ ᴇxᴘɪʀᴇ. ʀᴇᴇssᴀɪᴇ.')}`
+        `> ${toStyledCaps('ʟᴇ sᴇʀᴠᴇᴜʀ ғᴀᴄᴇʙᴏᴏᴋ ᴀ ʀᴇᴊᴇᴛᴇ ʟᴀ ʀᴇǫᴜᴇᴛᴇ ᴏᴜ ʟᴇ ᴄᴏɴᴛᴇɴᴜ ᴇsᴛ ᴘʀɪᴠᴇ.')}`
       );
       await sock.sendMessage(chatId, { react: { text: '❌', key: msg.key } });
     }
