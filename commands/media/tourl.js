@@ -1,20 +1,18 @@
 /**
  * Media To URL - AGM Cloud Edition (Catbox)
  * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
- * Optimized for V5.3 - Multi-Mime Support
+ * Optimized for V5.3 - High Compatibility
  */
 
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 const { uploadByBuffer } = require('../../utils/uploader'); 
 
-// --- FONCTION DE CONVERSION EN SMALL CAPS ---
 const toStyledCaps = (text) => {
   if (!text) return "";
   const fonts = {'a':'ᴀ','b':'ʙ','c':'ᴄ','d':'ᴅ','e':'ᴇ','f':'ғ','g':'ɢ','h':'ʜ','i':'ɪ','j':'ᴊ','k':'ᴋ','l':'ʟ','m':'ᴍ','n':'ɴ','o':'ᴏ','p':'ᴘ','q':'ǫ','r':'ʀ','s':'ꜱ','t':'ᴛ','u':'ᴜ','v':'ᴠ','w':'ᴡ','x':'x','y':'ʏ','z':'ᴢ'};
   return String(text).toLowerCase().split('').map(c => fonts[c] || c).join('');
 };
 
-// --- FONCTION DE DESIGN AGM ---
 const AGM_DESIGN = (size, type) => `*╭╼━≪• ${toStyledCaps('ᴍᴇᴅɪᴀ ᴛᴏ ᴜʀʟ')} •≫━╾╮*
 *┃*
 *┃* ✅ *${toStyledCaps('sᴛᴀᴛᴜs')}* : 🟢 *${toStyledCaps('ᴜᴘʟᴏᴀᴅᴇᴅ')}*
@@ -35,60 +33,48 @@ module.exports = {
     const from = extra.from;
 
     try {
-      // 1. Détection du message cité (Quoted) ou direct
+      // 1. DÉTECTION ROBUSTE DU MÉDIA
       const quoted = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage || msg.message;
       
-      // On cherche quel type de média est présent
-      const mimeType = Object.keys(quoted).find(key => key.endsWith('Message') && !key.includes('protocol') && !key.includes('senderKey'));
+      // On cherche la clé qui finit par 'Message' (imageMessage, videoMessage, etc.)
+      const mimeType = Object.keys(quoted).find(key => 
+        /image|video|audio|sticker|document/i.test(key) && !key.includes('protocol')
+      );
 
-      if (!quoted || !mimeType || !/image|video|audio|sticker|document/i.test(mimeType)) {
+      if (!mimeType) {
         return extra.reply(`⚠️ *${toStyledCaps('ᴠᴇᴜɪʟʟᴇᴢ ʀᴇᴘᴏɴᴅʀᴇ ᴀ ᴜɴ ᴍᴇᴅɪᴀ')}*`);
       }
 
       await sock.sendMessage(from, { react: { text: '☁️', key: msg.key } });
 
-      // 2. Extraction du type de téléchargement pour Baileys
-      const downloadType = mimeType.replace('Message', '');
-      const mediaData = quoted[mimeType];
-
-      // 3. Téléchargement et Bufférisation
-      const stream = await downloadContentFromMessage(mediaData, downloadType.toLowerCase());
+      // 2. TÉLÉCHARGEMENT DU MÉDIA
+      const messageContent = quoted[mimeType];
+      const downloadType = mimeType.replace('Message', '').toLowerCase();
+      
+      // Utilisation du stream Baileys
+      const stream = await downloadContentFromMessage(messageContent, downloadType === 'sticker' ? 'sticker' : (downloadType === 'image' ? 'image' : (downloadType === 'video' ? 'video' : 'document')));
+      
       let buffer = Buffer.from([]);
       for await (const chunk of stream) {
         buffer = Buffer.concat([buffer, chunk]);
       }
 
-      if (buffer.length === 0) throw new Error('Download failed: Buffer empty');
+      if (!buffer || buffer.length === 0) throw new Error('Buffer vide');
 
-      // 4. Infos Techniques
+      // 3. INFOS & UPLOAD
       const sizeStr = (buffer.length / (1024 * 1024)).toFixed(2) + ' ᴍʙ';
-      const typeStr = downloadType.toUpperCase();
-
-      // 5. Upload via ton utilitaire uploader.js (Catbox)
+      
+      // Appel à l'uploader corrigé
       const mediaUrl = await uploadByBuffer(buffer); 
 
-      // 6. Envoi du résultat final
-      const finalCaption = `${AGM_DESIGN(sizeStr, typeStr)}\n\n🔗 *${toStyledCaps('ʟɪɴᴋ')} :* ${mediaUrl}`;
-
-      await sock.sendMessage(from, {
-        text: finalCaption,
-        contextInfo: {
-          externalAdReply: {
-            title: "ɢʜᴏsᴛ ᴄʟᴏᴜᴅ sʏsᴛᴇᴍ",
-            body: toStyledCaps("transfert securise effectue"),
-            // On affiche la miniature si c'est une image < 1MB
-            thumbnail: /image/i.test(mimeType) && buffer.length < 1000000 ? buffer : null, 
-            mediaType: 1,
-            showAdAttribution: false
-          }
-        }
-      }, { quoted: msg });
+      // 4. RÉPONSE FINALE
+      const finalCaption = `${AGM_DESIGN(sizeStr, mimeType.replace('Message',''))}\n\n🔗 *${toStyledCaps('ʟɪɴᴋ')} :* ${mediaUrl}`;
 
       await sock.sendMessage(from, { react: { text: '✅', key: msg.key } });
 
     } catch (error) {
-      console.error('[TOURL ERROR]:', error);
-      await extra.reply(`❌ *${toStyledCaps('ᴇʀʀᴇᴜʀ sʏsᴛᴇᴍᴇ ʟᴏʀs ᴅᴇ ʟᴜᴘʟᴏᴀᴅ')}*`);
+      console.error('❌ [ᴛᴏᴜʀʟ ᴇʀʀᴏʀ]:', error);
+      await extra.reply(`❌ *${toStyledCaps('ᴇʀʀᴇᴜʀ')}* : ${toStyledCaps('ʟᴇ sᴇʀᴠᴇᴜʀ ᴅᴇ sᴛᴏᴄᴋᴀɢᴇ ɴᴇ ʀᴇᴘᴏɴᴅ ᴘᴀs')}`);
       await sock.sendMessage(from, { react: { text: '❌', key: msg.key } });
     }
   }
