@@ -40,13 +40,11 @@ const truncate = (text, max = 28) =>
 
 const AGM_PREVIEW = (title, duration, views, author) =>
     `*╭╼━≪• ${toStyledCaps('ʏᴏᴜᴛᴜʙᴇ ᴍᴜsɪᴄ')} •≫━╾╮*\n` +
-    `*┃*\n` +
-    `*┃* 🎵 *${toStyledCaps('sᴏɴɢ')}*     : *${toStyledCaps(truncate(title))}*\n` +
-    `*┃* 👤 *${toStyledCaps('ᴀʀᴛɪsᴛ')}*   : *${toStyledCaps(truncate(author, 22))}*\n` +
+    `*┃* 🎵 *${toStyledCaps('sᴏɴɢ')}* : *${toStyledCaps(truncate(title))}*\n` +
+    `*┃* 👤 *${toStyledCaps('ᴀʀᴛɪsᴛ')}* : *${toStyledCaps(truncate(author, 22))}*\n` +
     `*┃* ⏱️ *${toStyledCaps('ᴅᴜʀᴀᴛɪᴏɴ')}* : *${toStyledCaps(duration || 'ɴ/ᴀ')}*\n` +
-    `*┃* 👁️ *${toStyledCaps('ᴠɪᴇᴡs')}*    : *${toStyledCaps(formatViews(views))}*\n` +
-    `*┃* ⏳ *${toStyledCaps('sᴛᴀᴛᴜs')}*   : 🟡 *${toStyledCaps('ᴘʀᴏᴄᴇssɪɴɢ...')}*\n` +
-    `*┃*\n` +
+    `*┃* 👁️ *${toStyledCaps('ᴠɪᴇᴡs')}* : *${toStyledCaps(formatViews(views))}*\n` +
+    `*┃* ⏳ *${toStyledCaps('sᴛᴀᴛᴜs')}* : 🟡 *${toStyledCaps('ᴘʀᴏᴄᴇssɪɴɢ...')}*\n` +
     `*╰━━━━━━━━━━━━━━━╯*\n` +
     `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
@@ -61,10 +59,10 @@ const AGM_FINAL = (title, duration, views, author) =>
     `  👤  ${toStyledCaps(truncate(author, 24))}\n` +
     `  ⏱️  ${toStyledCaps(duration || 'ɴ/ᴀ')}   •   👁️  ${toStyledCaps(formatViews(views))}\n` +
     `\n` +
-    `  ✅  *${toStyledCaps('ᴅᴏᴡɴʟᴏᴀᴅ ᴄᴏᴍᴘʟᴇᴛᴇ')}*  •  🎧 *ʜɪɢʜ ǫᴜᴀʟɪᴛʏ*\n` +
+    `  ✅  *${toStyledCaps('ᴅᴏᴡɴʟᴏᴀᴅ ᴄᴏᴍᴘʟᴇᴛᴇ')}* •  🎧 *ʜɪɢʜ ǫᴜᴀʟɪᴛʏ*\n` +
     `\n` +
     `*━━━━━━━━━━━━━━━━━━━━━━*\n` +
-    `> *-ّ⸙𓆩 ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ*`;
+    `>  *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
 // ─────────────────────────────────────────────
 // EXTRACTION ID YOUTUBE
@@ -102,8 +100,7 @@ const downloadAudioBuffer = (url) =>
 // RÉSOLUTION AUDIO (3 sources + fallback APIs)
 // ─────────────────────────────────────────────
 
-
-    const resolveAudio = async (videoUrl) => {
+const resolveAudio = async (videoUrl) => {
     // ── Source 1 : ytdl-core (buffer) ──
     try {
         console.log('[SONG] Tentative ytdl-core...');
@@ -129,42 +126,10 @@ const downloadAudioBuffer = (url) =>
         console.warn('[SONG] btch-downloader échoué:', e.message);
     }
 
-    // ── Source 3 : APIs fallback (noms corrects) ──
+    // ── Source 3 : APIs fallback (fusionnées) ──
     const methods = [
         APIs.getIzumiDownloadByUrl,
-        APIs.getYupraDownloadByUrl
-    ].filter(Boolean);
-
-    for (const method of methods) {
-        try {
-            console.log('[SONG] Tentative API fallback...');
-            const res = await method(videoUrl);
-            const audioUrl = res?.download ?? res?.url ?? null;
-            if (audioUrl?.startsWith('http')) {
-                console.log('[SONG] API fallback ✅');
-                return { type: 'url', data: audioUrl };
-            }
-        } catch (_) { /* tentative suivante */ }
-    }
-
-    return null;
-};
-
-    // ── Source 2 : btch-downloader (URL) ──
-    try {
-        console.log('[SONG] Tentative btch-downloader...');
-        const res = await ytmp3(videoUrl);
-        const url = res?.dl ?? res?.url ?? res?.download ?? null;
-        if (url?.startsWith('http')) {
-            console.log('[SONG] btch-downloader ✅');
-            return { type: 'url', data: url };
-        }
-    } catch (e) {
-        console.warn('[SONG] btch-downloader échoué:', e.message);
-    }
-
-    // ── Source 3 : APIs fallback ──
-    const methods = [
+        APIs.getYupraDownloadByUrl,
         APIs.getEliteProTechAudioByUrl,
         APIs.getYupraAudioByUrl,
         APIs.getOkatsuAudioByUrl
@@ -174,10 +139,10 @@ const downloadAudioBuffer = (url) =>
         try {
             console.log('[SONG] Tentative API fallback...');
             const res = await method(videoUrl);
-            const url = res?.download ?? res?.url ?? res?.link ?? null;
-            if (url?.startsWith('http')) {
+            const audioUrl = res?.download ?? res?.url ?? res?.link ?? null;
+            if (audioUrl?.startsWith('http')) {
                 console.log('[SONG] API fallback ✅');
-                return { type: 'url', data: url };
+                return { type: 'url', data: audioUrl };
             }
         } catch (_) { /* tentative suivante */ }
     }
@@ -259,8 +224,6 @@ module.exports = {
             if (!resolved) throw new Error('ALL_SOURCES_FAILED');
 
             // ── 4. ENVOI AUDIO + DESIGN FINAL ──
-            // FIX : caption non supporté sur audioMessage dans Baileys
-            // → on envoie le design en texte AVANT l'audio
             await sock.sendMessage(chatId, {
                 text: AGM_FINAL(title, durationStr, views, authorName)
             }, { quoted: msg });
