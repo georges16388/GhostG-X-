@@ -42,7 +42,7 @@ module.exports = {
       // On utilise pushName pour personnaliser l'auteur du sticker dynamiquement
       const stickerBuffer = await createStickerBuffer(buffer, { 
         pack: "ᴛʀᴜᴛʜ ᴅᴇᴠɪᴄᴇs 💠", 
-        author: `ɢʜᴏsᴛɢ-𝐗 ( ${pushName} )` 
+        author: `ɢʜᴏsᴛɢ-𝐗` 
       });
 
       // 🔹 4. ENVOI FINAL
