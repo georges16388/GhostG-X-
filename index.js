@@ -168,7 +168,7 @@ async function startBot() {
 
     // --- ÉVÉNEMENTS MESSAGES ---
     // J'ai laissé cette ligne ici pour respecter votre structure d'origine sans rien supprimer !
-    sock.ev.on('creds.update', saveCreds);
+    
 
     sock.ev.on('messages.upsert', async ({ messages, type }) => {
         if (type !== 'notify') return;
