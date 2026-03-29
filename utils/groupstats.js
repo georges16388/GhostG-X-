@@ -1,78 +1,75 @@
 /**
  * Group Analytics System - AGM Group-Stats
- * Typographie : ꜱᴍᴀʟʟ ᴄᴀᴘꜱ ᴘʀᴇᴍɪᴜᴍ
- * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
+ * Powered by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
-const fs = require('fs');
+const fs = require('fs-extra'); // Plus rapide et gère mieux les erreurs
 const path = require('path');
 
-const DB_DIR = path.join(__dirname, '../database');
-const DB_PATH = path.join(DB_DIR, 'groupStats.json');
+const DB_PATH = path.join(__dirname, '../database/groupStats.json');
 
-// --- INITIALISATION SÉCURISÉE ---
-if (!fs.existsSync(DB_DIR)) {
-    fs.mkdirSync(DB_DIR, { recursive: true });
-}
+// Cache en mémoire pour éviter de lire le disque à chaque message
+let statsCache = {};
 
-function loadDB() {
+// Initialisation au démarrage
+if (fs.existsSync(DB_PATH)) {
     try {
-        if (!fs.existsSync(DB_PATH)) return {};
-        return JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
+        statsCache = fs.readJsonSync(DB_PATH);
     } catch (e) {
-        console.error('❌ [ᴀɢᴍ_ꜱᴛᴀᴛꜱ_ʟᴏᴀᴅ_ᴇʀʀᴏʀ] :', e.message);
-        return {};
-    }
-}
-
-function saveDB(data) {
-    try {
-        fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2));
-    } catch (err) {
-        console.error('❌ [ᴀɢᴍ_ꜱᴛᴀᴛꜱ_ꜱᴀᴠᴇ_ᴇʀʀᴏʀ] :', err);
+        statsCache = {};
     }
 }
 
 /**
- * Enregistre l'activité d'un membre
+ * Enregistre l'activité d'un membre (Optimisé RAM)
  */
 function addMessage(groupId, senderId) {
-    const db = loadDB();
     const today = new Date().toISOString().slice(0, 10);
     const hour = new Date().getHours().toString();
 
-    // Nettoyage de l'ID JID (ex: remove :1)
-    const cleanSender = senderId.split('@')[0];
-
-    if (!db[groupId]) db[groupId] = {};
-    if (!db[groupId][today]) {
-        db[groupId][today] = {
+    if (!statsCache[groupId]) statsCache[groupId] = {};
+    if (!statsCache[groupId][today]) {
+        statsCache[groupId][today] = {
             total: 0,
             users: {},
             hours: {}
         };
     }
 
-    const g = db[groupId][today];
+    const g = statsCache[groupId][today];
     g.total++;
-    g.users[cleanSender] = (g.users[cleanSender] || 0) + 1;
+    
+    // On garde le JID complet en interne, on splittera à l'affichage
+    g.users[senderId] = (g.users[senderId] || 0) + 1;
     g.hours[hour] = (g.hours[hour] || 0) + 1;
 
-    saveDB(db);
+    // Sauvegarde asynchrone pour ne pas bloquer le bot
+    saveToDisk();
+}
+
+// Fonction de sauvegarde "Debounce" (évite d'écrire 100 fois par seconde)
+let saveTimeout;
+function saveToDisk() {
+    if (saveTimeout) return;
+    saveTimeout = setTimeout(() => {
+        fs.writeJson(DB_PATH, statsCache, { spaces: 2 })
+            .catch(err => console.error('❌ [ᴀɢᴍ_ꜱᴛᴀᴛꜱ_ꜱᴀᴠᴇ_ᴇʀʀᴏʀ] :', err));
+        saveTimeout = null;
+    }, 5000); // Sauvegarde toutes les 5 secondes s'il y a du mouvement
 }
 
 /**
- * Récupère le Top 5 des membres les plus actifs
+ * Récupère le Top 5 des membres
  */
 function getTopActive(groupId) {
-    const db = loadDB();
     const today = new Date().toISOString().slice(0, 10);
-    if (!db[groupId] || !db[groupId][today]) return null;
+    if (!statsCache[groupId] || !statsCache[groupId][today]) return null;
 
-    const users = db[groupId][today].users;
+    const users = statsCache[groupId][today].users;
     return Object.entries(users)
         .sort(([, a], [, b]) => b - a)
-        .slice(0, 5); // Retourne le Top 5
+        .slice(0, 5);
 }
 
-module.exports = { addMessage, getTopActive };
+// Export des fonctions et du cache pour l'accès direct
+module.exports = { addMessage, getTopActive, statsCache };
