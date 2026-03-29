@@ -1,18 +1,17 @@
 /**
  * Song Downloader - AGM Music Edition
  * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
- * Optimized for V5.3 - Multi-API Sync
+ * Source : ytdl-core + btch-downloader fallback
  */
 
 const yts = require('yt-search');
-const axios = require('axios');
-const APIs = require('../../utils/api');
+const ytdl = require('ytdl-core');
+const { ytmp3 } = require('btch-downloader');
 
-// --- FONCTION DE CONVERSION EN SMALL CAPS ---
 const toStyledCaps = (text) => {
   if (!text) return "";
   const fonts = {
-    'a': 'ᴀ','b': 'ʙ','c': 'ᴄ','d':'ᴅ','e':'ᴇ','f':'ғ','g':'ɢ','h':'ʜ',
+    'a':'ᴀ','b':'ʙ','c':'ᴄ','d':'ᴅ','e':'ᴇ','f':'ғ','g':'ɢ','h':'ʜ',
     'i':'ɪ','j':'ᴊ','k':'ᴋ','l':'ʟ','m':'ᴍ','n':'ɴ','o':'ᴏ','p':'ᴘ',
     'q':'ǫ','r':'ʀ','s':'ꜱ','t':'ᴛ','u':'ᴜ','v':'ᴠ','w':'ᴡ','x':'x',
     'y':'ʏ','z':'ᴢ'
@@ -20,18 +19,37 @@ const toStyledCaps = (text) => {
   return String(text).toLowerCase().split('').map(c => fonts[c] || c).join('');
 };
 
-// --- FONCTION DE DESIGN AGM ---
-const AGM_DESIGN = (title, duration, url) => {
+const AGM_DESIGN = (title, duration) => {
   const shortTitle = title.length > 25 ? title.substring(0, 22) + '...' : title;
-  return `*╭╼━≪• ${toStyledCaps('ʏᴏᴜᴛᴜʙᴇ ᴍᴜsɪᴄ')} •≫━╾╮*
-*┃*
-*┃* 🎵 *${toStyledCaps('sᴏɴɢ')}* : *${toStyledCaps(shortTitle)}*
-*┃* ⏱️ *${toStyledCaps('ᴅᴜʀᴀᴛɪᴏɴ')}* : *${duration}*
-*┃* 🟢 *${toStyledCaps('sᴛᴀᴛᴜs')}* : *${toStyledCaps('ᴅᴏᴡɴʟᴏᴀᴅɪɴɢ')}...*
-*┃* 🔗 *${toStyledCaps('ʟɪᴇɴ')}* : ${url}
-*┃*
-*╰━━━━━━━━━━━━━━━╯*
-> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+  return (
+    `*╭╼━≪• ${toStyledCaps('ʏᴏᴜᴛᴜʙᴇ ᴍᴜsɪᴄ')} •≫━╾╮*\n` +
+    `*┃*\n` +
+    `*┃* 🎵 *${toStyledCaps('sᴏɴɢ')}* : *${toStyledCaps(shortTitle)}*\n` +
+    `*┃* ⏱️ *${toStyledCaps('ᴅᴜʀᴀᴛɪᴏɴ')}* : *${duration}*\n` +
+    `*┃* 🟢 *${toStyledCaps('sᴛᴀᴛᴜs')}* : *${toStyledCaps('ᴅᴏᴡɴʟᴏᴀᴅɪɴɢ')}...*\n` +
+    `*┃*\n` +
+    `*╰━━━━━━━━━━━━━━━╯*\n` +
+    `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+  );
+};
+
+// Télécharge l'audio en buffer via ytdl-core
+const downloadAudioBuffer = (url) => {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    const stream = ytdl(url, {
+      quality: 'highestaudio',
+      filter: 'audioonly',
+      requestOptions: {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        }
+      }
+    });
+    stream.on('data', chunk => chunks.push(chunk));
+    stream.on('end', () => resolve(Buffer.concat(chunks)));
+    stream.on('error', reject);
+  });
 };
 
 module.exports = {
@@ -52,65 +70,90 @@ module.exports = {
 
       await sock.sendMessage(chatId, { react: { text: "🎧", key: msg.key } });
 
+      // Recherche de la vidéo
       let video;
       const ytUrlPattern = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/;
 
       if (ytUrlPattern.test(text)) {
         const videoId = text.match(/(?:youtu\.be\/|v=|embed\/|shorts\/|watch\?v=)([a-zA-Z0-9_-]{11})/)?.[1];
         video = await yts({ videoId: videoId || text });
+        if (!video?.title) {
+          const search = await yts(text);
+          video = search.videos?.[0];
+        }
       } else {
         const search = await yts(text);
-        if (!search || !search.videos.length) {
-            return extra.reply(`❌ *${toStyledCaps('ᴀᴜᴄᴜɴ ʀᴇsᴜʟᴛᴀᴛ ᴛʀᴏᴜᴠᴇ')}*`);
+        if (!search?.videos?.length) {
+          return extra.reply(`❌ *${toStyledCaps('ᴀᴜᴄᴜɴ ʀᴇsᴜʟᴛᴀᴛ ᴛʀᴏᴜᴠᴇ')}*`);
         }
         video = search.videos[0];
       }
 
-      // 1. Envoi de l'aperçu
+      if (!video?.url) {
+        return extra.reply(`❌ *${toStyledCaps('ᴠɪᴅᴇᴏ ɪɴᴛʀᴏᴜᴠᴀʙʟᴇ')}*`);
+      }
+
+      const duration = video.timestamp || video.duration?.timestamp || '??:??';
+      const thumbnail = video.thumbnail || video.image;
+
+      // Envoi de l'aperçu SANS lien dans le thumbnail
       await sock.sendMessage(chatId, {
-        image: { url: video.thumbnail || video.image },
-        caption: AGM_DESIGN(video.title, video.timestamp || video.duration?.timestamp || '00:00', video.url),
+        image: { url: thumbnail },
+        caption: AGM_DESIGN(video.title, duration),
         contextInfo: {
           externalAdReply: {
-            title: "ɢʜᴏsᴛ ᴍᴜsɪᴄ sʏsᴛᴇᴍ",
-            body: toStyledCaps("recherche du meilleur flux audio"),
+            title: toStyledCaps('ɢʜᴏsᴛ ᴍᴜsɪᴄ sʏsᴛᴇᴍ'),
+            body: toStyledCaps('téléchargement en cours...'),
             mediaType: 1,
-            thumbnailUrl: video.thumbnail || video.image,
             showAdAttribution: false
+            // ✅ thumbnailUrl retiré = plus de lien affiché
           }
         }
       }, { quoted: msg });
 
-      // --- SYSTÈME DE FALLBACK MULTI-API (SYNCHRO AVEC APIS.JS) ---
-      const apiMethods = [
-        APIs.getYupraDownloadByUrl,  // Très stable en MP3
-        APIs.getIzumiDownloadByUrl,   // Excellent secours
-        APIs.getEliteProTechVideoByUrl // Fonctionne aussi car souvent multi-format
-      ];
-
+      // ============================================================
+      // TÉLÉCHARGEMENT : ytdl-core → btch-downloader fallback
+      // ============================================================
+      let audioBuffer = null;
       let finalUrl = null;
-      for (const method of apiMethods) {
-        try {
-          const res = await method(video.url);
-          finalUrl = res?.download || res?.dl || res?.url;
-          if (finalUrl) break;
-        } catch (e) { continue; }
+
+      // Méthode 1 : ytdl-core (buffer direct, le plus fiable sur VPS)
+      try {
+        console.log('[SONG] Tentative ytdl-core...');
+        audioBuffer = await downloadAudioBuffer(video.url);
+        console.log('[SONG] ytdl-core ✅', audioBuffer.length, 'bytes');
+      } catch (e) {
+        console.warn('[SONG] ytdl-core échoué:', e.message);
       }
 
-      if (!finalUrl) throw new Error('Toutes les sources audio ont échoué');
+      // Méthode 2 : btch-downloader (URL directe)
+      if (!audioBuffer) {
+        try {
+          console.log('[SONG] Tentative btch-downloader...');
+          const result = await ytmp3(video.url);
+          finalUrl = result?.dl || result?.url || result?.download;
+          if (finalUrl) console.log('[SONG] btch-downloader ✅');
+        } catch (e) {
+          console.warn('[SONG] btch-downloader échoué:', e.message);
+        }
+      }
 
-      // 2. Envoi du fichier audio final (Directement par URL pour économiser la RAM)
+      if (!audioBuffer && !finalUrl) {
+        throw new Error('Toutes les sources audio ont échoué');
+      }
+
+      // Envoi de l'audio
+      const audioPayload = audioBuffer
+        ? { audio: audioBuffer, mimetype: 'audio/mpeg', fileName: `${video.title}.mp3`, ptt: false }
+        : { audio: { url: finalUrl }, mimetype: 'audio/mpeg', fileName: `${video.title}.mp3`, ptt: false };
+
       await sock.sendMessage(chatId, {
-        audio: { url: finalUrl },
-        mimetype: 'audio/mpeg',
-        fileName: `${video.title}.mp3`,
-        ptt: false,
+        ...audioPayload,
         contextInfo: {
           externalAdReply: {
-            title: video.title,
-            body: toStyledCaps("ɢʜᴏsᴛɢ-x ᴘʀᴇsᴛɪɢᴇ ᴀᴜᴅɪᴏ"),
+            title: video.title.substring(0, 60),
+            body: toStyledCaps('ɢʜᴏsᴛɢ-x ᴘʀᴇsᴛɪɢᴇ ᴀᴜᴅɪᴏ'),
             mediaType: 1,
-            thumbnailUrl: video.thumbnail || video.image,
             renderLargerThumbnail: true,
             showAdAttribution: false
           }
@@ -120,8 +163,11 @@ module.exports = {
       await sock.sendMessage(chatId, { react: { text: "✅", key: msg.key } });
 
     } catch (err) {
-      console.error('[SONG ERROR]:', err);
-      await extra.reply(`❌ *${toStyledCaps('ʟᴇ ᴛᴇʟᴇᴄʜᴀʀɢᴇᴍᴇɴᴛ ᴀ ᴇᴄʜᴏᴜᴇ. sᴏᴜʀᴄᴇs ɪɴᴅɪsᴘᴏɴɪʙʟᴇs')}.*`);
+      console.error('[SONG ERROR]:', err.message);
+      await extra.reply(
+        `❌ *${toStyledCaps('ᴛᴇʟᴇᴄʜᴀʀɢᴇᴍᴇɴᴛ ᴇᴄʜᴏᴜᴇ')}*\n\n` +
+        `> ${toStyledCaps('sources indisponibles. réessaie dans quelques secondes.')}`
+      );
       await sock.sendMessage(chatId, { react: { text: "❌", key: msg.key } });
     }
   }
