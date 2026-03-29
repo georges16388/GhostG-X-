@@ -1,22 +1,22 @@
 /**
  * ɢʜᴏꜱᴛɢ-x ᴍᴅ - ᴍᴀɪɴ ᴇɴᴛʀʏ ᴘᴏɪɴᴛ (Prestige Edition V5.3 - FULL FUSION)
- * Optimized for Baileys v6.7.9 & Pino v9+
- * Powered by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
-const { useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion, Browsers, makeCacheableSignalKeyStore } = require('@whiskeysockets/baileys');
-
-// LA CORRECTION EST ICI : On l'importe à part
-const { makeInMemoryStore } = require('@whiskeysockets/baileys');
-
-// CORRECTION N°2 : Import direct de makeWASocket
-const makeWASocket = require('@whiskeysockets/baileys').default;
+// CENTRALISATION DES IMPORTS BAILEYS (Correction Finale)
+const { 
+    default: makeWASocket, 
+    useMultiFileAuthState, 
+    DisconnectReason, 
+    fetchLatestBaileysVersion, 
+    Browsers, 
+    makeCacheableSignalKeyStore, 
+    makeInMemoryStore // C'est ici que la magie opère
+} = require('@whiskeysockets/baileys');
 
 const pino = require('pino');
 const fs = require('fs-extra'); 
 const path = require('path');
-
-
+// ... le reste de tes imports
 
 // ==========================================
 // MODULE 1 : CONFIGURATION & STORE PRO
