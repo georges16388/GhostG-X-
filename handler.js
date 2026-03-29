@@ -1,3 +1,5 @@
+use strict';
+
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 const database = require('./database');
 const groupStats = require('./utils/groupstats');
@@ -5,9 +7,14 @@ const { loadCommands } = require('./utils/commandLoader');
 const { createStickerBuffer } = require('./utils/sticker');
 
 // ============================================================
+// INITIALISATION DES COMMANDES
+// ============================================================
+global.commands = loadCommands();
+
+// ============================================================
 // SYSTÈME ANTI-SPAM / ANTI-FLOOD
 // ============================================================
-const spamTracker = new Map(); // { jid: { count, firstMsg, warned } }
+const spamTracker = new Map();   // { jid: { count, firstMsg, warned } }
 const reactionCooldown = new Map();
 const SPAM_LIMIT = 5;
 const SPAM_WINDOW = 4000;       // 4 secondes
@@ -35,22 +42,23 @@ const markSpamWarned = (jid) => {
 setInterval(() => {
     const now = Date.now();
     for (const [jid, data] of spamTracker) {
-        if (now - data.firstMsg > SPAM_WINDOW * 5) spamTracker.delete(jid);
+        if (now - data.firstMsg > SPAM_WINDOW * 10) spamTracker.delete(jid);
     }
-}, 120000);
+}, 120_000);
+
+// Nettoyage cooldown réaction toutes les 5 minutes
+setInterval(() => {
+    const now = Date.now();
+    for (const [jid, ts] of reactionCooldown) {
+        if (now - ts > 60_000) reactionCooldown.delete(jid);
+    }
+}, 300_000);
 
 // ============================================================
-// INITIALISATION DES COMMANDES
-// ============================================================
-global.commands = loadCommands();
-
-// ============================================================
-// CACHE METADATA GROUPE — partagé avec index.js via global
-// ✅ FIX : exposé globalement pour que cachedGroupMetadata
-//    de Baileys (index.js) puisse lire le même cache
+// CACHE METADATA GROUPE
 // ============================================================
 const metadataCache = new Map();
-global.groupMetadataCache = metadataCache; // ← synchronisation avec index.js
+global.groupMetadataCache = metadataCache;
 const METADATA_TTL = 5 * 60 * 1000; // 5 minutes
 
 const getGroupMetadata = async (sock, groupId) => {
@@ -65,7 +73,7 @@ const getGroupMetadata = async (sock, groupId) => {
 // UTILITAIRES
 // ============================================================
 
-// ✅ Cooldown réaction : 1 réaction max toutes les 3s par JID
+// Cooldown réaction : 1 réaction max toutes les 3s par JID
 const canReact = (jid) => {
     const now = Date.now();
     const last = reactionCooldown.get(jid) || 0;
@@ -74,7 +82,7 @@ const canReact = (jid) => {
     return true;
 };
 
-// ✅ FIX MULTI-DEVICE : supprime le suffixe :XX avant extraction du numéro
+// FIX MULTI-DEVICE : supprime le suffixe :XX avant extraction du numéro
 const normalizeJid = (jid) => {
     if (!jid) return null;
     return jid.replace(/:[0-9]+@/, '@').split('@')[0].replace(/\D/g, '');
@@ -90,17 +98,6 @@ const toSmallCaps = (text) => {
     return String(text).toLowerCase().split('').map(c => fonts[c] || c).join('');
 };
 
-// isAdmin via cache + normalizeJid
-const isAdmin = async (sock, participant, groupId) => {
-    if (!groupId?.endsWith('@g.us')) return false;
-    try {
-        const metadata = await getGroupMetadata(sock, groupId);
-        const participantNorm = normalizeJid(participant);
-        const p = metadata.participants.find(v => normalizeJid(v.id) === participantNorm);
-        return p?.admin === 'admin' || p?.admin === 'superadmin';
-    } catch { return false; }
-};
-
 // ============================================================
 // NOTIFICATION CRASH AU OWNER (VPS 24/7)
 // ============================================================
@@ -113,7 +110,8 @@ const notifyOwnerCrash = async (context, err) => {
         const msg =
             `🚨 *ɢʜᴏsᴛɢ-x ᴄʀᴀꜱʜ ᴀʟᴇʀᴛ*\n\n` +
             `📍 *Contexte* : ${context}\n` +
-            `❌ *Erreur* : ${err?.message || err}\n` +
+            `❌ *Erreur* : ${err?.message || String(err)}\n` +
+            `📚 *Stack* : ${(err?.stack || '').split('\n').slice(0, 3).join(' | ')}\n` +
             `🕐 *Heure* : ${new Date().toLocaleString('fr-FR', { timeZone: 'Africa/Ouagadougou' })}\n\n` +
             `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
         await _sockRef.sendMessage(ownerJid, { text: msg });
@@ -123,20 +121,19 @@ const notifyOwnerCrash = async (context, err) => {
 // ============================================================
 // AUTO-REACT INTELLIGENT
 // ============================================================
-const getSmartReaction = (body, ownerStatus, isSupreme, isCmd, fromMe, config) => {
-    if (fromMe) return null;
+const getSmartReaction = (body, ownerStatus, isSupreme, isCmd, config) => {
     if (isSupreme) return config.supremeReact || '👑';
     if (ownerStatus) return '🌟';
 
     const b = body.toLowerCase();
     if (b.match(/merci|thanks|thank you|🙏/)) return '❤️';
-    if (b.match(/bonjour|bonsoir|salut|hello|hi|hey/)) return '👋🏾';
+    if (b.match(/bonjour|bonsoir|salut|hello|hi\b|hey\b/)) return '👋🏾';
     if (b.match(/lol|😂|haha|mdr|ptdr/)) return '😂';
     if (b.match(/wow|waoh|incroyable|amazing/)) return '🔥';
     if (b.match(/rip|mort|dead|💀/)) return '💀';
     if (b.match(/love|amour|❤️|😍/)) return '😍';
-    if (b.match(/non|no|jamais|never/)) return '😏';
-    if (b.match(/oui|yes|ok|d\'accord/)) return '✅';
+    if (b.match(/\bnon\b|jamais|never/)) return '😏';
+    if (b.match(/\boui\b|yes|ok|d'accord/)) return '✅';
     if (isCmd) return '⚡';
 
     const emojis = ['⚡','🔥','✨','❤️','🙏🏾','😉','✝️','😎','🫂','💫','🌟','💎'];
@@ -144,83 +141,89 @@ const getSmartReaction = (body, ownerStatus, isSupreme, isCmd, fromMe, config) =
 };
 
 // ============================================================
+// EXTRACTION DU TEXTE (tous types de messages)
+// ============================================================
+const getText = (m) =>
+    m?.conversation ||
+    m?.extendedTextMessage?.text ||
+    m?.imageMessage?.caption ||
+    m?.videoMessage?.caption ||
+    m?.buttonsResponseMessage?.selectedButtonId ||
+    m?.listResponseMessage?.singleSelectReply?.selectedRowId ||
+    m?.templateButtonReplyMessage?.selectedId ||
+    m?.interactiveResponseMessage?.body?.text ||
+    // FIX: pollUpdateMessage n'a pas de .name — on utilise la vote option
+    m?.pollUpdateMessage?.vote?.selectedOptions?.[0] ||
+    '';
+
+// ============================================================
 // HANDLER PRINCIPAL
 // ============================================================
 const handleMessage = async (sock, msg) => {
-    // Référence socket globale pour notifications crash
     if (!_sockRef) _sockRef = sock;
 
     try {
-        if (!msg.message) return;
+        // Gardes de sécurité
+        if (!msg?.message) return;
+        if (!msg?.key?.remoteJid) return;
         if (msg.key.remoteJid === 'status@broadcast') return;
 
-        // ✅ FIX DOUBLE ANTI-DUPLICATION SUPPRIMÉ :
-        // L'index.js gère déjà le dédup via globalProcessedIds (TTL 10 min).
-        // On ne refiltre plus ici pour éviter les pertes silencieuses.
-
         // Sauvegarde en base pour anti-delete
-        database.saveMessage(msg);
+        try { database.saveMessage(msg); } catch {}
 
         const from = msg.key.remoteJid;
         const isGroup = from.endsWith('@g.us');
         const sender = isGroup ? (msg.key.participant || from) : from;
         const pushName = msg.pushName || 'ᴜsᴇʀ';
         const config = global.config;
-        const prefix = config.prefix || '.';
-
-        // ── Extraction du texte (tous types de messages) ──
-        const getText = (m) =>
-            m?.conversation ||
-            m?.extendedTextMessage?.text ||
-            m?.imageMessage?.caption ||
-            m?.videoMessage?.caption ||
-            m?.buttonsResponseMessage?.selectedButtonId ||
-            m?.listResponseMessage?.singleSelectReply?.selectedRowId ||
-            m?.templateButtonReplyMessage?.selectedId ||
-            m?.pollUpdateMessage?.pollUpdate?.name ||
-            m?.interactiveResponseMessage?.body?.text || "";
+        const prefix = config?.prefix || '.';
 
         const body = getText(msg.message).trim();
 
-        // ✅ FIX fromMe : on ignore uniquement les messages du BOT lui-même
-        // (pas les messages du owner/supreme qui utilisent le même numéro)
-        // Un message fromMe = vient du numéro du bot connecté
-        if (msg.key.fromMe) return;
-
-        // ── Vérification owner/supreme avec fix multi-device ──
+        // FIX fromMe : on bloque uniquement si c'est un vrai message du bot (pas du owner)
+        // En multi-device, fromMe = true pour tous les appareils liés
+        // On laisse passer uniquement si le sender n'est PAS le bot lui-même
+        const botNorm = normalizeJid(sock.user?.id);
         const senderNorm = normalizeJid(sender);
-        const supremeNorm = String(global.config.supremeNumber).replace(/\D/g, '');
-        const ownerNumbers = Array.isArray(global.config.ownerNumber)
-            ? global.config.ownerNumber
-            : [global.config.ownerNumber];
+        if (msg.key.fromMe && senderNorm === botNorm) return;
 
-        const isSupreme = senderNorm === supremeNorm;
+        // Vérification owner/supreme avec fix multi-device
+        const supremeNorm = String(config?.supremeNumber || '').replace(/\D/g, '');
+        const ownerNumbers = Array.isArray(config?.ownerNumber)
+            ? config.ownerNumber
+            : [config?.ownerNumber].filter(Boolean);
+
+        const isSupreme = supremeNorm && senderNorm === supremeNorm;
         const ownerStatus = isSupreme || ownerNumbers.some(o => String(o).replace(/\D/g, '') === senderNorm);
 
-        // ── Préfixe & parsing commande ──
+        // Préfixe & parsing commande
         let activePrefix = prefix;
         if (isSupreme && body.startsWith('>')) activePrefix = '>';
         const isCmd = body.startsWith(activePrefix);
-        const commandName = isCmd ? body.slice(activePrefix.length).trim().split(/\s+/)[0].toLowerCase() : null;
-        const args = isCmd ? body.trim().split(/\s+/).slice(1) : body.trim().split(/\s+/);
+        const commandName = isCmd
+            ? body.slice(activePrefix.length).trim().split(/\s+/)[0].toLowerCase()
+            : null;
+        const args = isCmd
+            ? body.trim().split(/\s+/).slice(1)
+            : body.trim().split(/\s+/);
 
-        // ── Récupération metadata groupe (une seule fois par message) ──
+        // Récupération metadata groupe (une seule fois par message)
         const groupMetadata = isGroup
             ? await getGroupMetadata(sock, from).catch(() => null)
             : null;
 
+        // Admin status du sender
         const adminStatus = isGroup && groupMetadata
             ? (() => {
-                const norm = normalizeJid(sender);
-                const p = groupMetadata.participants.find(v => normalizeJid(v.id) === norm);
+                const p = groupMetadata.participants.find(v => normalizeJid(v.id) === senderNorm);
                 return p?.admin === 'admin' || p?.admin === 'superadmin';
               })()
             : false;
 
+        // Admin status du bot
         const isBotAdmin = isGroup && groupMetadata
             ? (() => {
-                const norm = normalizeJid(sock.user.id);
-                const p = groupMetadata.participants.find(v => normalizeJid(v.id) === norm);
+                const p = groupMetadata.participants.find(v => normalizeJid(v.id) === botNorm);
                 return p?.admin === 'admin' || p?.admin === 'superadmin';
               })()
             : false;
@@ -233,18 +236,25 @@ const handleMessage = async (sock, msg) => {
         if (isGroup && !ownerStatus && !adminStatus) {
             try {
                 if (checkSpam(sender)) {
-                    if (!isSpamWarned(sender) && isBotAdmin) {
+                    if (!isSpamWarned(sender)) {
                         markSpamWarned(sender);
-                        await sock.sendMessage(from, {
+                        const warnMsg = await sock.sendMessage(from, {
                             text: `⚠️ @${senderNorm} *${toSmallCaps('flood détecté — tu es muté 60 secondes.')}*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`,
                             mentions: [sender]
                         });
-                        await sock.groupParticipantsUpdate(from, [sender], 'demote').catch(() => {});
-                        setTimeout(() => { spamTracker.delete(sender); }, SPAM_MUTE_DURATION * 1000);
+                        // Supprimer l'avertissement après 10s pour garder le groupe propre
+                        if (warnMsg?.key) {
+                            setTimeout(() => sock.sendMessage(from, { delete: warnMsg.key }).catch(() => {}), 10_000);
+                        }
+                        // Si bot admin : retirer les droits (demote) comme sanction visible
+                        if (isBotAdmin) {
+                            await sock.groupParticipantsUpdate(from, [sender], 'demote').catch(() => {});
+                            setTimeout(() => { spamTracker.delete(sender); }, SPAM_MUTE_DURATION * 1000);
+                        }
                     }
                     return;
                 }
-            } catch (e) { console.error("❌ Anti-Spam Error:", e); }
+            } catch (e) { console.error('❌ Anti-Spam Error:', e); }
         }
 
         // ── ANTI-MENTION DE MASSE ──
@@ -258,23 +268,24 @@ const handleMessage = async (sock, msg) => {
                         body.includes('@all') ||
                         mentions.length > 10;
                     if (isMentioningAll && isBotAdmin) {
-                        await sock.sendMessage(from, { delete: msg.key });
+                        await sock.sendMessage(from, { delete: msg.key }).catch(() => {});
                         if (groupSettings.antigroupmentionaction === 'kick') {
-                            await sock.groupParticipantsUpdate(from, [sender], "remove");
+                            await sock.groupParticipantsUpdate(from, [sender], 'remove').catch(() => {});
                         }
                         return;
                     }
                 }
-            } catch (e) { console.error("❌ Anti-Mention Error:", e); }
+            } catch (e) { console.error('❌ Anti-Mention Error:', e); }
         }
-  // ── ANTI-LINK ──
+
+        // ── ANTI-LINK ──
         if (isGroup && !ownerStatus && !adminStatus) {
             try {
                 const groupSettings = database.getGroupSettings(from) || {};
                 if (groupSettings.antilink) {
                     const linkPattern = /(https?:\/\/)?(chat\.whatsapp\.com\/[0-9a-zA-Z]{20,26}|bit\.ly\/\w+)/i;
-                    if (body.match(linkPattern) && isBotAdmin) {
-                        await sock.sendMessage(from, { delete: msg.key });
+                    if (linkPattern.test(body) && isBotAdmin) {
+                        await sock.sendMessage(from, { delete: msg.key }).catch(() => {});
                         await sock.sendMessage(from, {
                             text: `🚫 @${senderNorm} *${toSmallCaps('lien whatsapp interdit dans ce groupe.')}*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`,
                             mentions: [sender]
@@ -282,30 +293,32 @@ const handleMessage = async (sock, msg) => {
                         return;
                     }
                 }
-            } catch (e) { console.error("❌ Anti-Link Error:", e); }
+            } catch (e) { console.error('❌ Anti-Link Error:', e); }
         }
 
         // ── ANTI-GROUP STATUS ──
         if (isGroup && isBotAdmin && !ownerStatus && !adminStatus) {
             try {
-                const antigsCmd = global.commands.get('antigstatus');
+                const antigsCmd = global.commands?.get('antigstatus');
                 if (antigsCmd?.checkAndHandle) {
                     await antigsCmd.checkAndHandle(sock, msg, { from, sender, isBotAdmin, database });
                 }
             } catch (e) { console.error('❌ AntiGStatus Error:', e); }
         }
-
-        // ============================================================
-        // ✅ SELFMODE : bloque commandes + features pour non-owners
+ // ============================================================
+        // SELFMODE : bloque commandes + features pour non-owners
         // Les protections groupe ci-dessus restent toujours actives
         // ============================================================
-        if (config.selfMode && !ownerStatus) return;
+        if (config?.selfMode && !ownerStatus) return;
 
         // ── TIC-TAC-TOE (interception avant commandes) ──
+        // NOTE : placé APRÈS selfMode pour que les non-owners ne puissent pas jouer en selfMode
         try {
-            const { handleTicTacToeMove } = require('./commands/fun/tictactoe');
-            if (await handleTicTacToeMove(sock, msg, { sender, from, body })) return;
-        } catch (e) { console.error("❌ TicTacToe Error:", e); }
+            const ttt = require('./commands/fun/tictactoe');
+            if (ttt?.handleTicTacToeMove) {
+                if (await ttt.handleTicTacToeMove(sock, msg, { sender, from, body })) return;
+            }
+        } catch (e) { /* module optionnel */ }
 
         // ── AUTO-STICKER ──
         const isMedia = msg.message?.imageMessage || msg.message?.videoMessage;
@@ -314,43 +327,45 @@ const handleMessage = async (sock, msg) => {
                 const groupSettings = database.getGroupSettings(from) || {};
                 if (groupSettings.autosticker) {
                     const mediaKey = msg.message.imageMessage ? 'imageMessage' : 'videoMessage';
+                    const mediaType = mediaKey.replace('Message', '');
                     const stream = await downloadContentFromMessage(
                         msg.message[mediaKey],
-                        mediaKey.replace('Message', '')
+                        mediaType
                     );
-                    let buffer = Buffer.from([]);
-                    for await (const chunk of stream) buffer = Buffer.concat([buffer, chunk]);
-                    const stickerBuffer = await createStickerBuffer(buffer, {
-                        pack: "ɢʜᴏsᴛɢ-x ᴍᴅ",
-                        author: pushName
-                    });
-                    await sock.sendMessage(from, { sticker: stickerBuffer }, { quoted: msg });
+                    const chunks = [];
+                    for await (const chunk of stream) chunks.push(chunk);
+                    const buffer = Buffer.concat(chunks);
+                    if (buffer.length > 0) {
+                        const stickerBuffer = await createStickerBuffer(buffer, {
+                            pack: 'ɢʜᴏsᴛɢ-x ᴍᴅ',
+                            author: pushName
+                        });
+                        await sock.sendMessage(from, { sticker: stickerBuffer }, { quoted: msg });
+                    }
                 }
-            } catch (e) { console.error("❌ AutoSticker Error:", e); }
+            } catch (e) { console.error('❌ AutoSticker Error:', e); }
         }
 
         // ── GHOSTG INTEL (NLP) ──
         try {
             global.ghostgMode = global.ghostgMode || 'off';
             if (global.ghostgMode !== 'off' && ownerStatus && !isCmd && body) {
-                const ghostgCmd = global.commands.get('ghostg');
-                if (ghostgCmd) {
-                    const nlpArgs = body.trim().split(/\s+/);
-                    await ghostgCmd.execute(sock, msg, nlpArgs, {
+                const ghostgCmd = global.commands?.get('ghostg');
+                if (ghostgCmd?.execute) {
+                    await ghostgCmd.execute(sock, msg, body.trim().split(/\s+/), {
                         from, sender, isGroup,
                         isOwner: ownerStatus, isSupreme, isAdmin: adminStatus,
-                        isBotAdmin, prefix, pushName, groupMetadata,
-                        body,
+                        isBotAdmin, prefix, pushName, groupMetadata, body,
                         reply: (text) => sock.sendMessage(
                             from,
-                            { text: `${text}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*` },
+                            { text: text.includes('ᴘᴏᴡᴇʀᴇᴅ ʙʏ') ? text : `${text}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*` },
                             { quoted: msg }
                         ),
                         react: (emoji) => sock.sendMessage(from, { react: { text: emoji, key: msg.key } })
                     });
                 }
             }
-        } catch (e) { console.error("❌ GhostG Intel Error:", e); }
+        } catch (e) { console.error('❌ GhostG Intel Error:', e); }
 
         // ── Stats groupe ──
         if (isGroup) {
@@ -358,130 +373,145 @@ const handleMessage = async (sock, msg) => {
         }
 
         // ── AUTO-REACT INTELLIGENT ──
-        if (config.autoReact !== false && canReact(sender)) {
+        if (config?.autoReact !== false && body && canReact(sender)) {
             try {
-                const reaction = getSmartReaction(body, ownerStatus, isSupreme, isCmd, false, config);
+                const reaction = getSmartReaction(body, ownerStatus, isSupreme, isCmd, config);
                 if (reaction) {
                     await sock.sendMessage(from, { react: { text: reaction, key: msg.key } });
                 }
-            } catch (e) { console.error("❌ AutoReact Error:", e); }
+            } catch (e) { console.error('❌ AutoReact Error:', e); }
         }
 
         // ============================================================
         // REPLY AVEC SIGNATURE
         // ============================================================
         const reply = (text) => {
-            const sig = `\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
-            const finalMsg = text.includes('ᴘᴏᴡᴇʀᴇᴅ ʙʏ') ? text : `${text}${sig}`;
+            const finalMsg = text.includes('ᴘᴏᴡᴇʀᴇᴅ ʙʏ')
+                ? text
+                : `${text}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
             return sock.sendMessage(from, { text: finalMsg }, { quoted: msg });
         };
 
         // ============================================================
         // EXÉCUTION COMMANDE
         // ============================================================
-        if (isCmd && commandName) {
-            const command = global.commands.get(commandName);
-            if (!command) return;
+        if (!isCmd || !commandName) return;
 
-            // ── Vérifications d'accès ──
-            if (command.ownerOnly && !ownerStatus)
-                return reply(`👑 ${toSmallCaps('accès refusé : réservé au maître suprême.')}`);
-            if (command.groupOnly && !isGroup)
-                return reply(`👥 ${toSmallCaps('cette commande fonctionne uniquement en groupe.')}`);
-            if (command.adminOnly && !adminStatus && !ownerStatus)
-                return reply(`🛡️ ${toSmallCaps('accès refusé : réservé aux admins.')}`);
-            if (command.botAdminOnly && !isBotAdmin)
-                return reply(`🤖 ${toSmallCaps('le bot doit être admin pour exécuter cette commande.')}`);
-            if (command.privateOnly && isGroup)
-                return reply(`💬 ${toSmallCaps('cette commande fonctionne uniquement en privé.')}`);
+        // Recharge si commandes pas encore prêtes
+        if (!global.commands || global.commands.size === 0) {
+            global.commands = loadCommands();
+        }
 
-            // ── Indicateur de frappe ──
-            if (config.autoTyping) {
-                await sock.sendPresenceUpdate('composing', from).catch(() => {});
-            }
+        const command = global.commands.get(commandName);
+        if (!command) return; // commande inconnue — pas de réponse parasite
 
-            // ── Exécution avec gestion d'erreur ──
-            try {
-                await command.execute(sock, msg, args, {
-                    from, sender, isGroup,
-                    isOwner: ownerStatus, isSupreme,
-                    isAdmin: adminStatus, isBotAdmin,
-                    prefix, pushName, reply, groupMetadata,
-                    body,
-                    react: (emoji) => sock.sendMessage(from, { react: { text: emoji, key: msg.key } })
-                });
-            } catch (err) {
-                console.error(`❌ Execute Error [${commandName}]:`, err);
-                await notifyOwnerCrash(`Commande: ${commandName}`, err);
-                reply(`❌ ${toSmallCaps("erreur lors de l'exécution. le développeur a été notifié.")}`);
-            }
+        // Vérifications d'accès
+        if (command.ownerOnly && !ownerStatus)
+            return reply(`👑 ${toSmallCaps('accès refusé : réservé au maître suprême.')}`);
+        if (command.groupOnly && !isGroup)
+            return reply(`👥 ${toSmallCaps('cette commande fonctionne uniquement en groupe.')}`);
+        if (command.adminOnly && !adminStatus && !ownerStatus)
+            return reply(`🛡️ ${toSmallCaps('accès refusé : réservé aux admins.')}`);
+        if (command.botAdminOnly && !isBotAdmin)
+            return reply(`🤖 ${toSmallCaps('le bot doit être admin pour exécuter cette commande.')}`);
+        if (command.privateOnly && isGroup)
+            return reply(`💬 ${toSmallCaps('cette commande fonctionne uniquement en privé.')}`);
+
+        // Indicateur de frappe
+        if (config?.autoTyping) {
+            await sock.sendPresenceUpdate('composing', from).catch(() => {});
+        }
+
+        // Exécution avec gestion d'erreur
+        try {
+            await command.execute(sock, msg, args, {
+                from, sender, isGroup,
+                isOwner: ownerStatus, isSupreme,
+                isAdmin: adminStatus, isBotAdmin,
+                prefix, pushName, reply, groupMetadata, body,
+                react: (emoji) => sock.sendMessage(from, { react: { text: emoji, key: msg.key } })
+            });
+        } catch (err) {
+            console.error(`❌ Execute Error [${commandName}]:`, err);
+            await notifyOwnerCrash(`Commande: ${commandName}`, err);
+            reply(`❌ ${toSmallCaps("erreur lors de l'exécution. le développeur a été notifié.")}`);
         }
 
     } catch (err) {
-        console.error("❌ Critical Handler Error:", err);
-        await notifyOwnerCrash("handleMessage global", err);
+        console.error('❌ Critical Handler Error:', err);
+        await notifyOwnerCrash('handleMessage global', err);
     }
 };
 
 // ============================================================
-// HANDLER ANTI-DELETE PUISSANT
+// HANDLER ANTI-DELETE
+// FIX: Baileys envoie { keys, type } dans l'event messages.delete
+// Le deleter n'est PAS dans l'update — on utilise l'info disponible
 // ============================================================
 const handleAntiDelete = async (sock, update) => {
     if (!_sockRef) _sockRef = sock;
-    const keys = update.keys || [];
+
+    // Compatibilité : l'event peut avoir .keys ou être un tableau
+    const keys = Array.isArray(update) ? update : (update?.keys || []);
 
     for (const key of keys) {
         try {
-            const from = key.remoteJid;
+            const from = key?.remoteJid;
             if (!from || !from.endsWith('@g.us')) continue;
-
-            // Ignore les suppressions du bot lui-même
-            const deleter = update.sender || null;
-            const botNorm = normalizeJid(sock.user.id);
-            if (deleter && normalizeJid(deleter) === botNorm) continue;
 
             const groupSettings = database.getGroupSettings(from) || {};
             if (groupSettings.antidelete === false) continue;
 
-            const msgStore = await database.getMessage(key.id);
+            const msgStore = database.getMessage ? await database.getMessage(key.id) : null;
             if (!msgStore) continue;
 
-            const sender = msgStore.participant || msgStore.key?.participant || "ɪɴᴄᴏɴɴᴜ@s.whatsapp.net";
-            const content = msgStore.content || {};
+            const content = msgStore.content || msgStore.message || {};
+            const sender = msgStore.participant
+                || msgStore.key?.participant
+                || key.participant
+                || 'inconnu@s.whatsapp.net';
 
-            let messageContent = content.conversation || content.extendedTextMessage?.text;
+            // Extraction du contenu texte
+            let messageContent =
+                content.conversation ||
+                content.extendedTextMessage?.text ||
+                null;
+
             let mediaBuffer = null;
             let mediaType = null;
 
             if (!messageContent) {
-                if (content.imageMessage)        { messageContent = "📷 [ ɪᴍᴀɢᴇ ]";   mediaType = 'image';   }
-                else if (content.videoMessage)   { messageContent = "🎥 [ ᴠɪᴅᴇᴏ ]";   mediaType = 'video';   }
-                else if (content.stickerMessage) { messageContent = "🗿 [ sᴛɪᴄᴋᴇʀ ]"; mediaType = 'sticker'; }
-                else if (content.audioMessage)   { messageContent = "🎵 [ ᴀᴜᴅɪᴏ ]";   mediaType = 'audio';   }
-                else if (content.documentMessage){ messageContent = `📄 [ ${content.documentMessage.fileName || 'ᴅᴏᴄᴜᴍᴇɴᴛ'} ]`; }
-                else                             { messageContent = "📦 [ ᴍᴇᴅɪᴀ ɪɴᴄᴏɴɴᴜ ]"; }
+                if (content.imageMessage)         { messageContent = '📷 [ ɪᴍᴀɢᴇ ]';    mediaType = 'image';   }
+                else if (content.videoMessage)    { messageContent = '🎥 [ ᴠɪᴅᴇᴏ ]';    mediaType = 'video';   }
+                else if (content.stickerMessage)  { messageContent = '🗿 [ sᴛɪᴄᴋᴇʀ ]';  mediaType = 'sticker'; }
+                else if (content.audioMessage)    { messageContent = '🎵 [ ᴀᴜᴅɪᴏ ]';    mediaType = 'audio';   }
+                else if (content.documentMessage) {
+                    messageContent = `📄 [ ${content.documentMessage.fileName || 'ᴅᴏᴄᴜᴍᴇɴᴛ'} ]`;
+                }
+                else { messageContent = '📦 [ ᴍᴇᴅɪᴀ ɪɴᴄᴏɴɴᴜ ]'; }
             }
 
-            // Tentative de récupération du média
+            // Tentative de récupération du média (peut échouer si expiré)
             if (mediaType && ['image', 'video', 'audio', 'sticker'].includes(mediaType)) {
                 try {
                     const mediaKey = `${mediaType}Message`;
                     const stream = await downloadContentFromMessage(content[mediaKey], mediaType);
-                    let buf = Buffer.from([]);
-                    for await (const chunk of stream) buf = Buffer.concat([buf, chunk]);
+                    const chunks = [];
+                    for await (const chunk of stream) chunks.push(chunk);
+                    const buf = Buffer.concat(chunks);
                     if (buf.length > 0) mediaBuffer = buf;
-                } catch {}
+                } catch {
+                    // Média expiré ou indisponible — on continue sans buffer
+                }
             }
 
             const senderNum = sender.split('@')[0];
-            const deleterNum = deleter ? deleter.split('@')[0] : 'ɪɴᴄᴏɴɴᴜ';
             const time = new Date().toLocaleTimeString('fr-FR', { timeZone: 'Africa/Ouagadougou' });
 
             const caption =
                 `*╭╼━≪• 🗑️ ${toSmallCaps('ᴀɴᴛɪ-ᴅᴇʟᴇᴛᴇ')} •≫━╾╮*\n` +
                 `┃\n` +
                 `┃ 👤 *${toSmallCaps('ᴇxᴘᴇᴅɪᴛᴇᴜʀ')}* : @${senderNum}\n` +
-                `┃ 🗑️ *${toSmallCaps('sᴜᴘᴘʀɪᴍᴇᴜʀ')}* : @${deleterNum}\n` +
                 `┃ 💬 *${toSmallCaps('ᴄᴏɴᴛᴇɴᴜ')}* : _${messageContent}_\n` +
                 `┃ ⏰ *${toSmallCaps('ʜᴇᴜʀᴇ')}* : ${time}\n` +
                 `┃\n` +
@@ -489,7 +519,6 @@ const handleAntiDelete = async (sock, update) => {
                 `\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
             const mentions = [sender];
-            if (deleter) mentions.push(deleter);
 
             if (mediaBuffer && mediaType === 'image') {
                 await sock.sendMessage(from, { image: mediaBuffer, caption, mentions });
@@ -507,23 +536,26 @@ const handleAntiDelete = async (sock, update) => {
 
         } catch (e) {
             console.error('❌ AntiDelete Error:', e);
-            await notifyOwnerCrash("handleAntiDelete", e);
+            await notifyOwnerCrash('handleAntiDelete', e);
         }
     }
 };
+
 // ============================================================
-// GROUP UPDATE HANDLER — WELCOME / GOODBYE STYLÉ
+// GROUP UPDATE HANDLER — WELCOME / GOODBYE
 // ============================================================
 const handleGroupUpdate = async (sock, update) => {
     if (!_sockRef) _sockRef = sock;
+
     const { id, participants, action } = update;
+    if (!id || !participants?.length || !action) return;
 
     try {
         const groupSettings = database.getGroupSettings(id) || {};
         const config = global.config;
         const metadata = await getGroupMetadata(sock, id);
-        const groupName = metadata.subject;
-        const groupDesc = metadata.desc || toSmallCaps("aucune description.");
+        const groupName = metadata.subject || 'Groupe';
+        const groupDesc = metadata.desc || toSmallCaps('aucune description.');
         const memberCount = metadata.participants.length;
         const time = new Date().toLocaleTimeString('fr-FR', { timeZone: 'Africa/Ouagadougou' });
         const date = new Date().toLocaleDateString('fr-FR', { timeZone: 'Africa/Ouagadougou' });
@@ -533,14 +565,14 @@ const handleGroupUpdate = async (sock, update) => {
             const userTag = `@${userNum}`;
 
             try {
-                // ── WELCOME STYLÉ ──
+                // ── WELCOME ──
                 const isWelcomeOn = groupSettings.welcome !== undefined
                     ? groupSettings.welcome
-                    : config.defaultGroupSettings?.welcome;
+                    : config?.defaultGroupSettings?.welcome;
 
                 if (action === 'add' && isWelcomeOn) {
                     let text = groupSettings.welcomeMessage ||
-                        config.defaultGroupSettings?.welcomeMessage ||
+                        config?.defaultGroupSettings?.welcomeMessage ||
                         `*╭╼━≪• ✨ ʙɪᴇɴᴠᴇɴᴜᴇ ✨ •≫━╾╮*\n` +
                         `┃ 👥 *ɢʀᴏᴜᴘᴇ* : #groupName\n` +
                         `┃ 👋🏾 *ᴍᴇᴍʙʀᴇ* : @user\n` +
@@ -564,20 +596,20 @@ const handleGroupUpdate = async (sock, update) => {
                     await sock.sendMessage(id, { text, mentions: [user] });
                 }
 
-                // ── GOODBYE STYLÉ ──
+                // ── GOODBYE ──
                 const isGoodbyeOn = groupSettings.goodbye !== undefined
                     ? groupSettings.goodbye
-                    : config.defaultGroupSettings?.goodbye;
+                    : config?.defaultGroupSettings?.goodbye;
 
                 if (action === 'remove' && isGoodbyeOn) {
                     let text = groupSettings.goodbyeMessage ||
-                        config.defaultGroupSettings?.goodbyeMessage ||
+                        config?.defaultGroupSettings?.goodbyeMessage ||
                         `*╭╼━≪• 🥀 ᴀᴜ ʀᴇᴠᴏɪʀ •≫━╾╮*\n` +
                         `┃ 👋🏾 *ᴍᴇᴍʙʀᴇ* : @user\n` +
                         `┃ 🚮 ɴᴇ ɴᴏᴜs ᴍᴀɴǫᴜᴇʀᴀ ᴊᴀᴍᴀɪs\n` +
                         `┃ 👤 *ᴍᴇᴍʙʀᴇs ʀᴇsᴛᴀɴᴛs* : #memberCount\n` +
                         `┃ ⏰ *ʜᴇᴜʀᴇ* : #time\n` +
-                        `╰━━━━━━━━━━━━━━━━━╯\n` +
+                        `╰━━━━━━━━━━━━━━━━━━━━╯\n` +
                         `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
                     text = text
@@ -600,7 +632,7 @@ const handleGroupUpdate = async (sock, update) => {
 
     } catch (e) {
         console.error('❌ Critical Group Update Error:', e);
-        await notifyOwnerCrash("handleGroupUpdate", e);
+        await notifyOwnerCrash('handleGroupUpdate', e);
     }
 };
 
