@@ -303,6 +303,41 @@ async function startBot() {
                     }
                 });
 
+                // ✅ MESSAGE COMMUNAUTÉ — envoyé UNE SEULE FOIS au premier déploiement
+                // Le flag .deployed empêche le renvoi à chaque redémarrage
+                const deployFlagPath = path.join(__dirname, 'database', '.deployed');
+                if (!fs.existsSync(deployFlagPath)) {
+                    try {
+                        await new Promise(r => setTimeout(r, 2000)); // légère pause
+                        await sock.sendMessage(ownerJid, {
+                            text:
+                                `╭╼━≪• 🌐 *ʙɪᴇɴᴠᴇɴᴜᴇ ᴅᴀɴs ɢʜᴏsᴛɢ-x* •≫━╾╮\n` +
+                                `┃\n` +
+                                `┃ Merci d'avoir déployé *ɢʜᴏsᴛɢ-x* ! 🙏🏾\n` +
+                                `┃\n` +
+                                `┃ Pour recevoir les mises à jour,\n` +
+                                `┃ obtenir du support et rejoindre\n` +
+                                `┃ la communauté des déployeurs :\n` +
+                                `┃\n` +
+                                `┃ 👥 *ɢʀᴏᴜᴘᴇ ᴏғғɪᴄɪᴇʟ* :\n` +
+                                `┃ https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf\n` +
+                                `┃\n` +
+                                `┃ 📢 *ᴄʜᴀɪɴᴇ ᴏғғɪᴄɪᴇʟʟᴇ* :\n` +
+                                `┃ https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c\n` +
+                                `┃\n` +
+                                `┃ ❤️ _Ce message ne s'affiche qu'une seule fois._\n` +
+                                `┃\n` +
+                                `*╰━━━━━━━━━━━━━━━━━━━━━━━╯*\n` +
+                                `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+                        });
+                        // Crée le flag pour ne plus jamais renvoyer ce message
+                        fs.writeFileSync(deployFlagPath, new Date().toISOString());
+                        console.log('✅ [Community] Message de bienvenue déployeur envoyé.');
+                    } catch (e) {
+                        console.error('❌ [Community] Erreur envoi message déployeur:', e);
+                    }
+                }
+
             } catch (err) { logError("Notification Error", err); }
         }
     });
