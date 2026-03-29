@@ -75,7 +75,7 @@ module.exports = {
       welcome: true,
       welcomeMessage: `*╭╼━≪• ✨ ɴᴇᴡ ᴍᴇᴍʙᴇʀ ✨ •≫━╾╮*\n*┃ 👥 ɢʀᴏᴜᴘ : #groupName*\n*┃ 👋🏾 ᴡᴇʟᴄᴏᴍᴇ : @user*\n*┃ 📝 #groupDesc*\n*┃ 📊 ᴍᴇᴍʙʀᴇs : #memberCount*\n*┃ ⏰ ᴛɪᴍᴇ : #time*\n*┃ 🛡️ ʀᴇsᴘᴇᴄᴛᴇ ʟᴇs ʀᴇɢʟᴇs*\n*┃ ❤️ ᴊᴇsᴜs ᴛ'ᴀɪᴍᴇ*\n*╰━━━━━━━━━━━━━━━━━╯*\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`,
       goodbye: true,
-      goodbyeMessage: `*╭╼━≪• 🥀 ɢᴏᴏᴅʙʏᴇ •≫━╾╮*\n*┃ 👋🏾 ᴀᴜ ʀᴇᴠᴏɪʀ : @user*\n*┃ 🚮 ɴᴇ ɴᴏᴜs ᴍᴀɴǫᴜᴇʀᴀ ᴊᴀᴍᴀɪs*\n*┃ 📊 ᴍᴇᴍʙʀᴇs : #memberCount*\n*┃ ⏰ ᴛɪᴍᴇ : #time*\n*╰━━━━━━━━━━━━━━━╯*\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`,
+      goodbyeMessage: `*╭╼━≪• 🥀 ɢᴏᴏᴅʙʏᴇ •≫━╾╮*\n*┃ 👋🏾 ᴀᴜ ʀᴇᴠᴏɪʀ : @user*\n*┃ 🚮 ᴛᴜ ɴᴇ ɴᴏᴜs ᴍᴀɴǫᴜᴇʀᴀ ᴊᴀᴍᴀɪs*\n*┃ 📊 ᴍᴇᴍʙʀᴇs : #memberCount*\n*┃ ⏰ ᴛɪᴍᴇ : #time*\n*╰━━━━━━━━━━━━━━━╯*\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`,
       antiSpam: false,
       antidelete: true, // Activé par défaut pour profiter du store SQLite
       nsfw: false,
