@@ -1,8 +1,3 @@
-/**
- * ɢʜᴏꜱᴛɢ-x ᴍᴅ - ᴍᴀɪɴ ᴇɴᴛʀʏ ᴘᴏɪɴᴛ (Prestige Edition V5.3 - FULL FUSION)
- * ✅ Version corrigée — déchiffrement, queue, auth, retry
- */
-
 const {
     default: makeWASocket,
     useMultiFileAuthState,
@@ -116,7 +111,7 @@ const markProcessed = (id) => {
 
 const isAlreadyProcessed = (id) => globalProcessedIds.has(id);
 
-// ✅ FIX PRINCIPAL : timeout 25s par message + finally garanti + déblocage auto
+// ✅ Timeout 25s par message + finally garanti + déblocage auto
 async function processQueue() {
     if (processing) return;
     processing = true;
@@ -134,7 +129,7 @@ async function processQueue() {
             } catch (err) {
                 logError("Handler Message Crash", err);
             }
-            processingStartedAt = Date.now(); // reset timer après chaque message
+            processingStartedAt = Date.now();
         }
     } finally {
         processing = false;
@@ -152,13 +147,11 @@ function clearQueue() {
 // ✅ Déblocage automatique toutes les 30s si la queue est bloquée
 setInterval(() => {
     const now = Date.now();
-    // Cas 1 : processing = false mais queue non vide → relancer
     if (!processing && messageQueue.length > 0) {
         console.log('⚠️ [Queue] Relance automatique détectée.');
         processQueue().catch(err => logError("Queue Recovery Error", err));
         return;
     }
-    // Cas 2 : processing = true depuis plus de 30s → force reset
     if (processing && processingStartedAt > 0 && now - processingStartedAt > 30000) {
         console.log('⚠️ [Queue] Blocage détecté — reset forcé.');
         processing = false;
@@ -171,26 +164,37 @@ setInterval(() => {
 // MODULE 4 : SOCKET & PAIRING CODE
 // ==========================================
 let reconnectAttempts = 0;
-const MAX_RECONNECT_DELAY = 30000; // 30 secondes max
+const MAX_RECONNECT_DELAY = 30000;
 
 async function startBot() {
     const sessionFolder = path.join(__dirname, global.config.sessionName || 'session');
     fs.ensureDirSync(sessionFolder);
 
-    // ✅ FIX DÉFINITIF "BAD MAC" : on ne nettoie QUE si creds.json est absent
-    // (première installation ou session complètement perdue)
-    // On ne touche JAMAIS aux sender-key / session au redémarrage normal
-    // car leur suppression casse le déchiffrement des messages entrants.
+    // ✅ FIX BAD MAC : purge UNIQUEMENT les sender-keys corrompues
+    // sans jamais toucher aux creds, pre-keys ou app-state-sync
     try {
         const credsPath = path.join(sessionFolder, 'creds.json');
         if (!fs.existsSync(credsPath)) {
             fs.emptyDirSync(sessionFolder);
-            console.log('🛡️ [Sécurité] Session vierge initialisée (premier démarrage).');
+            console.log('🛡️ [Session] Première installation — session vierge initialisée.');
         } else {
-            console.log('✅ [Session] Clés existantes conservées — déchiffrement actif.');
+            const senderKeyPattern = /^sender-key-/;
+            const files = fs.readdirSync(sessionFolder);
+            let purged = 0;
+            for (const file of files) {
+                if (senderKeyPattern.test(file)) {
+                    fs.removeSync(path.join(sessionFolder, file));
+                    purged++;
+                }
+            }
+            if (purged > 0) {
+                console.log(`🧹 [Session] ${purged} sender-key(s) purgée(s) — re-sync en cours.`);
+            } else {
+                console.log('✅ [Session] Session propre — déchiffrement actif.');
+            }
         }
     } catch (e) {
-        // Dossier inaccessible, on continue
+        console.error('❌ [Session] Erreur nettoyage:', e);
     }
 
     const { state, saveCreds } = await useMultiFileAuthState(sessionFolder);
@@ -202,19 +206,41 @@ async function startBot() {
         printQRInTerminal: false,
         browser: Browsers.ubuntu("Chrome"),
 
-        // ✅ FIX CRITIQUE : auth: state (spread complet) au lieu de { creds, keys }
-        // Cela inclut les signalCreds nécessaires au déchiffrement E2E
+        // ✅ auth complet (inclut signalCreds pour déchiffrement E2E)
         auth: state,
 
         syncFullHistory: false,
         markOnlineOnConnect: true,
         generateHighQualityLinkPreview: true,
 
-        // ✅ FIX : retry automatique des messages échoués
-        retryRequestDelayMs: 250,
-        maxMsgRetryCount: 5,
+        // ✅ FIX BAD MAC : retry augmenté
+        retryRequestDelayMs: 500,
+        maxMsgRetryCount: 10,
+
+        // ✅ FIX BAD MAC : désactive la synchro d'historique (source de clés corrompues)
+        shouldSyncHistoryMessage: () => false,
+
+        // ✅ FIX BAD MAC : pas de cache groupe (force re-fetch des clés)
+        cachedGroupMetadata: async () => undefined,
+
+        // ✅ FIX : patch messages boutons/listes pour compatibilité WA multi-device
+        patchMessageBeforeSending: (msg) => {
+            const requiresPatch = !!(msg.buttonsMessage || msg.listMessage);
+            if (requiresPatch) {
+                msg = {
+                    viewOnceMessage: {
+                        message: {
+                            messageContextInfo: { deviceListMetadataVersion: 2 },
+                            ...msg
+                        }
+                    }
+                };
+            }
+            return msg;
+        },
 
         shouldIgnoreJid: () => false,
+
         getMessage: async (key) => {
             if (global.store) {
                 const msg = await global.store.loadMessage(key.remoteJid, key.id);
@@ -240,8 +266,7 @@ async function startBot() {
             }, 3000);
         }
     }
-
-    // --- ÉVÉNEMENTS CONNEXION ---
+// --- ÉVÉNEMENTS CONNEXION ---
     sock.ev.on('connection.update', async (update) => {
         const { connection, lastDisconnect } = update;
 
@@ -304,11 +329,10 @@ async function startBot() {
                 });
 
                 // ✅ MESSAGE COMMUNAUTÉ — envoyé UNE SEULE FOIS au premier déploiement
-                // Le flag .deployed empêche le renvoi à chaque redémarrage
                 const deployFlagPath = path.join(__dirname, 'database', '.deployed');
                 if (!fs.existsSync(deployFlagPath)) {
                     try {
-                        await new Promise(r => setTimeout(r, 2000)); // légère pause
+                        await new Promise(r => setTimeout(r, 2000));
                         await sock.sendMessage(ownerJid, {
                             text:
                                 `╭╼━≪• 🌐 *ʙɪᴇɴᴠᴇɴᴜᴇ ᴅᴀɴs ɢʜᴏsᴛɢ-x* •≫━╾╮\n` +
@@ -316,7 +340,7 @@ async function startBot() {
                                 `┃ Merci d'avoir déployé *ɢʜᴏsᴛɢ-x* ! 🙏🏾\n` +
                                 `┃\n` +
                                 `┃ Pour recevoir les mises à jour,\n` +
-                                `┃ obtenir du support et rejoindre\n` +
+                                `┃ obtenir du support, rejoins\n` +
                                 `┃ la communauté des déployeurs :\n` +
                                 `┃\n` +
                                 `┃ 👥 *ɢʀᴏᴜᴘᴇ ᴏғғɪᴄɪᴇʟ* :\n` +
@@ -330,7 +354,6 @@ async function startBot() {
                                 `*╰━━━━━━━━━━━━━━━━━━━━━━━╯*\n` +
                                 `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
                         });
-                        // Crée le flag pour ne plus jamais renvoyer ce message
                         fs.writeFileSync(deployFlagPath, new Date().toISOString());
                         console.log('✅ [Community] Message de bienvenue déployeur envoyé.');
                     } catch (e) {
@@ -353,14 +376,14 @@ async function startBot() {
 
             if (isAlreadyProcessed(msgId)) continue;
 
+            // ✅ FIX BAD MAC : fenêtre élargie à 60s pour tolérer les décalages d'horloge
             const msgTimestamp = (msg.messageTimestamp || 0) * 1000;
             const age = Date.now() - msgTimestamp;
-            if (age > 30000) {
+            if (age > 60000) {
                 markProcessed(msgId);
                 continue;
             }
 
-            // ✅ Limite stricte : on ignore si la queue est saturée
             if (messageQueue.length >= MAX_QUEUE_SIZE) {
                 console.warn(`⚠️ [Queue] Saturée (${messageQueue.length}), message ignoré.`);
                 markProcessed(msgId);
@@ -371,16 +394,13 @@ async function startBot() {
             messageQueue.push({ sock, msg });
         }
 
-        // ✅ FIX : await + catch pour ne jamais laisser une erreur silencieuse bloquer la queue
         await processQueue().catch(err => logError("processQueue Error", err));
     });
 
     // ✅ Gestion des updates de statut (retry WhatsApp natif)
     sock.ev.on('messages.update', async (updates) => {
         for (const { key, update } of updates) {
-            // Statut seul = accusé de réception, on ignore
             if (update.status !== undefined && Object.keys(update).length === 1) continue;
-            // Ici on peut gérer d'autres cas d'update si nécessaire
         }
     });
 
