@@ -195,7 +195,13 @@ const handleMessage = async (sock, msg) => {
             const cmdName = global.commands.has(commandName) ? commandName : global.aliasMap.get(commandName);
             if (!cmdName) return;
             const command = global.commands.get(cmdName);
-            const reply = (text) => sock.sendMessage(from, { text:`${text}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`},{quoted:msg});
+            
+            // --- LOGIQUE DE REPLY AVEC SIGNATURE AUTO ---
+            const reply = (text) => {
+                const sig = `\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+                const finalMsg = text.includes('ᴘᴏᴡᴇʀᴇᴅ ʙʏ') ? text : `${text}${sig}`;
+                return sock.sendMessage(from, { text: finalMsg }, { quoted: msg });
+            };
 
             if ((command.ownerOnly && !ownerStatus) || (command.groupOnly && !isGroup) || (command.adminOnly && !adminStatus && !ownerStatus)) return reply('❌ Accès refusé');
 
