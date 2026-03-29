@@ -18,7 +18,7 @@ const toStyledCaps = (text) => {
   return String(text).toLowerCase().split('').map(c => fonts[c] || c).join('');
 };
 
-const AGM_DESIGN = (title, type) => {
+const AGM_DESIGN = (title, type, url) => {
   const shortTitle = title
     ? (title.length > 25 ? title.substring(0, 22) + '...' : title)
     : 'ᴛɪᴋᴛᴏᴋ ᴄᴏɴᴛᴇɴᴛ';
@@ -28,6 +28,7 @@ const AGM_DESIGN = (title, type) => {
     `*┃* ✅ *${toStyledCaps('sᴛᴀᴛᴜs')}* : 🟢 *${toStyledCaps('ᴅᴏᴡɴʟᴏᴀᴅᴇᴅ')}*\n` +
     `*┃* ⚡ *${toStyledCaps('ᴛʏᴘᴇ')}* : *${toStyledCaps(type)}*\n` +
     `*┃* 📝 *${toStyledCaps('ᴛɪᴛʟᴇ')}* : *${toStyledCaps(shortTitle)}*\n` +
+    `*┃* 🔗 *${toStyledCaps('ʟɪᴇɴ')}* : ${url}\n` +  // ✅ Ajout ici
     `*┃*\n` +
     `*╰━━━━━━━━━━━━━━━╯*\n` +
     `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
