@@ -1,42 +1,45 @@
 /**
  * Media Uploader Utility - GhostG-X Edition
- * Services: Telegra.ph & Catbox
+ * Service: Catbox.moe (Stable)
  */
 
 const axios = require('axios');
 const FormData = require('form-data');
 const { fileTypeFromBuffer } = require('file-type');
 
-/**
- * Upload un buffer vers un service de cloud public
- * @param {Buffer} buffer - Le contenu du média
- * @returns {Promise<string>} - L'URL du média hébergé
- */
 async function uploadByBuffer(buffer) {
     try {
-        const { ext, mime } = await fileTypeFromBuffer(buffer) || { ext: 'bin', mime: 'application/octet-stream' };
-        
-        // On utilise un formulaire pour envoyer le fichier
-        const form = new FormData();
-        form.append('fileToUpload', buffer, { filename: `ghostgx.${ext}`, contentType: mime });
-        form.append('reqtype', 'fileupload');
-        form.append('userhash', ''); // Catbox n'en nécessite pas pour l'anonyme
+        // 1. Détection dynamique de l'extension
+        const type = await fileTypeFromBuffer(buffer);
+        const ext = type ? type.ext : 'bin';
+        const mime = type ? type.mime : 'application/octet-stream';
 
-        // On utilise Catbox.moe (très stable pour les bots)
+        // 2. Construction du formulaire
+        const form = new FormData();
+        form.append('reqtype', 'fileupload');
+        form.append('userhash', ''); 
+        form.append('fileToUpload', buffer, { 
+            filename: `ghostgx-${Date.now()}.${ext}`, 
+            contentType: mime 
+        });
+
+        // 3. Envoi avec Headers complets
         const response = await axios.post('https://catbox.moe/user/api.php', form, {
             headers: {
                 ...form.getHeaders(),
-                'User-Agent': 'Mozilla/5.0'
-            }
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
+            },
+            maxContentLength: Infinity,
+            maxBodyLength: Infinity
         });
 
-        if (response.data && typeof response.data === 'string') {
-            return response.data.trim(); // Retourne l'URL directe (ex: https://files.catbox.moe/xxxx.jpg)
+        if (response.data && typeof response.data === 'string' && response.data.includes('http')) {
+            return response.data.trim();
         } else {
-            throw new Error('Invalid response from Catbox');
+            throw new Error('Réponse Catbox invalide : ' + response.data);
         }
     } catch (error) {
-        console.error('Upload Error:', error.message);
+        console.error('❌ [ᴜᴘʟᴏᴀᴅ ᴇʀʀᴏʀ]:', error.message);
         throw error;
     }
 }
