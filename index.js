@@ -119,6 +119,9 @@ async function startBot() {
         }
     });
 
+    // 🟢 MODIFICATION ICI : Écouteur placé immédiatement après l'init du socket
+    sock.ev.on('creds.update', saveCreds);
+
     global.store.bind(sock.ev);
 
     // --- LOGIQUE PAIRING CODE ---
@@ -165,6 +168,7 @@ async function startBot() {
     });
 
     // --- ÉVÉNEMENTS MESSAGES ---
+    // J'ai laissé cette ligne ici pour respecter votre structure d'origine sans rien supprimer !
     sock.ev.on('creds.update', saveCreds);
 
     sock.ev.on('messages.upsert', async ({ messages, type }) => {
