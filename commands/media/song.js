@@ -4,13 +4,13 @@
  * Source : ytdl-core → btch-downloader → APIs fallback
  */
 
-const yts  = require('yt-search');
+const yts = require('yt-search');
 const ytdl = require('ytdl-core');
 const { ytmp3 } = require('btch-downloader');
 const APIs = require('../../utils/api');
 
 // ─────────────────────────────────────────────
-// HELPERS
+// HELPERS (Pour le style et le formatage)
 // ─────────────────────────────────────────────
 
 const toStyledCaps = (text) => {
@@ -35,20 +35,21 @@ const truncate = (text, max = 28) =>
     text && text.length > max ? text.substring(0, max - 3) + '...' : (text || '');
 
 // ─────────────────────────────────────────────
-// DESIGNS
+// DESIGNS AGM
 // ─────────────────────────────────────────────
 
-const AGM_PREVIEW = (title, duration, views, author) =>
+const AGM_PREVIEW = (title, duration, views, author, url) =>
     `*╭╼━≪• ${toStyledCaps('ʏᴏᴜᴛᴜʙᴇ ᴍᴜsɪᴄ')} •≫━╾╮*\n` +
     `*┃* 🎵 *${toStyledCaps('sᴏɴɢ')}* : *${toStyledCaps(truncate(title))}*\n` +
     `*┃* 👤 *${toStyledCaps('ᴀʀᴛɪsᴛ')}* : *${toStyledCaps(truncate(author, 22))}*\n` +
     `*┃* ⏱️ *${toStyledCaps('ᴅᴜʀᴀᴛɪᴏɴ')}* : *${toStyledCaps(duration || 'ɴ/ᴀ')}*\n` +
     `*┃* 👁️ *${toStyledCaps('ᴠɪᴇᴡs')}* : *${toStyledCaps(formatViews(views))}*\n` +
+    `*┃* 🔗 *${toStyledCaps('ʟɪɴᴋ')}* : ${url}\n` +
     `*┃* ⏳ *${toStyledCaps('sᴛᴀᴛᴜs')}* : 🟡 *${toStyledCaps('ᴘʀᴏᴄᴇssɪɴɢ...')}*\n` +
     `*╰━━━━━━━━━━━━━━━╯*\n` +
     `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
-const AGM_FINAL = (title, duration, views, author) =>
+const AGM_FINAL = (title, duration, views, author, url) =>
     `\n` +
     `*━━━━━━━━━━━━━━━━━━━━━━*\n` +
     `  🎵 *${toStyledCaps('ɢʜᴏsᴛɢ')}* 𝐗 *${toStyledCaps('ᴍᴜsɪᴄ sʏsᴛᴇᴍ')}* 🎵\n` +
@@ -58,6 +59,7 @@ const AGM_FINAL = (title, duration, views, author) =>
     `\n` +
     `  👤  ${toStyledCaps(truncate(author, 24))}\n` +
     `  ⏱️  ${toStyledCaps(duration || 'ɴ/ᴀ')}   •   👁️  ${toStyledCaps(formatViews(views))}\n` +
+    `  🔗  ${url}\n` +
     `\n` +
     `  ✅  *${toStyledCaps('ᴅᴏᴡɴʟᴏᴀᴅ ᴄᴏᴍᴘʟᴇᴛᴇ')}* •  🎧 *ʜɪɢʜ ǫᴜᴀʟɪᴛʏ*\n` +
     `\n` +
@@ -87,7 +89,7 @@ const downloadAudioBuffer = (url) =>
             filter:  'audioonly',
             requestOptions: {
                 headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
                 }
             }
         });
@@ -106,7 +108,7 @@ const resolveAudio = async (videoUrl) => {
         console.log('[SONG] Tentative ytdl-core...');
         const buffer = await downloadAudioBuffer(videoUrl);
         if (buffer?.length > 0) {
-            console.log('[SONG] ytdl-core ✅', buffer.length, 'bytes');
+            console.log('[SONG] ytdl-core ✅');
             return { type: 'buffer', data: buffer };
         }
     } catch (e) {
@@ -126,25 +128,25 @@ const resolveAudio = async (videoUrl) => {
         console.warn('[SONG] btch-downloader échoué:', e.message);
     }
 
-    // ── Source 3 : APIs fallback (fusionnées) ──
+    // ── Source 3 : APIs fallback ──
     const methods = [
-        APIs.getIzumiDownloadByUrl,
-        APIs.getYupraDownloadByUrl,
-        APIs.getEliteProTechAudioByUrl,
-        APIs.getYupraAudioByUrl,
-        APIs.getOkatsuAudioByUrl
-    ].filter(Boolean);
+        { name: 'EliteProTech', method: () => APIs.getEliteProTechDownloadByUrl(videoUrl) },
+        { name: 'Yupra', method: () => APIs.getYupraDownloadByUrl(videoUrl) },
+        { name: 'Okatsu', method: () => APIs.getOkatsuDownloadByUrl(videoUrl) }
+    ].filter(api => typeof api.method === 'function');
 
-    for (const method of methods) {
+    for (const api of methods) {
         try {
-            console.log('[SONG] Tentative API fallback...');
-            const res = await method(videoUrl);
-            const audioUrl = res?.download ?? res?.url ?? res?.link ?? null;
+            console.log(`[SONG] Tentative API ${api.name}...`);
+            const res = await api.method();
+            const audioUrl = res?.download ?? res?.dl ?? res?.url ?? res?.link ?? null;
             if (audioUrl?.startsWith('http')) {
-                console.log('[SONG] API fallback ✅');
+                console.log(`[SONG] API ${api.name} ✅`);
                 return { type: 'url', data: audioUrl };
             }
-        } catch (_) { /* tentative suivante */ }
+        } catch (e) {
+            console.warn(`[SONG] API ${api.name} échoué:`, e.message);
+        }
     }
 
     return null;
@@ -166,7 +168,7 @@ module.exports = {
         const text   = args.join(' ').trim();
 
         try {
-            // ── 0. VALIDATION ──
+            // ── VALIDATION ──
             if (!text) {
                 return extra.reply(
                     `⚠️ *${toStyledCaps('ᴇɴᴛʀᴇᴢ ᴜɴ ɴᴏᴍ ᴏᴜ ᴜɴ ʟɪᴇɴ ʏᴏᴜᴛᴜʙᴇ')}*\n\n` +
@@ -176,14 +178,14 @@ module.exports = {
 
             await sock.sendMessage(chatId, { react: { text: '🎧', key: msg.key } });
 
-            // ── 1. RECHERCHE YOUTUBE ──
+            // ── RECHERCHE YOUTUBE ──
             let video;
 
             if (YT_URL_REGEX.test(text)) {
                 const videoId = extractVideoId(text);
                 const res     = await yts({ videoId: videoId ?? text });
                 video         = res?.videos?.[0] ?? res;
-                // Si yts retourne un objet sans title → fallback recherche
+                
                 if (!video?.title) {
                     const fallback = await yts(text);
                     video = fallback.videos?.[0];
@@ -203,29 +205,19 @@ module.exports = {
             const authorName  = typeof author === 'object' ? author?.name : (author || '');
             const durationStr = duration?.timestamp ?? duration ?? '';
 
-            // ── 2. APERÇU THUMBNAIL ──
+            // ── APERÇU THUMBNAIL + DESIGN AGM (Sans ExternalAdReply) ──
             await sock.sendMessage(chatId, {
                 image:   { url: thumb },
-                caption: AGM_PREVIEW(title, durationStr, views, authorName),
-                contextInfo: {
-                    externalAdReply: {
-                        title:                 toStyledCaps('ɢʜᴏsᴛ ᴍᴜsɪᴄ sʏsᴛᴇᴍ'),
-                        body:                  toStyledCaps('ᴀɴᴀʟʏsᴇ ᴅᴜ ᴛʀᴀᴄᴋ...'),
-                        mediaType:             1,
-                        thumbnailUrl:          thumb,
-                        renderLargerThumbnail: true,
-                        showAdAttribution:     false
-                    }
-                }
+                caption: AGM_PREVIEW(title, durationStr, views, authorName, url)
             }, { quoted: msg });
 
-            // ── 3. RÉSOLUTION AUDIO ──
+            // ── RÉSOLUTION AUDIO ──
             const resolved = await resolveAudio(url);
             if (!resolved) throw new Error('ALL_SOURCES_FAILED');
 
-            // ── 4. ENVOI AUDIO + DESIGN FINAL ──
+            // ── ENVOI AUDIO + DESIGN FINAL ──
             await sock.sendMessage(chatId, {
-                text: AGM_FINAL(title, durationStr, views, authorName)
+                text: AGM_FINAL(title, durationStr, views, authorName, url)
             }, { quoted: msg });
 
             await sock.sendMessage(chatId, {
