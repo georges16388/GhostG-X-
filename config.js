@@ -89,6 +89,8 @@ module.exports = {
     social: {
       github: 'https://github.com/georges16388/GhostG-X-/',
       group: 'https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf?mode=gi_t',
-      channel: 'https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c'
+      channel: 'https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c',
+      channelJid: '120363425540434745@newsletter', // ✅ Ajouté avec succès !
+      newsletterWelcome: `📢 *ᴀʟᴇʀᴛᴇ ᴅᴇ ᴅᴇ́ᴍᴀʀʀᴀɢᴇ*\n\nLe bot *ɢʜᴏsᴛɢ-x* vient de s'allumer avec succès !\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
     }
 };
