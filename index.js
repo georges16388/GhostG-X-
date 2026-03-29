@@ -8,7 +8,6 @@ const {
     DisconnectReason, 
     fetchLatestBaileysVersion, 
     Browsers, 
-    // Retrait de makeCacheableSignalKeyStore instable pour régler le bug de déchiffrement
 } = require('@whiskeysockets/baileys');
 
 const pino = require('pino');
@@ -144,22 +143,36 @@ async function startBot() {
     const sessionFolder = path.join(__dirname, global.config.sessionName || 'session');
     fs.ensureDirSync(sessionFolder);
 
+    // 🛡️ [NOUVEAU] FIX DÉFINITIF "BAD MAC" : Auto-nettoyage des clés corrompues au démarrage
+    try {
+        const files = fs.readdirSync(sessionFolder);
+        files.forEach(file => {
+            // On supprime les pre-keys et sessions pour forcer WhatsApp à recréer des clés fraîches
+            // On NE touche PAS à creds.json (on garde votre connexion active !)
+            if (file.startsWith('pre-key-') || file.startsWith('session-') || file.startsWith('sender-key-') || file.startsWith('app-state-')) {
+                fs.unlinkSync(path.join(sessionFolder, file));
+            }
+        });
+        console.log('🛡️ [Sécurité] Cache des clés de session nettoyé avec succès.');
+    } catch (e) {
+        // Le dossier est peut-être vide au premier démarrage, on ignore l'erreur
+    }
+
     const { state, saveCreds } = await useMultiFileAuthState(sessionFolder);
     const { version } = await fetchLatestBaileysVersion();
 
     const sock = makeWASocket({
         version,
-        logger: pino({ level: 'silent' }), 
+        logger: pino({ level: 'fatal' }), // ✅ Forcé sur fatal pour éviter de faire ramer le bot en cas de micro-erreur
         printQRInTerminal: false, 
         browser: Browsers.ubuntu("Chrome"), 
         auth: {
             creds: state.creds,
-            keys: state.keys, // ✅ Rétabli en mode direct pour éviter les crashs de déchiffrement "Bad MAC"
+            keys: state.keys, 
         },
         syncFullHistory: false,
         markOnlineOnConnect: true,
         generateHighQualityLinkPreview: true,
-        // ✅ Ignore les messages trop vieux (plus de 30 secondes)
         shouldIgnoreJid: () => false,
         getMessage: async (key) => {
             if (global.store) {
@@ -192,33 +205,29 @@ async function startBot() {
         const { connection, lastDisconnect } = update;
 
         if (connection === 'close') {
-            // ✅ Vide la queue immédiatement à la déconnexion
             clearQueue();
 
             const statusCode = lastDisconnect?.error?.output?.statusCode;
             const reason = statusCode || lastDisconnect?.error?.toString();
 
             if (statusCode === DisconnectReason.loggedOut) {
-                console.log('🔴 Bot déconnecté définitivement (logged out). Supprime la session et relance.');
+                console.log('🔴 Bot déconnecté définitivement (logged out).');
                 return;
             }
 
-            // ✅ Délai exponentiel pour éviter les reconnexions en boucle
             reconnectAttempts++;
             const delay = Math.min(5000 * reconnectAttempts, MAX_RECONNECT_DELAY);
             console.log(`⚠️ Déconnexion (${reason}). Reconnexion dans ${delay / 1000}s... (tentative ${reconnectAttempts})`);
             setTimeout(() => startBot(), delay);
 
         } else if (connection === 'open') {
-            // ✅ Reset du compteur de reconnexions
             reconnectAttempts = 0;
             console.log('\n✅ ɢʜᴏꜱᴛɢ-x ᴄᴏɴɴᴇᴄᴛᴇ́ !');
 
             try {
                 const totalCmds = global.commands ? global.commands.size : 0;
                 const ownerNum = global.config.supremeNumber;
-                
-                // ✅ Correction syntaxe du message et intégration de la newsletter
+
                 const welcomeCaption = 
                     `╭╼━≪• *ɢʜᴏsᴛɢ-x ɪs ᴀʟɪᴠᴇ* •≫━╾╮\n` +
                     `┃ *sᴛᴀᴛᴜᴛ* : 🟢 ᴏɴʟɪɴᴇ\n` +
@@ -234,15 +243,13 @@ async function startBot() {
                     `📖 _*"ᴊᴇ ᴘᴜɪꜱ ᴛᴏᴜᴛ ᴘᴀʀ ᴄᴇʟᴜɪ ǫᴜɪ ᴍᴇ ғᴏʀᴛɪғɪᴇ"*_ ❤️✝️\n\n` +
                     `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
-                // ✅ Envoi au créateur
                 await sock.sendMessage(sock.user.id, { 
                     image: { url: 'https://files.catbox.moe/2fmwpu.jpg' }, 
                     caption: welcomeCaption,
                     mentions: [`${ownerNum}@s.whatsapp.net`]
                 });
 
-                // ✅ ENVOI AUTOMATIQUE SUR VOTRE NEWSLETTER WHATSAPP (Alerte de démarrage)
-                const newsletterJid = global.config.social.channelJid; // Assurez-vous d'avoir défini cette variable dans votre config.js
+                const newsletterJid = global.config.social.channelJid; 
                 if (newsletterJid) {
                     await sock.sendMessage(newsletterJid, { 
                         text: `📢 *ᴀʟᴇʀᴛᴇ ᴅᴇ ᴅᴇ́ᴍᴀʀʀᴀɢᴇ*\n\nLe bot *ɢʜᴏsᴛɢ-x* vient de s'allumer avec succès !\nMode : ${global.config.selfMode ? 'Privé 🔒' : 'Public 🌐'}` 
@@ -262,18 +269,15 @@ async function startBot() {
 
             const msgId = msg.key.id;
 
-            // ✅ Filtre 1 : Déjà traité globalement (survit aux reconnexions)
             if (isAlreadyProcessed(msgId)) continue;
 
-            // ✅ Filtre 2 : Message trop vieux (plus de 30 secondes)
             const msgTimestamp = (msg.messageTimestamp || 0) * 1000;
             const age = Date.now() - msgTimestamp;
             if (age > 30000) {
-                markProcessed(msgId); // Marque pour ne plus jamais le retraiter
+                markProcessed(msgId); 
                 continue;
             }
 
-            // ✅ Marque immédiatement avant d'envoyer dans la queue
             markProcessed(msgId);
             messageQueue.push({ sock, msg });
         }
@@ -304,5 +308,4 @@ async function startBot() {
     });
 }
 
-// Lancement global
 startBot().catch(err => logError("Global Boot Error", err));
