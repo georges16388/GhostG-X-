@@ -9,13 +9,13 @@ const { useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion, Brow
 // LA CORRECTION EST ICI : On l'importe à part
 const { makeInMemoryStore } = require('@whiskeysockets/baileys');
 
-
-
+// CORRECTION N°2 : Import direct de makeWASocket
 const makeWASocket = require('@whiskeysockets/baileys').default;
 
 const pino = require('pino');
 const fs = require('fs-extra'); 
 const path = require('path');
+
 
 
 // ==========================================
