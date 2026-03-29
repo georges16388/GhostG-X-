@@ -8,7 +8,7 @@ const {
     DisconnectReason, 
     fetchLatestBaileysVersion, 
     Browsers, 
-    makeCacheableSignalKeyStore
+    // Retrait de makeCacheableSignalKeyStore instable pour régler le bug de déchiffrement
 } = require('@whiskeysockets/baileys');
 
 const pino = require('pino');
@@ -154,7 +154,7 @@ async function startBot() {
         browser: Browsers.ubuntu("Chrome"), 
         auth: {
             creds: state.creds,
-            keys: makeCacheableSignalKeyStore(state.keys, pino({ level: 'silent' })),
+            keys: state.keys, // ✅ Rétabli en mode direct pour éviter les crashs de déchiffrement "Bad MAC"
         },
         syncFullHistory: false,
         markOnlineOnConnect: true,
@@ -217,27 +217,38 @@ async function startBot() {
             try {
                 const totalCmds = global.commands ? global.commands.size : 0;
                 const ownerNum = global.config.supremeNumber;
+                
+                // ✅ Correction syntaxe du message et intégration de la newsletter
                 const welcomeCaption = 
                     `╭╼━≪• *ɢʜᴏsᴛɢ-x ɪs ᴀʟɪᴠᴇ* •≫━╾╮\n` +
                     `┃ *sᴛᴀᴛᴜᴛ* : 🟢 ᴏɴʟɪɴᴇ\n` +
                     `┃ *ᴍᴀɪᴛʀᴇ* : @${ownerNum}\n` +
                     `┃ *ᴘʀᴇғɪxᴇ* : [ ${global.config.prefix || '.'} ]\n` +
-                    `┃ *ᴄᴏᴍᴍᴀɴᴅᴇs* : ${totalCmds}\n`; // Compteur réel ici +
+                    `┃ *ᴄᴏᴍᴍᴀɴᴅᴇs* : ${totalCmds}\n` +
                     `┃ *ᴍᴏᴅᴇ* : ${global.config.selfMode ? '🔒 ᴘʀɪᴠé' : '🌐 ᴘᴜʙʟɪᴄ'}\n` +
                     `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
-                   `📢 *ᴄʜᴀɪɴᴇ ᴡʜᴀᴛsᴀᴘᴘ* : ${global.config.social.channel}\n\n` +
-`📢 *ᴄʜᴀɪɴᴇ ᴛᴇʟᴇɢʀᴀᴍ* : https://t.me/ghostgxbot\n\n` +
-`👥 *ɢʀᴏᴜᴘᴇ* : ${global.config.social.group}\n\n` +
-`💻 *ᴅᴇᴠ* : wa.me/${ownerNum}\n\n` +
-`📖 _*"ᴊᴇ ᴘᴜɪꜱ ᴛᴏᴜᴛ ᴘᴀʀ ᴄᴇʟᴜɪ ǫᴜɪ ᴍᴇ ғᴏʀᴛɪғɪᴇ"*_ ❤️✝️\n\n` +
-`> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+                    `📢 *ᴄʜᴀɪɴᴇ ᴡʜᴀᴛsᴀᴘᴘ* : ${global.config.social.channel}\n\n` +
+                    `📢 *ᴄʜᴀɪɴᴇ ᴛᴇʟᴇɢʀᴀᴍ* : https://t.me/ghostgxbot\n\n` +
+                    `👥 *ɢʀᴏᴜᴘᴇ* : ${global.config.social.group}\n\n` +
+                    `💻 *ᴅᴇᴠ* : wa.me/${ownerNum}\n\n` +
+                    `📖 _*"ᴊᴇ ᴘᴜɪꜱ ᴛᴏᴜᴛ ᴘᴀʀ ᴄᴇʟᴜɪ ǫᴜɪ ᴍᴇ ғᴏʀᴛɪғɪᴇ"*_ ❤️✝️\n\n` +
+                    `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
-
+                // ✅ Envoi au créateur
                 await sock.sendMessage(sock.user.id, { 
                     image: { url: 'https://files.catbox.moe/2fmwpu.jpg' }, 
                     caption: welcomeCaption,
                     mentions: [`${ownerNum}@s.whatsapp.net`]
                 });
+
+                // ✅ ENVOI AUTOMATIQUE SUR VOTRE NEWSLETTER WHATSAPP (Alerte de démarrage)
+                const newsletterJid = global.config.social.channelJid; // Assurez-vous d'avoir défini cette variable dans votre config.js
+                if (newsletterJid) {
+                    await sock.sendMessage(newsletterJid, { 
+                        text: `📢 *ᴀʟᴇʀᴛᴇ ᴅᴇ ᴅᴇ́ᴍᴀʀʀᴀɢᴇ*\n\nLe bot *ɢʜᴏsᴛɢ-x* vient de s'allumer avec succès !\nMode : ${global.config.selfMode ? 'Privé 🔒' : 'Public 🌐'}` 
+                    });
+                }
+
             } catch (err) { logError("Notification Error", err); }
         }
     });
