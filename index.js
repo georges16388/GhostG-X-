@@ -88,8 +88,10 @@ const toSmallCaps = (text) => {
 // ==========================================
 // MODULE 3 : QUEUE ANTI-DOUBLON
 // ==========================================
+const MAX_QUEUE_SIZE = 50;
 const messageQueue = [];
 let processing = false;
+let processingStartedAt = 0;
 
 // ✅ IDs traités persistants GLOBALEMENT (survit aux reconnexions)
 const globalProcessedIds = new Set();
@@ -114,21 +116,29 @@ const markProcessed = (id) => {
 
 const isAlreadyProcessed = (id) => globalProcessedIds.has(id);
 
-// ✅ FIX : finally garantit que processing repasse à false même en cas de crash total
+// ✅ FIX PRINCIPAL : timeout 25s par message + finally garanti + déblocage auto
 async function processQueue() {
     if (processing) return;
     processing = true;
+    processingStartedAt = Date.now();
     try {
         while (messageQueue.length) {
             const { sock, msg } = messageQueue.shift();
             try {
-                await handler.handleMessage(sock, msg);
+                await Promise.race([
+                    handler.handleMessage(sock, msg),
+                    new Promise((_, reject) =>
+                        setTimeout(() => reject(new Error('Handler timeout 25s')), 25000)
+                    )
+                ]);
             } catch (err) {
                 logError("Handler Message Crash", err);
             }
+            processingStartedAt = Date.now(); // reset timer après chaque message
         }
     } finally {
         processing = false;
+        processingStartedAt = 0;
     }
 }
 
@@ -136,7 +146,26 @@ async function processQueue() {
 function clearQueue() {
     messageQueue.length = 0;
     processing = false;
+    processingStartedAt = 0;
 }
+
+// ✅ Déblocage automatique toutes les 30s si la queue est bloquée
+setInterval(() => {
+    const now = Date.now();
+    // Cas 1 : processing = false mais queue non vide → relancer
+    if (!processing && messageQueue.length > 0) {
+        console.log('⚠️ [Queue] Relance automatique détectée.');
+        processQueue().catch(err => logError("Queue Recovery Error", err));
+        return;
+    }
+    // Cas 2 : processing = true depuis plus de 30s → force reset
+    if (processing && processingStartedAt > 0 && now - processingStartedAt > 30000) {
+        console.log('⚠️ [Queue] Blocage détecté — reset forcé.');
+        processing = false;
+        processingStartedAt = 0;
+        processQueue().catch(err => logError("Queue Force Reset Error", err));
+    }
+}, 30 * 1000);
 
 // ==========================================
 // MODULE 4 : SOCKET & PAIRING CODE
@@ -296,11 +325,19 @@ async function startBot() {
                 continue;
             }
 
+            // ✅ Limite stricte : on ignore si la queue est saturée
+            if (messageQueue.length >= MAX_QUEUE_SIZE) {
+                console.warn(`⚠️ [Queue] Saturée (${messageQueue.length}), message ignoré.`);
+                markProcessed(msgId);
+                continue;
+            }
+
             markProcessed(msgId);
             messageQueue.push({ sock, msg });
         }
 
-        processQueue();
+        // ✅ FIX : await + catch pour ne jamais laisser une erreur silencieuse bloquer la queue
+        await processQueue().catch(err => logError("processQueue Error", err));
     });
 
     // ✅ Gestion des updates de statut (retry WhatsApp natif)
