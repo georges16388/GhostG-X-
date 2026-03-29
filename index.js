@@ -261,12 +261,18 @@ async function startBot() {
                     mentions: [`${ownerNum}@s.whatsapp.net`]
                 });
 
-                const newsletterJid = global.config.social.channelJid;
-                if (newsletterJid) {
-                    await sock.sendMessage(newsletterJid, {
-                        text: `📢 *ᴀʟᴇʀᴛᴇ ᴅᴇ ᴅᴇ́ᴍᴀʀʀᴀɢᴇ*\n\nLe bot *ɢʜᴏsᴛɢ-x* vient de s'allumer avec succès !\nMode : ${global.config.selfMode ? 'Privé 🔒' : 'Public 🌐'}`
-                    });
-                }
+                const ownerJid = `${ownerNum}@s.whatsapp.net`;
+                await sock.sendMessage(ownerJid, {
+                    text: `📢 *ᴀʟᴇʀᴛᴇ ᴅᴇ ᴅᴇ́ᴍᴀʀʀᴀɢᴇ*\n\nLe bot *ɢʜᴏsᴛɢ-x* vient de s'allumer avec succès !\nMode : ${global.config.selfMode ? 'Privé 🔒' : 'Public 🌐'}`,
+                    contextInfo: {
+                        isForwarded: true,
+                        forwardedNewsletterMessageInfo: {
+                            newsletterJid: global.config.social.channelJid || '120363425540434745@newsletter',
+                            newsletterName: global.config.social.channelName || 'ɢʜᴏsᴛɢ-x',
+                            serverMessageId: -1
+                        }
+                    }
+                });
 
             } catch (err) { logError("Notification Error", err); }
         }
