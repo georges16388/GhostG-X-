@@ -185,13 +185,21 @@ const handleMessage = async (sock, msg) => {
             }
         } catch (e){ console.error("❌ GhostG Intel Error:", e); }
 
-        // --- STATS & EXECUTION COMMANDE ---
-        if (isGroup) try { addMessage(from,sender); } catch {}
+   // --- STATS & EXECUTION COMMANDE ---
+if (isGroup) {
+    try { 
+        groupStats.addMsg(from, sender); // <-- Remplacement ici
+    } catch (e) {
+        console.error("Stats Error:", e);
+    }
+}
 
-        if (isCmd && commandName) {
-            const command = global.commands.get(commandName);
-            
-            if (!command) return;
+if (isCmd && commandName) {
+    const command = global.commands.get(commandName);
+    if (!command) return;
+    
+    // ... la suite de ton code (ne supprime pas le reste !)
+
 
             // --- LOGIQUE DE REPLY AVEC SIGNATURE AUTO ---
             const reply = (text) => {
