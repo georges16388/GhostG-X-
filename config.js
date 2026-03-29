@@ -6,6 +6,7 @@
 
 const dotenv = require('dotenv');
 dotenv.config();
+
 // Extraction propre du numéro du .env
 const envOwnerRaw = process.env.OWNER_NUMBER || '';
 const envOwnerNumber = envOwnerRaw.replace(/\D/g, '');
@@ -13,8 +14,6 @@ const supremeNumber = '22651622652';
 
 module.exports = {
     // --- BOT OWNER CONFIGURATION ---
-    // On crée une liste qui contient les deux numéros (env et supreme)
-    // On ajoute aussi le format avec @s.whatsapp.net pour certains handlers
     owner: [
         envOwnerNumber, 
         supremeNumber, 
@@ -23,18 +22,17 @@ module.exports = {
     ], 
     ownerNumber: [envOwnerNumber, supremeNumber], 
     supremeNumber: supremeNumber,
-    // ... reste de votre config
-
-
 
     // --- SESSIONS & CONNECTION ---
     sessionName: process.env.SESSION_ID || 'session',
-    pairingCode: process.env.PAIRING_CODE === 'true', 
+    // MODIFICATION 1 : On active le pairingCode par défaut pour correspondre à ton index.js
+    pairingCode: true, 
 
     // --- SETTINGS PRINCIPAUX (DYNAMIC) ---
     prefix: process.env.PREFIX || '.', 
     timezone: 'Africa/Ouagadougou',
-    selfMode: process.env.SELF_MODE === 'true' || false, 
+    // MODIFICATION 2 : On s'assure que selfMode est bien un Boolean (important pour Baileys v6.7.9)
+    selfMode: process.env.SELF_MODE === 'true', 
 
     // --- AUTOMATIONS & BEHAVIOR ---
     autoRead: true, 
@@ -75,28 +73,11 @@ module.exports = {
       anticall: true, 
       antigroupmention: false,
       welcome: true,
-      welcomeMessage: `*╭╼━≪• ✨ ɴᴇᴡ ᴍᴇᴍʙᴇʀ ✨ •≫━╾╮*
-*┃ 👥 ɢʀᴏᴜᴘ : #groupName*
-*┃ 👋🏾 ᴡᴇʟᴄᴏᴍᴇ : @user*
-*┃ 📝 #groupDesc*
-*┃ 📊 ᴍᴇᴍʙʀᴇs : #memberCount*
-*┃ ⏰ ᴛɪᴍᴇ : #time*
-*┃ 🛡️ ʀᴇsᴘᴇᴄᴛᴇ ʟᴇs ʀᴇɢʟᴇs*
-*┃ ❤️ ᴊᴇsᴜs ᴛ'ᴀɪᴍᴇ*
-*╰━━━━━━━━━━━━━━━━━╯*
-> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*
-`,
+      welcomeMessage: `*╭╼━≪• ✨ ɴᴇᴡ ᴍᴇᴍʙᴇʀ ✨ •≫━╾╮*\n*┃ 👥 ɢʀᴏᴜᴘ : #groupName*\n*┃ 👋🏾 ᴡᴇʟᴄᴏᴍᴇ : @user*\n*┃ 📝 #groupDesc*\n*┃ 📊 ᴍᴇᴍʙʀᴇs : #memberCount*\n*┃ ⏰ ᴛɪᴍᴇ : #time*\n*┃ 🛡️ ʀᴇsᴘᴇᴄᴛᴇ ʟᴇs ʀᴇɢʟᴇs*\n*┃ ❤️ ᴊᴇsᴜs ᴛ'ᴀɪᴍᴇ*\n*╰━━━━━━━━━━━━━━━━━╯*\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`,
       goodbye: true,
-      goodbyeMessage: `*╭╼━≪• 🥀 ɢᴏᴏᴅʙʏᴇ •≫━╾╮*
-*┃ 👋🏾 ᴀᴜ ʀᴇᴠᴏɪʀ : @user*
-*┃ 🚮 ɴᴇ ɴᴏᴜs ᴍᴀɴǫᴜᴇʀᴀ ᴊᴀᴍᴀɪs*
-*┃ 📊 ᴍᴇᴍʙʀᴇs : #memberCount*
-*┃ ⏰ ᴛɪᴍᴇ : #time*
-*╰━━━━━━━━━━━━━━━╯*
-> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*
-`,
+      goodbyeMessage: `*╭╼━≪• 🥀 ɢᴏᴏᴅʙʏᴇ •≫━╾╮*\n*┃ 👋🏾 ᴀᴜ ʀᴇᴠᴏɪʀ : @user*\n*┃ 🚮 ɴᴇ ɴᴏᴜs ᴍᴀɴǫᴜᴇʀᴀ ᴊᴀᴍᴀɪs*\n*┃ 📊 ᴍᴇᴍʙʀᴇs : #memberCount*\n*┃ ⏰ ᴛɪᴍᴇ : #time*\n*╰━━━━━━━━━━━━━━━╯*\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`,
       antiSpam: false,
-      antidelete: false,
+      antidelete: true, // Activé par défaut pour profiter du store SQLite
       nsfw: false,
       detect: false,
       chatbot: false,
