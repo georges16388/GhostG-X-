@@ -7,10 +7,15 @@
 const { useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion, Browsers, makeCacheableSignalKeyStore } = require('@whiskeysockets/baileys');
 
 // LA CORRECTION EST ICI : On l'importe à part
-const makeInMemoryStore = require('@whiskeysockets/baileys/lib/Store/make-in-memory-store').default;
-
-
 const { makeInMemoryStore } = require('@whiskeysockets/baileys');
+
+
+
+const makeWASocket = Baileys.default || Baileys; 
+const pino = require('pino');
+const fs = require('fs-extra'); 
+const path = require('path');
+
 
 // ==========================================
 // MODULE 1 : CONFIGURATION & STORE PRO
