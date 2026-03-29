@@ -28,21 +28,19 @@ const AGM_DESIGN = (title, type, url) => {
     `*┃* ✅ *${toStyledCaps('sᴛᴀᴛᴜs')}* : 🟢 *${toStyledCaps('ᴅᴏᴡɴʟᴏᴀᴅᴇᴅ')}*\n` +
     `*┃* ⚡ *${toStyledCaps('ᴛʏᴘᴇ')}* : *${toStyledCaps(type)}*\n` +
     `*┃* 📝 *${toStyledCaps('ᴛɪᴛʟᴇ')}* : *${toStyledCaps(shortTitle)}*\n` +
-    `*┃* 🔗 *${toStyledCaps('ʟɪᴇɴ')}* : ${url}\n` +  // ✅ Ajout ici
+    `*┃* 🔗 *${toStyledCaps('ʟɪᴇɴ')}* : ${url}\n` +
     `*┃*\n` +
     `*╰━━━━━━━━━━━━━━━╯*\n` +
     `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
   );
 };
 
-// Normalise l'URL TikTok (gère les liens courts vm/vt)
 const extractTikTokUrl = (text) => {
   return text.match(
     /https?:\/\/(?:vm|vt|www|m)?\.?tiktok\.com\/[^\s?#]+/i
   )?.[0] || null;
 };
 
-// Fetch data avec fallback
 const fetchTikTokData = async (url) => {
   // Source 1 : @bochilteam/scraper-tiktok
   try {
@@ -110,10 +108,7 @@ module.exports = {
       await sock.sendMessage(from, { react: { text: '⏳', key: msg.key } });
 
       const data = await fetchTikTokData(url);
-
-      if (!data) {
-        throw new Error('TOUTES_SOURCES_ECHOUEES');
-      }
+      if (!data) throw new Error('TOUTES_SOURCES_ECHOUEES');
 
       // ============================================================
       // MODE AUDIO (MP3)
@@ -147,22 +142,19 @@ module.exports = {
       // MODE PHOTO (ALBUM SLIDESHOW)
       // ============================================================
       if (data.photos && Array.isArray(data.photos) && data.photos.length > 0) {
-        const album = data.photos.slice(0, 10); // max 10 photos
+        const album = data.photos.slice(0, 10);
 
-        // Caption uniquement sur la première
         await sock.sendMessage(from, {
           image: { url: album[0] },
-          caption: AGM_DESIGN(data.title, `ᴘʜᴏᴛᴏ ᴀʟʙᴜᴍ (${album.length})`)
+          caption: AGM_DESIGN(data.title, `ᴘʜᴏᴛᴏ ᴀʟʙᴜᴍ (${album.length})`, url)
         }, { quoted: msg });
 
-        // Envoie le reste sans caption
         for (let i = 1; i < album.length; i++) {
           await sock.sendMessage(from, {
             image: { url: album[i] }
           });
         }
 
-        // Audio de fond si dispo
         if (data.audio) {
           await sock.sendMessage(from, {
             audio: { url: data.audio },
@@ -179,13 +171,11 @@ module.exports = {
       // MODE VIDÉO (DEFAULT — sans watermark)
       // ============================================================
       const videoUrl = data.video;
-      if (!videoUrl) {
-        throw new Error('VIDEO_NOT_FOUND');
-      }
+      if (!videoUrl) throw new Error('VIDEO_NOT_FOUND');
 
       await sock.sendMessage(from, {
         video: { url: videoUrl },
-        caption: AGM_DESIGN(data.title, 'ᴠɪᴅᴇᴏ ɴᴏ ᴡᴍ'),
+        caption: AGM_DESIGN(data.title, 'ᴠɪᴅᴇᴏ ɴᴏ ᴡᴍ', url),
         mimetype: 'video/mp4',
         contextInfo: {
           externalAdReply: {
