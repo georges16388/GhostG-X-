@@ -2,6 +2,7 @@
  * ɢʜᴏꜱᴛɢ-x ᴍᴅ - Main Message Handler (Prestige Edition V5.3 - Bulletproof)
  * Refactor complet pour stabilité et performance - SQLite & JSON Hybrid
  */
+const groupStats = require('./utils/groupstats');
 
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 const database = require('./database'); 
