@@ -5,9 +5,11 @@
     "main": "index.js",
     "type": "commonjs",
     "scripts": {
+        "prestart": "npm install",
         "start": "node index.js",
         "dev": "nodemon index.js",
-        "install:no-puppeteer": "PUPPETEER_SKIP_DOWNLOAD=true PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true npm install"
+        "install:no-puppeteer": "PUPPETEER_SKIP_DOWNLOAD=true PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true npm install",
+        "clean": "rm -rf node_modules package-lock.json && npm install"
     },
     "keywords": [
         "GhostG-X",
