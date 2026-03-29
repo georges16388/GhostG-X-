@@ -2,21 +2,19 @@
  * ɢʜᴏꜱᴛɢ-x ᴍᴅ - ᴍᴀɪɴ ᴇɴᴛʀʏ ᴘᴏɪɴᴛ (Prestige Edition V5.3 - FULL FUSION)
  */
 
-// CENTRALISATION DES IMPORTS BAILEYS (Correction Finale)
+// IMPORTS BAILEYS (sans makeInMemoryStore)
 const { 
     default: makeWASocket, 
     useMultiFileAuthState, 
     DisconnectReason, 
     fetchLatestBaileysVersion, 
     Browsers, 
-    makeCacheableSignalKeyStore, 
-    makeInMemoryStore // C'est ici que la magie opère
+    makeCacheableSignalKeyStore
 } = require('@whiskeysockets/baileys');
 
 const pino = require('pino');
 const fs = require('fs-extra'); 
 const path = require('path');
-// ... le reste de tes imports
 
 // ==========================================
 // MODULE 1 : CONFIGURATION & STORE PRO
@@ -36,18 +34,29 @@ const logError = (msg, err) => {
 fs.ensureDirSync(path.join(__dirname, 'tmp'));
 fs.ensureDirSync(path.join(__dirname, 'database'));
 
-// Store avec logger Pino (Essentiel pour isAdmin/Anti-Delete)
-global.store = makeInMemoryStore({ 
-    logger: pino({ level: 'silent' }) 
-});
-
-// Chargement du store existant s'il existe
-try { global.store.readFromFile('./database/store.json'); } catch (e) {}
-
-// Sauvegarde automatique du store
-setInterval(() => {
-    try { global.store.writeToFile('./database/store.json'); } catch (e) {}
-}, 30000);
+// ✅ STORE MAISON (remplace makeInMemoryStore, compatible toutes versions)
+global.store = {
+    messages: {},
+    bind: (ev) => {
+        ev.on('messages.upsert', ({ messages }) => {
+            for (const msg of messages) {
+                const jid = msg.key.remoteJid;
+                if (!jid) continue;
+                if (!global.store.messages[jid]) global.store.messages[jid] = [];
+                global.store.messages[jid].push(msg);
+                if (global.store.messages[jid].length > 100) {
+                    global.store.messages[jid].shift();
+                }
+            }
+        });
+    },
+    loadMessage: async (jid, id) => {
+        if (!jid || !global.store.messages[jid]) return null;
+        return global.store.messages[jid].find(m => m.key.id === id) || null;
+    },
+    readFromFile: () => {},
+    writeToFile: () => {}
+};
 
 // ==========================================
 // MODULE 2 : SÉCURITÉ & UTILITAIRES
@@ -118,9 +127,7 @@ async function startBot() {
         }
     });
 
-    // 🟢 MODIFICATION ICI : Écouteur placé immédiatement après l'init du socket
     sock.ev.on('creds.update', saveCreds);
-
     global.store.bind(sock.ev);
 
     // --- LOGIQUE PAIRING CODE ---
@@ -150,13 +157,10 @@ async function startBot() {
             }
         } else if (connection === 'open') {
             console.log('\n✅ ɢʜᴏꜱᴛɢ-x ᴄᴏɴɴᴇᴄᴛᴇ́ !');
-
             try {
                 const totalCmds = global.commands ? global.commands.size : 0;
                 const ownerNum = global.config.supremeNumber;
-
-            const welcomeCaption = `╭╼━≪• *ɢʜᴏsᴛɢ-x ɪs ᴀʟɪᴠᴇ* •≫━╾╮\n┃ *sᴛᴀᴛᴜᴛ* : 🟢 ᴏɴʟɪɴᴇ\n┃ *ᴍᴀɪᴛʀᴇ* : @${ownerNum}\n┃ *ᴘʀᴇғɪxᴇ* : [ ${global.config.prefix || '.'} ]\n┃ *ᴄᴏᴍᴍᴀɴᴅᴇs* : ${totalCmds}\n┃ *ᴍᴏᴅᴇ* : ${global.config.selfMode ? '🔒 ᴘʀɪᴠé' : '🌐 ᴘᴜʙʟɪᴄ'}\n╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n📢 *ᴄʜᴀɪɴᴇ* : ${global.config.social.channel}\n👥 *ɢʀᴏᴜᴘᴇ ᴅ'ᴇɴᴛʀᴀɪᴅᴇ* : ${global.config.social.group}\n💻 *ᴅᴇᴠᴇʟᴏᴘᴘᴇᴜʀ* : wa.me/${ownerNum}\n\n📖 _*“ᴊᴇ ᴘᴜɪꜱ ᴛᴏᴜᴛ ᴘᴀʀ ᴄᴇʟᴜɪ ǫᴜɪ ᴍᴇ ғᴏʀᴛɪғɪᴇ”*_ ❤️✝️\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
-
+                const welcomeCaption = `╭╼━≪• *ɢʜᴏsᴛɢ-x ɪs ᴀʟɪᴠᴇ* •≫━╾╮\n┃ *sᴛᴀᴛᴜᴛ* : 🟢 ᴏɴʟɪɴᴇ\n┃ *ᴍᴀɪᴛʀᴇ* : @${ownerNum}\n┃ *ᴘʀᴇғɪxᴇ* : [ ${global.config.prefix || '.'} ]\n┃ *ᴄᴏᴍᴍᴀɴᴅᴇs* : ${totalCmds}\n┃ *ᴍᴏᴅᴇ* : ${global.config.selfMode ? '🔒 ᴘʀɪᴠé' : '🌐 ᴘᴜʙʟɪᴄ'}\n╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n📢 *ᴄʜᴀɪɴᴇ* : ${global.config.social.channel}\n👥 *ɢʀᴏᴜᴘᴇ ᴅ'ᴇɴᴛʀᴀɪᴅᴇ* : ${global.config.social.group}\n💻 *ᴅᴇᴠᴇʟᴏᴘᴘᴇᴜʀ* : wa.me/${ownerNum}\n\n📖 _*"ᴊᴇ ᴘᴜɪꜱ ᴛᴏᴜᴛ ᴘᴀʀ ᴄᴇʟᴜɪ ǫᴜɪ ᴍᴇ ғᴏʀᴛɪғɪᴇ"*_ ❤️✝️\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
                 await sock.sendMessage(sock.user.id, { 
                     image: { url: 'https://files.catbox.moe/2fmwpu.jpg' }, 
                     caption: welcomeCaption,
@@ -167,9 +171,6 @@ async function startBot() {
     });
 
     // --- ÉVÉNEMENTS MESSAGES ---
-    // J'ai laissé cette ligne ici pour respecter votre structure d'origine sans rien supprimer !
-    
-
     sock.ev.on('messages.upsert', async ({ messages, type }) => {
         if (type !== 'notify') return;
         for (const msg of messages) {
