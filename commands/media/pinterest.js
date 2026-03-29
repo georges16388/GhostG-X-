@@ -1,127 +1,105 @@
 /**
  * Pinterest Downloader - AGM Elite Edition
  * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
+ * Optimized for GhostG-X V5.3 (Fast Streaming)
  */
 
 const axios = require('axios');
 
-// Fonction de conversion en Small Caps
-const toSmallCaps = (text) => {
-    const smallCapsMap = {
-        'a': 'ᴀ', 'b': 'ʙ', 'c': 'ᴄ', 'd': 'ᴅ', 'e': 'ᴇ', 'f': 'ғ', 'g': 'ɢ', 'h': 'ʜ', 
-        'i': 'ɪ', 'j': 'ᴊ', 'k': 'ᴋ', 'l': 'ʟ', 'm': 'ᴍ', 'n': 'ɴ', 'o': 'ᴏ', 'p': 'ᴘ', 
-        'q': 'ǫ', 'r': 'ʀ', 's': 's', 't': 'ᴛ', 'u': 'ᴜ', 'v': 'ᴠ', 'w': 'ᴡ', 'x': 'x', 
-        'y': 'ʏ', 'z': 'ᴢ'
-    };
-    return text.toString().toLowerCase().split('').map(char => smallCapsMap[char] || char).join('');
+// --- FONCTION DE CONVERSION EN SMALL CAPS ---
+const toStyledCaps = (text) => {
+    if (!text) return "";
+    const fonts = {'a':'ᴀ','b':'ʙ','c':'ᴄ','d':'ᴅ','e':'ᴇ','f':'ғ','g':'ɢ','h':'ʜ','i':'ɪ','j':'ᴊ','k':'ᴋ','l':'ʟ','m':'ᴍ','n':'ɴ','o':'ᴏ','p':'ᴘ','q':'ǫ','r':'ʀ','s':'ꜱ','t':'ᴛ','u':'ᴜ','v':'ᴠ','w':'ᴡ','x':'x','y':'ʏ','z':'ᴢ'};
+    return String(text).toLowerCase().split('').map(c => fonts[c] || c).join('');
 };
 
-// --- FONCTION DE DESIGN AGM ADAPTÉE ---
+// --- FONCTION DE DESIGN AGM ---
 const AGM_DESIGN = (title, type) => {
-  const shortTitle = title ? (title.length > 15 ? title.substring(0, 12) + '...' : title) : 'ᴘɪɴᴛᴇʀᴇsᴛ';
-  return `╭╼━≪• *ᴘɪɴᴛᴇʀᴇsᴛ ᴅʟ* •≫━╾╮
-┃ 
-┃ ${toSmallCaps('sᴛᴀᴛᴜs')} : 🟢 ${toSmallCaps('ᴅᴏᴡɴʟᴏᴀᴅᴇᴅ')}
-┃ ${toSmallCaps('ᴛɪᴛʟᴇ')} : ${toSmallCaps(shortTitle)}
-┃ ${toSmallCaps('ᴛʏᴘᴇ')} : ${toSmallCaps(type)} 📌
-┃ 
-╰━━━━━━━━━━━━━━━╯
+  const shortTitle = title ? (title.length > 20 ? title.substring(0, 17) + '...' : title) : 'ᴘɪɴᴛᴇʀᴇsᴛ';
+  return `*╭╼━≪• ${toStyledCaps('ᴘɪɴᴛᴇʀᴇsᴛ sʏsᴛᴇᴍ')} •≫━╾╮*
+*┃*
+*┃* ✅ *${toStyledCaps('sᴛᴀᴛᴜs')}* : 🟢 *${toStyledCaps('ᴅᴏᴡɴʟᴏᴀᴅᴇᴅ')}*
+*┃* 📝 *${toStyledCaps('ᴛɪᴛʟᴇ')}* : *${toStyledCaps(shortTitle)}*
+*┃* ⚡ *${toStyledCaps('ᴛʏᴘᴇ')}* : *${toStyledCaps(type)}* 📌
+*┃*
+*╰━━━━━━━━━━━━━━━╯*
 > *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 };
 
-const processedMessages = new Set();
-
 module.exports = {
   name: 'pinterest',
-  aliases: ['pinterestmedia', 'pint'],
+  aliases: ['pin', 'pint', 'pindl'],
   category: 'media',
   description: 'Télécharger des images ou vidéos depuis Pinterest',
   usage: '.pin <URL>',
 
   async execute(sock, msg, args, extra) {
+    const from = extra.from;
+    const text = args.join(' ');
+
     try {
-      // Anti-spam / Double exécution
-      if (processedMessages.has(msg.key.id)) return;
-      processedMessages.add(msg.key.id);
-      setTimeout(() => processedMessages.delete(msg.key.id), 5 * 60 * 1000);
-
-      const text = args.join(' ') || (msg.message?.extendedTextMessage?.text?.split(' ')[1]);
-
-      if (!text) {
-        const warn = toSmallCaps("veuillez fournir un lien pinterest (pin.it / pinterest.com)");
-        return extra.reply(`⚠️ *${warn}*`);
-      }
-
-      // Extraction propre de l'URL Pinterest
+      // Extraction de l'URL Pinterest (Supporte pin.it et pinterest.com/pin/)
       const urlMatch = text.match(/https?:\/\/(?:[^\s]*pinterest[^\s]*\/pin\/|pin\.it\/)[^\s]+/i);
       if (!urlMatch) {
-        const errLink = toSmallCaps("lien pinterest invalide");
-        return extra.reply(`❌ *${errLink}*`);
+        return extra.reply(`⚠️ *${toStyledCaps("ᴠᴇᴜɪʟʟᴇᴢ sᴀɪsɪʀ ᴜɴ ʟɪᴇɴ ᴘɪɴᴛᴇʀᴇsᴛ ᴠᴀʟɪᴅᴇ")}*`);
       }
 
       const pinterestUrl = urlMatch[0];
-      await sock.sendMessage(extra.from, { react: { text: '📌', key: msg.key } });
+      await sock.sendMessage(from, { react: { text: '📌', key: msg.key } });
 
-      // Appel API Nexray (Vérifie bien que ton instance est active)
-      const apiUrl = `https://api.nexray.web.id/downloader/pinterest?url=${encodeURIComponent(pinterestUrl)}`;
-
-      const response = await axios.get(apiUrl, {
-        timeout: 30000,
-        headers: { 'User-Agent': 'Mozilla/5.0' }
-      });
-
-      // Vérification de la structure de réponse
-      if (!response.data || !response.data.result) {
-        throw new Error('Invalid API response');
+      // Utilisation d'une API de secours stable (Siputzx / Nexray Fallback)
+      const res = await axios.get(`https://api.siputzx.my.id/api/d/pinterest?url=${encodeURIComponent(pinterestUrl)}`);
+      
+      if (!res.data || !res.data.data) {
+        throw new Error('Données introuvables');
       }
 
-      const pinData = response.data.result;
-      
-      // Détection Vidéo vs Image
-      // Note: Nexray renvoie souvent .video ou .url selon le type
-      const isVideo = !!(pinData.video || (pinData.url && pinData.url.includes('.mp4')));
-      const mediaUrl = pinData.video || pinData.url || pinData.image;
-
-      if (!mediaUrl) throw new Error('No media found');
+      const pinData = res.data.data;
+      // Détection intelligente du média
+      const mediaUrl = pinData.video || pinData.url || pinData.image || pinData.images;
+      const isVideo = (typeof mediaUrl === 'string' && mediaUrl.includes('.mp4')) || !!pinData.video;
 
       const caption = AGM_DESIGN(pinData.title || 'Pinterest Pin', isVideo ? 'video' : 'image');
 
       if (isVideo) {
-        // Téléchargement du buffer vidéo (Plus stable pour WhatsApp)
-        const videoRes = await axios.get(mediaUrl, { 
-          responseType: 'arraybuffer',
-          timeout: 60000 
-        });
-
-        await sock.sendMessage(extra.from, {
-          video: Buffer.from(videoRes.data),
+        // --- MODE VIDÉO ---
+        await sock.sendMessage(from, {
+          video: { url: mediaUrl },
           caption: caption,
           mimetype: 'video/mp4',
           contextInfo: {
             externalAdReply: {
                 title: "ɢʜᴏsᴛ ᴘɪɴᴛᴇʀᴇsᴛ ᴘʟᴀʏᴇʀ",
-                body: toSmallCaps("video recuperee avec succes"),
-                mediaType: 2,
+                body: toStyledCaps("flux video hd recupere"),
+                mediaType: 1,
                 thumbnailUrl: "https://files.catbox.moe/2fmwpu.jpg",
-                showAdAttribution: true
+                showAdAttribution: false
             }
           }
         }, { quoted: msg });
       } else {
-        // Envoi Image
-        await sock.sendMessage(extra.from, {
+        // --- MODE IMAGE ---
+        await sock.sendMessage(from, {
           image: { url: mediaUrl },
-          caption: caption
+          caption: caption,
+          contextInfo: {
+            externalAdReply: {
+                title: "ɢʜᴏsᴛ ᴘɪɴᴛᴇʀᴇsᴛ ɪᴍᴀɢᴇ",
+                body: toStyledCaps("image hd recuperee"),
+                mediaType: 1,
+                thumbnailUrl: mediaUrl,
+                showAdAttribution: false
+            }
+          }
         }, { quoted: msg });
       }
 
-      await sock.sendMessage(extra.from, { react: { text: '✅', key: msg.key } });
+      await sock.sendMessage(from, { react: { text: '✅', key: msg.key } });
 
     } catch (error) {
-      console.error('Pinterest Error:', error);
-      const fail = toSmallCaps("echec du telechargement pinterest");
-      await extra.reply(`❌ *${fail}*`);
-      await sock.sendMessage(extra.from, { react: { text: '❌', key: msg.key } });
+      console.error('[PINTEREST ERROR]:', error.message);
+      await extra.reply(`❌ *${toStyledCaps("ᴇᴄʜᴇᴄ ᴅᴜ ᴛᴇʟᴇᴄʜᴀʀɢᴇᴍᴇɴᴛ. ʟɪᴇɴ ᴘᴇᴜᴛ-ᴇᴛʀᴇ ᴘʀɪᴠᴇ")}*`);
+      await sock.sendMessage(from, { react: { text: '❌', key: msg.key } });
     }
   }
 };
