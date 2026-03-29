@@ -413,18 +413,34 @@ async function startBot() {
 
                 // Message communauté — une seule fois au premier déploiement
                 const deployFlagPath = path.join(__dirname, 'database', '.deployed');
-                if (!fs.existsSync(deployFlagPath)) {
-                    try {
-                        await new Promise(r => setTimeout(r, 2000));
-                        await sock.sendMessage(ownerJid, {
-                            text:
-                                `╭╼━≪• 🌐 *ʙɪᴇɴᴠᴇɴᴜᴇ ᴅᴀɴs ɢʜᴏsᴛɢ-x* •≫━╾╮\n` +
-                                `┃ Merci d'avoir déployé *ɢʜᴏsᴛɢ-x* ! 🙏🏾\n┃\n` +
-                                `┃ 👥 *ɢʀᴏᴜᴘᴇ ᴏғғɪᴄɪᴇʟ* :\n` +
-                                `┃ https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf\n┃\n` +
-                                `┃ 📢 *ᴄʜᴀɪɴᴇ ᴏғғɪᴄɪᴇʟʟᴇ* :\n` +
-                                `┃ https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c\n┃\n` +                               `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n` +
-                                `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+             //ici   if (!fs.existsSync(deployFlagPath)) {
+    try {
+        // Attente de 2 secondes pour laisser le temps à la connexion de se stabiliser
+        await new Promise(r => setTimeout(r, 2000));
+        
+        // Envoi du message de bienvenue
+        await sock.sendMessage(ownerJid, {
+            text:
+                `╭╼━≪• 🌐 *ʙɪᴇɴᴠᴇɴᴜᴇ ᴅᴀɴs ɢʜᴏsᴛɢ-x* •≫━╾╮\n` +
+                `┃ Merci d'avoir déployé *ɢʜᴏsᴛɢ-x* ! 🙏🏾\n┃\n` +
+                `┃ 👥 *ɢʀᴏᴜᴘᴇ ᴏғғɪᴄɪᴇʟ* :\n` +
+                `┃ https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf\n┃\n` +
+                `┃ 📢 *ᴄʜᴀɪɴᴇ ᴏғғɪᴄɪᴇʟʟᴇ* :\n` +
+                `┃ https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c\n┃\n` +
+                `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n` +
+                `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+        });
+
+        console.log("Message de premier déploiement envoyé au propriétaire.");
+
+        // IMPORTANT : Créer le fichier "flag" pour ne plus repasser ici au prochain démarrage
+        fs.writeFileSync(deployFlagPath, 'deployee'); 
+
+    } catch (error) {
+        console.error("Erreur lors de l'envoi du message de déploiement :", error);
+    }
+}
+        
                         });
                         fs.writeFileSync(deployFlagPath, new Date().toISOString());
                         console.log('✅ [Community] Message déployeur envoyé.');
