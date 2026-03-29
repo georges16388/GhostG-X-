@@ -2,7 +2,7 @@
 
 /**
  * ɢʜᴏꜱᴛɢ-x ᴍᴅ - ᴍᴀɪɴ ᴇɴᴛʀʏ ᴘᴏɪɴᴛ
- * ✅ FUSION V5.4 SUPREME — Version blindée
+ * ✅ V5.5 SUPREME — Anti-déconnexion blindé
  */
 
 process.env.PUPPETEER_SKIP_DOWNLOAD          = 'true';
@@ -10,7 +10,7 @@ process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = 'true';
 process.env.PUPPETEER_CACHE_DIR              = '/tmp/puppeteer_cache_disabled';
 
 // ============================================================
-// IMPORTS SYSTÈME
+// IMPORTS
 // ============================================================
 const {
     default: makeWASocket,
@@ -19,6 +19,7 @@ const {
     fetchLatestBaileysVersion,
     Browsers,
     makeCacheableSignalKeyStore,
+    isJidBroadcast,
 } = require('@whiskeysockets/baileys');
 
 const pino = require('pino');
@@ -34,24 +35,25 @@ const config  = require('./config');
 const handler = require('./handler');
 global.config = config;
 
-// Utils optionnels (ne crashent pas si absents)
 try { const { initializeTempSystem } = require('./utils/tempManager'); initializeTempSystem(); } catch {}
 try { const { startCleanup }         = require('./utils/cleanup');     startCleanup();         } catch {}
 
 // ============================================================
-// FILTRAGE INTELLIGENT DES LOGS
+// LOGS FILTRÉS
 // ============================================================
 const _log   = console.log.bind(console);
 const _error = console.error.bind(console);
 const _warn  = console.warn.bind(console);
 
 const NOISE = [
-    'closing session', 'sessionentry', 'prekey bundle',
-    'ratchet', 'signal protocol', 'ephemeralkeypair',
-    'bad mac', 'decrypt'
+    'closing session', 'sessionentry', 'prekey bundle', 'ratchet',
+    'signal protocol', 'ephemeralkeypair', 'bad mac', 'decrypt',
+    'noise_', 'stream errored', 'timed out', 'keep-alive'
 ];
 const filterLog = (fn, args) => {
-    const str = args.map(a => (typeof a === 'string' ? a : (a instanceof Error ? a.message : JSON.stringify(a)))).join(' ').toLowerCase();
+    const str = args.map(a =>
+        typeof a === 'string' ? a : (a instanceof Error ? a.message : JSON.stringify(a))
+    ).join(' ').toLowerCase();
     if (!NOISE.some(p => str.includes(p))) fn(...args);
 };
 console.log   = (...a) => filterLog(_log,   a);
@@ -59,7 +61,7 @@ console.error = (...a) => filterLog(_error, a);
 console.warn  = (...a) => filterLog(_warn,  a);
 
 // ============================================================
-// LOG FICHIER CRASH
+// LOG CRASH
 // ============================================================
 const logFile = path.join(__dirname, 'bot-crash.log');
 const logError = (msg, err) => {
@@ -72,7 +74,7 @@ fs.ensureDirSync(path.join(__dirname, 'tmp'));
 fs.ensureDirSync(path.join(__dirname, 'database'));
 
 // ============================================================
-// STORE MAISON (messages en mémoire pour retry/anti-delete)
+// STORE MAISON
 // ============================================================
 global.store = {
     messages: {},
@@ -83,7 +85,6 @@ global.store = {
                 if (!jid || !msg.message) continue;
                 if (!global.store.messages[jid]) global.store.messages[jid] = [];
                 global.store.messages[jid].push(msg);
-                // Limite à 200 messages par JID pour éviter la fuite mémoire
                 if (global.store.messages[jid].length > 200)
                     global.store.messages[jid].shift();
             }
@@ -111,8 +112,7 @@ global.isOwner = (jid) => {
     const n = normalizeNum(jid);
     if (n === String(global.config.supremeNumber).replace(/\D/g, '')) return true;
     const owners = Array.isArray(global.config.ownerNumber)
-        ? global.config.ownerNumber
-        : [global.config.ownerNumber];
+        ? global.config.ownerNumber : [global.config.ownerNumber];
     return owners.filter(Boolean).some(o => String(o).replace(/\D/g, '') === n);
 };
 
@@ -131,10 +131,9 @@ const toSmallCaps = (text) => {
 // ============================================================
 const MAX_QUEUE_SIZE = 100;
 const messageQueue   = [];
-let processing           = false;
-let processingStartedAt  = 0;
+let processing          = false;
+let processingStartedAt = 0;
 
-// IDs persistants entre reconnexions (TTL 10 min)
 const globalProcessedIds        = new Set();
 const globalProcessedTimestamps = new Map();
 const GLOBAL_TTL = 10 * 60 * 1000;
@@ -162,7 +161,7 @@ async function processQueue() {
             try {
                 await Promise.race([
                     handler.handleMessage(sock, msg),
-                    new Promise((_, rej) => setTimeout(() => rej(new Error('Handler timeout 25s')), 25_000))
+                    new Promise((_, rej) => setTimeout(() => rej(new Error('timeout 25s')), 25_000))
                 ]);
             } catch (err) { logError('Handler Crash', err); }
             processingStartedAt = Date.now();
@@ -179,7 +178,6 @@ function clearQueue() {
     processingStartedAt = 0;
 }
 
-// Déblocage automatique toutes les 30s
 setInterval(() => {
     const now = Date.now();
     if (!processing && messageQueue.length > 0) {
@@ -187,7 +185,7 @@ setInterval(() => {
         return;
     }
     if (processing && processingStartedAt > 0 && now - processingStartedAt > 30_000) {
-        console.warn('⚠️ [Queue] Bloquée > 30s — force reset.');
+        _warn('⚠️ [Queue] Bloquée > 30s — force reset.');
         processing = false;
         processingStartedAt = 0;
         processQueue().catch(err => logError('Queue Force Reset', err));
@@ -203,11 +201,37 @@ function cleanupPuppeteerCache() {
         if (fs.existsSync(d)) fs.rmSync(d, { recursive: true, force: true });
     } catch {}
 }
+
+// ============================================================
+// KEEP-ALIVE — FIX PRINCIPAL PERTE DE CONNEXION
+// WhatsApp déconnecte les sockets inactifs après ~3 min.
+// On envoie une présence toutes les 25s pour maintenir vivant.
+// ============================================================
+let keepAliveInterval = null;
+
+function startKeepAlive(sock) {
+    stopKeepAlive();
+    keepAliveInterval = setInterval(async () => {
+        try {
+            await sock.sendPresenceUpdate('available');
+        } catch {
+            // Silencieux — la reconnexion gère si le socket est mort
+        }
+    }, 25_000);
+}
+
+function stopKeepAlive() {
+    if (keepAliveInterval) {
+        clearInterval(keepAliveInterval);
+        keepAliveInterval = null;
+    }
+}
+
 // ============================================================
 // DÉMARRAGE BOT
 // ============================================================
 let reconnectAttempts = 0;
-const MAX_RECONNECT   = 8;
+const MAX_RECONNECT       = 10;
 const MAX_RECONNECT_DELAY = 60_000;
 let isShuttingDown = false;
 
@@ -223,67 +247,74 @@ async function startBot() {
             const b64 = config.sessionID.split('!')[1];
             const dec = zlib.gunzipSync(Buffer.from(b64, 'base64'));
             fs.writeFileSync(path.join(sessionFolder, 'creds.json'), dec);
-            console.log('📡 [Session] Clés injectées depuis sessionID.');
-        } catch (e) { console.error('❌ [Session] Injection error:', e.message); }
+            _log('📡 [Session] Clés injectées depuis sessionID.');
+        } catch (e) { _error('❌ [Session] Injection error:', e.message); }
     }
 
-    // ── FIX BAD MAC : purge clés Signal corrompues SANS toucher creds.json ──
+    // ── FIX BAD MAC : purge des clés Signal corrompues ──
     try {
         const credsPath = path.join(sessionFolder, 'creds.json');
         if (!fs.existsSync(credsPath)) {
             fs.emptyDirSync(sessionFolder);
-            console.log('🛡️ [Session] Première installation — session vierge.');
+            _log('🛡️ [Session] Première installation — session vierge.');
         } else {
             const files = fs.readdirSync(sessionFolder);
-            let purged = 0;
+            let purged  = 0;
             for (const file of files) {
                 if (
                     file.startsWith('sender-key-') ||
                     file.startsWith('session-') ||
                     file.startsWith('app-state-sync-key-')
-                ) {
-                    fs.removeSync(path.join(sessionFolder, file));
-                    purged++;
-                }
+                ) { fs.removeSync(path.join(sessionFolder, file)); purged++; }
             }
-            if (purged > 0) console.log(`🧹 [Session] ${purged} clé(s) Signal purgée(s).`);
-            else console.log('✅ [Session] Session propre.');
+            _log(purged > 0
+                ? `🧹 [Session] ${purged} clé(s) Signal purgée(s).`
+                : '✅ [Session] Session propre.');
         }
-    } catch (e) { console.error('❌ [Session] Erreur nettoyage:', e); }
+    } catch (e) { _error('❌ [Session] Erreur nettoyage:', e); }
 
     const { state, saveCreds } = await useMultiFileAuthState(sessionFolder);
-    const { version } = await fetchLatestBaileysVersion();
+    const { version }          = await fetchLatestBaileysVersion();
 
     // ── Création du socket ──
     const sock = makeWASocket({
         version,
         logger: pino({ level: 'silent' }),
         printQRInTerminal: false,
-        browser: Browsers.ubuntu('Chrome'),
 
-        // FIX BAD MAC : utiliser makeCacheableSignalKeyStore pour éviter
-        // les corruptions de clés lors des reconnexions rapides
+        // FIX CONNEXION : Browsers.baileys() est plus stable que ubuntu('Chrome')
+        // ubuntu('Chrome') déclenche parfois des checks de sécurité WA → déconnexion
+        browser: Browsers.baileys(),
+
+        // FIX BAD MAC : makeCacheableSignalKeyStore évite les corruptions de clés
         auth: {
             creds: state.creds,
-            keys: makeCacheableSignalKeyStore(state.keys, pino({ level: 'silent' }))
+            keys:  makeCacheableSignalKeyStore(state.keys, pino({ level: 'silent' }))
         },
 
-        syncFullHistory: false,
-        markOnlineOnConnect: true,
+        // FIX CONNEXION : keep-alive natif Baileys (complément au nôtre)
+        keepAliveIntervalMs: 20_000,
+
+        syncFullHistory:                false,
+        markOnlineOnConnect:            true,
         generateHighQualityLinkPreview: true,
+        shouldSyncHistoryMessage:       () => false,
 
-        shouldSyncHistoryMessage: () => false,
-        retryRequestDelayMs: 500,
-        maxMsgRetryCount: 5,
+        // FIX CONNEXION : moins de retries = moins de trafic = moins de risk ban/déco
+        retryRequestDelayMs: 1000,
+        maxMsgRetryCount:    3,
 
-        // Cache groupe unifié avec handler.js via global.groupMetadataCache
+        // FIX CONNEXION : réduit le trafic d'init
+        fireInitQueries: false,
+
+        // Cache groupe unifié avec handler.js
         cachedGroupMetadata: async (jid) => {
             const cached = global.groupMetadataCache?.get(jid);
             if (cached && Date.now() - cached.ts < 5 * 60 * 1000) return cached.data;
             return undefined;
         },
 
-        // FIX messages boutons/listes multi-device
+        // Fix boutons/listes multi-device
         patchMessageBeforeSending: (msg) => {
             if (msg.buttonsMessage || msg.listMessage) {
                 msg = {
@@ -298,7 +329,8 @@ async function startBot() {
             return msg;
         },
 
-        shouldIgnoreJid: (jid) => jid === 'status@broadcast',
+        // FIX CONNEXION : isJidBroadcast couvre status@broadcast + tous les autres broadcasts
+        shouldIgnoreJid: (jid) => isJidBroadcast(jid),
 
         getMessage: async (key) => {
             const msg = await global.store.loadMessage(key.remoteJid, key.id);
@@ -309,7 +341,7 @@ async function startBot() {
     sock.ev.on('creds.update', saveCreds);
     global.store.bind(sock.ev);
 
-    // ── Pairing Code (uniquement si pas encore enregistré) ──
+    // ── Pairing Code ──
     if (!sock.authState.creds.registered) {
         const phone = String(global.config.supremeNumber || '').replace(/\D/g, '');
         if (phone) {
@@ -318,13 +350,13 @@ async function startBot() {
                     let code = await sock.requestPairingCode(phone);
                     code = code?.match(/.{1,4}/g)?.join('-') || code;
                     _log(`\n╔════════════════════════════════════╗`);
-                    _log(`║      ᴠᴏᴛʀᴇ ᴄᴏᴅᴇ ᴅᴇ ᴊᴜᴍᴇʟᴀɢᴇ :      ║`);
-                    _log(`║          ${code.padEnd(12)}          ║`);
+                    _log(`║   ᴠᴏᴛʀᴇ ᴄᴏᴅᴇ ᴅᴇ ᴊᴜᴍᴇʟᴀɢᴇ :        ║`);
+                    _log(`║       ${String(code).padEnd(20)}   ║`);
                     _log(`╚════════════════════════════════════╝\n`);
                 } catch (err) { logError('Pairing Error', err); }
             }, 3000);
         } else {
-            console.error('❌ [Config] supremeNumber manquant — pairing code impossible.');
+            _error('❌ [Config] supremeNumber manquant — pairing code impossible.');
         }
     }
 
@@ -332,44 +364,61 @@ async function startBot() {
     sock.ev.on('connection.update', async (update) => {
         const { connection, lastDisconnect, qr } = update;
 
-        // Afficher le QR si disponible (fallback si pairing ne marche pas)
-        if (qr) console.log('📱 [QR] Scannez le QR code si le pairing ne fonctionne pas.');
+        if (qr) _log('📱 [QR] Scannez le QR code si le pairing ne fonctionne pas.');
+        if (connection === 'connecting') _log('🔄 [Bot] Connexion en cours...');
 
         if (connection === 'close') {
+            stopKeepAlive();
             clearQueue();
-            const statusCode = lastDisconnect?.error?.output?.statusCode;
 
-            // Déconnexion définitive : pas de reconnexion
+            const error      = lastDisconnect?.error;
+            const statusCode = error?.output?.statusCode;
+
+            _log(`🔴 [Bot] Connexion fermée — Code: ${statusCode || 'N/A'} | ${error?.message || 'raison inconnue'}`);
+
+            // Session expirée → purge + arrêt
             if (statusCode === DisconnectReason.loggedOut) {
                 isShuttingDown = true;
-                console.log('🔴 [Bot] Déconnecté définitivement (logged out). Relancez le bot manuellement.');
+                _log('🔴 [Bot] Session expirée. Purge du dossier session/ en cours...');
+                try { fs.emptyDirSync(sessionFolder); } catch {}
+                _log('✅ Session purgée. Relancez le bot pour rescanner.');
                 return;
             }
 
-            // Trop de tentatives : arrêt pour éviter un ban
+            // Restart propre demandé par Baileys (ex: stream-errored)
+            if (statusCode === DisconnectReason.restartRequired) {
+                _log('🔁 [Bot] Restart requis — reconnexion immédiate.');
+                setTimeout(() => startBot().catch(err => logError('Reconnexion Error', err)), 1000);
+                return;
+            }
+
+            // Trop de tentatives → process.exit
             if (reconnectAttempts >= MAX_RECONNECT) {
                 isShuttingDown = true;
-                console.error(`🚨 [Bot] ${MAX_RECONNECT} tentatives échouées. Arrêt pour éviter un ban. Relancez manuellement.`);
+                _error(`🚨 [Bot] ${MAX_RECONNECT} tentatives échouées. Relancez manuellement.`);
                 process.exit(1);
             }
 
+            // Reconnexion avec backoff exponentiel
             reconnectAttempts++;
-            const delay = Math.min(5000 * reconnectAttempts, MAX_RECONNECT_DELAY);
-            const reason = statusCode || lastDisconnect?.error?.message || 'inconnue';
-            console.log(`⚠️ [Bot] Déconnexion (${reason}). Reconnexion dans ${delay / 1000}s... (tentative ${reconnectAttempts}/${MAX_RECONNECT})`);
+            const delay = Math.min(3000 * reconnectAttempts, MAX_RECONNECT_DELAY);
+            _log(`⚠️ [Bot] Reconnexion dans ${delay / 1000}s... (${reconnectAttempts}/${MAX_RECONNECT})`);
             setTimeout(() => startBot().catch(err => logError('Reconnexion Error', err)), delay);
 
         } else if (connection === 'open') {
             reconnectAttempts = 0;
-            _log('\n✅ ɢʜᴏꜱᴛɢ-x ᴄᴏɴɴᴇᴄᴛᴇ́ !');
+            _log('\n✅ ɢʜᴏꜱᴛɢ-x ᴄᴏɴɴᴇᴄᴛᴇ́ !\n');
 
-            // Enregistrer l'instance socket pour les notifications crash du handler
-            try { handler._setSock && handler._setSock(sock); } catch {}
+            // Démarrer le keep-alive
+            startKeepAlive(sock);
 
             try {
                 const totalCmds = global.commands?.size || 0;
                 const ownerNum  = String(global.config.supremeNumber || '');
-                const botJid    = sock.user.id.replace(/:[0-9]+@/, '@').split(':')[0] + '@s.whatsapp.net';
+                const rawId     = sock.user?.id || '';
+                const botJid    = rawId.includes(':')
+                    ? rawId.split(':')[0] + '@s.whatsapp.net'
+                    : rawId;
                 const ownerJid  = `${ownerNum}@s.whatsapp.net`;
 
                 const welcomeCaption =
@@ -380,14 +429,11 @@ async function startBot() {
                     `┃ *ᴄᴏᴍᴍᴀɴᴅᴇs* : ${totalCmds}\n` +
                     `┃ *ᴍᴏᴅᴇ* : ${global.config.selfMode ? '🔒 ᴘʀɪᴠé' : '🌐 ᴘᴜʙʟɪᴄ'}\n` +
                     `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
-                    `📢 *ᴄʜᴀɪɴᴇ ᴡʜᴀᴛsᴀᴘᴘ* : ${global.config.social?.channel || 'https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c'}\n\n` +
-                    `📢 *ᴄʜᴀɪɴᴇ ᴛᴇʟᴇɢʀᴀᴍ* : https://t.me/ghostgxbot\n\n` +
+                    `📢 *ᴄʜᴀɪɴᴇ* : ${global.config.social?.channel || 'https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c'}\n` +
                     `👥 *ɢʀᴏᴜᴘᴇ* : ${global.config.social?.group || 'https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf'}\n\n` +
-                    `💻 *ᴅᴇᴠ* : wa.me/${ownerNum}\n\n` +
                     `📖 _*"ᴊᴇ ᴘᴜɪs ᴛᴏᴜᴛ ᴘᴀʀ ᴄᴇʟᴜɪ ǫᴜɪ ᴍᴇ ғᴏʀᴛɪғɪᴇ"*_ ❤️✝️\n\n` +
                     `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
-                // Envoi image de démarrage au bot lui-même
                 await sock.sendMessage(botJid, {
                     image: { url: 'https://files.catbox.moe/2fmwpu.jpg' },
                     caption: welcomeCaption,
@@ -396,55 +442,36 @@ async function startBot() {
                         isForwarded: true,
                         forwardingScore: 999,
                         forwardedNewsletterMessageInfo: {
-                            newsletterJid: global.config.social?.channelJid || '120363425540434745@newsletter',
-                            newsletterName: global.config.social?.channelName || 'ɢʜᴏsᴛɢ-x',
+                            newsletterJid:   global.config.social?.channelJid  || '120363425540434745@newsletter',
+                            newsletterName:  global.config.social?.channelName || 'ɢʜᴏsᴛɢ-x',
                             serverMessageId: 143
                         }
                     }
                 }).catch(() => {});
-  // Alerte au owner
+
                 await sock.sendMessage(ownerJid, {
                     text:
                         `📢 *ᴀʟᴇʀᴛᴇ ᴅᴇ ᴅᴇ́ᴍᴀʀʀᴀɢᴇ*\n\n` +
-                        `Le bot *ɢʜᴏsᴛɢ-x* vient de s'allumer !\n` +
-                        `Mode : ${global.config.selfMode ? 'Privé 🔒' : 'Public 🌐'}\n` +
-                        `Commandes : ${totalCmds}`
+                        `Le bot *ɢʜᴏsᴛɢ-x* est en ligne !\n` +
+                        `Mode : ${global.config.selfMode ? 'Privé 🔒' : 'Public 🌐'} | Commandes : ${totalCmds}`
                 }).catch(() => {});
 
-                // Message communauté — une seule fois au premier déploiement
+                // Message déployeur — une seule fois
                 const deployFlagPath = path.join(__dirname, 'database', '.deployed');
-             //ici   if (!fs.existsSync(deployFlagPath)) {
-    try {
-        // Attente de 2 secondes pour laisser le temps à la connexion de se stabiliser
-        await new Promise(r => setTimeout(r, 2000));
-        
-        // Envoi du message de bienvenue
-        await sock.sendMessage(ownerJid, {
-            text:
-                `╭╼━≪• 🌐 *ʙɪᴇɴᴠᴇɴᴜᴇ ᴅᴀɴs ɢʜᴏsᴛɢ-x* •≫━╾╮\n` +
-                `┃ Merci d'avoir déployé *ɢʜᴏsᴛɢ-x* ! 🙏🏾\n┃\n` +
-                `┃ 👥 *ɢʀᴏᴜᴘᴇ ᴏғғɪᴄɪᴇʟ* :\n` +
-                `┃ https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf\n┃\n` +
-                `┃ 📢 *ᴄʜᴀɪɴᴇ ᴏғғɪᴄɪᴇʟʟᴇ* :\n` +
-                `┃ https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c\n┃\n` +
-                `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n` +
-                `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
-        });
-
-        console.log("Message de premier déploiement envoyé au propriétaire.");
-
-        // IMPORTANT : Créer le fichier "flag" pour ne plus repasser ici au prochain démarrage
-        fs.writeFileSync(deployFlagPath, 'deployee'); 
-
-    } catch (error) {
-        console.error("Erreur lors de l'envoi du message de déploiement :", error);
-    }
-}
-        
-                       
-                        fs.writeFileSync(deployFlagPath, new Date().toISOString());
-                        console.log('✅ [Community] Message déployeur envoyé.');
-                    } catch (e) { console.error('❌ [Community] Erreur:', e); }
+                if (!fs.existsSync(deployFlagPath)) {
+                    await new Promise(r => setTimeout(r, 2000));
+                    await sock.sendMessage(ownerJid, {
+                        text:
+                            `╭╼━≪• 🌐 *ʙɪᴇɴᴠᴇɴᴜᴇ ᴅᴀɴs ɢʜᴏsᴛɢ-x* •≫━╾╮\n` +
+                            `┃ Merci d'avoir déployé *ɢʜᴏsᴛɢ-x* ! 🙏🏾\n┃\n` +
+                            `┃ 👥 https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf\n` +
+                            `┃ 📢 https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c\n┃\n` +
+                            `┃ ❤️ _Ce message ne s'affiche qu'une seule fois._\n` +
+                            `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n` +
+                            `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+                    }).catch(() => {});
+                    fs.writeFileSync(deployFlagPath, new Date().toISOString());
+                    _log('✅ [Community] Message déployeur envoyé.');
                 }
 
             } catch (err) { logError('Notification Error', err); }
@@ -453,9 +480,7 @@ async function startBot() {
 
     // ── Messages entrants ──
     sock.ev.on('messages.upsert', async ({ messages, type }) => {
-        // FIX : accepter aussi 'append' pour les messages d'historique récents
-        if (type !== 'notify' && type !== 'append') return;
-        if (type === 'append') return; // append = historique, on ignore
+        if (type !== 'notify') return;
 
         const now    = Date.now();
         const prefix = global.config.prefix || '.';
@@ -463,9 +488,9 @@ async function startBot() {
         for (const msg of messages) {
             try {
                 if (!msg?.message || !msg?.key?.id) continue;
-                if (msg.key.remoteJid === 'status@broadcast') continue;
+                const jid = msg.key.remoteJid;
+                if (!jid || isJidBroadcast(jid)) continue;
 
-                // Extraction du texte pour la logique fromMe
                 const text =
                     msg.message.conversation ||
                     msg.message.extendedTextMessage?.text ||
@@ -475,29 +500,26 @@ async function startBot() {
                     msg.message.listResponseMessage?.singleSelectReply?.selectedRowId ||
                     msg.message.templateButtonReplyMessage?.selectedId || '';
 
-                const senderJid = msg.key.participant || msg.key.remoteJid;
+                const senderJid = msg.key.participant || jid;
 
-                // fromMe INTELLIGENT :
-                // - Bloque les messages normaux du bot (évite boucles)
-                // - Laisse passer les commandes du supreme depuis son propre numéro
+                // fromMe intelligent
                 const isCommand = text.startsWith(prefix) ||
                     (text.startsWith('>') && global.isSupreme(senderJid));
-
                 if (msg.key.fromMe && !isCommand) continue;
 
-                // Filtre d'âge : ignore les messages de plus de 60s (décalage horloge)
+                // Filtre âge 60s
                 const msgTs = (msg.messageTimestamp || 0) * 1000;
                 if (msgTs && now - msgTs > 60_000) {
                     markProcessed(msg.key.id);
                     continue;
                 }
 
-                // Anti-doublon persistant
+                // Anti-doublon
                 if (isAlreadyProcessed(msg.key.id)) continue;
 
-                // Saturation queue
+                // Queue saturée
                 if (messageQueue.length >= MAX_QUEUE_SIZE) {
-                    console.warn(`⚠️ [Queue] Saturée (${messageQueue.length}), message ignoré.`);
+                    _warn(`⚠️ [Queue] Saturée (${messageQueue.length}), message ignoré.`);
                     markProcessed(msg.key.id);
                     continue;
                 }
@@ -509,16 +531,6 @@ async function startBot() {
         }
 
         processQueue().catch(err => logError('processQueue Error', err));
-    });
-
-    // FIX : messages.update — on ignorait silencieusement tous les updates.
-    // Conservé léger, uniquement pour les updates qui portent du contenu réel.
-    sock.ev.on('messages.update', (updates) => {
-        for (const update of updates) {
-            // On ignore les simples ACK de statut de livraison
-            if (update.update?.status !== undefined && Object.keys(update.update).length === 1) continue;
-            // Ici tu peux ajouter la logique pour les messages édités si besoin
-        }
     });
 
     // Anti-delete
@@ -555,22 +567,21 @@ async function startBot() {
 cleanupPuppeteerCache();
 startBot().catch(err => logError('Global Boot Error', err));
 
-// Gestion des erreurs globales non capturées
 process.on('uncaughtException', (err) => {
-    if (!err.message?.includes('ENOSPC') && !err.message?.includes('bad mac')) {
+    const m = err.message || '';
+    if (!m.includes('ENOSPC') && !m.includes('bad mac') && !m.includes('Connection Closed')) {
         logError('UncaughtException', err);
     }
 });
 
 process.on('unhandledRejection', (reason) => {
-    const msg = reason instanceof Error ? reason.message : String(reason);
-    // Filtre les rejets Baileys non critiques
-    if (!msg.includes('Connection Closed') && !msg.includes('bad mac')) {
+    const m = reason instanceof Error ? reason.message : String(reason);
+    if (!m.includes('Connection Closed') && !m.includes('bad mac') && !m.includes('timed out')) {
         logError('UnhandledRejection', reason);
     }
 });
 
-process.on('SIGINT',  () => { isShuttingDown = true; _log('\n👋🏾 [Bot] Arrêt propre (SIGINT).'); process.exit(0); });
-process.on('SIGTERM', () => { isShuttingDown = true; _log('\n👋🏾 [Bot] Arrêt propre (SIGTERM).'); process.exit(0); });
+process.on('SIGINT',  () => { isShuttingDown = true; stopKeepAlive(); _log('\n [Bot] Arrêt propre.'); process.exit(0); });
+process.on('SIGTERM', () => { isShuttingDown = true; stopKeepAlive(); _log('\n [Bot] Arrêt propre.'); process.exit(0); });
 
 module.exports = { store: global.store };
