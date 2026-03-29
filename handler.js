@@ -235,7 +235,7 @@ const handleMessage = async (sock, msg) => {
         // (antispam, antilink, etc. protègent le groupe indépendamment)
         // ============================================================
 
-        // ANTI-SPAM / FLOOD
+  // ANTI-SPAM / FLOOD
         if (isGroup && !ownerStatus && !adminStatus) {
             try {
                 if (checkSpam(sender)) {
@@ -477,8 +477,7 @@ const handleAntiDelete = async (sock, update) => {
 
             const mentions = [sender];
             if (deleter) mentions.push(deleter);
-
-            // Envoie le média récupéré si possible, sinon juste le texte
+  // Envoie le média récupéré si possible, sinon juste le texte
             if (mediaBuffer && mediaType === 'image') {
                 await sock.sendMessage(from, { image: mediaBuffer, caption, mentions });
             } else if (mediaBuffer && mediaType === 'video') {
