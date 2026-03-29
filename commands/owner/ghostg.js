@@ -83,7 +83,8 @@ module.exports = {
 
         // --- CAS 3 : MOTEUR DE REDIRECTION (DANGER / PUISSANCE) ---
         // Si tu dis juste "Menu" ou "Infos", GhostG cherche si une commande existe
-        const possibleCmd = global.commands.get(firstWord) || global.commands.find(c => c.aliases && c.aliases.includes(firstWord));
+        const possibleCmd = global.commands.get(firstWord) || 
+                    [...global.commands.values()].find(c => c.aliases?.includes(firstWord));
 
         if (possibleCmd && global.ghostgMode === 'on') {
             const newArgs = args.slice(1); 
