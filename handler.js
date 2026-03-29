@@ -306,6 +306,18 @@ const handleMessage = async (sock, msg) => {
             } catch (e) { console.error("❌ Anti-Link Error:", e); }
         }
 
+
+// ── ANTI-GROUP STATUS ──
+if (isGroup && isBotAdmin && !ownerStatus && !adminStatus) {
+    try {
+        const antigsCmd = global.commands.get('antigstatus');
+        if (antigsCmd?.checkAndHandle) {
+            await antigsCmd.checkAndHandle(sock, msg, {
+                from, sender, isBotAdmin, database
+            });
+        }
+    } catch (e) { console.error('❌ AntiGStatus Error:', e); }
+}
         // ============================================================
         // AUTO-STICKER
         // ============================================================
