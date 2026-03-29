@@ -1,6 +1,7 @@
 /**
  * Instagram to Sticker - AGM Elite Edition
  * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
+ * Optimized for V5.3 - High Performance
  */
 
 const { igdl } = require('ruhend-scraper');
@@ -8,71 +9,48 @@ const axios = require('axios');
 const { exec } = require('child_process');
 const fs = require('fs');
 const path = require('path');
-const webp = require('node-webpmux');
 const crypto = require('crypto');
-const { getTempDir, deleteTempFile } = require('../../utils/tempManager');
+const os = require('os');
 
-// Fonction de conversion en Small Caps
-const toSmallCaps = (text) => {
-    const smallCapsMap = {
-        'a': 'ᴀ', 'b': 'ʙ', 'c': 'ᴄ', 'd': 'ᴅ', 'e': 'ᴇ', 'f': 'ғ', 'g': 'ɢ', 'h': 'ʜ', 
-        'i': 'ɪ', 'j': 'ᴊ', 'k': 'ᴋ', 'l': 'ʟ', 'm': 'ᴍ', 'n': 'ɴ', 'o': 'ᴏ', 'p': 'ᴘ', 
-        'q': 'ǫ', 'r': 'ʀ', 's': 's', 't': 'ᴛ', 'u': 'ᴜ', 'v': 'ᴠ', 'w': 'ᴡ', 'x': 'x', 
-        'y': 'ʏ', 'z': 'ᴢ'
-    };
-    return text.toString().toLowerCase().split('').map(char => smallCapsMap[char] || char).join('');
+// --- FONCTION DE CONVERSION EN SMALL CAPS ---
+const toStyledCaps = (text) => {
+    if (!text) return "";
+    const fonts = {'a':'ᴀ','b':'ʙ','c':'ᴄ','d':'ᴅ','e':'ᴇ','f':'ғ','g':'ɢ','h':'ʜ','i':'ɪ','j':'ᴊ','k':'ᴋ','l':'ʟ','m':'ᴍ','n':'ɴ','o':'ᴏ','p':'ᴘ','q':'ǫ','r':'ʀ','s':'ꜱ','t':'ᴛ','u':'ᴜ','v':'ᴠ','w':'ᴡ','x':'x','y':'ʏ','z':'ᴢ'};
+    return String(text).toLowerCase().split('').map(c => fonts[c] || c).join('');
 };
 
 // --- FONCTION DE DESIGN AGM ---
-const AGM_DESIGN = (status, count) => `╭╼━≪• *ɪɢ ᴛᴏ sᴛɪᴄᴋᴇʀ* •≫━╾╮
-┃ 
-┃ ✅ ${toSmallCaps('sᴛᴀᴛᴜs')} : ${toSmallCaps(status)}
-┃ 📸 ${toSmallCaps('ɪᴛᴇᴍs')} : ${count}
-┃ ⚡ ${toSmallCaps('ᴍᴏᴅᴇ')} : ${toSmallCaps('sᴍᴀʀᴛ-ғɪᴛ')}
-┃ 
-╰━━━━━━━━━━━━━━━╯
+const AGM_DESIGN = (status, count) => `*╭╼━≪• ${toStyledCaps('ɪɢ ᴛᴏ sᴛɪᴄᴋᴇʀ')} •≫━╾╮*
+*┃* *┃* ✅ ${toStyledCaps('sᴛᴀᴛᴜs')} : ${toStyledCaps(status)}
+*┃* 📸 ${toStyledCaps('ɪᴛᴇᴍs')} : ${count}
+*┃* ⚡ ${toStyledCaps('ᴍᴏᴅᴇ')} : ${toStyledCaps('sᴍᴀʀᴛ-ғɪᴛ')}
+*┃* *╰━━━━━━━━━━━━━━━╯*
 > *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
 async function convertToSticker(inputBuffer, isAnimated, cropSquare) {
-  const tmpDir = getTempDir();
-  const timestamp = Date.now();
+  const tmpDir = os.tmpdir();
+  const timestamp = Date.now() + Math.random().toString(36).substring(7);
   const tempInput = path.join(tmpDir, `igs_in_${timestamp}${isAnimated ? '.mp4' : '.jpg'}`);
   const tempOutput = path.join(tmpDir, `igs_out_${timestamp}.webp`);
 
   try {
     fs.writeFileSync(tempInput, inputBuffer);
 
-    // Filtres FFmpeg : Crop (Carré) vs Pad (Garder les proportions)
+    // Filtres FFmpeg optimisés
     const filter = cropSquare 
-      ? "crop=min(iw\\,ih):min(iw\\,ih),scale=512:512"
+      ? "crop=min(iw\\,ih):min(iw\\,ih),scale=512:512:flags=lanczos"
       : "scale=512:512:force_original_aspect_ratio=decrease,pad=512:512:(ow-iw)/2:(oh-ih)/2:color=#00000000";
 
     const ffmpegCmd = isAnimated
-      ? `ffmpeg -y -i "${tempInput}" -t 5 -vf "${filter},fps=12" -c:v libwebp -preset default -loop 0 -vsync 0 -pix_fmt yuva420p -quality 40 -compression_level 6 -b:v 200k "${tempOutput}"`
-      : `ffmpeg -y -i "${tempInput}" -vf "${filter},format=rgba" -c:v libwebp -quality 75 "${tempOutput}"`;
+      ? `ffmpeg -y -i "${tempInput}" -t 6 -vf "${filter},fps=15" -c:v libwebp -lossless 0 -compression_level 4 -q:v 40 -loop 0 -preset default -an -vsync 0 "${tempOutput}"`
+      : `ffmpeg -y -i "${tempInput}" -vf "${filter}" -c:v libwebp -q:v 75 "${tempOutput}"`;
 
     await new Promise((resolve, reject) => exec(ffmpegCmd, (err) => err ? reject(err) : resolve()));
 
-    const img = new webp.Image();
-    const resultBuffer = fs.readFileSync(tempOutput);
-    await img.load(resultBuffer);
-
-    // --- MÉTADONNÉES PRESTIGE GHOSTG-X ---
-    const exifData = {
-      "sticker-pack-id": crypto.randomBytes(32).toString('hex'),
-      "sticker-pack-name": "-ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ",
-      "sticker-pack-publisher": "ɢʜᴏsᴛɢ-𝐗",
-      "emojis": ["🔥", "📸"]
-    };
-
-    const exif = Buffer.concat([
-      Buffer.from([0x49, 0x49, 0x2A, 0x00, 0x08, 0x00, 0x00, 0x00, 0x01, 0x00, 0x41, 0x57, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x16, 0x00, 0x00, 0x00]),
-      Buffer.from(JSON.stringify(exifData), 'utf-8')
-    ]);
-    exif.writeUIntLE(Buffer.from(JSON.stringify(exifData), 'utf-8').length, 14, 4);
-    img.exif = exif;
-
-    return await img.save(null);
+    return fs.readFileSync(tempOutput);
+  } catch (e) {
+    console.error("FFmpeg Error:", e);
+    return null;
   } finally {
     if (fs.existsSync(tempInput)) fs.unlinkSync(tempInput);
     if (fs.existsSync(tempOutput)) fs.unlinkSync(tempOutput);
@@ -86,40 +64,59 @@ module.exports = {
   description: 'Convertir Instagram en Sticker (igs: fit | igsc: crop)',
 
   async execute(sock, msg, args, extra) {
+    const from = extra.from;
+    const text = args.join(' ');
+    
     try {
-      const url = args[0] || (msg.message?.extendedTextMessage?.contextInfo?.quotedMessage?.conversation);
-      const isCrop = msg.body.toLowerCase().startsWith('.igsc');
-
-      if (!url || !/instagram.com/.test(url)) {
-        const usage = toSmallCaps("usage : .igs <url> ou .igsc <url>");
-        return extra.reply(`⚠️ *${usage}*`);
+      const urlMatch = text.match(/https?:\/\/(www\.)?instagram\.com\/(?:p|reels|reel|tv)\/([^\s/?#&]+)/i);
+      if (!urlMatch) {
+        return extra.reply(`⚠️ *${toStyledCaps("ᴠᴇᴜɪʟʟᴇᴢ sᴀɪsɪʀ ᴜɴ ʟɪᴇɴ ɪɴsᴛᴀɢʀᴀᴍ")}*`);
       }
 
-      await sock.sendMessage(extra.from, { react: { text: '⏳', key: msg.key } });
+      const url = urlMatch[0];
+      const isCrop = (extra.command || '').toLowerCase().startsWith('igsc');
+
+      await sock.sendMessage(from, { react: { text: '⏳', key: msg.key } });
 
       const res = await igdl(url);
-      if (!res || !res.data) throw new Error('No media');
+      if (!res || !res.data || res.data.length === 0) throw new Error('No media');
 
-      const items = res.data.slice(0, 5); // Protection anti-spam
+      const items = res.data.slice(0, 3); // Limité à 3 pour éviter les bannissements WhatsApp
       await extra.reply(AGM_DESIGN("ᴘʀᴏᴄᴇssɪɴɢ", items.length));
 
       for (const item of items) {
-        const mediaUrl = item.url || item.downloadUrl;
-        const isVideo = item.type === 'video' || (mediaUrl && mediaUrl.includes('.mp4'));
+        try {
+          const mediaUrl = item.url || item.downloadUrl || item;
+          if (typeof mediaUrl !== 'string') continue;
 
-        const response = await axios.get(mediaUrl, { responseType: 'arraybuffer' });
-        const buffer = Buffer.from(response.data);
+          const isVideo = item.type === 'video' || mediaUrl.includes('.mp4');
+          const response = await axios.get(mediaUrl, { responseType: 'arraybuffer' });
+          const buffer = Buffer.from(response.data);
 
-        const sticker = await convertToSticker(buffer, isVideo, isCrop);
-        await sock.sendMessage(extra.from, { sticker }, { quoted: msg });
+          const stickerBuffer = await convertToSticker(buffer, isVideo, isCrop);
+          
+          if (stickerBuffer) {
+            await sock.sendMessage(from, { 
+              sticker: stickerBuffer,
+              contextInfo: {
+                externalAdReply: {
+                  title: "ɢʜᴏsᴛɢ-x sᴛɪᴄᴋᴇʀ",
+                  body: "ɪɴsᴛᴀɢʀᴀᴍ ᴄᴏɴᴠᴇʀᴛᴇʀ",
+                  mediaType: 1,
+                  thumbnailUrl: "https://files.catbox.moe/2fmwpu.jpg",
+                  showAdAttribution: false
+                }
+              }
+            }, { quoted: msg });
+          }
+        } catch (e) { continue; }
       }
 
-      await sock.sendMessage(extra.from, { react: { text: '✅', key: msg.key } });
+      await sock.sendMessage(from, { react: { text: '✅', key: msg.key } });
 
     } catch (err) {
-      console.error(err);
-      const fail = toSmallCaps("echec de la conversion instagram");
-      await extra.reply(`❌ *${fail}*`);
+      console.error('[IGS ERROR]:', err);
+      await extra.reply(`❌ *${toStyledCaps("ᴇᴄʜᴇᴄ ᴅᴇ ʟᴀ ᴄᴏɴᴠᴇʀsɪᴏɴ")}*`);
     }
   }
 };
