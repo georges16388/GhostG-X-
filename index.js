@@ -10,10 +10,7 @@ const { useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion, Brow
 const makeInMemoryStore = require('@whiskeysockets/baileys/lib/Store/make-in-memory-store').default;
 
 
-const makeWASocket = Baileys.default || Baileys; 
-const pino = require('pino');
-const fs = require('fs-extra'); 
-const path = require('path');
+const { makeInMemoryStore } = require('@whiskeysockets/baileys');
 
 // ==========================================
 // MODULE 1 : CONFIGURATION & STORE PRO
