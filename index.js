@@ -225,8 +225,8 @@ async function startBot() {
                     `┃ *ᴄᴏᴍᴍᴀɴᴅᴇs* : ${totalCmds}\n` +
                     `┃ *ᴍᴏᴅᴇ* : ${global.config.selfMode ? '🔒 ᴘʀɪᴠé' : '🌐 ᴘᴜʙʟɪᴄ'}\n` +
                     `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
-                    `📢 *ᴄʜᴀɪɴᴇ* : ${global.config.social.channel}\n` +
-                    `👥 *ɢʀᴏᴜᴘᴇ* : ${global.config.social.group}\n` +
+                    `📢 *ᴄʜᴀɪɴᴇ* : ${global.config.social.channel}\n\n` +
+                    `👥 *ɢʀᴏᴜᴘᴇ* : ${global.config.social.group}\n\n` +
                     `💻 *ᴅᴇᴠ* : wa.me/${ownerNum}\n\n` +
                     `📖 _*"ᴊᴇ ᴘᴜɪꜱ ᴛᴏᴜᴛ ᴘᴀʀ ᴄᴇʟᴜɪ ǫᴜɪ ᴍᴇ ғᴏʀᴛɪғɪᴇ"*_ ❤️✝️\n\n` +
                     `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
