@@ -27,13 +27,14 @@ const tryRequest = async (getter, attempts = 3) => {
 };
 
 const APIs = {
-  // --- YOUTUBE VIDEO (FIXED FOR YTVIDEO.JS) ---
+   // Remplace tes fonctions YouTube existantes dans APIs.js par celles-ci :
+
   getEliteProTechVideoByUrl: async (url) => {
     try {
       const res = await api.get(`https://api.siputzx.my.id/api/d/ytmp4?url=${encodeURIComponent(url)}`);
-      if (res.data?.status && res.data.data) {
-        return { download: res.data.data.dl || res.data.data.url, title: res.data.data.title };
-      }
+      // L'API Siputzx renvoie souvent l'URL dans data.dl ou data.url
+      const dl = res.data?.data?.dl || res.data?.data?.url;
+      if (dl) return { download: dl };
       throw new Error('Elite Source down');
     } catch (e) { throw e; }
   },
@@ -41,8 +42,8 @@ const APIs = {
   getYupraVideoByUrl: async (url) => {
     try {
       const res = await api.get(`https://api.yupra.my.id/api/downloader/ytmp4?url=${encodeURIComponent(url)}`);
-      if (res.data?.success) {
-        return { download: res.data.data.download_url, title: res.data.data.title };
+      if (res.data?.success && res.data.data?.download_url) {
+        return { download: res.data.data.download_url };
       }
       throw new Error('Yupra Source down');
     } catch (e) { throw e; }
@@ -51,7 +52,9 @@ const APIs = {
   getOkatsuVideoByUrl: async (url) => {
     try {
       const res = await api.get(`https://api.ryzendesu.vip/api/downloader/ytmp4?url=${encodeURIComponent(url)}`);
-      if (res.data?.url) return { download: res.data.url };
+      if (res.data?.url || res.data?.result?.url) {
+        return { download: res.data.url || res.data.result.url };
+      }
       throw new Error('Okatsu Source down');
     } catch (e) { throw e; }
   },
