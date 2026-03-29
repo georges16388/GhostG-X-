@@ -24,10 +24,7 @@ setInterval(() => {
 
 // --- INITIALISATION DES COMMANDES ---
 global.commands = loadCommands();
-global.aliasMap = new Map();
-for (const [name, cmd] of global.commands) {
-    if (cmd.aliases) for (const alias of cmd.aliases) global.aliasMap.set(alias.toLowerCase(), name);
-}
+// Note: aliasMap n'est plus nécessaire car le nouveau Loader fusionne les alias dans global.commands
 
 // --- UTILITAIRES ---
 const canReact = (jid) => {
@@ -181,7 +178,7 @@ const handleMessage = async (sock, msg) => {
                 const ghostgCmd = global.commands.get('ghostg');
                 if (ghostgCmd) {
                     await ghostgCmd.execute(sock, msg, args, { from, sender, isGroup, isOwner:ownerStatus, isSupreme, isAdmin:adminStatus, isBotAdmin, prefix, pushName,
-                                    reply:(text)=>sock.sendMessage(from,{text:`${text}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`},{quoted:msg}),
+                                    reply:(text)=>sock.sendMessage(from,{text:`${text}\n\n> *ᴘᴏᴡᴇᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`},{quoted:msg}),
                                     react:(emoji)=>sock.sendMessage(from,{react:{text:emoji,key:msg.key}}),
                                     groupMetadata: isGroup ? await sock.groupMetadata(from) : null });
                 }
@@ -192,10 +189,10 @@ const handleMessage = async (sock, msg) => {
         if (isGroup) try { addMessage(from,sender); } catch {}
 
         if (isCmd && commandName) {
-            const cmdName = global.commands.has(commandName) ? commandName : global.aliasMap.get(commandName);
-            if (!cmdName) return;
-            const command = global.commands.get(cmdName);
+            const command = global.commands.get(commandName);
             
+            if (!command) return;
+
             // --- LOGIQUE DE REPLY AVEC SIGNATURE AUTO ---
             const reply = (text) => {
                 const sig = `\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
