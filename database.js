@@ -1,35 +1,22 @@
 /**
- * ɢʜᴏꜱᴛɢ-x ᴍᴅ - Hybrid Database (JSON for Settings + Better-SQLite3 for Anti-Delete)
+ * ɢʜᴏꜱᴛɢ-x ᴍᴅ - Hybrid Database (Full JSON pour Settings + Anti-Delete)
  * Optimized for Performance and GhostG-X MD V5.3
  * Powered by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
-const fs = require('fs-extra'); // Utilise fs-extra de ton package
+const fs = require('fs-extra'); 
 const path = require('path');
 const config = require('./config');
-const Database = require('better-sqlite3'); // Version plus rapide incluse dans ton package
 
 const DB_PATH = path.join(__dirname, 'database');
 const GROUPS_DB = path.join(DB_PATH, 'groups.json');
 const USERS_DB = path.join(DB_PATH, 'users.json');
 const WARNINGS_DB = path.join(DB_PATH, 'warnings.json');
 const MODS_DB = path.join(DB_PATH, 'mods.json');
-const MESSAGES_DB = path.join(DB_PATH, 'ghostg_messages.db');
+const MESSAGES_DB = path.join(DB_PATH, 'messages.json'); // Changé en .json !
 
 // --- INITIALISATION DES RÉPERTOIRES ---
 fs.ensureDirSync(DB_PATH);
-
-// --- INITIALISATION BETTER-SQLITE3 ---
-const db = new Database(MESSAGES_DB);
-db.pragma('journal_mode = WAL'); // Optimisation de vitesse extrême
-db.prepare(`CREATE TABLE IF NOT EXISTS messages (
-    msgId TEXT PRIMARY KEY,
-    remoteJid TEXT,
-    participant TEXT,
-    pushName TEXT,
-    content TEXT,
-    timestamp INTEGER
-)`).run();
 
 // --- UTILITAIRES DE BASE (JSON) ---
 const readDB = (filePath) => {
@@ -55,6 +42,7 @@ if (!fs.existsSync(GROUPS_DB)) writeDB(GROUPS_DB, {});
 if (!fs.existsSync(USERS_DB)) writeDB(USERS_DB, {});
 if (!fs.existsSync(WARNINGS_DB)) writeDB(WARNINGS_DB, {});
 if (!fs.existsSync(MODS_DB)) writeDB(MODS_DB, { moderators: [] });
+if (!fs.existsSync(MESSAGES_DB)) writeDB(MESSAGES_DB, {}); // Init pour l'Anti-Delete
 
 // ==========================================
 // SECTION 1 : GESTION DES GROUPES (JSON)
@@ -95,7 +83,7 @@ const updateUser = (userId, data) => {
 };
 
 // ==========================================
-// SECTION 5 : SYSTÈME SQLITE (ANTI-DELETE) - OPTIMISÉ
+// SECTION 5 : SYSTÈME JSON (ANTI-DELETE) - SANS SQLITE
 // ==========================================
 const saveMessage = (msg) => {
     try {
@@ -103,28 +91,43 @@ const saveMessage = (msg) => {
         const from = msg.key.remoteJid;
         const sender = msg.key.participant || from;
         const name = msg.pushName || 'User';
-        const content = JSON.stringify(msg.message);
+        const content = msg.message; // Plus besoin de JSON.stringify ici !
         const time = Date.now();
 
-        const insert = db.prepare(`INSERT OR REPLACE INTO messages (msgId, remoteJid, participant, pushName, content, timestamp) VALUES (?, ?, ?, ?, ?, ?)`);
-        insert.run(msgId, from, sender, name, content, time);
+        const messages = readDB(MESSAGES_DB);
+        
+        // On enregistre le message
+        messages[msgId] = {
+            msgId,
+            remoteJid: from,
+            participant: sender,
+            pushName: name,
+            content,
+            timestamp: time
+        };
 
         // Auto-clean : supprime les messages de plus de 12h
-        const clean = db.prepare(`DELETE FROM messages WHERE timestamp < ?`);
-        clean.run(Date.now() - 43200000);
-    } catch (e) { console.error("❌ SQL Save Error:", e); }
+        const limitTime = Date.now() - 43200000;
+        for (const id in messages) {
+            if (messages[id].timestamp < limitTime) {
+                delete messages[id];
+            }
+        }
+
+        writeDB(MESSAGES_DB, messages);
+    } catch (e) { console.error("❌ Message Save Error:", e); }
 };
 
 const getMessage = (msgId) => {
     try {
-        const row = db.prepare(`SELECT * FROM messages WHERE msgId = ?`).get(msgId);
+        const messages = readDB(MESSAGES_DB);
+        const row = messages[msgId];
         if (row) {
-            row.content = JSON.parse(row.content);
-            return row;
+            return row; // Plus besoin de JSON.parse ici !
         }
         return null;
     } catch (e) {
-        console.error("❌ SQL Get Error:", e);
+        console.error("❌ Message Get Error:", e);
         return null;
     }
 };
@@ -137,7 +140,6 @@ module.exports = {
   updateUser,
   saveMessage,
   getMessage,
-  // ... garde tes autres exports (warnings, mods) ici
   getWarnings: (userId) => readDB(WARNINGS_DB)[userId] || [],
   addWarning: (userId, reason) => {
     const w = readDB(WARNINGS_DB);
