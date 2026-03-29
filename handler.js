@@ -1,12 +1,11 @@
 /**
  * ɢʜᴏꜱᴛɢ-x ᴍᴅ - Main Message Handler (Prestige Edition V5.3 - Bulletproof)
- * Refactor complet pour stabilité et performance - SQLite & JSON Hybrid
+ * Refactor complet pour stabilité et performance - Full JSON
  */
-const groupStats = require('./utils/groupstats');
 
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 const database = require('./database'); 
-const { addMessage } = require('./utils/groupstats');
+const groupStats = require('./utils/groupstats'); // FIX 1 : Importation correcte ici
 const { loadCommands } = require('./utils/commandLoader');
 const { createStickerBuffer } = require('./utils/sticker'); 
 
@@ -25,7 +24,6 @@ setInterval(() => {
 
 // --- INITIALISATION DES COMMANDES ---
 global.commands = loadCommands();
-// Note: aliasMap n'est plus nécessaire car le nouveau Loader fusionne les alias dans global.commands
 
 // --- UTILITAIRES ---
 const canReact = (jid) => {
@@ -47,7 +45,6 @@ const toSmallCaps = (text) => {
     return String(text).toLowerCase().split('').map(c => fonts[c] || c).join('');
 };
 
-// MODIFICATION 1 : isAdmin optimisé pour le Store Baileys v6.7.9
 const isAdmin = async (sock, participant, groupId) => {
     if (!groupId?.endsWith('@g.us')) return false;
     try {
@@ -62,7 +59,7 @@ const handleMessage = async (sock, msg) => {
     try {
         if (!msg.message || msg.key.remoteJid === 'status@broadcast') return;
 
-        // 💾 ÉTAPE CRUCIALE : SAUVEGARDE DANS SQLITE (Pour Anti-Delete)
+        // 💾 SAUVEGARDE DANS LA NOUVELLE DB JSON
         database.saveMessage(msg); 
 
         // --- ANTI-DUPLICATION ---
@@ -78,7 +75,6 @@ const handleMessage = async (sock, msg) => {
         const config = global.config;
         const prefix = config.prefix || '.';
 
-        // MODIFICATION 2 : getText étendu pour les nouveaux types de messages
         const getText = (m) => {
             return m?.conversation || 
                    m?.extendedTextMessage?.text || 
@@ -87,8 +83,8 @@ const handleMessage = async (sock, msg) => {
                    m?.buttonsResponseMessage?.selectedButtonId ||
                    m?.listResponseMessage?.singleSelectReply?.selectedRowId ||
                    m?.templateButtonReplyMessage?.selectedId || 
-                   m?.pollUpdateMessage?.pollUpdate?.name || // Nouveau : Polls
-                   m?.interactiveResponseMessage?.body?.text || ""; // Nouveau : Interactive Msg
+                   m?.pollUpdateMessage?.pollUpdate?.name || 
+                   m?.interactiveResponseMessage?.body?.text || ""; 
         };
         const body = getText(msg.message).trim();
         const ownerStatus = global.isOwner(sender);
@@ -96,7 +92,7 @@ const handleMessage = async (sock, msg) => {
 
         if (config.selfMode && !ownerStatus && !msg.key.fromMe) return;
 
-        // --- TIC-TAC-TOE (Sandboxed) ---
+        // --- TIC-TAC-TOE ---
         try {
             const { handleTicTacToeMove } = require('./commands/fun/tictactoe');
             if (await handleTicTacToeMove(sock, msg, { sender, from, body })) return;
@@ -124,7 +120,7 @@ const handleMessage = async (sock, msg) => {
             }
         } catch {}
 
-        // --- ANTI-MENTION (Sandboxed) ---
+        // --- ANTI-MENTION ---
         if (isGroup && !ownerStatus && !adminStatus) {
             try {
                 const groupSettings = database.getGroupSettings(from) || {};
@@ -142,7 +138,7 @@ const handleMessage = async (sock, msg) => {
             } catch (e) { console.error("❌ Anti-Mention Error:", e); }
         }
 
-        // --- ANTI-LINK (Sandboxed) ---
+        // --- ANTI-LINK ---
         if (isGroup && !ownerStatus && !adminStatus) {
             try {
                 const groupSettings = database.getGroupSettings(from) || {};
@@ -186,29 +182,29 @@ const handleMessage = async (sock, msg) => {
             }
         } catch (e){ console.error("❌ GhostG Intel Error:", e); }
 
-   // --- STATS & EXECUTION COMMANDE ---
-if (isGroup) {
-    try { 
-        groupStats.addMsg(from, sender); // <-- Remplacement ici
-    } catch (e) {
-        console.error("Stats Error:", e);
-    }
-}
+        // --- STATS & EXECUTION COMMANDE ---
+        if (isGroup) {
+            try { 
+                groupStats.addMsg(from, sender); 
+            } catch (e) {
+                console.error("Stats Error:", e);
+            }
+        }
 
-if (isCmd && commandName) {
-    const command = global.commands.get(commandName);
-    if (!command) return;
-    
-    // ... la suite de ton code (ne supprime pas le reste !)
+        if (isCmd && commandName) {
+            const command = global.commands.get(commandName);
+            if (!command) return;
+        } // FIX 2 : Accolade ajoutée ici pour fermer correctement le bloc IF
 
+        // --- LOGIQUE DE REPLY AVEC SIGNATURE AUTO ---
+        const reply = (text) => {
+            const sig = `\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+            const finalMsg = text.includes('ᴘᴏᴡᴇʀᴇᴅ ʙʏ') ? text : `${text}${sig}`;
+            return sock.sendMessage(from, { text: finalMsg }, { quoted: msg });
+        };
 
-            // --- LOGIQUE DE REPLY AVEC SIGNATURE AUTO ---
-            const reply = (text) => {
-                const sig = `\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
-                const finalMsg = text.includes('ᴘᴏᴡᴇʀᴇᴅ ʙʏ') ? text : `${text}${sig}`;
-                return sock.sendMessage(from, { text: finalMsg }, { quoted: msg });
-            };
-
+        const command = isCmd ? global.commands.get(commandName) : null;
+        if (command) {
             if ((command.ownerOnly && !ownerStatus) || (command.groupOnly && !isGroup) || (command.adminOnly && !adminStatus && !ownerStatus)) return reply('❌ Accès refusé');
 
             if (config.autoTyping) await sock.sendPresenceUpdate('composing', from);
@@ -224,30 +220,26 @@ if (isCmd && commandName) {
     } catch (err) { console.error("❌ Critical Handler Error:", err); }
 };
 
-            // --- HANDLER ANTI-DELETE (PROTOCOLE JSON + KEY) ---
+// --- HANDLER ANTI-DELETE ---
 const handleAntiDelete = async (sock, update) => {
     const keys = update.keys || [];
     for (const key of keys) {
         try {
             const from = key.remoteJid;
-            // On n'active l'anti-delete que dans les groupes
             if (!from.endsWith('@g.us')) continue;
 
             const groupSettings = database.getGroupSettings(from) || {};
             if (groupSettings.antidelete === false) continue;
 
-            // Récupération du message dans notre nouvelle DB JSON
             const msgStore = await database.getMessage(key.id);
             if (!msgStore) continue;
 
-            const sender = msgStore.participant; // Celui qui a envoyé le message
-            const deleter = update.sender || "ᴜɴᴋɴᴏᴡɴ"; // Celui qui a supprimé le message
+            const sender = msgStore.participant; 
+            const deleter = update.sender || "ᴜɴᴋɴᴏᴡɴ"; 
             
-            // Extraction intelligente du contenu texte
             const content = msgStore.content;
             let messageContent = content.conversation || content.extendedTextMessage?.text;
             
-            // Si c'est un média, on met un label stylé
             if (!messageContent) {
                 if (content.imageMessage) messageContent = "📷 [ ɪᴍᴀɢᴇ ]";
                 else if (content.videoMessage) messageContent = "🎥 [ ᴠɪᴅᴇᴏ ]";
@@ -257,7 +249,6 @@ const handleAntiDelete = async (sock, update) => {
                 else messageContent = "📦 [ ᴍᴇᴅɪᴀ ]";
             }
 
-            // Design Uniformisé GhostG-X (Gras, SmallCaps)
             let caption = `*╭╼━≪• ${toSmallCaps('ᴀɴᴛɪ-ᴅᴇʟᴇᴛᴇ ᴅᴇᴛᴇᴄᴛᴇᴅ')} •≫━╾╮*\n`;
             caption += `┃\n`;
             caption += `┃ 👤 *${toSmallCaps('ᴇxᴘᴇᴅɪᴛᴇᴜʀ')}* : @${sender.split('@')[0]}\n`;
@@ -269,7 +260,6 @@ const handleAntiDelete = async (sock, update) => {
             caption += `💡 *${toSmallCaps('ɪɴғᴏ')}* : ${toSmallCaps('ᴘᴏᴜʀ ʀᴇᴄᴜᴘᴇʀᴇʀ ʟᴇ ᴍᴇᴅɪᴀ, ᴜᴛɪʟɪsᴇᴢ ʟᴀ ᴋᴇʏ ɪᴅ.')}\n`;
             caption += `\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
-            // Envoi du message protocole avec les mentions des deux acteurs
             await sock.sendMessage(from, { 
                 text: caption, 
                 mentions: [sender, deleter] 
@@ -281,8 +271,7 @@ const handleAntiDelete = async (sock, update) => {
     }
 };
 
-
-// --- GROUP UPDATE HANDLER (WELCOME / GOODBYE) ---
+// --- GROUP UPDATE HANDLER ---
 const handleGroupUpdate = async (sock, update) => {
     const { id, participants, action } = update;
     try {
