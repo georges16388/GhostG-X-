@@ -172,6 +172,13 @@ module.exports = {
             if (!finalUrl) throw new Error('ALL_APIS_FAILED');
 
             
+                // ── 4. ENVOI VIDÉO HD ──
+await sock.sendMessage(chatId, {
+    video:    { url: finalUrl },
+    mimetype: 'video/mp4',
+    fileName: `${title.substring(0, 60)}.mp4`,
+    caption:  AGM_FINAL(title, durationStr, views, authorName, url)
+}, { quoted: msg });
 
             await sock.sendMessage(chatId, { react: { text: '✅', key: msg.key } });
 
