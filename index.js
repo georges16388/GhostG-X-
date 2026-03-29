@@ -4,15 +4,11 @@
  * Powered by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
-const Baileys = require('@whiskeysockets/baileys');
-const { 
-    useMultiFileAuthState, 
-    DisconnectReason, 
-    fetchLatestBaileysVersion,
-    makeInMemoryStore,
-    Browsers,
-    makeCacheableSignalKeyStore
-} = Baileys;
+const { useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion, Browsers, makeCacheableSignalKeyStore } = require('@whiskeysockets/baileys');
+
+// LA CORRECTION EST ICI : On l'importe à part
+const makeInMemoryStore = require('@whiskeysockets/baileys/lib/Store/make-in-memory-store').default;
+
 
 const makeWASocket = Baileys.default || Baileys; 
 const pino = require('pino');
