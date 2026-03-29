@@ -1,12 +1,12 @@
 /**
  * Song Downloader - AGM Music Edition
  * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
+ * Optimized for V5.3 - Multi-API Sync
  */
 
 const yts = require('yt-search');
 const axios = require('axios');
 const APIs = require('../../utils/api');
-const { toAudio } = require('../../utils/converter');
 
 // --- FONCTION DE CONVERSION EN SMALL CAPS ---
 const toStyledCaps = (text) => {
@@ -20,15 +20,17 @@ const toStyledCaps = (text) => {
   return String(text).toLowerCase().split('').map(c => fonts[c] || c).join('');
 };
 
-// --- FONCTION DE DESIGN AGM (GRAS & SMALLCAPS) ---
+// --- FONCTION DE DESIGN AGM ---
 const AGM_DESIGN = (title, duration, url) => {
   const shortTitle = title.length > 25 ? title.substring(0, 22) + '...' : title;
   return `*╭╼━≪• ${toStyledCaps('ʏᴏᴜᴛᴜʙᴇ ᴍᴜsɪᴄ')} •≫━╾╮*
-*┃* *┃* 🎵 *${toStyledCaps('sᴏɴɢ')}* : *${toStyledCaps(shortTitle)}*
+*┃*
+*┃* 🎵 *${toStyledCaps('sᴏɴɢ')}* : *${toStyledCaps(shortTitle)}*
 *┃* ⏱️ *${toStyledCaps('ᴅᴜʀᴀᴛɪᴏɴ')}* : *${duration}*
 *┃* 🟢 *${toStyledCaps('sᴛᴀᴛᴜs')}* : *${toStyledCaps('ᴅᴏᴡɴʟᴏᴀᴅɪɴɢ')}...*
 *┃* 🔗 *${toStyledCaps('ʟɪᴇɴ')}* : ${url}
-*┃* *╰━━━━━━━━━━━━━━━╯*
+*┃*
+*╰━━━━━━━━━━━━━━━╯*
 > *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 };
 
@@ -40,21 +42,22 @@ module.exports = {
   usage: '.song <nom/url>',
 
   async execute(sock, msg, args, extra) {
-    try {
-      const text = args.join(' ');
-      const chatId = extra.from;
+    const text = args.join(' ');
+    const chatId = extra.from;
 
+    try {
       if (!text) {
         return extra.reply(`⚠️ *${toStyledCaps('ᴠᴇᴜɪʟʟᴇᴢ ᴇɴᴛʀᴇʀ ᴜɴ ɴᴏᴍ ᴏᴜ ᴜɴ ʟɪᴇɴ ʏᴏᴜᴛᴜʙᴇ')}*`);
       }
 
-      // Réaction de recherche
       await sock.sendMessage(chatId, { react: { text: "🎧", key: msg.key } });
 
       let video;
-      if (text.includes('youtube.com') || text.includes('youtu.be')) {
-        const videoId = text.split('v=')[1]?.split('&')[0] || text.split('/').pop();
-        video = await yts({ videoId });
+      const ytUrlPattern = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/;
+
+      if (ytUrlPattern.test(text)) {
+        const videoId = text.match(/(?:youtu\.be\/|v=|embed\/|shorts\/|watch\?v=)([a-zA-Z0-9_-]{11})/)?.[1];
+        video = await yts({ videoId: videoId || text });
       } else {
         const search = await yts(text);
         if (!search || !search.videos.length) {
@@ -63,14 +66,14 @@ module.exports = {
         video = search.videos[0];
       }
 
-      // 1. Envoi de l'aperçu (L'URL est cachée car elle est dans l'objet image)
+      // 1. Envoi de l'aperçu
       await sock.sendMessage(chatId, {
         image: { url: video.thumbnail || video.image },
-        caption: AGM_DESIGN(video.title, video.timestamp || video.duration.timestamp, video.url),
+        caption: AGM_DESIGN(video.title, video.timestamp || video.duration?.timestamp || '00:00', video.url),
         contextInfo: {
           externalAdReply: {
-            title: "ɢʜᴏsᴛ ᴍᴜsɪᴄ ᴘʟᴀʏᴇʀ",
-            body: toStyledCaps("recherche en cours..."),
+            title: "ɢʜᴏsᴛ ᴍᴜsɪᴄ sʏsᴛᴇᴍ",
+            body: toStyledCaps("recherche du meilleur flux audio"),
             mediaType: 1,
             thumbnailUrl: video.thumbnail || video.image,
             showAdAttribution: false
@@ -78,63 +81,34 @@ module.exports = {
         }
       }, { quoted: msg });
 
-      // --- SYSTÈME DE FALLBACK MULTI-API ---
+      // --- SYSTÈME DE FALLBACK MULTI-API (SYNCHRO AVEC APIS.JS) ---
       const apiMethods = [
-        { name: 'EliteProTech', method: () => APIs.getEliteProTechDownloadByUrl(video.url) },
-        { name: 'Yupra', method: () => APIs.getYupraDownloadByUrl(video.url) },
-        { name: 'Okatsu', method: () => APIs.getOkatsuDownloadByUrl(video.url) }
+        APIs.getYupraDownloadByUrl,  // Très stable en MP3
+        APIs.getIzumiDownloadByUrl,   // Excellent secours
+        APIs.getEliteProTechVideoByUrl // Fonctionne aussi car souvent multi-format
       ];
 
-      let audioBuffer;
-      let success = false;
-
-      for (const api of apiMethods) {
+      let finalUrl = null;
+      for (const method of apiMethods) {
         try {
-          const res = await api.method();
-          const audioUrl = res?.download || res?.dl || res?.url;
-          if (!audioUrl) continue;
-
-          const response = await axios.get(audioUrl, { 
-            responseType: 'arraybuffer', 
-            timeout: 100000,
-            headers: { 'User-Agent': 'Mozilla/5.0' }
-          });
-
-          audioBuffer = Buffer.from(response.data);
-          if (audioBuffer.length > 50000) { 
-            success = true;
-            break; 
-          }
-        } catch (e) { 
-            console.log(`[LOG] API ${api.name} échouée...`); 
-        }
+          const res = await method(video.url);
+          finalUrl = res?.download || res?.dl || res?.url;
+          if (finalUrl) break;
+        } catch (e) { continue; }
       }
 
-      if (!success) throw new Error('Sources épuisées');
+      if (!finalUrl) throw new Error('Toutes les sources audio ont échoué');
 
-      // --- CONVERSION & OPTIMISATION ---
-      let finalBuffer = audioBuffer;
-      // Détection simple du format m4a pour conversion si nécessaire
-      const isM4A = audioBuffer.slice(4, 8).toString('ascii') === 'ftyp';
-
-      if (isM4A && typeof toAudio === 'function') {
-        try {
-          finalBuffer = await toAudio(audioBuffer, 'mp3');
-        } catch (convErr) {
-          finalBuffer = audioBuffer;
-        }
-      }
-
-      // 2. Envoi du fichier audio final
+      // 2. Envoi du fichier audio final (Directement par URL pour économiser la RAM)
       await sock.sendMessage(chatId, {
-        audio: finalBuffer,
+        audio: { url: finalUrl },
         mimetype: 'audio/mpeg',
         fileName: `${video.title}.mp3`,
         ptt: false,
         contextInfo: {
           externalAdReply: {
             title: video.title,
-            body: toStyledCaps(video.author.name || "ɢʜᴏsᴛɢ-x ᴍᴜsɪᴄ"),
+            body: toStyledCaps("ɢʜᴏsᴛɢ-x ᴘʀᴇsᴛɪɢᴇ ᴀᴜᴅɪᴏ"),
             mediaType: 1,
             thumbnailUrl: video.thumbnail || video.image,
             renderLargerThumbnail: true,
@@ -146,8 +120,9 @@ module.exports = {
       await sock.sendMessage(chatId, { react: { text: "✅", key: msg.key } });
 
     } catch (err) {
-      console.error(err);
+      console.error('[SONG ERROR]:', err);
       await extra.reply(`❌ *${toStyledCaps('ʟᴇ ᴛᴇʟᴇᴄʜᴀʀɢᴇᴍᴇɴᴛ ᴀ ᴇᴄʜᴏᴜᴇ. sᴏᴜʀᴄᴇs ɪɴᴅɪsᴘᴏɴɪʙʟᴇs')}.*`);
+      await sock.sendMessage(chatId, { react: { text: "❌", key: msg.key } });
     }
   }
 };
