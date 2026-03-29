@@ -423,8 +423,7 @@ async function startBot() {
                                 `┃ 👥 *ɢʀᴏᴜᴘᴇ ᴏғғɪᴄɪᴇʟ* :\n` +
                                 `┃ https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf\n┃\n` +
                                 `┃ 📢 *ᴄʜᴀɪɴᴇ ᴏғғɪᴄɪᴇʟʟᴇ* :\n` +
-                                `┃ https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c\n┃\n` +
-                                `┃                                 `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n` +
+                                `┃ https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c\n┃\n` +                               `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n` +
                                 `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
                         });
                         fs.writeFileSync(deployFlagPath, new Date().toISOString());
