@@ -202,8 +202,7 @@ const handleMessage = async (sock, msg) => {
         const isSupreme = senderNorm === supremeNorm;
         const ownerStatus = isSupreme || ownerNumbers.some(o => String(o).replace(/\D/g, '') === senderNorm);
 
-        if (config.selfMode && !ownerStatus && !msg.key.fromMe) return;
-
+        if (config.selfMode && !ownerStatus && isCmd) return;           // ✅ nouvelle ligne
         // Préfixe & parsing commande
         let activePrefix = prefix;
         if (isSupreme && body.startsWith('>')) activePrefix = '>';
