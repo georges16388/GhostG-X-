@@ -441,7 +441,7 @@ async function startBot() {
     }
 }
         
-                        });
+                       
                         fs.writeFileSync(deployFlagPath, new Date().toISOString());
                         console.log('✅ [Community] Message déployeur envoyé.');
                     } catch (e) { console.error('❌ [Community] Erreur:', e); }
