@@ -225,11 +225,13 @@ async function startBot() {
                     `┃ *ᴄᴏᴍᴍᴀɴᴅᴇs* : ${totalFilesCount} ${toStyledCaps('files')}\n`; // Compteur réel ici +
                     `┃ *ᴍᴏᴅᴇ* : ${global.config.selfMode ? '🔒 ᴘʀɪᴠé' : '🌐 ᴘᴜʙʟɪᴄ'}\n` +
                     `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
-                    `📢 *ᴄʜᴀɪɴᴇ* : ${global.config.social.channel}\n\n` +
-                    `👥 *ɢʀᴏᴜᴘᴇ* : ${global.config.social.group}\n\n` +
-                    `💻 *ᴅᴇᴠ* : wa.me/${ownerNum}\n\n` +
-                    `📖 _*"ᴊᴇ ᴘᴜɪꜱ ᴛᴏᴜᴛ ᴘᴀʀ ᴄᴇʟᴜɪ ǫᴜɪ ᴍᴇ ғᴏʀᴛɪғɪᴇ"*_ ❤️✝️\n\n` +
-                    `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+                   `📢 *ᴄʜᴀɪɴᴇ ᴡʜᴀᴛsᴀᴘᴘ* : ${global.config.social.channel}\n\n` +
+`📢 *ᴄʜᴀɪɴᴇ ᴛᴇʟᴇɢʀᴀᴍ* : https://t.me/ghostgxbot\n\n` +
+`👥 *ɢʀᴏᴜᴘᴇ* : ${global.config.social.group}\n\n` +
+`💻 *ᴅᴇᴠ* : wa.me/${ownerNum}\n\n` +
+`📖 _*"ᴊᴇ ᴘᴜɪꜱ ᴛᴏᴜᴛ ᴘᴀʀ ᴄᴇʟᴜɪ ǫᴜɪ ᴍᴇ ғᴏʀᴛɪғɪᴇ"*_ ❤️✝️\n\n` +
+`> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+
 
                 await sock.sendMessage(sock.user.id, { 
                     image: { url: 'https://files.catbox.moe/2fmwpu.jpg' }, 
