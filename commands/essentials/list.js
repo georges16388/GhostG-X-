@@ -3,7 +3,6 @@
  * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
-const { loadCommands } = require('../../utils/commandLoader');
 const { sendButtons } = require('gifted-btns');
 
 // --- FONCTION DE CONVERSION EN SMALL CAPS ---
@@ -29,26 +28,28 @@ module.exports = {
     try {
       await react('📜');
 
-      const commands = loadCommands();
+      // 🔹 OPTIMISATION 1 : On utilise la variable globale pour éviter de recharger les fichiers
+      const commands = global.commands;
       const categories = {};
 
       // Organisation des commandes par catégorie
-      commands.forEach((cmd) => {
-        const cat = cmd.category || 'others';
-        if (!categories[cat]) {
-          categories[cat] = new Set();
+      commands.forEach((cmd, name) => {
+        // 🔹 CORRECTIF DE SÉCURITÉ : On n'ajoute la commande que si la clé Map est son nom principal (évite les doublons d'alias)
+        if (cmd.name === name) {
+          const cat = cmd.category || 'others';
+          if (!categories[cat]) {
+            categories[cat] = new Set();
+          }
+          categories[cat].add(cmd.name);
         }
-        categories[cat].add(cmd.name);
       });
 
       // --- LOGIQUE DE NOM D'UTILISATEUR (PUSHNAME) ---
-      // On récupère le pushName (ex: Truth Devices) ou on met "Utilisateur" par défaut
       const pushName = msg.pushName || 'ᴜsᴇʀ';
       const senderJid = msg.key.participant || msg.key.remoteJid;
 
       // --- EN-TÊTE DU MENU ---
       let menu = `*╭╼━≪• ${toStyledCaps('ɢʜᴏsᴛɢ 𝐗 - ᴍᴇɴᴜ')} •≫━╾╮*\n`;
-      // Ici on affiche le nom de profil (pushName)
       menu += `*┃* 👤 *${toStyledCaps('ᴜᴛɪʟɪsᴀᴛᴇᴜʀ')} :* ${pushName}\n`;
       menu += `*┃* ⚡ *${toStyledCaps('ᴘʀᴇ́ꜰɪxᴇ')} :* [ ${prefix} ]\n`;
       menu += `*┃* 🤖 *${toStyledCaps('ᴠᴇʀsɪᴏɴ')} :* *1.0.0 (ᴍᴅ)*\n`;
@@ -67,7 +68,8 @@ module.exports = {
         menu += `*╰━━━━━━━━━━━━━━━╯*\n\n`;
       }
 
-      menu += `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-x*`;
+      // 🔹 OPTIMISATION 2 : Harmonisation de la signature
+      menu += `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
       // Envoi du menu avec Boutons Interactifs
       await sendButtons(sock, from, {
@@ -92,7 +94,7 @@ module.exports = {
         ]
       }, { 
         quoted: msg,
-        mentions: [senderJid], // On garde la mention dans les métadonnées pour le tag silencieux
+        mentions: [senderJid], 
         contextInfo: {
             externalAdReply: {
                 title: "ɢʜᴏꜱᴛɢ-x ᴍᴜʟᴛɪ-ᴅᴇᴠɪᴄᴇ",
