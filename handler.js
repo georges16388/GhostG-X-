@@ -606,7 +606,7 @@ const handleGroupUpdate = async (sock, update) => {
                         config?.defaultGroupSettings?.goodbyeMessage ||
                         `*╭╼━≪• 🥀 ᴀᴜ ʀᴇᴠᴏɪʀ •≫━╾╮*\n` +
                         `┃ 👋🏾 *ᴍᴇᴍʙʀᴇ* : @user\n` +
-                        `┃ 🚮 ɴᴇ ɴᴏᴜs ᴍᴀɴǫᴜᴇʀᴀ ᴊᴀᴍᴀɪs\n` +
+                        `┃ 🚮 ᴛᴜ ɴᴇ ɴᴏᴜs ᴍᴀɴǫᴜᴇʀᴀ ᴊᴀᴍᴀɪs\n` +
                         `┃ 👤 *ᴍᴇᴍʙʀᴇs ʀᴇsᴛᴀɴᴛs* : #memberCount\n` +
                         `┃ ⏰ *ʜᴇᴜʀᴇ* : #time\n` +
                         `╰━━━━━━━━━━━━━━━━━━━━╯\n` +
