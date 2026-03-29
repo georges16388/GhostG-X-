@@ -1,6 +1,7 @@
 /**
  * YouTube Video Downloader - AGM Elite Edition
  * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
+ * Optimized for V5.3 - Multi-API Fallback
  */
 
 const yts = require('yt-search');
@@ -18,7 +19,7 @@ const toStyledCaps = (text) => {
   return String(text).toLowerCase().split('').map(c => fonts[c] || c).join('');
 };
 
-// --- FONCTION DE DESIGN AGM (GRAS & SMALLCAPS) ---
+// --- FONCTION DE DESIGN AGM ---
 const AGM_DESIGN = (title, status, url) => {
   const shortTitle = title.length > 25 ? title.substring(0, 22) + '...' : title;
   return `*╭╼━≪• ${toStyledCaps('ʏᴏᴜᴛᴜʙᴇ ᴠɪᴅᴇᴏ')} •≫━╾╮*
@@ -55,9 +56,7 @@ module.exports = {
 
       if (ytUrlPattern.test(text)) {
         const videoId = text.match(/(?:youtu\.be\/|v=|embed\/|shorts\/|watch\?v=)([a-zA-Z0-9_-]{11})/)?.[1];
-        if (!videoId) throw new Error("Invalid ID");
-
-        const search = await yts({ videoId });
+        const search = await yts({ videoId: videoId || text });
         video = search;
       } else {
         const search = await yts(text);
@@ -67,7 +66,7 @@ module.exports = {
         video = search.videos[0];
       }
 
-      // 1. Envoi de l'aperçu (URL masquée du caption, miniature YouTube pure)
+      // 1. Envoi de l'aperçu
       await sock.sendMessage(chatId, {
         image: { url: video.thumbnail || video.image },
         caption: AGM_DESIGN(video.title, 'ᴅᴏᴡɴʟᴏᴀᴅɪɴɢ...', video.url),
@@ -75,15 +74,16 @@ module.exports = {
           externalAdReply: {
             title: "ɢʜᴏsᴛ ᴠɪᴅᴇᴏ sʏsᴛᴇᴍ",
             body: toStyledCaps("preparation du fichier hd"),
-            mediaType: 2,
+            mediaType: 1,
             thumbnailUrl: video.thumbnail || video.image,
+            renderLargerThumbnail: true,
             showAdAttribution: false
           }
         }
       }, { quoted: msg });
 
-      // 2. Système de Fallback Multi-API
-      let videoData = null;
+      // 2. Système de Fallback Multi-API (Synchronisé avec APIs.js)
+      let finalUrl = null;
       const methods = [
         APIs.getEliteProTechVideoByUrl,
         APIs.getYupraVideoByUrl,
@@ -92,15 +92,14 @@ module.exports = {
 
       for (const method of methods) {
         try {
-          if (typeof method === 'function') {
-            videoData = await method(video.url);
-            if (videoData && (videoData.download || videoData.dl || videoData.url)) break;
-          }
+          const res = await method(video.url);
+          // Correction ici pour accepter plusieurs formats de retour
+          finalUrl = res?.download || res?.url || (typeof res === 'string' ? res : null);
+          if (finalUrl) break;
         } catch (e) { continue; }
       }
 
-      const finalUrl = videoData?.download || videoData?.dl || videoData?.url;
-      if (!finalUrl) throw new Error('No download URL');
+      if (!finalUrl) throw new Error('No download URL found after all attempts');
 
       // 3. Envoi de la vidéo finale
       await sock.sendMessage(chatId, {
@@ -112,7 +111,7 @@ module.exports = {
             externalAdReply: {
               title: video.title,
               body: toStyledCaps("ɢʜᴏsᴛɢ-x ʜɪɢʜ ᴅᴇғɪɴɪᴛɪᴏɴ"),
-              mediaType: 2,
+              mediaType: 1,
               thumbnailUrl: video.thumbnail || video.image,
               showAdAttribution: false
             }
