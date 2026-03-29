@@ -434,4 +434,59 @@ const handleAntiDelete = async (sock, update) => {
             if (!messageContent) {
                 if (content.imageMessage) { messageContent = "📷 [ ɪᴍᴀɢᴇ ]"; mediaType = 'image'; }
                 else if (content.videoMessage) { messageContent = "🎥 [ ᴠɪᴅᴇᴏ ]"; mediaType = 'video'; }
-                else if (content.stickerMessage) { message
+                else if (content.stickerMessage) { messageContent = "🗿 [ sᴛɪᴄᴋᴇʀ ]"; mediaType = 'sticker'; }
+                else if (content.audioMessage) { messageContent = "🎵 [ ᴀᴜᴅɪᴏ ]"; mediaType = 'audio'; }
+                else if (content.documentMessage) { messageContent = `📄 [ ${content.documentMessage.fileName || 'ᴅᴏᴄᴜᴍᴇɴᴛ'} ]`; }
+                else messageContent = "📦 [ ᴍᴇᴅɪᴀ ɪɴᴄᴏɴɴᴜ ]";
+            }
+
+            // Tentative de récupération du média
+            if (mediaType && ['image', 'video', 'audio', 'sticker'].includes(mediaType)) {
+                try {
+                    const mediaKey = `${mediaType}Message`;
+                    const stream = await downloadContentFromMessage(content[mediaKey], mediaType);
+                    let buf = Buffer.from([]);
+                    for await (const chunk of stream) buf = Buffer.concat([buf, chunk]);
+                    if (buf.length > 0) mediaBuffer = buf;
+                } catch {}
+            }
+
+            const senderNum = sender.split('@')[0];
+            const deleterNum = deleter ? deleter.split('@')[0] : 'ɪɴᴄᴏɴɴᴜ';
+            const time = new Date().toLocaleTimeString('fr-FR', { timeZone: 'Africa/Ouagadougou' });
+
+            const caption =
+                `*╭╼━≪• 🗑️ ${toSmallCaps('ᴀɴᴛɪ-ᴅᴇʟᴇᴛᴇ')} •≫━╾╮*\n` +
+                `┃\n` +
+                `┃ 👤 *${toSmallCaps('ᴇxᴘᴇᴅɪᴛᴇᴜʀ')}* : @${senderNum}\n` +
+                `┃ 🗑️ *${toSmallCaps('sᴜᴘᴘʀɪᴍᴇᴜʀ')}* : @${deleterNum}\n` +
+                `┃ 💬 *${toSmallCaps('ᴄᴏɴᴛᴇɴᴜ')}* : _${messageContent}_\n` +
+                `┃ ⏰ *${toSmallCaps('ʜᴇᴜʀᴇ')}* : ${time}\n` +
+                `┃\n` +
+                `╰━━━━━━━━━━━━━━━━━━━━━╼\n` +
+                `\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+
+            const mentions = [sender];
+            if (deleter) mentions.push(deleter);
+
+            // Envoie le média récupéré si possible, sinon juste le texte
+            if (mediaBuffer && mediaType === 'image') {
+                await sock.sendMessage(from, { image: mediaBuffer, caption, mentions });
+            } else if (mediaBuffer && mediaType === 'video') {
+                await sock.sendMessage(from, { video: mediaBuffer, caption, mentions });
+            } else if (mediaBuffer && mediaType === 'audio') {
+                await sock.sendMessage(from, { text: caption, mentions });
+                await sock.sendMessage(from, { audio: mediaBuffer, mimetype: 'audio/mp4' });
+            } else if (mediaBuffer && mediaType === 'sticker') {
+                await sock.sendMessage(from, { text: caption, mentions });
+                await sock.sendMessage(from, { sticker: mediaBuffer });
+            } else {
+                await sock.sendMessage(from, { text: caption, mentions });
+            }
+
+        } catch (e) {
+            console.error('❌ AntiDelete Error:', e);
+            await notifyOwnerCrash("handleAntiDelete", e);
+        }
+    }
+};
