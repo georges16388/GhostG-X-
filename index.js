@@ -420,7 +420,7 @@ async function startBot() {
 `📢 *ᴄʜᴀɪɴᴇ ᴛᴇʟᴇɢʀᴀᴍ* : https://t.me/ghostgxbot\n\n` +
                         `👥 *ɢʀᴏᴜᴘᴇ* : ${config.social?.group || 'https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf'}\n\n` +
                         
-`💻 *ᴅᴇᴠ* : https://wa.me/22651622652\n\n` +
+`💻 *ᴅᴇᴠᴇʟᴏᴘᴘᴇᴜʀ* : https://wa.me/22651622652\n\n` +
                         `📖 _*"ᴊᴇ ᴘᴜɪs ᴛᴏᴜᴛ ᴘᴀʀ ᴄᴇʟᴜɪ ǫᴜɪ ᴍᴇ ғᴏʀᴛɪғɪᴇ"*_ ❤️✝️\n\n` +
                         `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
@@ -442,10 +442,10 @@ await new Promise(r => setTimeout(r, 1500));
 
                     await sock.sendMessage(ownerJid, {
                         text:
-                            `📢 *ᴀʟᴇʀᴛᴇ ᴅᴇ ᴅᴇ́ᴍᴀʀʀᴀɢᴇ*\n\n` +
-                            `*ɢʜᴏsᴛɢ-x* est en ligne !\n` +
-                            `Mode : ${config.selfMode ? 'Privé 🔒' : 'Public 🌐'} | Cmds : ${totalCmds}`
-                    }).catch(() => {});
+                            `✅ *ɢʜᴏsᴛɢ-x* ➔ ᴇɴ ʟɪɢɴᴇ\n` +
+`🌐 *ᴍᴏᴅᴇ* : ${config.selfMode ? 'Privé' : 'Public'}\n` +
+`🤖 *ᴄᴍᴅs* : ${totalCmds} chargées`
+               ).catch(() => {});
 
                     // Message déployeur — une seule fois
                     const deployFlag = path.join(__dirname, 'database', '.deployed');
