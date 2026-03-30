@@ -135,13 +135,25 @@ const toSmallCaps = (text) => {
 };
 
 // ============================================================
-// QUEUE ANTI-DOUBLON
+// SYSTÈME DE TRAITEMENT PARALLÈLE PAR CONVERSATION
 // ============================================================
-const MAX_QUEUE_SIZE = 100;
-const messageQueue   = [];
-let processing          = false;
-let processingStartedAt = 0;
+// Principe : chaque JID (groupe ou privé) a sa propre queue indépendante.
+// → Les groupes ne se bloquent pas entre eux.
+// → Les commandes du owner ne sont pas bloquées par les messages d'un groupe actif.
+// → Concurrence max par JID = 1 (pas de doublon dans le même chat).
+// → Concurrence globale limitée à MAX_CONCURRENT pour protéger le VPS.
 
+const MAX_CONCURRENT   = 10;  // max de chats traités simultanément
+const MAX_QUEUE_PER_JID = 20; // max de messages en attente PAR chat
+const CMD_TIMEOUT_MS   = 12_000; // timeout commande (réduit de 25s à 12s)
+const MSG_TIMEOUT_MS   =  6_000; // timeout message normal
+
+// Une queue par JID
+const jidQueues    = new Map(); // jid → Array<{sock, msg}>
+const jidProcessing = new Set(); // JIDs en cours de traitement
+let   activeWorkers = 0;
+
+// Anti-doublon global (TTL 10 min)
 const globalProcessedIds        = new Set();
 const globalProcessedTimestamps = new Map();
 const GLOBAL_TTL = 10 * 60 * 1000;
@@ -154,51 +166,97 @@ setInterval(() => {
             globalProcessedTimestamps.delete(id);
         }
     }
+    // Nettoyer les queues vides
+    for (const [jid, q] of jidQueues) {
+        if (q.length === 0 && !jidProcessing.has(jid)) jidQueues.delete(jid);
+    }
 }, 5 * 60 * 1000);
 
 const markProcessed      = (id) => { globalProcessedIds.add(id); globalProcessedTimestamps.set(id, Date.now()); };
 const isAlreadyProcessed = (id) => globalProcessedIds.has(id);
 
-async function processQueue() {
-    if (processing) return;
-    processing = true;
-    processingStartedAt = Date.now();
+// Détermine si un message est une commande (prioritaire)
+const isCommandMsg = (msg) => {
+    const prefix = global.config?.prefix || '.';
+    const text =
+        msg.message?.conversation ||
+        msg.message?.extendedTextMessage?.text ||
+        msg.message?.imageMessage?.caption ||
+        msg.message?.videoMessage?.caption || '';
+    return text.trimStart().startsWith(prefix) || text.trimStart().startsWith('>');
+};
+
+// Traite la queue d'un JID donné
+async function processJidQueue(sock, jid) {
+    if (jidProcessing.has(jid)) return;
+    if (activeWorkers >= MAX_CONCURRENT) return;
+
+    const queue = jidQueues.get(jid);
+    if (!queue || queue.length === 0) return;
+
+    jidProcessing.add(jid);
+    activeWorkers++;
+
     try {
-        while (messageQueue.length) {
-            const { sock, msg } = messageQueue.shift();
+        while (queue.length > 0) {
+            const { msg } = queue.shift();
+            const isCmd   = isCommandMsg(msg);
+            const timeout = isCmd ? CMD_TIMEOUT_MS : MSG_TIMEOUT_MS;
             try {
                 await Promise.race([
                     handler.handleMessage(sock, msg),
-                    new Promise((_, rej) => setTimeout(() => rej(new Error('timeout 25s')), 25_000))
+                    new Promise((_, rej) => setTimeout(() => rej(new Error(`timeout ${timeout}ms`)), timeout))
                 ]);
-            } catch (err) { logError('Handler Crash', err); }
-            processingStartedAt = Date.now();
+            } catch (err) {
+                // Timeout silencieux pour les messages normaux, loggé pour les commandes
+                if (isCmd || !err.message?.includes('timeout')) {
+                    logError(`Handler [${jid.split('@')[0]}]`, err);
+                }
+            }
         }
     } finally {
-        processing = false;
-        processingStartedAt = 0;
+        jidProcessing.delete(jid);
+        activeWorkers = Math.max(0, activeWorkers - 1);
+        // Si d'autres JIDs attendent, les démarrer
+        schedulePendingQueues(sock);
     }
+}
+
+// Lance les queues en attente dans la limite de MAX_CONCURRENT
+function schedulePendingQueues(sock) {
+    for (const [jid, queue] of jidQueues) {
+        if (activeWorkers >= MAX_CONCURRENT) break;
+        if (queue.length > 0 && !jidProcessing.has(jid)) {
+            processJidQueue(sock, jid).catch(err => logError('Worker Error', err));
+        }
+    }
+}
+// Ajoute un message à la queue de son JID
+function enqueueMessage(sock, msg) {
+    const jid = msg.key.remoteJid;
+    if (!jidQueues.has(jid)) jidQueues.set(jid, []);
+    const queue = jidQueues.get(jid);
+
+    if (queue.length >= MAX_QUEUE_PER_JID) {
+        _warn(`⚠️ [Queue] JID ${jid.split('@')[0]} saturé (${queue.length}), message ignoré.`);
+        return;
+    }
+
+    // PRIORITÉ : les commandes passent devant les messages normaux dans la queue du JID
+    if (isCommandMsg(msg)) {
+        queue.unshift({ sock, msg });
+    } else {
+        queue.push({ sock, msg });
+    }
+
+    processJidQueue(sock, jid).catch(err => logError('Queue Start Error', err));
 }
 
 function clearQueue() {
-    messageQueue.length = 0;
-    processing = false;
-    processingStartedAt = 0;
+    jidQueues.clear();
+    jidProcessing.clear();
+    activeWorkers = 0;
 }
-
-setInterval(() => {
-    const now = Date.now();
-    if (!processing && messageQueue.length > 0) {
-        processQueue().catch(err => logError('Queue Recovery', err));
-        return;
-    }
-    if (processing && processingStartedAt > 0 && now - processingStartedAt > 30_000) {
-        _warn('⚠️ [Queue] Bloquée > 30s — force reset.');
-        processing = false;
-        processingStartedAt = 0;
-        processQueue().catch(err => logError('Queue Force Reset', err));
-    }
-}, 30_000);
 
 // ============================================================
 // NETTOYAGE PUPPETEER
@@ -223,7 +281,7 @@ function startKeepAlive(sock) {
         try {
             await sock.sendPresenceUpdate('available');
         } catch {
- // Silencieux — la reconnexion gère si le socket est mort
+            // Silencieux — la reconnexion gère si le socket est mort
         }
     }, 25_000);
 }
@@ -421,8 +479,7 @@ async function startBot() {
             startKeepAlive(sock);
 
             // FIX CODE 500 : attendre 5s que le socket soit VRAIMENT prêt
-            // avant d'envoyer des messages. Le code 500 = Connection Closed
-            // vient du fait qu'on envoie des messages trop tôt après l'open.
+            // avant d'envoyer des messages. Le code 500 = Connection Closed  // vient du fait qu'on envoie des messages trop tôt après l'open.
             setTimeout(async () => {
                 try {
                     const totalCmds = global.commands?.size || 0;
@@ -533,20 +590,14 @@ async function startBot() {
                 // Anti-doublon
                 if (isAlreadyProcessed(msg.key.id)) continue;
 
-                // Queue saturée
-                if (messageQueue.length >= MAX_QUEUE_SIZE) {
-                    _warn(`⚠️ [Queue] Saturée (${messageQueue.length}), message ignoré.`);
-                    markProcessed(msg.key.id);
-                    continue;
-                }
+                // Queue du JID saturée — vérifiée dans enqueueMessage()
 
                 markProcessed(msg.key.id);
-                messageQueue.push({ sock, msg });
+                enqueueMessage(sock, msg);
 
             } catch (e) { logError('Upsert Loop Error', e); }
         }
-
-        processQueue().catch(err => logError('processQueue Error', err));
+        // Pas de processQueue global — chaque JID gère sa propre queue
     });
 
     // Anti-delete
