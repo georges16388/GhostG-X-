@@ -130,9 +130,9 @@ const getSmartReaction = (body, ownerStatus, isSupreme, isCmd, config) => {
 
     const b = body.toLowerCase();
     if (b.match(/merci|thanks|thank you|🙏/)) return '❤️';
-    if (b.match(/bonjour|bonsoir|salut|hello|hi\b|hey\b/)) return '👋🏾';
-    if (b.match(/lol|😂|haha|mdr|ptdr/)) return '😂';
-    if (b.match(/wow|waoh|incroyable|amazing/)) return '🔥';
+    if (b.match(/bonjour|bonsoir|yo|salut|hello|hi\b|hey\b/)) return '👋🏾';
+    if (b.match(/lol|😂|haha|mdr|ptdr|ha|ah/)) return '😂';
+    if (b.match(/wow|waouh|incroyable|amazing/)) return '🔥';
     if (b.match(/rip|mort|dead|💀/)) return '💀';
     if (b.match(/love|amour|❤️|😍/)) return '😍';
     if (b.match(/\bnon\b|jamais|never/)) return '😏';
