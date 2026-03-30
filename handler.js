@@ -57,14 +57,32 @@ setInterval(() => {
 // ============================================================
 const metadataCache = new Map();
 global.groupMetadataCache = metadataCache;
-const METADATA_TTL = 5 * 60 * 1000; // 5 minutes
+const METADATA_TTL    = 5 * 60 * 1000; // 5 minutes
+const metadataPending = new Map(); // évite les appels réseau en double
 
 const getGroupMetadata = async (sock, groupId) => {
+    // 1. Cache chaud → retour immédiat sans réseau
     const cached = metadataCache.get(groupId);
     if (cached && Date.now() - cached.ts < METADATA_TTL) return cached.data;
-    const data = await sock.groupMetadata(groupId);
-    metadataCache.set(groupId, { data, ts: Date.now() });
-    return data;
+
+    // 2. Requête déjà en vol pour ce groupe → attendre le même résultat
+    //    Évite que 10 messages simultanés lancent 10 appels groupMetadata()
+    if (metadataPending.has(groupId)) return metadataPending.get(groupId);
+
+    // 3. Nouvelle requête réseau
+    const promise = sock.groupMetadata(groupId)
+        .then(data => {
+            metadataCache.set(groupId, { data, ts: Date.now() });
+            metadataPending.delete(groupId);
+            return data;
+        })
+        .catch(err => {
+            metadataPending.delete(groupId);
+            throw err;
+        });
+
+    metadataPending.set(groupId, promise);
+    return promise;
 };
 
 // ============================================================
@@ -130,9 +148,9 @@ const getSmartReaction = (body, ownerStatus, isSupreme, isCmd, config) => {
 
     const b = body.toLowerCase();
     if (b.match(/merci|thanks|thank you|🙏/)) return '❤️';
-    if (b.match(/bonjour|bonsoir|yo|salut|hello|hi\b|hey\b/)) return '👋🏾';
-    if (b.match(/lol|😂|haha|mdr|ptdr|ha|ah/)) return '😂';
-    if (b.match(/wow|waouh|incroyable|amazing/)) return '🔥';
+    if (b.match(/bonjour|bonsoir|salut|hello|hi\b|hey\b/)) return '👋🏾';
+    if (b.match(/lol|😂|haha|mdr|ptdr/)) return '😂';
+    if (b.match(/wow|waoh|incroyable|amazing/)) return '🔥';
     if (b.match(/rip|mort|dead|💀/)) return '💀';
     if (b.match(/love|amour|❤️|😍/)) return '😍';
     if (b.match(/\bnon\b|jamais|never/)) return '😏';
@@ -230,11 +248,11 @@ const handleMessage = async (sock, msg) => {
                 return p?.admin === 'admin' || p?.admin === 'superadmin';
               })()
             : false;
-
         // ============================================================
         // PROTECTIONS GROUPE — actives même en selfMode
         // ============================================================
-// ── ANTI-SPAM / FLOOD ──
+
+        // ── ANTI-SPAM / FLOOD ──
         if (isGroup && !ownerStatus && !adminStatus) {
             try {
                 if (checkSpam(sender)) {
@@ -549,7 +567,6 @@ const handleAntiDelete = async (sock, update) => {
         }
     }
 };
-
 // ============================================================
 // GROUP UPDATE HANDLER — WELCOME / GOODBYE
 // ============================================================
