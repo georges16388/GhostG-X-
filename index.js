@@ -453,14 +453,17 @@ await new Promise(r => setTimeout(r, 1500));
                         await new Promise(r => setTimeout(r, 2000));
                         await sock.sendMessage(ownerJid, {
                             text:
-                                `╭╼━≪• 🌐 *ʙɪᴇɴᴠᴇɴᴜᴇ ᴅᴀɴs ɢʜᴏsᴛɢ-x* •≫━╾╮\n` +
-                                `┃ Merci d'avoir déployé *ɢʜᴏsᴛɢ-x* ! 🙏🏾\n┃\n` +
-                                `┃ 👥 https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf\n` +
-                                `┃ 📢 https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c\n┃\n` +
-                                `┃ ❤️ _Ce message ne s'affiche qu'une seule fois._\n` +
+                                                               `╭╼━≪• 🌐 *ʙɪᴇɴᴠᴇɴᴜᴇ ᴅᴀɴs ɢʜᴏsᴛɢ-x* •≫━╾╮\n` +
+                                `┃ ᴍᴇʀᴄɪ ᴅ'ᴀᴠᴏɪʀ ᴅᴇ́ᴘʟᴏʏᴇ́ *ɢʜᴏsᴛɢ-x* ! 🙏🏾\n┃\n` +
+                                `┃ 🚀 *ʀᴇᴊᴏɪɴs ʟ'ᴀᴠᴇɴᴛᴜʀᴇ !* ɴᴇ ᴍᴀɴǫᴜᴇ ᴀᴜᴄᴜɴᴇ\n┃ ᴍɪsᴇ ᴀ̀ ᴊᴏᴜʀ ᴇᴛ ᴘᴀʀᴛᴀɢᴇ ᴀᴠᴇᴄ ʟᴀ ᴄᴏᴍᴍᴜɴᴀᴜᴛᴇ́ :\n┃\n` +
+                                `┃ 👥 ɢʀᴏᴜᴘᴇ : https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf\n` +
+                                `┃ 📢 ᴄʜᴀɪɴᴇ : https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c\n┃\n` +
+                                `┃ 💡 ᴅᴇs ǫᴜᴇsᴛɪᴏɴs ? ᴄᴏɴᴛᴀᴄᴛᴇ ʟᴇ ᴅᴇᴠ ɪᴄɪ :\n┃ 💻 https://wa.me/22651622652\n┃\n` +
+                                `┃ ❤️ _ᴄᴇ ᴍᴇssᴀɢᴇ ɴᴇ s'ᴀғғɪᴄʜᴇ ǫᴜ'ᴜɴᴇ sᴇᴜʟᴇ ғᴏɪs._\n` +
                                 `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n` +
                                 `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
-                        }).catch(() => {});
+                      }
+).catch(() => {});
                         fs.writeFileSync(deployFlag, new Date().toISOString());
                     }
 
