@@ -1,69 +1,59 @@
 /**
  * ɢʜᴏꜱᴛɢ-x ᴍᴅ - ᴍᴀɪɴ ᴇɴᴛʀʏ ᴘᴏɪɴᴛ
- * ✅ V5.5 SUPREME — Anti-déconnexion blindé
+ * Base : version qui fonctionnait + fixes stables
  */
 
 process.env.PUPPETEER_SKIP_DOWNLOAD          = 'true';
 process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = 'true';
 process.env.PUPPETEER_CACHE_DIR              = '/tmp/puppeteer_cache_disabled';
 
-// ============================================================
-// IMPORTS
-// ============================================================
-const {
-    default: makeWASocket,
-    useMultiFileAuthState,
-    DisconnectReason,
-    fetchLatestBaileysVersion,
-    Browsers,
-    makeCacheableSignalKeyStore,
-    isJidBroadcast,
-} = require('@whiskeysockets/baileys');
-
-const pino = require('pino');
-const fs   = require('fs-extra');
-const path = require('path');
-const zlib = require('zlib');
-const os   = require('os');
-
-// ============================================================
-// MODULES INTERNES
-// ============================================================
-const config  = require('./config');
-const handler = require('./handler');
-global.config = config;
-
+// --- UTILS OPTIONNELS (ne crashent pas si absents) ---
 try { const { initializeTempSystem } = require('./utils/tempManager'); initializeTempSystem(); } catch {}
 try { const { startCleanup }         = require('./utils/cleanup');     startCleanup();         } catch {}
 
-// ============================================================
-// LOGS FILTRÉS
-// ============================================================
+// --- FILTRAGE INTELLIGENT DES LOGS ---
 const _log   = console.log.bind(console);
 const _error = console.error.bind(console);
 const _warn  = console.warn.bind(console);
 
-const NOISE = [
-    'closing session', 'sessionentry', 'prekey bundle', 'ratchet',
-    'signal protocol', 'ephemeralkeypair', 'bad mac', 'decrypt',
-    'noise_', 'stream errored', 'timed out', 'keep-alive'
+const NOISE_PATTERNS = [
+    'closing session', 'sessionentry', 'prekey bundle',
+    'ratchet', 'signal protocol', 'ephemeralkeypair',
+    'bad mac', 'decrypt'
 ];
-const filterLog = (fn, args) => {
-    const str = args.map(a =>
-        typeof a === 'string' ? a : (a instanceof Error ? a.message : JSON.stringify(a))
-    ).join(' ').toLowerCase();
-    if (!NOISE.some(p => str.includes(p))) fn(...args);
+const filterLogs = (fn, args) => {
+    const msg = args.map(a => typeof a === 'string' ? a : (a instanceof Error ? a.message : JSON.stringify(a))).join(' ').toLowerCase();
+    if (!NOISE_PATTERNS.some(p => msg.includes(p))) fn(...args);
 };
-console.log   = (...a) => filterLog(_log,   a);
-console.error = (...a) => filterLog(_error, a);
-console.warn  = (...a) => filterLog(_warn,  a);
+console.log   = (...a) => filterLogs(_log,   a);
+console.error = (...a) => filterLogs(_error, a);
+console.warn  = (...a) => filterLogs(_warn, a);
 
-// ============================================================
-// LOG CRASH
-// ============================================================
+// --- DÉPENDANCES ---
+const pino = require('pino');
+const {
+    default: makeWASocket,
+    useMultiFileAuthState,
+    DisconnectReason,
+    Browsers,
+    fetchLatestBaileysVersion,
+    makeCacheableSignalKeyStore,
+    isJidBroadcast,
+} = require('@whiskeysockets/baileys');
+
+const config  = require('./config');
+const handler = require('./handler');
+const fs      = require('fs-extra');
+const path    = require('path');
+const zlib    = require('zlib');
+const os      = require('os');
+
+global.config = config;
+
+// --- LOG CRASH FICHIER ---
 const logFile = path.join(__dirname, 'bot-crash.log');
-const logError = (msg, err) => {
-    const s = `[${new Date().toISOString()}] ❌ ${msg}: ${err?.stack || err}\n`;
+const logError = (ctx, err) => {
+    const s = `[${new Date().toISOString()}] ❌ ${ctx}: ${err?.stack || err}\n`;
     _error(s);
     try { fs.appendFileSync(logFile, s); } catch {}
 };
@@ -71,196 +61,7 @@ const logError = (msg, err) => {
 fs.ensureDirSync(path.join(__dirname, 'tmp'));
 fs.ensureDirSync(path.join(__dirname, 'database'));
 
-// ============================================================
-// STORE MAISON
-// ============================================================
-global.store = {
-    messages: {},
-    bind: (ev) => {
-        ev.on('messages.upsert', ({ messages }) => {
-            for (const msg of messages) {
-                const jid = msg.key?.remoteJid;
-                if (!jid || !msg.message) continue;
-                if (!global.store.messages[jid]) global.store.messages[jid] = [];
-                global.store.messages[jid].push(msg);
-                if (global.store.messages[jid].length > 200)
-                    global.store.messages[jid].shift();
-            }
-        });
-    },
-    loadMessage: async (jid, id) => {
-        if (!jid || !id) return null;
-        return global.store.messages[jid]?.find(m => m.key.id === id) || null;
-    },
-};
-
-// ============================================================
-// SÉCURITÉ OWNER / SUPREME
-// ============================================================
-const normalizeNum = (jid) => {
-    // FIX MULTI-DEVICE : :[0-9]+@ doit être une vraie regex JS, pas une string
-    // '22651622652:12@s.whatsapp.net' → retire ':12@' → split('@')[0] → garde chiffres
-    if (!jid) return '';
-    return String(jid)
-        .replace(/:\d+@/, '@')   // retire le suffixe multi-device :XX
-        .split('@')[0]             // retire le domaine
-        .replace(/\D/g, '');      // garde uniquement les chiffres
-};
-
-global.isSupreme = (jid) => {
-    if (!jid) return false;
-    return normalizeNum(jid) === String(global.config.supremeNumber).replace(/\D/g, '');
-};
-
-global.isOwner = (jid) => {
-    if (!jid) return false;
-    const n = normalizeNum(jid);
-    // Supreme passe toujours
-    if (n === String(global.config.supremeNumber || '').replace(/\D/g, '')) return true;
-    // Sécurise ownerNumber quel que soit son format
-    const raw = global.config.ownerNumber;
-    if (!raw) return false;
-    const owners = Array.isArray(raw) ? raw : [raw];
-    return owners.filter(Boolean).some(o => String(o).replace(/\D/g, '') === n);
-};
-
-const toSmallCaps = (text) => {
-    const f = {
-        'a':'ᴀ','b':'ʙ','c':'ᴄ','d':'ᴅ','e':'ᴇ','f':'ғ','g':'ɢ','h':'ʜ',
-        'i':'ɪ','j':'ᴊ','k':'ᴋ','l':'ʟ','m':'ᴍ','n':'ɴ','o':'ᴏ','p':'ᴘ',
-        'q':'ǫ','r':'ʀ','s':'ꜱ','t':'ᴛ','u':'ᴜ','v':'ᴠ','w':'ᴡ','x':'x',
-        'y':'ʏ','z':'ᴢ'
-    };
-    return String(text).toLowerCase().split('').map(c => f[c] || c).join('');
-};
-
-// ============================================================
-// SYSTÈME DE TRAITEMENT PARALLÈLE PAR CONVERSATION
-// ============================================================
-// Principe : chaque JID (groupe ou privé) a sa propre queue indépendante.
-// → Les groupes ne se bloquent pas entre eux.
-// → Les commandes du owner ne sont pas bloquées par les messages d'un groupe actif.
-// → Concurrence max par JID = 1 (pas de doublon dans le même chat).
-// → Concurrence globale limitée à MAX_CONCURRENT pour protéger le VPS.
-
-const MAX_CONCURRENT   = 10;  // max de chats traités simultanément
-const MAX_QUEUE_PER_JID = 20; // max de messages en attente PAR chat
-const CMD_TIMEOUT_MS   = 12_000; // timeout commande (réduit de 25s à 12s)
-const MSG_TIMEOUT_MS   =  6_000; // timeout message normal
-
-// Une queue par JID
-const jidQueues    = new Map(); // jid → Array<{sock, msg}>
-const jidProcessing = new Set(); // JIDs en cours de traitement
-let   activeWorkers = 0;
-
-// Anti-doublon global (TTL 10 min)
-const globalProcessedIds        = new Set();
-const globalProcessedTimestamps = new Map();
-const GLOBAL_TTL = 10 * 60 * 1000;
-
-setInterval(() => {
-    const now = Date.now();
-    for (const [id, ts] of globalProcessedTimestamps) {
-        if (now - ts > GLOBAL_TTL) {
-            globalProcessedIds.delete(id);
-            globalProcessedTimestamps.delete(id);
-        }
-    }
-    // Nettoyer les queues vides
-    for (const [jid, q] of jidQueues) {
-        if (q.length === 0 && !jidProcessing.has(jid)) jidQueues.delete(jid);
-    }
-}, 5 * 60 * 1000);
-
-const markProcessed      = (id) => { globalProcessedIds.add(id); globalProcessedTimestamps.set(id, Date.now()); };
-const isAlreadyProcessed = (id) => globalProcessedIds.has(id);
-
-// Détermine si un message est une commande (prioritaire)
-const isCommandMsg = (msg) => {
-    const prefix = global.config?.prefix || '.';
-    const text =
-        msg.message?.conversation ||
-        msg.message?.extendedTextMessage?.text ||
-        msg.message?.imageMessage?.caption ||
-        msg.message?.videoMessage?.caption || '';
-    return text.trimStart().startsWith(prefix) || text.trimStart().startsWith('>');
-};
-
-// Traite la queue d'un JID donné
-async function processJidQueue(sock, jid) {
-    if (jidProcessing.has(jid)) return;
-    if (activeWorkers >= MAX_CONCURRENT) return;
-
-    const queue = jidQueues.get(jid);
-    if (!queue || queue.length === 0) return;
-
-    jidProcessing.add(jid);
-    activeWorkers++;
-
-    try {
-        while (queue.length > 0) {
-            const { msg } = queue.shift();
-            const isCmd   = isCommandMsg(msg);
-            const timeout = isCmd ? CMD_TIMEOUT_MS : MSG_TIMEOUT_MS;
-            try {
-                await Promise.race([
-                    handler.handleMessage(sock, msg),
-                    new Promise((_, rej) => setTimeout(() => rej(new Error(`timeout ${timeout}ms`)), timeout))
-                ]);
-            } catch (err) {
-                // Timeout silencieux pour les messages normaux, loggé pour les commandes
-                if (isCmd || !err.message?.includes('timeout')) {
-                    logError(`Handler [${jid.split('@')[0]}]`, err);
-                }
-            }
-        }
-    } finally {
-        jidProcessing.delete(jid);
-        activeWorkers = Math.max(0, activeWorkers - 1);
-        // Si d'autres JIDs attendent, les démarrer
-        schedulePendingQueues(sock);
-    }
-}
-
-// Lance les queues en attente dans la limite de MAX_CONCURRENT
-function schedulePendingQueues(sock) {
-    for (const [jid, queue] of jidQueues) {
-        if (activeWorkers >= MAX_CONCURRENT) break;
-        if (queue.length > 0 && !jidProcessing.has(jid)) {
-            processJidQueue(sock, jid).catch(err => logError('Worker Error', err));
-        }
-    }
-}
-// Ajoute un message à la queue de son JID
-function enqueueMessage(sock, msg) {
-    const jid = msg.key.remoteJid;
-    if (!jidQueues.has(jid)) jidQueues.set(jid, []);
-    const queue = jidQueues.get(jid);
-
-    if (queue.length >= MAX_QUEUE_PER_JID) {
-        _warn(`⚠️ [Queue] JID ${jid.split('@')[0]} saturé (${queue.length}), message ignoré.`);
-        return;
-    }
-
-    // PRIORITÉ : les commandes passent devant les messages normaux dans la queue du JID
-    if (isCommandMsg(msg)) {
-        queue.unshift({ sock, msg });
-    } else {
-        queue.push({ sock, msg });
-    }
-
-    processJidQueue(sock, jid).catch(err => logError('Queue Start Error', err));
-}
-
-function clearQueue() {
-    jidQueues.clear();
-    jidProcessing.clear();
-    activeWorkers = 0;
-}
-
-// ============================================================
-// NETTOYAGE PUPPETEER
-// ============================================================
+// --- NETTOYAGE PUPPETEER ---
 function cleanupPuppeteerCache() {
     try {
         const d = path.join(os.homedir(), '.cache', 'puppeteer');
@@ -269,30 +70,171 @@ function cleanupPuppeteerCache() {
 }
 
 // ============================================================
-// KEEP-ALIVE — FIX PRINCIPAL PERTE DE CONNEXION
-// WhatsApp déconnecte les sockets inactifs après ~3 min.
-// On envoie une présence toutes les 25s pour maintenir vivant.
+// STORE MESSAGES (anti-delete + retry)
 // ============================================================
-let keepAliveInterval = null;
+const store = {
+    messages: new Map(),
+    maxPerChat: 50,
+    bind(ev) {
+        ev.on('messages.upsert', ({ messages }) => {
+            for (const msg of messages) {
+                if (!msg.key?.id || !msg.message) continue;
+                const jid = msg.key.remoteJid;
+                if (!store.messages.has(jid)) store.messages.set(jid, new Map());
+                const chat = store.messages.get(jid);
+                chat.set(msg.key.id, msg);
+                if (chat.size > store.maxPerChat) {
+                    chat.delete(chat.keys().next().value);
+                }
+            }
+        });
+    }
+};
+global.store = store;
 
-function startKeepAlive(sock) {
-    stopKeepAlive();
-    keepAliveInterval = setInterval(async () => {
-        try {
-            await sock.sendPresenceUpdate('available');
-        } catch {
-            // Silencieux — la reconnexion gère si le socket est mort
+// ============================================================
+// SÉCURITÉ OWNER / SUPREME
+// ============================================================
+const normalizeNum = (jid) => {
+    if (!jid) return '';
+    return String(jid)
+        .replace(/:\d+@/, '@')   // FIX multi-device : retire :12@
+        .split('@')[0]
+        .replace(/\D/g, '');
+};
+
+global.isSupreme = (jid) => {
+    if (!jid) return false;
+    return normalizeNum(jid) === String(config.supremeNumber || '').replace(/\D/g, '');
+};
+
+global.isOwner = (jid) => {
+    if (!jid) return false;
+    const n = normalizeNum(jid);
+    if (n === String(config.supremeNumber || '').replace(/\D/g, '')) return true;
+    const raw = config.ownerNumber;
+    if (!raw) return false;
+    const owners = Array.isArray(raw) ? raw : [raw];
+    return owners.filter(Boolean).some(o => String(o).replace(/\D/g, '') === n);
+};
+
+// ============================================================
+// ANTI-DOUBLON PERSISTANT (survit aux reconnexions)
+// IDs gardés 10 min — évite de retraiter les commandes
+// si le bot se reconnecte dans les 10 minutes
+// ============================================================
+const processedIds  = new Set();
+const processedTs   = new Map();
+const PROCESSED_TTL = 10 * 60 * 1000; // 10 minutes
+
+setInterval(() => {
+    const now = Date.now();
+    for (const [id, ts] of processedTs) {
+        if (now - ts > PROCESSED_TTL) {
+            processedIds.delete(id);
+            processedTs.delete(id);
         }
-    }, 25_000);
-}
+    }
+}, 5 * 60 * 1000);
 
-function stopKeepAlive() {
-    if (keepAliveInterval) {
-        clearInterval(keepAliveInterval);
-        keepAliveInterval = null;
+const markSeen  = (id) => { processedIds.add(id); processedTs.set(id, Date.now()); };
+const alreadySeen = (id) => processedIds.has(id);
+
+// ============================================================
+// QUEUE PARALLÈLE PAR JID
+// Chaque groupe / contact a sa propre queue indépendante.
+// → Les groupes ne se bloquent pas entre eux.
+// → Les commandes sont prioritaires dans chaque queue.
+// ============================================================
+const MAX_CONCURRENT    = 8;   // chats traités en même temps max
+const MAX_PER_JID       = 15;  // messages en attente par chat max
+const CMD_TIMEOUT_MS    = 12_000;
+const MSG_TIMEOUT_MS    =  5_000;
+
+const jidQueues     = new Map();
+const jidProcessing = new Set();
+let   activeWorkers = 0;
+
+const isCmd = (msg) => {
+    const prefix = config?.prefix || '.';
+    const text =
+        msg.message?.conversation ||
+        msg.message?.extendedTextMessage?.text ||
+        msg.message?.imageMessage?.caption ||
+        msg.message?.videoMessage?.caption || '';
+    return text.trimStart().startsWith(prefix) || text.trimStart().startsWith('>');
+};
+
+async function processJidQueue(sock, jid) {
+    if (jidProcessing.has(jid) || activeWorkers >= MAX_CONCURRENT) return;
+    const queue = jidQueues.get(jid);
+    if (!queue?.length) return;
+
+    const myGeneration = sockGeneration; // snapshot de la génération actuelle
+    jidProcessing.add(jid);
+    activeWorkers++;
+    try {
+        while (queue.length) {
+            // Si le socket a été remplacé (reconnexion), on arrête ce worker
+            if (sockGeneration !== myGeneration) break;
+            const { msg } = queue.shift();
+            const timeout = isCmd(msg) ? CMD_TIMEOUT_MS : MSG_TIMEOUT_MS;
+            try {
+                await Promise.race([
+                    handler.handleMessage(sock, msg),
+                    new Promise((_, r) => setTimeout(() => r(new Error('timeout')), timeout))
+                ]);
+            } catch (err) {
+                if (!err.message?.includes('timeout')) logError('Handler', err);
+            }
+        }
+    } finally {
+        jidProcessing.delete(jid);
+        activeWorkers = Math.max(0, activeWorkers - 1);
+        // Lancer les queues en attente (seulement si on est encore sur la bonne génération)
+        if (sockGeneration === myGeneration) {
+            for (const [j, q] of jidQueues) {
+                if (activeWorkers >= MAX_CONCURRENT) break;
+                if (q.length && !jidProcessing.has(j)) {
+                    processJidQueue(sock, j).catch(e => logError('Worker', e));
+                }
+            }
+        }
     }
 }
 
+function enqueue(sock, msg) {
+    const jid = msg.key.remoteJid;
+    if (!jidQueues.has(jid)) jidQueues.set(jid, []);
+    const q = jidQueues.get(jid);
+    if (q.length >= MAX_PER_JID) return; // silencieux — groupe trop actif
+    // Commandes en tête de queue
+    isCmd(msg) ? q.unshift({ msg }) : q.push({ msg });
+    processJidQueue(sock, jid).catch(e => logError('Enqueue', e));
+}
+
+let sockGeneration = 0; // incrémenté à chaque reconnexion pour annuler les anciens workers
+
+function clearQueues() {
+    jidQueues.clear();
+    jidProcessing.clear();
+    activeWorkers = 0;
+    sockGeneration++; // invalide tous les workers de l'ancien socket
+}
+
+// ============================================================
+// KEEP-ALIVE (évite la déconnexion des sockets inactifs)
+// ============================================================
+let keepAliveTimer = null;
+const startKeepAlive = (sock) => {
+    stopKeepAlive();
+    keepAliveTimer = setInterval(() => {
+        sock.sendPresenceUpdate('available').catch(() => {});
+    }, 25_000);
+};
+const stopKeepAlive = () => {
+    if (keepAliveTimer) { clearInterval(keepAliveTimer); keepAliveTimer = null; }
+};
 // ============================================================
 // DÉMARRAGE BOT
 // ============================================================
@@ -304,112 +246,86 @@ let isShuttingDown = false;
 async function startBot() {
     if (isShuttingDown) return;
 
-    const sessionFolder = path.join(__dirname, global.config.sessionName || 'session');
+    const sessionFolder = path.resolve(__dirname, config.sessionName || 'session');
     fs.ensureDirSync(sessionFolder);
 
-    // ── Injection session via sessionID compressé ──
+    // Injection session via sessionID compressé (Katabump / Railway)
     if (config.sessionID && config.sessionID.includes('!')) {
         try {
-            const b64 = config.sessionID.split('!')[1];
-            const dec = zlib.gunzipSync(Buffer.from(b64, 'base64'));
+            const dec = zlib.gunzipSync(Buffer.from(config.sessionID.split('!')[1], 'base64'));
             fs.writeFileSync(path.join(sessionFolder, 'creds.json'), dec);
             _log('📡 [Session] Clés injectées depuis sessionID.');
         } catch (e) { _error('❌ [Session] Injection error:', e.message); }
     }
 
-    // ── FIX BAD MAC : purge des clés Signal corrompues ──
+    // FIX BAD MAC : purge des clés Signal corrompues (sans toucher creds.json)
     try {
         const credsPath = path.join(sessionFolder, 'creds.json');
         if (!fs.existsSync(credsPath)) {
             fs.emptyDirSync(sessionFolder);
             _log('🛡️ [Session] Première installation — session vierge.');
         } else {
-            const files = fs.readdirSync(sessionFolder);
-            let purged  = 0;
-            for (const file of files) {
-                if (
-                    file.startsWith('sender-key-') ||
-                    file.startsWith('session-') ||
-                    file.startsWith('app-state-sync-key-')
-                ) { fs.removeSync(path.join(sessionFolder, file)); purged++; }
+            let purged = 0;
+            for (const file of fs.readdirSync(sessionFolder)) {
+                if (file.startsWith('sender-key-') || file.startsWith('session-') || file.startsWith('app-state-sync-key-')) {
+                    fs.removeSync(path.join(sessionFolder, file));
+                    purged++;
+                }
             }
-            _log(purged > 0
-                ? `🧹 [Session] ${purged} clé(s) Signal purgée(s).`
-                : '✅ [Session] Session propre.');
+            _log(purged > 0 ? `🧹 [Session] ${purged} clé(s) purgée(s).` : '✅ [Session] Session propre.');
         }
-    } catch (e) { _error('❌ [Session] Erreur nettoyage:', e); }
+    } catch (e) { _error('❌ [Session] Erreur nettoyage:', e.message); }
 
     const { state, saveCreds } = await useMultiFileAuthState(sessionFolder);
     const { version }          = await fetchLatestBaileysVersion();
 
-    // ── Création du socket ──
     const sock = makeWASocket({
         version,
-        logger: pino({ level: 'silent' }),
-        printQRInTerminal: false,
+        logger:              pino({ level: 'silent' }),
+        printQRInTerminal:   false,
+        browser:             Browsers.baileys(),  // plus stable que ubuntu/Chrome
 
-        // FIX CONNEXION : Browsers.baileys() est plus stable que ubuntu('Chrome')
-        // ubuntu('Chrome') déclenche parfois des checks de sécurité WA → déconnexion
-        browser: Browsers.baileys(),
-
-        // FIX BAD MAC : makeCacheableSignalKeyStore évite les corruptions de clés
+        // FIX BAD MAC : store de clés avec cache
         auth: {
             creds: state.creds,
             keys:  makeCacheableSignalKeyStore(state.keys, pino({ level: 'silent' }))
         },
 
-        // FIX CONNEXION : keep-alive natif Baileys (complément au nôtre)
-        keepAliveIntervalMs: 20_000,
-
+        keepAliveIntervalMs:            20_000,   // keep-alive natif Baileys
         syncFullHistory:                false,
         markOnlineOnConnect:            true,
         generateHighQualityLinkPreview: true,
         shouldSyncHistoryMessage:       () => false,
+        retryRequestDelayMs:            1000,
+        maxMsgRetryCount:               3,
+        fireInitQueries:                false,
 
-        // FIX CONNEXION : moins de retries = moins de trafic = moins de risk ban/déco
-        retryRequestDelayMs: 1000,
-        maxMsgRetryCount:    3,
-
-        // FIX CONNEXION : réduit le trafic d'init
-        fireInitQueries: false,
-
-        // Cache groupe unifié avec handler.js
         cachedGroupMetadata: async (jid) => {
-            const cached = global.groupMetadataCache?.get(jid);
-            if (cached && Date.now() - cached.ts < 5 * 60 * 1000) return cached.data;
-            return undefined;
+            const c = global.groupMetadataCache?.get(jid);
+            return (c && Date.now() - c.ts < 5 * 60 * 1000) ? c.data : undefined;
         },
 
-        // Fix boutons/listes multi-device
         patchMessageBeforeSending: (msg) => {
             if (msg.buttonsMessage || msg.listMessage) {
-                msg = {
-                    viewOnceMessage: {
-                        message: {
-                            messageContextInfo: { deviceListMetadataVersion: 2 },
-                            ...msg
-                        }
-                    }
-                };
+                return { viewOnceMessage: { message: { messageContextInfo: { deviceListMetadataVersion: 2 }, ...msg } } };
             }
             return msg;
         },
 
-        // FIX CONNEXION : isJidBroadcast couvre status@broadcast + tous les autres broadcasts
         shouldIgnoreJid: (jid) => isJidBroadcast(jid),
 
         getMessage: async (key) => {
-            const msg = await global.store.loadMessage(key.remoteJid, key.id);
-            return msg?.message || { conversation: 'GhostG-X' };
+            const chat = store.messages.get(key.remoteJid);
+            return chat?.get(key.id)?.message || { conversation: 'GhostG-X' };
         }
     });
 
     sock.ev.on('creds.update', saveCreds);
-    global.store.bind(sock.ev);
+    store.bind(sock.ev);
 
-    // ── Pairing Code ──
+    // --- PAIRING CODE ---
     if (!sock.authState.creds.registered) {
-        const phone = String(global.config.supremeNumber || '').replace(/\D/g, '');
+        const phone = String(config.supremeNumber || '').replace(/\D/g, '');
         if (phone) {
             setTimeout(async () => {
                 try {
@@ -419,87 +335,89 @@ async function startBot() {
                     _log(`║   ᴠᴏᴛʀᴇ ᴄᴏᴅᴇ ᴅᴇ ᴊᴜᴍᴇʟᴀɢᴇ :        ║`);
                     _log(`║       ${String(code).padEnd(20)}   ║`);
                     _log(`╚════════════════════════════════════╝\n`);
-                } catch (err) { logError('Pairing Error', err); }
+                } catch (err) { logError('Pairing', err); }
             }, 3000);
         } else {
-            _error('❌ [Config] supremeNumber manquant — pairing code impossible.');
+            _error('❌ [Config] supremeNumber manquant — pairing impossible.');
         }
     }
 
-    // ── Événements connexion ──
+    // --- ÉVÉNEMENTS CONNEXION ---
     sock.ev.on('connection.update', async (update) => {
-        const { connection, lastDisconnect, qr } = update;
+        const { connection, lastDisconnect } = update;
 
-        if (qr) _log('📱 [QR] Scannez le QR code si le pairing ne fonctionne pas.');
         if (connection === 'connecting') _log('🔄 [Bot] Connexion en cours...');
 
         if (connection === 'close') {
             stopKeepAlive();
-            clearQueue();
+            clearQueues();
 
-            const error      = lastDisconnect?.error;
-            const statusCode = error?.output?.statusCode;
+            const code  = lastDisconnect?.error?.output?.statusCode;
+            const reason = lastDisconnect?.error?.message || 'inconnue';
+            _log(`🔴 [Bot] Déconnexion — code: ${code || 'N/A'} | ${reason}`);
 
-            _log(`🔴 [Bot] Connexion fermée — Code: ${statusCode || 'N/A'} | ${error?.message || 'raison inconnue'}`);
-
-            // Session expirée → purge + arrêt
-            if (statusCode === DisconnectReason.loggedOut) {
+            // Session expirée → purge et arrêt
+            if (code === DisconnectReason.loggedOut) {
                 isShuttingDown = true;
-                _log('🔴 [Bot] Session expirée. Purge du dossier session/ en cours...');
+                _log('🔴 Session expirée. Purge en cours...');
                 try { fs.emptyDirSync(sessionFolder); } catch {}
-                _log('✅ Session purgée. Relancez le bot pour rescanner.');
+                _log('✅ Session purgée. Relancez pour rescanner.');
                 return;
             }
 
-            // Restart propre demandé par Baileys (ex: stream-errored)
-            if (statusCode === DisconnectReason.restartRequired) {
-                _log('🔁 [Bot] Restart requis — reconnexion immédiate.');
-                setTimeout(() => startBot().catch(err => logError('Reconnexion Error', err)), 1000);
+            // Restart demandé par Baileys
+            if (code === DisconnectReason.restartRequired) {
+                _log('🔁 Restart requis — reconnexion immédiate.');
+                setTimeout(() => startBot().catch(e => logError('Reconnexion', e)), 1000);
                 return;
             }
 
-            // Trop de tentatives → process.exit
+            // Trop de tentatives
             if (reconnectAttempts >= MAX_RECONNECT) {
                 isShuttingDown = true;
-                _error(`🚨 [Bot] ${MAX_RECONNECT} tentatives échouées. Relancez manuellement.`);
+                _error(`🚨 ${MAX_RECONNECT} tentatives échouées. Relancez manuellement.`);
                 process.exit(1);
             }
 
             // Reconnexion avec backoff exponentiel
             reconnectAttempts++;
             const delay = Math.min(3000 * reconnectAttempts, MAX_RECONNECT_DELAY);
-            _log(`⚠️ [Bot] Reconnexion dans ${delay / 1000}s... (${reconnectAttempts}/${MAX_RECONNECT})`);
-            setTimeout(() => startBot().catch(err => logError('Reconnexion Error', err)), delay);
+            _log(`⚠️ Reconnexion dans ${delay / 1000}s... (${reconnectAttempts}/${MAX_RECONNECT})`);
+            setTimeout(() => startBot().catch(e => logError('Reconnexion', e)), delay);
 
         } else if (connection === 'open') {
             reconnectAttempts = 0;
             _log('\n✅ ɢʜᴏꜱᴛɢ-x ᴄᴏɴɴᴇᴄᴛᴇ́ !\n');
-
-            // Démarrer le keep-alive
             startKeepAlive(sock);
 
-            // FIX CODE 500 : attendre 5s que le socket soit VRAIMENT prêt
-            // avant d'envoyer des messages. Le code 500 = Connection Closed  // vient du fait qu'on envoie des messages trop tôt après l'open.
+            // FIX CODE 500 : attendre 5s avant d'envoyer des messages
+            // (le socket n'est pas encore prêt immédiatement après l'open)
             setTimeout(async () => {
                 try {
-                    const totalCmds = global.commands?.size || 0;
-                    const ownerNum  = String(global.config.supremeNumber || '');
-                    const rawId     = sock.user?.id || '';
-                    const botJid    = rawId.includes(':')
+                    const { loadCommands } = require('./utils/commandLoader');
+                    if (!global.commands || global.commands.size === 0) {
+                        global.commands = loadCommands();
+                    }
+                    const totalCmds = global.commands.size;
+
+                    const ownerNum = String(config.supremeNumber || '');
+                    // FIX : construction propre du botJid (multi-device safe)
+                    const rawId  = sock.user?.id || '';
+                    const botJid = rawId.includes(':')
                         ? rawId.split(':')[0] + '@s.whatsapp.net'
                         : rawId;
-                    const ownerJid  = `${ownerNum}@s.whatsapp.net`;
+                    const ownerJid = `${ownerNum}@s.whatsapp.net`;
 
                     const welcomeCaption =
                         `╭╼━≪• *ɢʜᴏsᴛɢ-x ɪs ᴀʟɪᴠᴇ* •≫━╾╮\n` +
                         `┃ *sᴛᴀᴛᴜᴛ* : 🟢 ᴏɴʟɪɴᴇ\n` +
                         `┃ *ᴍᴀɪᴛʀᴇ* : @${ownerNum}\n` +
-                        `┃ *ᴘʀᴇғɪxᴇ* : [ ${global.config.prefix || '.'} ]\n` +
+                        `┃ *ᴘʀᴇғɪxᴇ* : [ ${config.prefix || '.'} ]\n` +
                         `┃ *ᴄᴏᴍᴍᴀɴᴅᴇs* : ${totalCmds}\n` +
-                        `┃ *ᴍᴏᴅᴇ* : ${global.config.selfMode ? '🔒 ᴘʀɪᴠé' : '🌐 ᴘᴜʙʟɪᴄ'}\n` +
+                        `┃ *ᴍᴏᴅᴇ* : ${config.selfMode ? '🔒 ᴘʀɪᴠé' : '🌐 ᴘᴜʙʟɪᴄ'}\n` +
                         `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
-                        `📢 *ᴄʜᴀɪɴᴇ* : ${global.config.social?.channel || 'https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c'}\n` +
-                        `👥 *ɢʀᴏᴜᴘᴇ* : ${global.config.social?.group || 'https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf'}\n\n` +
+                        `📢 *ᴄʜᴀɪɴᴇ* : ${config.social?.channel || 'https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c'}\n` +
+                        `👥 *ɢʀᴏᴜᴘᴇ* : ${config.social?.group || 'https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf'}\n\n` +
                         `📖 _*"ᴊᴇ ᴘᴜɪs ᴛᴏᴜᴛ ᴘᴀʀ ᴄᴇʟᴜɪ ǫᴜɪ ᴍᴇ ғᴏʀᴛɪғɪᴇ"*_ ❤️✝️\n\n` +
                         `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
@@ -511,26 +429,24 @@ async function startBot() {
                             isForwarded: true,
                             forwardingScore: 999,
                             forwardedNewsletterMessageInfo: {
-                                newsletterJid:   global.config.social?.channelJid  || '120363425540434745@newsletter',
-                                newsletterName:  global.config.social?.channelName || 'ɢʜᴏsᴛɢ-x',
+                                newsletterJid:   config.social?.channelJid  || '120363425540434745@newsletter',
+                                newsletterName:  config.social?.channelName || 'ɢʜᴏsᴛɢ-x',
                                 serverMessageId: 143
                             }
                         }
                     }).catch(() => {});
-
-                    // Délai entre les envois pour éviter le rate-limit
-                    await new Promise(r => setTimeout(r, 1500));
+await new Promise(r => setTimeout(r, 1500));
 
                     await sock.sendMessage(ownerJid, {
                         text:
                             `📢 *ᴀʟᴇʀᴛᴇ ᴅᴇ ᴅᴇ́ᴍᴀʀʀᴀɢᴇ*\n\n` +
-                            `Le bot *ɢʜᴏsᴛɢ-x* est en ligne !\n` +
-                            `Mode : ${global.config.selfMode ? 'Privé 🔒' : 'Public 🌐'} | Commandes : ${totalCmds}`
+                            `*ɢʜᴏsᴛɢ-x* est en ligne !\n` +
+                            `Mode : ${config.selfMode ? 'Privé 🔒' : 'Public 🌐'} | Cmds : ${totalCmds}`
                     }).catch(() => {});
 
                     // Message déployeur — une seule fois
-                    const deployFlagPath = path.join(__dirname, 'database', '.deployed');
-                    if (!fs.existsSync(deployFlagPath)) {
+                    const deployFlag = path.join(__dirname, 'database', '.deployed');
+                    if (!fs.existsSync(deployFlag)) {
                         await new Promise(r => setTimeout(r, 2000));
                         await sock.sendMessage(ownerJid, {
                             text:
@@ -542,21 +458,19 @@ async function startBot() {
                                 `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n` +
                                 `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
                         }).catch(() => {});
-                        fs.writeFileSync(deployFlagPath, new Date().toISOString());
-                        _log('✅ [Community] Message déployeur envoyé.');
+                        fs.writeFileSync(deployFlag, new Date().toISOString());
                     }
 
-                } catch (err) { logError('Notification Error', err); }
-            }, 5000); // ← 5s de délai après connection open
+                } catch (err) { logError('Notification', err); }
+            }, 5000);
         }
     });
 
-    // ── Messages entrants ──
-    sock.ev.on('messages.upsert', async ({ messages, type }) => {
+    // --- MESSAGES ENTRANTS ---
+    sock.ev.on('messages.upsert', ({ messages, type }) => {
         if (type !== 'notify') return;
-
         const now    = Date.now();
-        const prefix = global.config.prefix || '.';
+        const prefix = config?.prefix || '.';
 
         for (const msg of messages) {
             try {
@@ -564,6 +478,7 @@ async function startBot() {
                 const jid = msg.key.remoteJid;
                 if (!jid || isJidBroadcast(jid)) continue;
 
+                // Extraction du texte
                 const text =
                     msg.message.conversation ||
                     msg.message.extendedTextMessage?.text ||
@@ -573,52 +488,53 @@ async function startBot() {
                     msg.message.listResponseMessage?.singleSelectReply?.selectedRowId ||
                     msg.message.templateButtonReplyMessage?.selectedId || '';
 
-                const senderJid = msg.key.participant || jid;
+                const senderJid  = msg.key.participant || jid;
+                const isCommand  = text.trimStart().startsWith(prefix) ||
+                                   (text.trimStart().startsWith('>') && global.isSupreme(senderJid));
 
-                // fromMe intelligent
-                const isCommand = text.startsWith(prefix) ||
-                    (text.startsWith('>') && global.isSupreme(senderJid));
+                // fromMe intelligent : bloque les messages normaux du bot,
+                // laisse passer les commandes du owner
                 if (msg.key.fromMe && !isCommand) continue;
 
-                // Filtre âge 60s
+                // Filtre d'âge : ignore les messages de plus de 60s
+                // (évite de retraiter l'historique au démarrage)
                 const msgTs = (msg.messageTimestamp || 0) * 1000;
                 if (msgTs && now - msgTs > 60_000) {
-                    markProcessed(msg.key.id);
+                    markSeen(msg.key.id);
                     continue;
                 }
 
-                // Anti-doublon
-                if (isAlreadyProcessed(msg.key.id)) continue;
+                // ANTI-DOUBLON PERSISTANT : survit aux reconnexions
+                // Si le bot se reconnecte en moins de 10 min, les IDs déjà
+                // traités sont toujours en mémoire → pas de double traitement
+                if (alreadySeen(msg.key.id)) continue;
+                markSeen(msg.key.id);
 
-                // Queue du JID saturée — vérifiée dans enqueueMessage()
+                enqueue(sock, msg);
 
-                markProcessed(msg.key.id);
-                enqueueMessage(sock, msg);
-
-            } catch (e) { logError('Upsert Loop Error', e); }
+            } catch (e) { logError('Upsert Loop', e); }
         }
-        // Pas de processQueue global — chaque JID gère sa propre queue
     });
 
-    // Anti-delete
+    // --- ANTI-DELETE ---
     sock.ev.on('messages.delete', async (update) => {
-        try { await handler.handleAntiDelete(sock, update); } catch (e) { logError('AntiDelete Event', e); }
+        try { await handler.handleAntiDelete(sock, update); } catch (e) { logError('AntiDelete', e); }
     });
 
-    // Welcome / Goodbye
+    // --- WELCOME / GOODBYE ---
     sock.ev.on('group-participants.update', async (u) => {
-        try { await handler.handleGroupUpdate(sock, u); } catch (e) { logError('GroupUpdate Event', e); }
+        try { await handler.handleGroupUpdate(sock, u); } catch (e) { logError('GroupUpdate', e); }
     });
 
-    // Anti-call
+    // --- ANTI-CALL ---
     sock.ev.on('call', async (calls) => {
-        if (!global.config.anticall) return;
+        if (!config.anticall) return;
         for (const call of calls) {
             try {
                 if (call.status === 'offer') {
                     await sock.rejectCall(call.id, call.from);
                     await sock.sendMessage(call.from, {
-                        text: `⚠️ *${toSmallCaps('appels interdits par ghostg-x security')}*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+                        text: `⚠️ *ᴀᴘᴘᴇʟs ɪɴᴛᴇʀᴅɪᴛs ᴘᴀʀ ɢʜᴏsᴛɢ-x ꜱᴇᴄᴜʀɪᴛʏ*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
                     });
                 }
             } catch {}
@@ -632,7 +548,7 @@ async function startBot() {
 // LANCEMENT
 // ============================================================
 cleanupPuppeteerCache();
-startBot().catch(err => logError('Global Boot Error', err));
+startBot().catch(err => logError('Global Boot', err));
 
 process.on('uncaughtException', (err) => {
     const m = err.message || '';
@@ -648,7 +564,7 @@ process.on('unhandledRejection', (reason) => {
     }
 });
 
-process.on('SIGINT',  () => { isShuttingDown = true; stopKeepAlive(); _log('\n👋 [Bot] Arrêt propre.'); process.exit(0); });
-process.on('SIGTERM', () => { isShuttingDown = true; stopKeepAlive(); _log('\n👋 [Bot] Arrêt propre.'); process.exit(0); });
+process.on('SIGINT',  () => { isShuttingDown = true; stopKeepAlive(); _log('\n👋 Arrêt propre.'); process.exit(0); });
+process.on('SIGTERM', () => { isShuttingDown = true; stopKeepAlive(); _log('\n👋 Arrêt propre.'); process.exit(0); });
 
-module.exports = { store: global.store };
+module.exports = { store };
