@@ -445,7 +445,7 @@ await new Promise(r => setTimeout(r, 1500));
                             `✅ *ɢʜᴏsᴛɢ-x* ➔ ᴇɴ ʟɪɢɴᴇ\n` +
 `🌐 *ᴍᴏᴅᴇ* : ${config.selfMode ? 'Privé' : 'Public'}\n` +
 `🤖 *ᴄᴍᴅs* : ${totalCmds} chargées`
-               ).catch(() => {});
+               }).catch(() => {});
 
                     // Message déployeur — une seule fois
                     const deployFlag = path.join(__dirname, 'database', '.deployed');
