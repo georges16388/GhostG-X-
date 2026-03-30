@@ -1,5 +1,3 @@
-
-
 /**
  * ɢʜᴏꜱᴛɢ-x ᴍᴅ - ᴍᴀɪɴ ᴇɴᴛʀʏ ᴘᴏɪɴᴛ
  * ✅ V5.5 SUPREME — Anti-déconnexion blindé
@@ -99,8 +97,15 @@ global.store = {
 // ============================================================
 // SÉCURITÉ OWNER / SUPREME
 // ============================================================
-const normalizeNum = (jid) =>
-    String(jid || '').replace(/:[0-9]+@/, '@').split('@')[0].replace(/\D/g, '');
+const normalizeNum = (jid) => {
+    // FIX MULTI-DEVICE : :[0-9]+@ doit être une vraie regex JS, pas une string
+    // '22651622652:12@s.whatsapp.net' → retire ':12@' → split('@')[0] → garde chiffres
+    if (!jid) return '';
+    return String(jid)
+        .replace(/:\d+@/, '@')   // retire le suffixe multi-device :XX
+        .split('@')[0]             // retire le domaine
+        .replace(/\D/g, '');      // garde uniquement les chiffres
+};
 
 global.isSupreme = (jid) => {
     if (!jid) return false;
@@ -110,9 +115,12 @@ global.isSupreme = (jid) => {
 global.isOwner = (jid) => {
     if (!jid) return false;
     const n = normalizeNum(jid);
-    if (n === String(global.config.supremeNumber).replace(/\D/g, '')) return true;
-    const owners = Array.isArray(global.config.ownerNumber)
-        ? global.config.ownerNumber : [global.config.ownerNumber];
+    // Supreme passe toujours
+    if (n === String(global.config.supremeNumber || '').replace(/\D/g, '')) return true;
+    // Sécurise ownerNumber quel que soit son format
+    const raw = global.config.ownerNumber;
+    if (!raw) return false;
+    const owners = Array.isArray(raw) ? raw : [raw];
     return owners.filter(Boolean).some(o => String(o).replace(/\D/g, '') === n);
 };
 
@@ -215,7 +223,7 @@ function startKeepAlive(sock) {
         try {
             await sock.sendPresenceUpdate('available');
         } catch {
-            // Silencieux — la reconnexion gère si le socket est mort
+ // Silencieux — la reconnexion gère si le socket est mort
         }
     }, 25_000);
 }
@@ -412,69 +420,77 @@ async function startBot() {
             // Démarrer le keep-alive
             startKeepAlive(sock);
 
-            try {
-                const totalCmds = global.commands?.size || 0;
-                const ownerNum  = String(global.config.supremeNumber || '');
-                const rawId     = sock.user?.id || '';
-                const botJid    = rawId.includes(':')
-                    ? rawId.split(':')[0] + '@s.whatsapp.net'
-                    : rawId;
-                const ownerJid  = `${ownerNum}@s.whatsapp.net`;
+            // FIX CODE 500 : attendre 5s que le socket soit VRAIMENT prêt
+            // avant d'envoyer des messages. Le code 500 = Connection Closed
+            // vient du fait qu'on envoie des messages trop tôt après l'open.
+            setTimeout(async () => {
+                try {
+                    const totalCmds = global.commands?.size || 0;
+                    const ownerNum  = String(global.config.supremeNumber || '');
+                    const rawId     = sock.user?.id || '';
+                    const botJid    = rawId.includes(':')
+                        ? rawId.split(':')[0] + '@s.whatsapp.net'
+                        : rawId;
+                    const ownerJid  = `${ownerNum}@s.whatsapp.net`;
 
-                const welcomeCaption =
-                    `╭╼━≪• *ɢʜᴏsᴛɢ-x ɪs ᴀʟɪᴠᴇ* •≫━╾╮\n` +
-                    `┃ *sᴛᴀᴛᴜᴛ* : 🟢 ᴏɴʟɪɴᴇ\n` +
-                    `┃ *ᴍᴀɪᴛʀᴇ* : @${ownerNum}\n` +
-                    `┃ *ᴘʀᴇғɪxᴇ* : [ ${global.config.prefix || '.'} ]\n` +
-                    `┃ *ᴄᴏᴍᴍᴀɴᴅᴇs* : ${totalCmds}\n` +
-                    `┃ *ᴍᴏᴅᴇ* : ${global.config.selfMode ? '🔒 ᴘʀɪᴠé' : '🌐 ᴘᴜʙʟɪᴄ'}\n` +
-                    `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
-                    `📢 *ᴄʜᴀɪɴᴇ* : ${global.config.social?.channel || 'https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c'}\n` +
-                    `👥 *ɢʀᴏᴜᴘᴇ* : ${global.config.social?.group || 'https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf'}\n\n` +
-                    `📖 _*"ᴊᴇ ᴘᴜɪs ᴛᴏᴜᴛ ᴘᴀʀ ᴄᴇʟᴜɪ ǫᴜɪ ᴍᴇ ғᴏʀᴛɪғɪᴇ"*_ ❤️✝️\n\n` +
-                    `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+                    const welcomeCaption =
+                        `╭╼━≪• *ɢʜᴏsᴛɢ-x ɪs ᴀʟɪᴠᴇ* •≫━╾╮\n` +
+                        `┃ *sᴛᴀᴛᴜᴛ* : 🟢 ᴏɴʟɪɴᴇ\n` +
+                        `┃ *ᴍᴀɪᴛʀᴇ* : @${ownerNum}\n` +
+                        `┃ *ᴘʀᴇғɪxᴇ* : [ ${global.config.prefix || '.'} ]\n` +
+                        `┃ *ᴄᴏᴍᴍᴀɴᴅᴇs* : ${totalCmds}\n` +
+                        `┃ *ᴍᴏᴅᴇ* : ${global.config.selfMode ? '🔒 ᴘʀɪᴠé' : '🌐 ᴘᴜʙʟɪᴄ'}\n` +
+                        `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
+                        `📢 *ᴄʜᴀɪɴᴇ* : ${global.config.social?.channel || 'https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c'}\n` +
+                        `👥 *ɢʀᴏᴜᴘᴇ* : ${global.config.social?.group || 'https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf'}\n\n` +
+                        `📖 _*"ᴊᴇ ᴘᴜɪs ᴛᴏᴜᴛ ᴘᴀʀ ᴄᴇʟᴜɪ ǫᴜɪ ᴍᴇ ғᴏʀᴛɪғɪᴇ"*_ ❤️✝️\n\n` +
+                        `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
-                await sock.sendMessage(botJid, {
-                    image: { url: 'https://files.catbox.moe/2fmwpu.jpg' },
-                    caption: welcomeCaption,
-                    contextInfo: {
-                        mentionedJid: [botJid, ownerJid],
-                        isForwarded: true,
-                        forwardingScore: 999,
-                        forwardedNewsletterMessageInfo: {
-                            newsletterJid:   global.config.social?.channelJid  || '120363425540434745@newsletter',
-                            newsletterName:  global.config.social?.channelName || 'ɢʜᴏsᴛɢ-x',
-                            serverMessageId: 143
+                    await sock.sendMessage(botJid, {
+                        image: { url: 'https://files.catbox.moe/2fmwpu.jpg' },
+                        caption: welcomeCaption,
+                        contextInfo: {
+                            mentionedJid: [botJid, ownerJid],
+                            isForwarded: true,
+                            forwardingScore: 999,
+                            forwardedNewsletterMessageInfo: {
+                                newsletterJid:   global.config.social?.channelJid  || '120363425540434745@newsletter',
+                                newsletterName:  global.config.social?.channelName || 'ɢʜᴏsᴛɢ-x',
+                                serverMessageId: 143
+                            }
                         }
-                    }
-                }).catch(() => {});
+                    }).catch(() => {});
 
-                await sock.sendMessage(ownerJid, {
-                    text:
-                        `📢 *ᴀʟᴇʀᴛᴇ ᴅᴇ ᴅᴇ́ᴍᴀʀʀᴀɢᴇ*\n\n` +
-                        `Le bot *ɢʜᴏsᴛɢ-x* est en ligne !\n` +
-                        `Mode : ${global.config.selfMode ? 'Privé 🔒' : 'Public 🌐'} | Commandes : ${totalCmds}`
-                }).catch(() => {});
+                    // Délai entre les envois pour éviter le rate-limit
+                    await new Promise(r => setTimeout(r, 1500));
 
-                // Message déployeur — une seule fois
-                const deployFlagPath = path.join(__dirname, 'database', '.deployed');
-                if (!fs.existsSync(deployFlagPath)) {
-                    await new Promise(r => setTimeout(r, 2000));
                     await sock.sendMessage(ownerJid, {
                         text:
-                            `╭╼━≪• 🌐 *ʙɪᴇɴᴠᴇɴᴜᴇ ᴅᴀɴs ɢʜᴏsᴛɢ-x* •≫━╾╮\n` +
-                            `┃ Merci d'avoir déployé *ɢʜᴏsᴛɢ-x* ! 🙏🏾\n┃\n` +
-                            `┃ 👥 https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf\n` +
-                            `┃ 📢 https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c\n┃\n` +
-                            `┃ ❤️ _Ce message ne s'affiche qu'une seule fois._\n` +
-                            `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n` +
-                            `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+                            `📢 *ᴀʟᴇʀᴛᴇ ᴅᴇ ᴅᴇ́ᴍᴀʀʀᴀɢᴇ*\n\n` +
+                            `Le bot *ɢʜᴏsᴛɢ-x* est en ligne !\n` +
+                            `Mode : ${global.config.selfMode ? 'Privé 🔒' : 'Public 🌐'} | Commandes : ${totalCmds}`
                     }).catch(() => {});
-                    fs.writeFileSync(deployFlagPath, new Date().toISOString());
-                    _log('✅ [Community] Message déployeur envoyé.');
-                }
 
-            } catch (err) { logError('Notification Error', err); }
+                    // Message déployeur — une seule fois
+                    const deployFlagPath = path.join(__dirname, 'database', '.deployed');
+                    if (!fs.existsSync(deployFlagPath)) {
+                        await new Promise(r => setTimeout(r, 2000));
+                        await sock.sendMessage(ownerJid, {
+                            text:
+                                `╭╼━≪• 🌐 *ʙɪᴇɴᴠᴇɴᴜᴇ ᴅᴀɴs ɢʜᴏsᴛɢ-x* •≫━╾╮\n` +
+                                `┃ Merci d'avoir déployé *ɢʜᴏsᴛɢ-x* ! 🙏🏾\n┃\n` +
+                                `┃ 👥 https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf\n` +
+                                `┃ 📢 https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c\n┃\n` +
+                                `┃ ❤️ _Ce message ne s'affiche qu'une seule fois._\n` +
+                                `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n` +
+                                `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+                        }).catch(() => {});
+                        fs.writeFileSync(deployFlagPath, new Date().toISOString());
+                        _log('✅ [Community] Message déployeur envoyé.');
+                    }
+
+                } catch (err) { logError('Notification Error', err); }
+            }, 5000); // ← 5s de délai après connection open
         }
     });
 
@@ -581,7 +597,7 @@ process.on('unhandledRejection', (reason) => {
     }
 });
 
-process.on('SIGINT',  () => { isShuttingDown = true; stopKeepAlive(); _log('\n [Bot] Arrêt propre.'); process.exit(0); });
-process.on('SIGTERM', () => { isShuttingDown = true; stopKeepAlive(); _log('\n [Bot] Arrêt propre.'); process.exit(0); });
+process.on('SIGINT',  () => { isShuttingDown = true; stopKeepAlive(); _log('\n👋 [Bot] Arrêt propre.'); process.exit(0); });
+process.on('SIGTERM', () => { isShuttingDown = true; stopKeepAlive(); _log('\n👋 [Bot] Arrêt propre.'); process.exit(0); });
 
 module.exports = { store: global.store };
