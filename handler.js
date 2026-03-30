@@ -5,11 +5,6 @@ const { loadCommands } = require('./utils/commandLoader');
 const { createStickerBuffer } = require('./utils/sticker');
 
 // ============================================================
-// INITIALISATION DES COMMANDES
-// ============================================================
-global.commands = loadCommands();
-
-// ============================================================
 // SYSTÈME ANTI-SPAM / ANTI-FLOOD
 // ============================================================
 const spamTracker = new Map();   // { jid: { count, firstMsg, warned } }
@@ -201,21 +196,24 @@ const handleMessage = async (sock, msg) => {
 
         const body = getText(msg.message).trim();
 
-        // FIX fromMe : on bloque uniquement si c'est un vrai message du bot (pas du owner)
-        // En multi-device, fromMe = true pour tous les appareils liés
-        // On laisse passer uniquement si le sender n'est PAS le bot lui-même
-        const botNorm = normalizeJid(sock.user?.id);
+        // Normalisation des JIDs
+        const botNorm    = normalizeJid(sock.user?.id);
         const senderNorm = normalizeJid(sender);
-        if (msg.key.fromMe && senderNorm === botNorm) return;
 
-        // Vérification owner/supreme avec fix multi-device
-        const supremeNorm = String(config?.supremeNumber || '').replace(/\D/g, '');
+        // Vérification owner/supreme — AVANT le filtre fromMe
+        // (le owner doit pouvoir envoyer des commandes même si fromMe=true)
+        const supremeNorm  = String(config?.supremeNumber || '').replace(/\D/g, '');
         const ownerNumbers = Array.isArray(config?.ownerNumber)
             ? config.ownerNumber
             : [config?.ownerNumber].filter(Boolean);
 
-        const isSupreme = supremeNorm && senderNorm === supremeNorm;
+        const isSupreme   = supremeNorm && senderNorm === supremeNorm;
         const ownerStatus = isSupreme || ownerNumbers.some(o => String(o).replace(/\D/g, '') === senderNorm);
+
+        // FIX fromMe : bloque les messages normaux du bot lui-même (évite les boucles)
+        // EXCEPTION : le owner/supreme passe TOUJOURS, même si fromMe=true
+        // (cas multi-device où fromMe=true sur tous les appareils liés)
+        if (msg.key.fromMe && !ownerStatus && senderNorm === botNorm) return;
 
         // Préfixe & parsing commande
         let activePrefix = prefix;
@@ -248,7 +246,7 @@ const handleMessage = async (sock, msg) => {
                 return p?.admin === 'admin' || p?.admin === 'superadmin';
               })()
             : false;
-        // ============================================================
+// ============================================================
         // PROTECTIONS GROUPE — actives même en selfMode
         // ============================================================
 
@@ -421,8 +419,8 @@ const handleMessage = async (sock, msg) => {
 
         // ============================================================
         // EXÉCUTION COMMANDE
-        // ============================================================
-        if (!isCmd || !commandName) return;
+        // ==========================================================
+if (!isCmd || !commandName) return;
 
         // Recharge si commandes pas encore prêtes
         if (!global.commands || global.commands.size === 0) {
@@ -567,6 +565,7 @@ const handleAntiDelete = async (sock, update) => {
         }
     }
 };
+
 // ============================================================
 // GROUP UPDATE HANDLER — WELCOME / GOODBYE
 // ============================================================
