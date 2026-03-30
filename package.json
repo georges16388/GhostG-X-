@@ -1,7 +1,7 @@
 {
     "name": " ghostg-x md whatsapp-md-bot",
     "version": "1.0.0",
-    "description": "WhatsApp MD-Style Multi-Command Bot with Baileys",
+    "description": "Un bot WhatsApp Muti-Device fait avec Baileys",
     "main": "index.js",
     "type": "commonjs",
     "scripts": {
