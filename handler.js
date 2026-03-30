@@ -1,5 +1,3 @@
-
-
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 const database = require('./database');
 const groupStats = require('./utils/groupstats');
@@ -84,8 +82,13 @@ const canReact = (jid) => {
 
 // FIX MULTI-DEVICE : supprime le suffixe :XX avant extraction du numéro
 const normalizeJid = (jid) => {
+    // FIX MULTI-DEVICE : regex correcte pour retirer le suffixe :XX
+    // '22651622652:12@s.whatsapp.net' → '22651622652'
     if (!jid) return null;
-    return jid.replace(/:[0-9]+@/, '@').split('@')[0].replace(/\D/g, '');
+    return String(jid)
+        .replace(/:\d+@/, '@')   // retire :12@ (multi-device)
+        .split('@')[0]             // retire le domaine
+        .replace(/\D/g, '');      // garde uniquement les chiffres
 };
 
 const toSmallCaps = (text) => {
@@ -231,8 +234,7 @@ const handleMessage = async (sock, msg) => {
         // ============================================================
         // PROTECTIONS GROUPE — actives même en selfMode
         // ============================================================
-
-        // ── ANTI-SPAM / FLOOD ──
+// ── ANTI-SPAM / FLOOD ──
         if (isGroup && !ownerStatus && !adminStatus) {
             try {
                 if (checkSpam(sender)) {
@@ -305,11 +307,18 @@ const handleMessage = async (sock, msg) => {
                 }
             } catch (e) { console.error('❌ AntiGStatus Error:', e); }
         }
- // ============================================================
-        // SELFMODE : bloque commandes + features pour non-owners
-        // Les protections groupe ci-dessus restent toujours actives
+
+        // ============================================================
+        // SELFMODE : comportement précis
+        // - selfMode=false  → tout le monde peut utiliser le bot
+        // - selfMode=true   → seul le owner/supreme peut utiliser le bot
+        //                     les AUTRES sont ignorés (pas de réponse)
+        // Le owner répond TOUJOURS, selfMode true ou false, en groupe ou en privé.
+        // Les protections groupe (antilink, antispam...) restent actives même en selfMode.
         // ============================================================
         if (config?.selfMode && !ownerStatus) return;
+        // IMPORTANT : si !selfMode, TOUT le monde (y compris autres personnes) peut utiliser le bot.
+        // Si selfMode=true, seul ownerStatus=true passe cette ligne.
 
         // ── TIC-TAC-TOE (interception avant commandes) ──
         // NOTE : placé APRÈS selfMode pour que les non-owners ne puissent pas jouer en selfMode
@@ -548,21 +557,43 @@ const handleGroupUpdate = async (sock, update) => {
     if (!_sockRef) _sockRef = sock;
 
     const { id, participants, action } = update;
+
+    // FIX 1 : valider tous les champs essentiels
     if (!id || !participants?.length || !action) return;
+
+    // FIX 2 : Baileys émet aussi "promote" et "demote" (changement admin).
+    // Ces actions NE doivent PAS déclencher un welcome/goodbye.
+    // On ne traite que "add" et "remove".
+    if (action !== 'add' && action !== 'remove') return;
 
     try {
         const groupSettings = database.getGroupSettings(id) || {};
-        const config = global.config;
-        const metadata = await getGroupMetadata(sock, id);
-        const groupName = metadata.subject || 'Groupe';
-        const groupDesc = metadata.desc || toSmallCaps('aucune description.');
+        const config        = global.config;
+
+        // FIX 3 : récupérer la metadata avec un catch propre.
+        // Si ça échoue (groupe inconnu, bot expulsé), on sort proprement.
+        const metadata = await getGroupMetadata(sock, id).catch(() => null);
+        if (!metadata) return;
+
+        const groupName   = metadata.subject || 'Groupe';
+        // FIX 4 : desc peut être un Buffer dans certaines versions de Baileys
+        const groupDesc   = (typeof metadata.desc === 'string' ? metadata.desc : '') || toSmallCaps('aucune description.');
+        // FIX 5 : memberCount APRÈS l'action (Baileys met à jour participants avant l'event)
         const memberCount = metadata.participants.length;
         const time = new Date().toLocaleTimeString('fr-FR', { timeZone: 'Africa/Ouagadougou' });
         const date = new Date().toLocaleDateString('fr-FR', { timeZone: 'Africa/Ouagadougou' });
 
         for (const user of participants) {
+            // FIX 6 : user peut être mal formé — on valide
+            if (!user || typeof user !== 'string') continue;
             const userNum = user.split('@')[0];
+            if (!userNum) continue;
             const userTag = `@${userNum}`;
+
+            // FIX 7 : ignorer les actions du bot lui-même pour éviter un welcome au bot
+            const botNorm  = normalizeJid(sock.user?.id);
+            const userNorm = normalizeJid(user);
+            if (userNorm === botNorm) continue;
 
             try {
                 // ── WELCOME ──
@@ -589,7 +620,7 @@ const handleGroupUpdate = async (sock, update) => {
                         .replace(/@user/g, userTag)
                         .replace(/#groupName/g, groupName)
                         .replace(/#groupDesc/g, groupDesc)
-                        .replace(/#memberCount/g, memberCount)
+                        .replace(/#memberCount/g, String(memberCount))
                         .replace(/#time/g, time)
                         .replace(/#date/g, date);
 
@@ -606,7 +637,7 @@ const handleGroupUpdate = async (sock, update) => {
                         config?.defaultGroupSettings?.goodbyeMessage ||
                         `*╭╼━≪• 🥀 ᴀᴜ ʀᴇᴠᴏɪʀ •≫━╾╮*\n` +
                         `┃ 👋🏾 *ᴍᴇᴍʙʀᴇ* : @user\n` +
-                        `┃ 🚮 ᴛᴜ ɴᴇ ɴᴏᴜs ᴍᴀɴǫᴜᴇʀᴀ ᴊᴀᴍᴀɪs\n` +
+                        `┃ 🚮 ɴᴇ ɴᴏᴜs ᴍᴀɴǫᴜᴇʀᴀ ᴊᴀᴍᴀɪs\n` +
                         `┃ 👤 *ᴍᴇᴍʙʀᴇs ʀᴇsᴛᴀɴᴛs* : #memberCount\n` +
                         `┃ ⏰ *ʜᴇᴜʀᴇ* : #time\n` +
                         `╰━━━━━━━━━━━━━━━━━━━━╯\n` +
@@ -615,7 +646,7 @@ const handleGroupUpdate = async (sock, update) => {
                     text = text
                         .replace(/@user/g, userTag)
                         .replace(/#groupName/g, groupName)
-                        .replace(/#memberCount/g, memberCount)
+                        .replace(/#memberCount/g, String(memberCount))
                         .replace(/#time/g, time)
                         .replace(/#date/g, date);
 
