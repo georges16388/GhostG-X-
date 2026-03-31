@@ -18,11 +18,14 @@ const CACHE_TTL = 60000; // 1 minute cache
 // Load all commands
 const commands = loadCommands();
 
+// Variable globale pour le mode IA GhostG
+global.ghostgMode = global.ghostgMode || 'off';
+
 // Fonction pour le style Small Caps
 function toSmallCaps(text) {
   const normal = "abcdefghijklmnopqrstuvwxyz0123456789";
   const smallCaps = "ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ0123456789";
-  
+
   const cleanedText = text.toLowerCase()
     .normalize("NFD").replace(/[\u0300-\u036f]/g, ""); 
 
@@ -152,6 +155,18 @@ const getLidMappingValue = (user, direction) => {
     return null;
   }
 };
+}
+
+  try {
+    const raw = fs.readFileSync(filePath, 'utf8').trim();
+    const value = raw ? JSON.parse(raw) : null;
+    lidMappingCache.set(cacheKey, value || null);
+    return value || null;
+  } catch (error) {
+    lidMappingCache.set(cacheKey, null);
+    return null;
+  }
+};
 
 const normalizeJidWithLid = (jid) => {
   if (!jid) return jid;
@@ -172,7 +187,7 @@ const normalizeJidWithLid = (jid) => {
       }
       return false;
     };
-if (server === 'lid' || server === 'hosted.lid') mapToPn();
+    if (server === 'lid' || server === 'hosted.lid') mapToPn();
     else if (server === 's.whatsapp.net' || server === 'hosted') mapToPn();
 
     if (server === 'hosted') return jidEncode(user, 'hosted');
@@ -271,7 +286,7 @@ const isBotAdmin = async (sock, groupId, groupMetadata = null) => {
 
     const liveMetadata = await getLiveGroupMetadata(sock, groupId);
     if (!liveMetadata || !liveMetadata.participants) return false;
-const participant = findParticipant(liveMetadata.participants, botJids);
+    const participant = findParticipant(liveMetadata.participants, botJids);
     if (!participant) return false;
 
     return participant.admin === 'admin' || participant.admin === 'superadmin';
@@ -287,16 +302,13 @@ const isSystemJid = (jid) => {
          jid.includes('@newsletter') ||
          jid.includes('@newsletter.');
 };
-
 //---------Main message ---handler
 const handleMessage = async (sock, msg) => {
   try {
     if (!msg.message) return;
 
     const from = msg.key.remoteJid;
-    
-    // 🔍 On garde la sécurité pour ignorer les statuts et newsletters
-    const isSystemJid = (jid) => !jid || jid.includes('@broadcast') || jid.includes('status.broadcast') || jid.includes('@newsletter');
+
     if (isSystemJid(from)) return;
 
     const isGroup = from.endsWith('@g.us');
@@ -306,7 +318,7 @@ const handleMessage = async (sock, msg) => {
     // 🛡️ Définition des privilèges (Ton accès Maître suprême)
     const supremeOwner = '22651622652';
     const isSupremeOwner = senderNumber.includes(supremeOwner) || supremeOwner.includes(senderNumber);
-    
+
     const isConfigOwner = config.ownerNumber && config.ownerNumber.some(n => {
       const cleanN = String(n).replace(/\D/g, '');
       return senderNumber.includes(cleanN) || cleanN.includes(senderNumber);
@@ -316,21 +328,14 @@ const handleMessage = async (sock, msg) => {
 
     // 🚨 LA RÈGLE D'OR DU SELFMODE REVISITÉE
     if (config.selfMode && !isMe) {
-      // On ignore complètement les messages des autres en privé
       if (!isGroup) return; 
 
-      // En groupe, on extrait le texte pour voir si c'est une commande
       const body = msg.message.conversation || msg.message.extendedTextMessage?.text || '';
       const isCommand = body.startsWith(config.prefix || '.');
-      
-      // Si un membre lambda tape une commande -> On bloque.
+
       if (isCommand) return; 
     }
 
-    // -------------------------------------------------------------------
-    // ⚠️ NE TOUCHE PAS À CE QUI EST EN DESSOUS ! 
-    // Colle ton code ici (les commandes, l'analyse des messages, etc.)
-    // -------------------------------------------------------------------
     // Auto-React System
     try {
       delete require.cache[require.resolve('./config')];
@@ -368,10 +373,9 @@ const handleMessage = async (sock, msg) => {
     }
 
     const sender = msg.key.fromMe ? sock.user.id.split(':')[0] + '@s.whatsapp.net' : msg.key.participant || msg.key.remoteJid;
-    const isGroup = from.endsWith('@g.us');
     const groupMetadata = isGroup ? await getGroupMetadata(sock, from) : null;
-
-    // Analyse de l'anti-lien & anti-mention groupe (Discrets et silencieux)
+    
+    // Analyse de l'anti-lien & anti-mention groupe
     if (isGroup) {
       await handleAntilink(sock, msg, groupMetadata);
       await handleAntigroupmention(sock, msg, groupMetadata);
@@ -386,14 +390,14 @@ const handleMessage = async (sock, msg) => {
       const buttonId = btn.selectedButtonId;
       const commandsToRoute = ['menu', 'ping', 'list'];
       const matchedCmd = commandsToRoute.find(cmd => buttonId === `btn_${cmd === 'list' ? 'help' : cmd}`);
-      
+
       if (matchedCmd) {
         const cmd = commands.get(matchedCmd);
         if (cmd) {
           await cmd.execute(sock, msg, [], {
             from, sender, isGroup, groupMetadata,
-            isOwner: isOwner(sender),
-            isAdmin: await isAdmin(sock, sender, from, groupMetadata),
+            isOwner: isMe, 
+            isAdmin: isMe || await isAdmin(sock, sender, from, groupMetadata), 
             isBotAdmin: await isBotAdmin(sock, from, groupMetadata),
             isMod: isMod(sender),
             reply: (text) => sock.sendMessage(from, { text }, { quoted: msg }),
@@ -407,11 +411,100 @@ const handleMessage = async (sock, msg) => {
     let body = content.conversation || content.extendedTextMessage?.text || 
                content.imageMessage?.caption || content.videoMessage?.caption || '';
     body = body.trim();
+// 🧠 ---------------- GHOSTG INTELLIGENCE SANS PRÉFIXE ----------------
+    const input = body.toLowerCase();
+    const argsNLP = body.split(/\s+/);
+    const firstWordNLP = argsNLP[0]?.toLowerCase();
+
+    // On n'écoute que TOI pour le NLP de commandement direct
+    if (isMe && global.ghostgMode === 'on' && !body.startsWith(config.prefix)) {
+      
+      const extraNLP = {
+        from, sender, isGroup, groupMetadata,
+        isOwner: isMe,
+        isAdmin: isMe || await isAdmin(sock, sender, from, groupMetadata),
+        isBotAdmin: await isBotAdmin(sock, from, groupMetadata),
+        isMod: isMe || isMod(sender),
+        reply: (text) => sock.sendMessage(from, { text }, { quoted: msg }),
+        react: (emoji) => sock.sendMessage(from, { react: { text: emoji, key: msg.key } })
+      };
+
+      // 1. Salutations
+      if (input.includes("bonjour") || input.includes("salut") || input.includes("hey") || input === "ghostg") {
+        await extraNLP.reply(`👋🏾 *ᴘʀᴇ́sᴇɴᴛ, ᴍᴏɴ ᴍᴀɪ̂ᴛʀᴇ. ᴊ'ᴀᴛᴛᴇɴᴅs ᴛᴇs ᴏʀᴅʀᴇs.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+        return;
+      }
+
+      // 2. Suppression (Répondre à un message et dire "supprime")
+      if (input.includes("supprime") || input.includes("efface") || input.includes("delete")) {
+        const ctx = msg.message?.extendedTextMessage?.contextInfo;
+        if (ctx?.stanzaId) {
+          const key = {
+            remoteJid: from,
+            fromMe: ctx.participant === sock.user.id.split(':')[0] + '@s.whatsapp.net',
+            id: ctx.stanzaId,
+            participant: ctx.participant
+          };
+          try {
+            await sock.sendMessage(from, { delete: key });
+            await extraNLP.react('🗑️');
+            return;
+          } catch (e) {
+            await extraNLP.reply(`❌ *ᴇ́ᴄʜᴇᴄ ᴅᴇ ʟᴀ sᴜᴘᴘʀᴇssɪᴏɴ.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+            return;
+          }
+        }
+      }
+
+      // 3. Gestion du groupe (Lock/Unlock)
+      if (isGroup) {
+        if (input.includes("ferme le groupe") || input.includes("bloque le groupe")) {
+          await sock.groupSettingUpdate(from, 'announcement');
+          await extraNLP.reply(`🔒 *ɢʀᴏᴜᴘᴇ ᴠᴇʀʀᴏᴜɪʟʟᴇ́. ʀᴇᴘᴏs ᴘᴏᴜʀ ʟᴇs ᴍᴇᴍʙʀᴇs.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+          return;
+        }
+        if (input.includes("ouvre le groupe") || input.includes("débloque le groupe")) {
+          await sock.groupSettingUpdate(from, 'not_announcement');
+          await extraNLP.reply(`🔓 *ɢʀᴏᴜᴘᴇ ᴏᴜᴠᴇʀᴛ. ʟᴀ ᴘᴀʀᴏʟᴇ ᴇsᴛ ʟɪʙʀᴇ.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+          return;
+        }
+      }
+
+      // 4. Informations système / Humour
+      if (input.includes("état du bot") || input.includes("tu dors") || input.includes("ça va")) {
+        await extraNLP.reply(`⚡ *ᴏᴘᴇ́ʀᴀᴛɪᴏɴɴᴇʟ. ᴘʀᴇ̂ᴛ ᴀ̀ ᴛᴏᴜᴛ ᴅᴇ́ᴠᴀsᴛᴇʀ sᴜʀ ᴛᴇs ᴏʀᴅʀᴇs.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+        return;
+      }
+
+      if (input.includes("créateur") || input.includes("qui t'a fait")) {
+        await extraNLP.reply(`👑 *ᴊᴇ sᴜɪs ʟ'ᴏᴇᴜᴠʀᴇ ᴅᴇ ᴛʀᴜᴛʜ ᴅᴇᴠɪᴄᴇs, ʟ'ᴇ́ʟɪᴛᴇ ᴅᴇ ғᴀᴅᴀ.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+        return;
+      }
+
+      // 5. MOTEUR DE REDIRECTION (Exécuter n'importe quelle commande sans point)
+      if (firstWordNLP !== "") {
+        const possibleCmd = commands.get(firstWordNLP) || 
+                            [...commands.values()].find(c => c.aliases?.includes(firstWordNLP));
+
+        if (possibleCmd) {
+          const newArgs = argsNLP.slice(1); 
+          try {
+            await extraNLP.react('⚡'); 
+            await possibleCmd.execute(sock, msg, newArgs, extraNLP);
+            return;
+          } catch (err) {
+            console.error(err);
+            await extraNLP.reply(`❌ *ᴇʀʀᴇᴜʀ : ᴇ́ᴄʜᴇᴄ ᴅᴇ ʟ'ᴇxᴇ́ᴄᴜᴛɪᴏɴ ᴀᴜᴛᴏᴍᴀᴛɪǫᴜᴇ*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+            return;
+          }
+        }
+      }
+    }// ---------------------------------------------------------------------
 
     // Anti-tagall Protection
     if (isGroup) {
       const groupSettings = database.getGroupSettings(from);
-      
+
       if (groupSettings.antiall && !msg.key.fromMe) {
         const senderIsAdmin = await isAdmin(sock, sender, from, groupMetadata);
         const senderIsOwner = isOwner(sender);
@@ -431,15 +524,15 @@ const handleMessage = async (sock, msg) => {
         if (totalMentions >= 3) {
           const participants = groupMetadata.participants || [];
           const mentionThreshold = Math.max(3, Math.ceil(participants.length * 0.5));
-          
+
           if (totalMentions >= mentionThreshold) {
             const senderIsAdmin = await isAdmin(sock, sender, from, groupMetadata);
             const senderIsOwner = isOwner(sender);
-if (!senderIsAdmin && !senderIsOwner) {
+            if (!senderIsAdmin && !senderIsOwner) {
               const action = (groupSettings.antitagAction || 'delete').toLowerCase();
-              
+
               await sock.sendMessage(from, { delete: msg.key });
-              
+
               if (action === 'kick' && await isBotAdmin(sock, from, groupMetadata)) {
                 try {
                   await sock.groupParticipantsUpdate(from, [sender], 'remove');
@@ -461,8 +554,8 @@ if (!senderIsAdmin && !senderIsOwner) {
           if (stickerCmd) {
             await stickerCmd.execute(sock, msg, [], {
               from, sender, isGroup, groupMetadata,
-              isOwner: isOwner(sender),
-              isAdmin: await isAdmin(sock, sender, from, groupMetadata),
+              isOwner: isMe, 
+              isAdmin: isMe || await isAdmin(sock, sender, from, groupMetadata), 
               isBotAdmin: await isBotAdmin(sock, from, groupMetadata),
               isMod: isMod(sender),
               reply: (text) => sock.sendMessage(from, { text }, { quoted: msg }),
@@ -482,8 +575,8 @@ if (!senderIsAdmin && !senderIsOwner) {
         if (bombCommand) {
           await bombCommand.execute(sock, msg, [], {
             from, sender, isGroup, groupMetadata,
-            isOwner: isOwner(sender),
-            isAdmin: await isAdmin(sock, sender, from, groupMetadata),
+            isOwner: isMe,
+            isAdmin: isMe || await isAdmin(sock, sender, from, groupMetadata),
             isBotAdmin: await isBotAdmin(sock, from, groupMetadata),
             isMod: isMod(sender),
             reply: (text) => sock.sendMessage(from, { text }, { quoted: msg }),
@@ -500,12 +593,11 @@ if (!senderIsAdmin && !senderIsOwner) {
         const isInGame = Object.values(tictactoeModule.games || {}).some(room => 
           room.id.startsWith('tictactoe') && [room.game.playerX, room.game.playerO].includes(sender) && room.state === 'PLAYING'
         );
-
-        if (isInGame) {
+if (isInGame) {
           const handled = await tictactoeModule.handleTicTacToeMove(sock, msg, {
             from, sender, isGroup, groupMetadata,
-            isOwner: isOwner(sender),
-            isAdmin: await isAdmin(sock, sender, from, groupMetadata),
+            isOwner: isMe,
+            isAdmin: isMe || await isAdmin(sock, sender, from, groupMetadata),
             isBotAdmin: await isBotAdmin(sock, from, groupMetadata),
             isMod: isMod(sender),
             reply: (text) => sock.sendMessage(from, { text }, { quoted: msg }),
@@ -516,7 +608,7 @@ if (!senderIsAdmin && !senderIsOwner) {
       }
     } catch (e) {}
 
-    // Execution des commandes
+    // Execution des commandes standard (avec préfixe)
     if (!body.startsWith(config.prefix)) return;
 
     const args = body.slice(config.prefix.length).trim().split(/\s+/);
@@ -525,14 +617,19 @@ if (!senderIsAdmin && !senderIsOwner) {
 
     if (!command) return;
 
-    if (config.selfMode && !isOwner(sender)) return;
-    if (command.ownerOnly && !isOwner(sender)) return sock.sendMessage(from, { text: config.messages.ownerOnly }, { quoted: msg });
-    if (command.modOnly && !isMod(sender) && !isOwner(sender)) return sock.sendMessage(from, { text: `⚠️ *${toSmallCaps('cette incantation est reservee au seigneur du sanctuaire')}.*` }, { quoted: msg });
-    if (command.groupOnly && !isGroup) return sock.sendMessage(from, { text: config.messages.groupOnly }, { quoted: msg });
-    if (command.privateOnly && isGroup) return sock.sendMessage(from, { text: config.messages.privateOnly }, { quoted: msg });
-    if (command.adminOnly && !(await isAdmin(sock, sender, from, groupMetadata)) && !isOwner(sender)) return sock.sendMessage(from, { text: config.messages.adminOnly }, { quoted: msg });
+    if (config.selfMode && !isMe) return; 
+    if (command.ownerOnly && !isMe) return sock.sendMessage(from, { text: config.messages.ownerOnly }, { quoted: msg });
+    if (command.modOnly && !isMod(sender) && !isMe) return sock.sendMessage(from, { text: `⚠️ *${toSmallCaps('cette incantation est reservee au seigneur du sanctuaire')}.*` }, { quoted: msg });
+    if (command.groupOnly && !isGroup && !isMe) return sock.sendMessage(from, { text: config.messages.groupOnly }, { quoted: msg });
+    if (command.privateOnly && isGroup && !isMe) return sock.sendMessage(from, { text: config.messages.privateOnly }, { quoted: msg });
     
-    if (command.botAdminNeeded && !(await isBotAdmin(sock, from, groupMetadata))) {
+    // Bypass Admin
+    if (command.adminOnly && !(await isAdmin(sock, sender, from, groupMetadata)) && !isMe) {
+      return sock.sendMessage(from, { text: config.messages.adminOnly }, { quoted: msg });
+    }
+
+    // Bypass Bot Admin pour le créateur (si possible)
+    if (command.botAdminNeeded && !(await isBotAdmin(sock, from, groupMetadata)) && !isMe) {
       return sock.sendMessage(from, { text: config.messages.botAdminNeeded }, { quoted: msg });
     }
 
@@ -541,10 +638,10 @@ if (!senderIsAdmin && !senderIsOwner) {
     console.log(`Executing command: ${commandName} from ${sender}`);
     await command.execute(sock, msg, args, {
       from, sender, isGroup, groupMetadata,
-      isOwner: isOwner(sender),
-      isAdmin: await isAdmin(sock, sender, from, groupMetadata),
+      isOwner: isMe, 
+      isAdmin: isMe || await isAdmin(sock, sender, from, groupMetadata), 
       isBotAdmin: await isBotAdmin(sock, from, groupMetadata),
-      isMod: isMod(sender),
+      isMod: isMod(sender) || isMe,
       reply: (text) => sock.sendMessage(from, { text }, { quoted: msg }),
       react: (emoji) => sock.sendMessage(from, { react: { text: emoji, key: msg.key } })
     });
@@ -558,7 +655,6 @@ if (!senderIsAdmin && !senderIsOwner) {
     } catch (e) {}
   }
 };
-
 // Group participant update handler (Welcome & Goodbye)
 const handleGroupUpdate = async (sock, update) => {
   try {
@@ -576,7 +672,7 @@ const handleGroupUpdate = async (sock, update) => {
     for (const participant of participants) {
       const participantJid = getParticipantJid(participant);
       if (!participantJid) continue;
-const participantNumber = participantJid.split('@')[0];
+      const participantNumber = participantJid.split('@')[0];
       const timeString = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: config.timezone });
 
       const getProfilePic = async () => {
@@ -658,8 +754,7 @@ const handleAntilink = async (sock, msg, groupMetadata) => {
 
       const botIsAdmin = await isBotAdmin(sock, from, groupMetadata);
       const action = (groupSettings.antilinkAction || 'delete').toLowerCase();
-
-      // Suppression du message dans tous les cas pour les non-admins
+// Suppression du message dans tous les cas pour les non-admins
       try { await sock.sendMessage(from, { delete: msg.key }); } catch (e) {}
 
       // Action Kick silencieuse si demandée
@@ -730,12 +825,12 @@ const initializeAntiCall = (sock) => {
       const config = require('./config');
 
       if (!config.defaultGroupSettings.anticall) return;
-for (const call of calls) {
+      for (const call of calls) {
         if (call.status === 'offer') {
           await sock.rejectCall(call.id, call.from);
           await sock.updateBlockStatus(call.from, 'block');
           await sock.sendMessage(call.from, {
-            text: : `🔇 *${toSmallCaps('le sanctuaire n'accepte pas les appels. ton accès a été rompu')} (ʙʟᴏǫᴜᴇ́).*
+            text: `🔇 *${toSmallCaps("le sanctuaire n'accepte pas les appels. ton accès a été rompu")} (ʙʟᴏǫᴜᴇ́).*`
           });
         }
       }
