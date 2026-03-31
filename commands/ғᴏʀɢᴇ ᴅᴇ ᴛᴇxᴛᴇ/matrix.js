@@ -20,7 +20,7 @@ module.exports = {
       
       if (!text) {
         return await sock.sendMessage(chatId, { 
-          text: `*ғᴏᴜʀɴɪs ᴜɴ ᴛᴇxᴛᴇ*.\n *ᴇxᴀᴍᴘʟᴇ* : ${prefix}1917 Jésus-Christ` 
+          text: `*ғᴏᴜʀɴɪs ᴜɴ ᴛᴇxᴛᴇ*.\n *ᴇxᴀᴍᴘʟᴇ* : ${prefix}1917 Jésus sauve` 
         }, { quoted: msg });
       }
       
