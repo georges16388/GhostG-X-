@@ -1,66 +1,135 @@
 /**
- * ɢʜᴏꜱᴛɢ-x ᴍᴅ - Helper Utilities
- * Specialized for Bot Performance & Efficiency
- * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
+ * Helper Utilities
  */
 
 const axios = require('axios');
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
+const fs = require('fs');
+const path = require('path');
 
 /**
- * Télécharger un média depuis un message
- * Optimisé pour la gestion des flux (streams)
+ * Download media from message
  */
 const downloadMedia = async (message) => {
   try {
     const messageType = Object.keys(message)[0];
-    const type = messageType.replace('Message', '');
-    const stream = await downloadContentFromMessage(message[messageType], type);
+    const stream = await downloadContentFromMessage(message[messageType], messageType.replace('Message', ''));
     
     let buffer = Buffer.from([]);
     for await (const chunk of stream) {
       buffer = Buffer.concat([buffer, chunk]);
     }
+    
     return buffer;
   } catch (error) {
-    throw new Error(`[UTILS ERROR]: Téléchargement média échoué`);
+    throw new Error(`Media download failed: ${error.message}`);
   }
 };
 
 /**
- * Formatage de la taille de fichier (Gras Premium)
+ * Format time duration
  */
-const formatSize = (bytes) => {
-  if (bytes === 0) return '0 Bytes';
-  const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return `*${Math.round(bytes / Math.pow(k, i) * 100) / 100} ${sizes[i]}*`;
+const formatDuration = (ms) => {
+  const seconds = Math.floor((ms / 1000) % 60);
+  const minutes = Math.floor((ms / (1000 * 60)) % 60);
+  const hours = Math.floor((ms / (1000 * 60 * 60)) % 24);
+  
+  const parts = [];
+  if (hours > 0) parts.push(`${hours}h`);
+  if (minutes > 0) parts.push(`${minutes}m`);
+  if (seconds > 0) parts.push(`${seconds}s`);
+  
+  return parts.join(' ') || '0s';
 };
 
 /**
- * Système d'upload temporaire (Catbox ou File.io)
- * Catbox est souvent plus stable pour les fichiers plus gros
+ * Format file size
+ */
+const formatSize = (bytes) => {
+  if (bytes === 0) return '0 Bytes';
+  
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  
+  return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+};
+
+/**
+ * Sleep function
+ */
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+/**
+ * Parse mentions from message
+ */
+const parseMentions = (text) => {
+  const mentions = [];
+  const regex = /@(\d+)/g;
+  let match;
+  
+  while ((match = regex.exec(text)) !== null) {
+    mentions.push(match[1] + '@s.whatsapp.net');
+  }
+  
+  return mentions;
+};
+
+/**
+ * Get quoted message
+ */
+const getQuoted = (msg) => {
+  if (msg.message.extendedTextMessage) {
+    return msg.message.extendedTextMessage.contextInfo?.quotedMessage;
+  }
+  return null;
+};
+
+/**
+ * Upload file to temporary hosting
  */
 const uploadFile = async (buffer) => {
   try {
     const FormData = require('form-data');
     const form = new FormData();
-    form.append('fileToUpload', buffer, { filename: 'ghostgx_file' });
-    form.append('reqtype', 'fileupload');
+    form.append('file', buffer, { filename: 'file' });
     
-    // Utilisation de Catbox pour une meilleure persistance
-    const res = await axios.post('https://catbox.moe/user/api.php', form, {
+    const response = await axios.post('https://file.io', form, {
       headers: form.getHeaders()
     });
-    return res.data; 
+    
+    return response.data.link;
   } catch (error) {
-    throw new Error('[UTILS ERROR]: Upload de fichier échoué');
+    throw new Error('File upload failed');
   }
 };
 
 /**
- * Temps de fonctionnement du Bot (Format Prestige)
+ * Extract URL from text
+ */
+const extractUrl = (text) => {
+  const urlRegex = /(https?:\/\/[^\s]+)/gi;
+  const match = text.match(urlRegex);
+  return match ? match[0] : null;
+};
+
+/**
+ * Random element from array
+ */
+const random = (array) => {
+  return array[Math.floor(Math.random() * array.length)];
+};
+
+/**
+ * Check if text is valid URL
+ */
+const isUrl = (text) => {
+  const urlRegex = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
+  return urlRegex.test(text);
+};
+
+/**
+ * Runtime information
  */
 const runtime = (seconds) => {
   seconds = Number(seconds);
@@ -69,42 +138,25 @@ const runtime = (seconds) => {
   const m = Math.floor(seconds % 3600 / 60);
   const s = Math.floor(seconds % 60);
   
-  let res = '';
-  if (d > 0) res += `*${d}ᴅ* `;
-  if (h > 0) res += `*${h}ʜ* `;
-  if (m > 0) res += `*${m}ᴍ* `;
-  res += `*${s}s*`;
-  return res.trim();
-};
-
-/**
- * Autres utilitaires rapides
- */
-const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
-const parseMentions = (text) => {
-  const mentions = [];
-  const regex = /@(\d+)/g;
-  let match;
-  while ((match = regex.exec(text)) !== null) {
-    mentions.push(match[1] + '@s.whatsapp.net');
-  }
-  return mentions;
-};
-
-const extractUrl = (text) => {
-  const urlRegex = /(https?:\/\/[^\s]+)/gi;
-  return text.match(urlRegex)?.[0] || null;
+  const parts = [];
+  if (d > 0) parts.push(`${d}d`);
+  if (h > 0) parts.push(`${h}h`);
+  if (m > 0) parts.push(`${m}m`);
+  if (s > 0) parts.push(`${s}s`);
+  
+  return parts.join(' ');
 };
 
 module.exports = {
   downloadMedia,
+  formatDuration,
   formatSize,
   sleep,
   parseMentions,
+  getQuoted,
   uploadFile,
   extractUrl,
-  runtime,
-  random: (arr) => arr[Math.floor(Math.random() * arr.length)],
-  isUrl: (t) => /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/.test(t)
+  random,
+  isUrl,
+  runtime
 };
