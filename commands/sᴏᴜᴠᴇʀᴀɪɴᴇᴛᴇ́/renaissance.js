@@ -4,7 +4,7 @@
  */
 
 const { exec } = require('child_process');
-const config = require('../../config'); // Importation de la configuration .env
+const config = require('../../config'); 
 
 module.exports = {
   name: 'ʀᴇɴᴀɪssᴀɴᴄᴇ',
@@ -12,18 +12,24 @@ module.exports = {
   category: '♛ sᴏᴜᴠᴇʀᴀɪɴᴇᴛᴇ́',
   description: 'ʀᴇғᴏʀɢᴇ ᴇᴛ ʀᴇssᴜsᴄɪᴛᴇ ʟᴇ sᴀɴᴄᴛᴜᴀɪʀᴇ (ᴏᴡɴᴇʀ ᴜɴɪǫᴜᴇᴍᴇɴᴛ)',
   usage: '.ʀᴇɴᴀɪssᴀɴᴄᴇ',
-  ownerOnly: true, // Baileys et ton handler bloquent déjà l'accès aux non-owners ici
+  ownerOnly: true, 
 
   async execute(sock, msg, args, extra) {
-    const { isOwner, reply } = extra;
+    const { isOwner, reply, from } = extra;
     
     try {
-      // 1. SÉCURITÉ : Vérification que l'utilisateur est bien listé comme Owner
       if (!isOwner) {
         return reply('*〆 ᴛᴜ ɴ\'ᴀs ᴘᴀs ʟ\'ᴀᴜᴛᴏʀɪsᴀᴛɪᴏɴ sᴜᴘʀᴇ̂ᴍᴇ ᴘᴏᴜʀ ɪɴᴠᴏǫᴜᴇʀ ᴄᴇᴛᴛᴇ ᴘᴜɪssᴀɴᴄᴇ.*');
       }
 
       await reply(`*🐦‍🔥 ɪɴɪᴛɪᴀʟɪsᴀᴛɪᴏɴ ᴅᴜ ʀɪᴛᴜᴇʟ ᴅᴇ ʀᴇɴᴀɪssᴀɴᴄᴇ...*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+
+      // 🔥 LE FIX : On dit à WhatsApp qu'on a lu le message pour qu'il ne le renvoie pas au redémarrage
+      try {
+        await sock.readMessages([msg.key]);
+      } catch (e) {
+        console.log("Impossible de marquer le message comme lu, on continue...");
+      }
 
       const run = (cmd) =>
         new Promise((resolve, reject) => {
@@ -34,19 +40,17 @@ module.exports = {
         });
 
       try {
-        // Si ton bot tourne sous PM2 (VPS), cela va forcer son rechargement
         await run('pm2 restart all');
         return;
       } catch (e) {
-        // PM2 n'est pas utilisé (cas classique sur Heroku, Koyeb, ou en local)
         console.log('PM2 non disponible, repli sur process.exit(0)');
       }
 
-      // L'arrêt propre du processus. 
-      // Le panel d'hébergement (Heroku, Docker, Nodemon) recréera le processus instantanément.
+      // 🔥 DEUXIÈME SÉCURITÉ : On attend 2 secondes (2000 ms) pour laisser le temps 
+      // au bot d'envoyer les paquets de lecture à WhatsApp avant de couper le moteur !
       setTimeout(() => {
         process.exit(0);
-      }, 500);
+      }, 2000);
       
     } catch (error) {
       console.error('Restart error:', error);
