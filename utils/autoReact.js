@@ -1,63 +1,59 @@
-/**
- * Auto-React Configuration Manager - AGM Config-Sync
- * Typographie : ꜱᴍᴀʟʟ ᴄᴀᴘꜱ ᴘʀᴇᴍɪᴜᴍ
- * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
- */
-
+// utils/autoReact.js
 const fs = require('fs');
 const path = require('path');
 
 const CONFIG_PATH = path.join(__dirname, '../config.js');
 
-/**
- * Charge la configuration actuelle du bot
- */
 function load() {
     try {
-        // Purge du cache pour lire la version la plus récente sur le disque
+        // Clear require cache to get fresh config
         delete require.cache[require.resolve('../config.js')];
         const config = require('../config.js');
         
         return {
             enabled: config.autoReact || false,
-            mode: config.autoReactMode || 'all',
-            supreme: config.supremeNumber || '22651622652'
+            mode: config.autoReactMode || 'bot'
         };
-    } catch (err) {
-        console.error('⚠️ [ᴀɢᴍ_ʟᴏᴀᴅ_ᴇʀʀᴏʀ] :', err.message);
-        return { enabled: false, mode: 'all' };
+    } catch {
+        return {
+            enabled: false,
+            mode: 'bot'
+        };
     }
 }
 
-/**
- * Sauvegarde les modifications directement dans config.js
- */
 function save(data) {
     try {
-        let content = fs.readFileSync(CONFIG_PATH, 'utf8');
+        const configContent = fs.readFileSync(CONFIG_PATH, 'utf8');
         
-        // Mise à jour de autoReact (true/false)
-        if (content.includes('autoReact:')) {
-            content = content.replace(/autoReact:\s*(true|false)/, `autoReact: ${data.enabled}`);
-        }
-
-        // Mise à jour ou ajout de autoReactMode ('all'/'bot')
-        if (content.includes('autoReactMode:')) {
-            content = content.replace(/autoReactMode:\s*['"]\w+['"]/, `autoReactMode: '${data.mode}'`);
+        let updatedContent = configContent;
+        
+        // Update autoReact value
+        updatedContent = updatedContent.replace(
+            /autoReact:\s*(true|false)/,
+            `autoReact: ${data.enabled}`
+        );
+        
+        // Update or add autoReactMode
+        if (configContent.includes('autoReactMode:')) {
+            updatedContent = updatedContent.replace(
+                /autoReactMode:\s*['"]\w+['"]/,
+                `autoReactMode: '${data.mode}'`
+            );
         } else {
-            // Insertion intelligente après autoReact
-            content = content.replace(/(autoReact:.*,)/, `$1\n    autoReactMode: '${data.mode}',`);
+            // Add autoReactMode after autoReact line
+            updatedContent = updatedContent.replace(
+                /(autoReact:\s*(?:true|false),?)/,
+                `$1\n    autoReactMode: '${data.mode}',`
+            );
         }
-
-        fs.writeFileSync(CONFIG_PATH, content, 'utf8');
         
-        // Nettoyage immédiat du cache pour que le bot applique le changement sans redémarrer
+        fs.writeFileSync(CONFIG_PATH, updatedContent, 'utf8');
+        
+        // Clear cache so next require gets updated values
         delete require.cache[require.resolve('../config.js')];
-        
-        console.log(`╭╼━≪• ᴀɢᴍ ᴄᴏɴꜰɪɢ ᴜᴘᴅᴀᴛᴇ •≫━╾╮\n┃ ꜱᴛᴀᴛᴜꜱ : 🟢 ꜱʏɴᴄᴇᴅ\n┃ ᴍᴏᴅᴇ : ${data.mode.toUpperCase()}\n╰━━━━━━━━━━━━━━━╯`);
-        
     } catch (err) {
-        console.error('❌ [ᴀɢᴍ_ꜱᴀᴠᴇ_ᴇʀʀᴏʀ] :', err.message);
+        console.error('[autoReact] save error:', err);
     }
 }
 
