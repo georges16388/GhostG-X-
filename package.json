@@ -1,7 +1,7 @@
 {
-    "name": " ghostg-x md whatsapp-md-bot",
+    "name": "ghostg-x",
     "version": "1.0.0",
-    "description": "Un bot WhatsApp Muti-Device fait avec Baileys",
+    "description": "Un bot whatsApp Multi-Devices Stylé ayant plusieurs Commands basé sur Baileys",
     "main": "index.js",
     "type": "commonjs",
     "scripts": {
@@ -11,24 +11,23 @@
     },
     "keywords": [
         "whatsapp bot",
-        "GhostG-X MD",
-        "bot",
+        "GhostG-X",
+        "ghostg",
         "baileys",
-        "md",
-        "truth devices bot",
-        "GhostG" 
+        "truth devices"
     ],
-    "author": "truth Devices",
+    "author": "ᴛʀᴜᴛʜ ᴅᴇᴠɪᴄᴇs",
     "license": "MIT",
     "dependencies": {
         "@bochilteam/scraper": "^5.0.1",
         "@bochilteam/scraper-tiktok": "^5.0.0",
         "@bochilteam/scraper-facebook": "^5.0.0",
         "@vitalets/google-translate-api": "^9.2.1",
-        "@whiskeysockets/baileys": "^v7.0.0-rc.9",
+        "@whiskeysockets/baileys": "^6.6.0",
         "axios": "^1.7.2",
         "canvas": "^3.2.1",
         "cheerio": "^1.0.0-rc.12",
+        "dotenv": "^16.4.7",
         "ffmpeg-static": "^5.3.0",
         "file-type": "^16.5.4",
         "fluent-ffmpeg": "^2.1.3",
