@@ -14,20 +14,18 @@ module.exports = {
   description: 'ᴍᴏᴅɪғɪᴇ ʟᴇ ɴᴏᴍ ᴅᴇ ʙᴀᴘᴛᴇ̂ᴍᴇ ᴅᴇ ʟ\'ᴀᴠᴀᴛᴀʀ ᴅᴀɴs ʟᴇ sᴀɴᴄᴛᴜᴀɪʀᴇ',
   usage: '.ᴀᴘᴘᴀʀᴇɴᴄᴇ_sʏsᴛᴇᴍᴇ <ɴᴏᴜᴠᴇᴀᴜ ɴᴏᴍ> ᴏᴜ ᴇɴ ʀᴇ́ᴘᴏɴsᴇ ᴀ̀ ᴜɴ ᴍᴇssᴀɢᴇ',
   ownerOnly: true,
-  
+
   async execute(sock, msg, args, extra) {
+    const { isOwner, reply } = extra;
+
     try {
-      // 1. SÉCURITÉ ABSOLUE : Liaison avec le Maître Suprême
-      const supremeOwner = '22651622652';
-      const senderNumber = extra.sender.replace(/\D/g, ''); 
-      
-      const isSupreme = senderNumber.includes(supremeOwner) || supremeOwner.includes(senderNumber);
-      if (!isSupreme) {
-        return extra.reply('*〆 ᴛᴜ ɴ\'ᴀs ᴘᴀs ʟ\'ᴀᴜᴛᴏʀɪsᴀᴛɪᴏɴ sᴜᴘʀᴇ̂ᴍᴇ ᴘᴏᴜʀ ɪɴᴠᴏǫᴜᴇʀ ᴄᴇᴛᴛᴇ ᴘᴜɪssᴀɴᴄᴇ.*');
+      // 🔥 LE FIX : On passe par isOwner défini via le .env
+      if (!isOwner) {
+        return reply('*〆 ᴛᴜ ɴ\'ᴀs ᴘᴀs ʟ\'ᴀᴜᴛᴏʀɪsᴀᴛɪᴏɴ sᴜᴘʀᴇ̂ᴍᴇ ᴘᴏᴜʀ ɪɴᴠᴏǫᴜᴇʀ ᴄᴇᴛᴛᴇ ᴘᴜɪssᴀɴᴄᴇ.*');
       }
 
       let newBotName = '';
-      
+
       // 2. EXTRACTION DU TEXTE (Si réponse ou arguments)
       const quotedMsg = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage;
       if (quotedMsg) {
@@ -40,10 +38,10 @@ module.exports = {
       } else {
         newBotName = args.join(' ').trim();
       }
-      
+
       // 3. VALIDATIONS
       if (!newBotName) {
-        return extra.reply(
+        return reply(
           `*╭╼━━━≪• ᴀᴘᴘᴀʀᴇɴᴄᴇ ᴅᴜ sʏsᴛᴇᴍᴇ •≫━━━╾╮*\n` +
           `*┃ 🔮 ɴᴏᴍ ᴀᴄᴛᴜᴇʟ : ${config.botName || 'ɢʜᴏsᴛɢ-x'}*\n` +
           `*╰━━━━━━━━━━━━━━━━━━━━━━━╯*\n\n` +
@@ -53,37 +51,37 @@ module.exports = {
           `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
         );
       }
-      
+
       if (newBotName.length > 50) {
-        return extra.reply('*〆 ʟᴇ ɴᴏᴍ ᴅᴇ ʟ\'ᴀᴠᴀᴛᴀʀ ɴᴇ ᴘᴇᴜᴛ ᴇxᴄᴇ́ᴅᴇʀ 50 ᴄᴀʀᴀᴄᴛᴇ̀ʀᴇs !*');
+        return reply('*〆 ʟᴇ ɴᴏᴍ ᴅᴇ ʟ\'ᴀᴠᴀᴛᴀʀ ɴᴇ ᴘᴇᴜᴛ ᴇxᴄᴇ́ᴅᴇʀ 50 ᴄᴀʀᴀᴄᴛᴇ̀ʀᴇs !*');
       }
-      
+
       // Mise à jour de la configuration en mémoire vive
       config.botName = newBotName;
-      
+
       // 4. ÉCRITURE PHYSIQUE DANS LE FICHIER CONFIG.JS
       const configPath = path.join(__dirname, '../../config.js');
       let configContent = fs.readFileSync(configPath, 'utf-8');
-      
-      // 🔥 LE CORRECTIF : On cible toute la ligne qui commence par botName
+
+      // On cible toute la ligne qui commence par botName
       // et on remplace tout ce qu'il y a entre les guillemets.
       const botNameRegex = /(botName\s*:\s*['"`]).*?(['"`])/;
-      
+
       if (botNameRegex.test(configContent)) {
          configContent = configContent.replace(botNameRegex, `$1${newBotName.replace(/'/g, "\\'")}$2`);
          fs.writeFileSync(configPath, configContent, 'utf-8');
       } else {
-         return extra.reply('*〆 ɪᴍᴘᴏssɪʙʟᴇ ᴅᴇ sɪɢɴᴇʀ ʟᴇ ɢʀɪᴍᴏɪʀᴇ. ʟɪɢɴᴇ "ʙᴏᴛɴᴀᴍᴇ" ɪɴᴛʀᴏᴜᴠᴀʙʟᴇ ᴅᴀɴs ᴄᴏɴғɪɢ.ᴊs.*');
+         return reply('*〆 ɪᴍᴘᴏssɪʙʟᴇ ᴅᴇ sɪɢɴᴇʀ ʟᴇ ɢʀɪᴍᴏɪʀᴇ. ʟɪɢɴᴇ "ʙᴏᴛɴᴀᴍᴇ" ɪɴᴛʀᴏᴜᴠᴀʙʟᴇ ᴅᴀɴs ᴄᴏɴғɪɢ.ᴊs.*');
       }
-      
+
       // Purge du cache de configuration
       delete require.cache[require.resolve('../../config')];
-      
-      await extra.reply(`*✅ ʟ\'ᴀᴘᴘᴀʀᴇɴᴄᴇ ᴀ ᴇ́ᴛᴇ́ ᴛʀᴀɴsᴍᴜᴛᴇ́ᴇ : ${newBotName}*\n*ᴄᴇ sᴄᴇᴀᴜ sᴇʀᴀ ᴅᴇ́sᴏʀᴍᴀɪs ᴀғғɪᴄʜᴇ́ sᴜʀ ʟᴇs ᴍᴇɴᴜs.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
-      
+
+      await reply(`*✅ ʟ\'ᴀᴘᴘᴀʀᴇɴᴄᴇ ᴀ ᴇ́ᴛᴇ́ ᴛʀᴀɴsᴍᴜᴛᴇ́ᴇ : ${newBotName}*\n*ᴄᴇ sᴄᴇᴀᴜ sᴇʀᴀ ᴅᴇ́sᴏʀᴍᴀɪs ᴀғғɪᴄʜᴇ́ sᴜʀ ʟᴇs ᴍᴇɴᴜs.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+
     } catch (error) {
       console.error('Setbotname command error:', error);
-      await extra.reply(`*〆 ʟ\'ɪɴᴠᴏᴄᴀᴛɪᴏɴ ᴀ ᴇ́ᴄʜᴏᴜᴇ́ : ${error.message}*`);
+      await reply(`*〆 ʟ\'ɪɴᴠᴏᴄᴀᴛɪᴏɴ ᴀ ᴇ́ᴄʜᴏᴜᴇ́ : ${error.message}*`);
     }
   }
 };
