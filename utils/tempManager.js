@@ -1,45 +1,51 @@
 /**
- * Centralized Temp Management - AGM Temp-Core
- * Typographie : ꜱᴍᴀʟʟ ᴄᴀᴘꜱ ᴘʀᴇᴍɪᴜᴍ
- * Style by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
+ * Centralized Temp Directory Management
+ * Ensures all temp files go to a single directory and sets environment variables
+ * for libraries like Baileys and ffmpeg to use the same directory
  */
 
 const fs = require('fs');
 const path = require('path');
 
-// --- DÉFINITION DU HUB TEMPORAIRE ---
+// Get the project root directory
 const PROJECT_ROOT = process.cwd();
+
+// Centralized temp directory (relative to project root)
 const TEMP_DIR = path.join(PROJECT_ROOT, 'temp');
 
 /**
- * Initialise le système de fichiers temporaires
- * À appeler au tout début du index.js
+ * Initialize temp directory system
+ * MUST be called before any libraries that use temp directories are loaded
  */
 function initializeTempSystem() {
+  // Set environment variables BEFORE any libraries load
+  // This ensures Baileys, ffmpeg, and other libraries use our temp directory
   const tempDirAbsolute = path.resolve(TEMP_DIR);
   
-  // Injection dans les variables d'environnement globales
+  // Set all common temp environment variables
   process.env.TMPDIR = tempDirAbsolute;
   process.env.TMP = tempDirAbsolute;
   process.env.TEMP = tempDirAbsolute;
   
-  // Sécurité Windows
+  // Windows-specific
   if (process.platform === 'win32') {
-    process.env.USERPROFILE = tempDirAbsolute; 
+    process.env.TEMP = tempDirAbsolute;
+    process.env.TMP = tempDirAbsolute;
   }
   
+  // Ensure temp directory exists
   if (!fs.existsSync(TEMP_DIR)) {
     fs.mkdirSync(TEMP_DIR, { recursive: true });
-    console.log('📁 [ᴀɢᴍ_ꜱʏꜱᴛᴇᴍ] : ᴛᴇᴍᴘ ᴅɪʀᴇᴄᴛᴏʀʏ ᴄʀᴇᴀᴛᴇᴅ');
   }
   
   return TEMP_DIR;
 }
 
 /**
- * Récupère le chemin du dossier temp (Auto-fix si supprimé)
+ * Get the centralized temp directory path
  */
 function getTempDir() {
+  // Ensure it exists
   if (!fs.existsSync(TEMP_DIR)) {
     fs.mkdirSync(TEMP_DIR, { recursive: true });
   }
@@ -47,42 +53,56 @@ function getTempDir() {
 }
 
 /**
- * Génère un chemin de fichier temporaire unique
+ * Create a safe temp file path
+ * @param {string} prefix - File prefix
+ * @param {string} extension - File extension (without dot)
+ * @returns {string} Full path to temp file
  */
-function createTempFilePath(prefix = 'agm', ext = 'tmp') {
-  const name = `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
-  return path.join(getTempDir(), name);
+function createTempFilePath(prefix = 'temp', extension = 'tmp') {
+  const tempDir = getTempDir();
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).slice(2);
+  const filename = `${prefix}_${timestamp}_${random}.${extension}`;
+  return path.join(tempDir, filename);
 }
 
 /**
- * Suppression sécurisée (Ne touche rien hors du dossier /temp)
+ * Safely delete a temp file
+ * @param {string} filePath - Path to file to delete
+ * @returns {boolean} True if deleted successfully, false otherwise
  */
 function deleteTempFile(filePath) {
   try {
-    if (!filePath || !fs.existsSync(filePath)) return false;
-
-    const resolvedPath = path.resolve(filePath);
-    const tempDirResolved = path.resolve(TEMP_DIR);
-    
-    // Bouclier de sécurité : empêche de supprimer index.js ou la session par erreur
-    if (resolvedPath.startsWith(tempDirResolved)) {
-      fs.unlinkSync(filePath);
-      return true;
-    } else {
-      console.warn(`⚠️ [ᴀɢᴍ_ꜱᴇᴄᴜʀɪᴛʏ] : ʙʟᴏᴄᴋᴇᴅ ᴅᴇʟᴇᴛɪᴏɴ ᴏᴜᴛꜱɪᴅᴇ ᴛᴇᴍᴘ -> ${filePath}`);
-      return false;
+    if (filePath && fs.existsSync(filePath)) {
+      // Only delete files in our temp directory for safety
+      const resolvedPath = path.resolve(filePath);
+      const tempDirResolved = path.resolve(TEMP_DIR);
+      
+      if (resolvedPath.startsWith(tempDirResolved)) {
+        fs.unlinkSync(filePath);
+        return true;
+      } else {
+        console.warn(`Attempted to delete file outside temp directory: ${filePath}`);
+        return false;
+      }
     }
+    return false;
   } catch (error) {
+    console.error(`Error deleting temp file ${filePath}:`, error.message);
     return false;
   }
 }
 
 /**
- * Suppression de masse
+ * Delete multiple temp files
+ * @param {string[]} filePaths - Array of file paths to delete
  */
-function deleteTempFiles(filePaths = []) {
+function deleteTempFiles(filePaths) {
   if (!Array.isArray(filePaths)) return;
-  filePaths.forEach(file => deleteTempFile(file));
+  
+  filePaths.forEach(filePath => {
+    deleteTempFile(filePath);
+  });
 }
 
 module.exports = {
@@ -93,3 +113,4 @@ module.exports = {
   deleteTempFiles,
   TEMP_DIR
 };
+
