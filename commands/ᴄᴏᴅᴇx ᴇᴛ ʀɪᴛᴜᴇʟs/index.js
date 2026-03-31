@@ -78,7 +78,7 @@ module.exports = {
         }
       });
       
-      menuText += `_ᴍᴇʀᴄɪ sᴇɪɢɴᴇᴜʀ ᴘᴏᴜʀ ᴛᴀ ɢʀᴀᴄᴇ_\n` +
+      menuText += `*_❤️ ᴊᴇsᴜs ᴛᴀɪᴍᴇ ᴇᴛ ᴛᴇ ʙᴇ́ɴɪssᴇ_❤️*\n` +
                   `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ  ɢʜᴏsᴛɢ-𝐗*`;
       
       // Localisation de l'image dans le dossier utils
