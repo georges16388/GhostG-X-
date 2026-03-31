@@ -17,18 +17,20 @@ module.exports = {
   
   async execute(sock, msg, args, extra) {
     try {
-      // Sécurité absolue : Liaison avec le Maître Suprême défini dans le .env
-      const supremeOwner = config.supremeOwner || '22651622652@s.whatsapp.net';
-      if (extra.sender !== supremeOwner) {
+      // 1. SÉCURITÉ ABSOLUE : Liaison avec le Maître Suprême
+      const supremeOwner = '22651622652';
+      const senderNumber = extra.sender.replace(/\D/g, ''); 
+      
+      const isSupreme = senderNumber.includes(supremeOwner) || supremeOwner.includes(senderNumber);
+      if (!isSupreme) {
         return extra.reply('*〆 ᴛᴜ ɴ\'ᴀs ᴘᴀs ʟ\'ᴀᴜᴛᴏʀɪsᴀᴛɪᴏɴ sᴜᴘʀᴇ̂ᴍᴇ ᴘᴏᴜʀ ɪɴᴠᴏǫᴜᴇʀ ᴄᴇᴛᴛᴇ ᴘᴜɪssᴀɴᴄᴇ.*');
       }
 
       let newBotName = '';
       
-      // Vérification si le message est une réponse (citation)
+      // 2. EXTRACTION DU TEXTE (Si réponse ou arguments)
       const quotedMsg = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage;
       if (quotedMsg) {
-        // Extraction du texte cité
         const quotedText = quotedMsg.conversation || 
                           quotedMsg.extendedTextMessage?.text || 
                           quotedMsg.imageMessage?.caption ||
@@ -36,11 +38,10 @@ module.exports = {
                           '';
         newBotName = quotedText.trim();
       } else {
-        // Extraction depuis les arguments de la commande
         newBotName = args.join(' ').trim();
       }
       
-      // Validation du nouveau nom
+      // 3. VALIDATIONS
       if (!newBotName) {
         return extra.reply(
           `*╭╼━━━≪• ᴀᴘᴘᴀʀᴇɴᴄᴇ ᴅᴜ sʏsᴛᴇᴍᴇ •≫━━━╾╮*\n` +
@@ -60,17 +61,20 @@ module.exports = {
       // Mise à jour de la configuration en mémoire vive
       config.botName = newBotName;
       
-      // Écriture physique dans le fichier config.js
+      // 4. ÉCRITURE PHYSIQUE DANS LE FICHIER CONFIG.JS
       const configPath = path.join(__dirname, '../../config.js');
       let configContent = fs.readFileSync(configPath, 'utf-8');
       
-      // Remplacement propre du paramètre botName
-      configContent = configContent.replace(
-        /botName:\s*['"`]([^'"`]*)['"`]/,
-        `botName: '${newBotName.replace(/'/g, "\\'")}'`
-      );
+      // 🔥 LE CORRECTIF : On cible toute la ligne qui commence par botName
+      // et on remplace tout ce qu'il y a entre les guillemets.
+      const botNameRegex = /(botName\s*:\s*['"`]).*?(['"`])/;
       
-      fs.writeFileSync(configPath, configContent, 'utf-8');
+      if (botNameRegex.test(configContent)) {
+         configContent = configContent.replace(botNameRegex, `$1${newBotName.replace(/'/g, "\\'")}$2`);
+         fs.writeFileSync(configPath, configContent, 'utf-8');
+      } else {
+         return extra.reply('*〆 ɪᴍᴘᴏssɪʙʟᴇ ᴅᴇ sɪɢɴᴇʀ ʟᴇ ɢʀɪᴍᴏɪʀᴇ. ʟɪɢɴᴇ "ʙᴏᴛɴᴀᴍᴇ" ɪɴᴛʀᴏᴜᴠᴀʙʟᴇ ᴅᴀɴs ᴄᴏɴғɪɢ.ᴊs.*');
+      }
       
       // Purge du cache de configuration
       delete require.cache[require.resolve('../../config')];
