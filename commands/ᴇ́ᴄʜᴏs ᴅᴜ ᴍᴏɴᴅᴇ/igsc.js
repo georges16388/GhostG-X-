@@ -476,4 +476,138 @@ async function igsCommand(sock, msg, args, extra, crop = false) {
     const seenHashes = new Set(); // Track content hashes to prevent sending duplicates
 
     // Download all media and convert to stickers (SAME LOOP STRUCTURE AS .ig)
+for (let i = 0; i < mediaToDownload.length; i++) {
+      try {
+        const media = mediaToDownload[i];
+
+        // Pick the best URL from media object
+        const mediaUrl = pickMediaUrl(media);
+        if (!mediaUrl) {
+          failCount++;
+          continue;
+        }
+
+        // Check if URL ends with common video extensions (SAME AS .ig)
+        const isVideo = /\.(mp4|mov|avi|mkv|webm)$/i.test(mediaUrl) ||
+          media.type === 'video' ||
+          urlMatch[0].includes('/reel/') ||
+          urlMatch[0].includes('/tv/');
+
+        // Download buffer from URL (we need to convert to sticker, unlike .ig which sends URL directly)
+        const buffer = await fetchBufferFromUrl(mediaUrl, i);
+
+        // Check if we've already sent this exact content (by hash)
+        const contentHash = crypto.createHash('md5').update(buffer).digest('hex');
+
+        // #region agent log
+        console.log(`[DEBUG] Item ${i + 1}: Hash=${contentHash.substring(0, 8)}, size=${buffer.length}, isDuplicate=${seenHashes.has(contentHash)}`);
+        fetch('http://127.0.0.1:7242/ingest/44c87b60-b6ab-47d5-9224-5cb012ce57ee', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'igsc.js:465', message: 'Hash check', data: { item: i + 1, hash: contentHash.substring(0, 8), bufferSize: buffer.length, seenHashesCount: seenHashes.size, isDuplicate: seenHashes.has(contentHash) }, timestamp: Date.now(), sessionId: 'debug-session', runId: 'run2', hypothesisId: 'F' }) }).catch(() => { });
+        // #endregion
+
+        if (seenHashes.has(contentHash)) {
+          // Skip sending duplicate content, but continue processing other items
+          continue;
+        }
+        seenHashes.add(contentHash);
+
+        // Convert buffer to sticker
+        let stickerBuffer = await convertBufferToStickerWebp(buffer, isVideo, crop);
+
+        // Ensure final size under 1MB; keep trying until it works
+        let finalSticker = stickerBuffer;
+        if (finalSticker.length > 950 * 1024) {
+          try {
+            const fallback = await forceMiniSticker(buffer, isVideo, crop);
+            if (fallback) {
+              finalSticker = fallback;
+            }
+          } catch (e) {
+            // Silently continue
+          }
+        }
+
+        // If still too large, try one more ultra-aggressive compression
+        if (finalSticker.length > 950 * 1024) {
+          const tmpDir = getTempDir();
+          const tempInput2 = path.join(tmpDir, `ultra_${Date.now()}_${i}.${isVideo ? 'mp4' : 'jpg'}`);
+          const tempOutputUltra = path.join(tmpDir, `ultra_out_${Date.now()}_${i}.webp`);
+          const ultraTempFiles = [tempInput2, tempOutputUltra];
+
+          try {
+            fs.writeFileSync(tempInput2, buffer);
+
+            const ultraSize = 180;
+            const vfUltra = crop
+              ? `crop=min(iw\\,ih):min(iw\\,ih),scale=${ultraSize}:${ultraSize}${isVideo ? ',fps=3' : ''}`
+              : `scale=${ultraSize}:${ultraSize}:force_original_aspect_ratio=decrease,pad=${ultraSize}:${ultraSize}:(ow-iw)/2:(oh-ih)/2:color=#00000000${isVideo ? ',fps=3' : ''}`;
+            const ultraCmd = `ffmpeg -y -i "${tempInput2}" ${isVideo ? '-t 0.5' : ''} -vf "${vfUltra}" -c:v libwebp -preset default -loop 0 -vsync 0 -pix_fmt yuva420p -quality ${isVideo ? 12 : 25} -compression_level 6 -b:v 25k -max_muxing_queue_size 1024 "${tempOutputUltra}"`;
+
+            await new Promise((resolve, reject) => {
+              exec(ultraCmd, (error) => error ? reject(error) : resolve());
+            });
+
+            if (fs.existsSync(tempOutputUltra)) {
+              const ultraWebp = fs.readFileSync(tempOutputUltra);
+              const imgUltra = new webp.Image();
+              await imgUltra.load(ultraWebp);
+              const jsonUltra = {
+                'sticker-pack-id': crypto.randomBytes(32).toString('hex'),
+                'sticker-pack-name': config.packname || 'Made by',
+                'emojis': ['📸']
+              };
+              const exifAttrUltra = Buffer.from([0x49, 0x49, 0x2A, 0x00, 0x08, 0x00, 0x00, 0x00, 0x01, 0x00, 0x41, 0x57, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x16, 0x00, 0x00, 0x00]);
+              const jsonBufferUltra = Buffer.from(JSON.stringify(jsonUltra), 'utf8');
+              const exifUltra = Buffer.concat([exifAttrUltra, jsonBufferUltra]);
+              exifUltra.writeUIntLE(jsonBufferUltra.length, 14, 4);
+              imgUltra.exif = exifUltra;
+              finalSticker = await imgUltra.save(null);
+            }
+          } catch (e) {
+            // Silently continue
+          } finally {
+            // Always cleanup ultra temp files
+            ultraTempFiles.forEach(file => deleteTempFile(file));
+          }
+        }
+
+        // Send the sticker (even if slightly over, WhatsApp might accept it)
+        try {
+          await sock.sendMessage(extra.from, { sticker: finalSticker }, { quoted: msg });
+          successCount++;
+        } catch (sendErr) {
+          failCount++;
+          // Continue to next item even if send fails
+        }
+
+        // Add small delay between downloads to prevent rate limiting (SAME AS .ig)
+        if (i < mediaToDownload.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 800));
+        }
+
+      } catch (mediaError) {
+        failCount++;
+        // Continue with next media if one fails (SAME AS .ig)
+      }
+    }
+
+
+  } catch (err) {
+    console.error('Error in igsc command:', err);
+    await extra.reply('❌ Failed to create sticker from Instagram link.');
+  }
+}
+
+module.exports = {
+  name: 'sᴄᴇᴀᴜ_ɪɢ_ᴄᴀʀʀᴇ',
+  aliases: ['igstickercrop', 'igsc', 'igcrop', 'sceau_ig_carre', 'sceau_ig_carré'],
+  description: 'Convert Instagram post/reel to cropped square sticker',
+  usage: '.sᴄᴇᴀᴜ_ɪɢ_ᴄᴀʀʀᴇ <Instagram URL>',
+  category: 'ᴇ́ᴄʜᴏs ᴅᴜ ᴍᴏɴᴅᴇ',
+
+  async execute(sock, msg, args, extra) {
+    await igsCommand(sock, msg, args, extra, true);
+  }
+};
+
+
  
