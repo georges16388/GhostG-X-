@@ -1,10 +1,8 @@
 /**
- * ɢʜᴏꜱᴛɢ-x ᴍᴅ - Hybrid Database (Full JSON pour Settings + Anti-Delete)
- * Optimized for Performance and GhostG-X MD V5.3
- * Powered by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
+ * Simple JSON-based Database for Group Settings
  */
 
-const fs = require('fs-extra'); 
+const fs = require('fs');
 const path = require('path');
 const config = require('./config');
 
@@ -13,40 +11,47 @@ const GROUPS_DB = path.join(DB_PATH, 'groups.json');
 const USERS_DB = path.join(DB_PATH, 'users.json');
 const WARNINGS_DB = path.join(DB_PATH, 'warnings.json');
 const MODS_DB = path.join(DB_PATH, 'mods.json');
-const MESSAGES_DB = path.join(DB_PATH, 'messages.json'); // Changé en .json !
 
-// --- INITIALISATION DES RÉPERTOIRES ---
-fs.ensureDirSync(DB_PATH);
+// Initialize database directory
+if (!fs.existsSync(DB_PATH)) {
+  fs.mkdirSync(DB_PATH, { recursive: true });
+}
 
-// --- UTILITAIRES DE BASE (JSON) ---
+// Initialize database files
+const initDB = (filePath, defaultData = {}) => {
+  if (!fs.existsSync(filePath)) {
+    fs.writeFileSync(filePath, JSON.stringify(defaultData, null, 2));
+  }
+};
+
+initDB(GROUPS_DB, {});
+initDB(USERS_DB, {});
+initDB(WARNINGS_DB, {});
+initDB(MODS_DB, { moderators: [] });
+
+// Read database
 const readDB = (filePath) => {
   try {
-    if (!fs.existsSync(filePath)) return {};
-    return fs.readJsonSync(filePath);
+    const data = fs.readFileSync(filePath, 'utf-8');
+    return JSON.parse(data);
   } catch (error) {
+    console.error(`Error reading database: ${error.message}`);
     return {};
   }
 };
 
+// Write database
 const writeDB = (filePath, data) => {
   try {
-    fs.writeJsonSync(filePath, data, { spaces: 2 });
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
     return true;
   } catch (error) {
+    console.error(`Error writing database: ${error.message}`);
     return false;
   }
 };
 
-// Initialisation des fichiers JSON si inexistants
-if (!fs.existsSync(GROUPS_DB)) writeDB(GROUPS_DB, {});
-if (!fs.existsSync(USERS_DB)) writeDB(USERS_DB, {});
-if (!fs.existsSync(WARNINGS_DB)) writeDB(WARNINGS_DB, {});
-if (!fs.existsSync(MODS_DB)) writeDB(MODS_DB, { moderators: [] });
-if (!fs.existsSync(MESSAGES_DB)) writeDB(MESSAGES_DB, {}); // Init pour l'Anti-Delete
-
-// ==========================================
-// SECTION 1 : GESTION DES GROUPES (JSON)
-// ==========================================
+// Group Settings
 const getGroupSettings = (groupId) => {
   const groups = readDB(GROUPS_DB);
   if (!groups[groupId]) {
@@ -58,18 +63,18 @@ const getGroupSettings = (groupId) => {
 
 const updateGroupSettings = (groupId, settings) => {
   const groups = readDB(GROUPS_DB);
-  groups[groupId] = { ...(groups[groupId] || config.defaultGroupSettings), ...settings };
+  groups[groupId] = { ...groups[groupId], ...settings };
   return writeDB(GROUPS_DB, groups);
 };
 
-// ==========================================
-// SECTION 2 : GESTION DES UTILISATEURS (JSON)
-// ==========================================
+// User Data
 const getUser = (userId) => {
   const users = readDB(USERS_DB);
   if (!users[userId]) {
-    users[userId] = { 
-        name: 'User', xp: 0, level: 1, banned: false, premium: false, registeredAt: Date.now() 
+    users[userId] = {
+      registered: Date.now(),
+      premium: false,
+      banned: false
     };
     writeDB(USERS_DB, users);
   }
@@ -78,74 +83,96 @@ const getUser = (userId) => {
 
 const updateUser = (userId, data) => {
   const users = readDB(USERS_DB);
-  users[userId] = { ...(users[userId] || {}), ...data };
+  users[userId] = { ...users[userId], ...data };
   return writeDB(USERS_DB, users);
 };
 
-// ==========================================
-// SECTION 5 : SYSTÈME JSON (ANTI-DELETE) - SANS SQLITE
-// ==========================================
-const saveMessage = (msg) => {
-    try {
-        const msgId = msg.key.id;
-        const from = msg.key.remoteJid;
-        const sender = msg.key.participant || from;
-        const name = msg.pushName || 'User';
-        const content = msg.message; // Plus besoin de JSON.stringify ici !
-        const time = Date.now();
-
-        const messages = readDB(MESSAGES_DB);
-        
-        // On enregistre le message
-        messages[msgId] = {
-            msgId,
-            remoteJid: from,
-            participant: sender,
-            pushName: name,
-            content,
-            timestamp: time
-        };
-
-        // Auto-clean : supprime les messages de plus de 12h
-        const limitTime = Date.now() - 43200000;
-        for (const id in messages) {
-            if (messages[id].timestamp < limitTime) {
-                delete messages[id];
-            }
-        }
-
-        writeDB(MESSAGES_DB, messages);
-    } catch (e) { console.error("❌ Message Save Error:", e); }
+// Warnings System
+const getWarnings = (groupId, userId) => {
+  const warnings = readDB(WARNINGS_DB);
+  const key = `${groupId}_${userId}`;
+  return warnings[key] || { count: 0, warnings: [] };
 };
 
-const getMessage = (msgId) => {
-    try {
-        const messages = readDB(MESSAGES_DB);
-        const row = messages[msgId];
-        if (row) {
-            return row; // Plus besoin de JSON.parse ici !
-        }
-        return null;
-    } catch (e) {
-        console.error("❌ Message Get Error:", e);
-        return null;
-    }
+const addWarning = (groupId, userId, reason) => {
+  const warnings = readDB(WARNINGS_DB);
+  const key = `${groupId}_${userId}`;
+  
+  if (!warnings[key]) {
+    warnings[key] = { count: 0, warnings: [] };
+  }
+  
+  warnings[key].count++;
+  warnings[key].warnings.push({
+    reason,
+    date: Date.now()
+  });
+  
+  writeDB(WARNINGS_DB, warnings);
+  return warnings[key];
 };
 
-// --- EXPORTS ---
+const removeWarning = (groupId, userId) => {
+  const warnings = readDB(WARNINGS_DB);
+  const key = `${groupId}_${userId}`;
+  
+  if (warnings[key] && warnings[key].count > 0) {
+    warnings[key].count--;
+    warnings[key].warnings.pop();
+    writeDB(WARNINGS_DB, warnings);
+    return true;
+  }
+  return false;
+};
+
+const clearWarnings = (groupId, userId) => {
+  const warnings = readDB(WARNINGS_DB);
+  const key = `${groupId}_${userId}`;
+  delete warnings[key];
+  return writeDB(WARNINGS_DB, warnings);
+};
+
+// Moderators System
+const getModerators = () => {
+  const mods = readDB(MODS_DB);
+  return mods.moderators || [];
+};
+
+const addModerator = (userId) => {
+  const mods = readDB(MODS_DB);
+  if (!mods.moderators) mods.moderators = [];
+  if (!mods.moderators.includes(userId)) {
+    mods.moderators.push(userId);
+    return writeDB(MODS_DB, mods);
+  }
+  return false;
+};
+
+const removeModerator = (userId) => {
+  const mods = readDB(MODS_DB);
+  if (mods.moderators) {
+    mods.moderators = mods.moderators.filter(id => id !== userId);
+    return writeDB(MODS_DB, mods);
+  }
+  return false;
+};
+
+const isModerator = (userId) => {
+  const mods = getModerators();
+  return mods.includes(userId);
+};
+
 module.exports = {
   getGroupSettings,
   updateGroupSettings,
   getUser,
   updateUser,
-  saveMessage,
-  getMessage,
-  getWarnings: (userId) => readDB(WARNINGS_DB)[userId] || [],
-  addWarning: (userId, reason) => {
-    const w = readDB(WARNINGS_DB);
-    if (!w[userId]) w[userId] = [];
-    w[userId].push({ reason, timestamp: Date.now() });
-    return writeDB(WARNINGS_DB, w);
-  },
-  isModerator: (userId) => (readDB(MODS_DB).moderators || []).includes(userId)
+  getWarnings,
+  addWarning,
+  removeWarning,
+  clearWarnings,
+  getModerators,
+  addModerator,
+  removeModerator,
+  isModerator
 };
