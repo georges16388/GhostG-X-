@@ -45,11 +45,13 @@ module.exports = {
       const prefix = config.prefix || '.';
       const fileCount = commands.size;
       const pushName = msg.pushName || 'ᴜᴛɪʟɪsᴀᴛᴇᴜʀ';
+      const userTag = `@${extra.sender.split('@')[0]}`;
+      const botNameCaps = toSmallCaps(config.botName || 'ɢʜᴏsᴛɢ-𝐗');
       
       // En-tête avec ton design
-      let menuText = `╭╼━≪• *${toSmallCaps(config.botName || 'ɢʜᴏsᴛɢ-x ᴍᴅ')}* •≫━╾╮\n` +
+      let menuText = `╭╼━≪• *${botNameCaps}* •≫━╾╮\n` +
                      `┃ *sᴛᴀᴛᴜᴛ* : 🟢 ᴏɴʟɪɴᴇ\n` +
-                     `┃ *ᴜᴛɪʟɪsᴀᴛᴇᴜʀ* : @${pushName}\n` +
+                     `┃ *ᴜᴛɪʟɪsᴀᴛᴇᴜʀ* : ${userTag}\n` +
                      `┃ *ᴊᴇsᴜs ᴛᴀɪᴍᴇ* : ❤️✝\n` +
                      `┃ *ᴘʀᴇғɪxᴇ* : [ ${prefix} ]\n` +
                      `┃ *ᴄᴏᴍᴍᴀɴᴅᴇs* : ${fileCount} ғɪʟᴇs\n` +
@@ -62,7 +64,7 @@ module.exports = {
       sortedCategories.forEach(catKey => {
         const cmdList = categories[catKey];
         if (cmdList && cmdList.length > 0) {
-          
+        
           // Ton titre de catégorie
           menuText += `╭╼━≪• *${catKey.toUpperCase()}* •≫━╾╮\n`;
           
@@ -79,7 +81,7 @@ module.exports = {
       });
       
       menuText += `*_❤️ ᴊᴇsᴜs ᴛᴀɪᴍᴇ ᴇᴛ ᴛᴇ ʙᴇ́ɴɪssᴇ_❤️*\n` +
-                  `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ  ɢʜᴏsᴛɢ-𝐗*`;
+                  `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ${botNameCaps}*`;
       
       // Localisation de l'image dans le dossier utils
       const imagePath = path.join(__dirname, '../../utils/bot_image.jpg');
