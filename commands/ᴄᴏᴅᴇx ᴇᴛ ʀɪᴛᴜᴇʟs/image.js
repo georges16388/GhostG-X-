@@ -7,7 +7,7 @@ const { webp2png } = require('../../utils/webp2mp4');
 
 module.exports = {
   name: 'ɪᴍᴀɢᴇ',
-  aliases: ['toimg', 'stickertoimg', 'sticker2img', 'svideo','image', 'simage'],
+  aliases: ['toimg', 'stickertoimg', 'sticker2img', 'svideo','image', 'simage', 'img'],
   category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
   description: 'Convertis un sticker en image (PNG)',
   usage: '.ɪᴍᴀɢᴇ (repond à un sticker)',
