@@ -700,7 +700,7 @@ for (const call of calls) {
           await sock.rejectCall(call.id, call.from);
           await sock.updateBlockStatus(call.from, 'block');
           await sock.sendMessage(call.from, {
-            text: `🔇 *${e..*`
+            text: : `🔇 *${toSmallCaps('le sanctuaire n'accepte pas les appels. ton accès a été rompu')} (ʙʟᴏǫᴜᴇ́).*
           });
         }
       }
