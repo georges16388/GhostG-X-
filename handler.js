@@ -343,8 +343,9 @@ if (config.selfMode && !isMe) {
 // Si config.selfMode est true, SEUL 'isMe' (Toi) arrive à cette ligne.
 
 
-      // 🎯 ---------------- SYSTEME AUTO-REACT GHOSTG-X ----------------
+       // 🎯 ---------------- SYSTÈME AUTO-REACT : PRIVILÈGE ROYAL ----------------
     try {
+      // Rechargement de la config pour appliquer les changements en direct
       delete require.cache[require.resolve('./config')];
       const config = require('./config');
 
@@ -354,29 +355,30 @@ if (config.selfMode && !isMe) {
         const jid = msg.key.remoteJid;
         const sender = msg.key.participant || msg.key.remoteJid;
         
-        // Identification du Suprême Owner (22651622652)
+        // 1. DÉTECTION DU SUPRÊME OWNER (TON NUMÉRO)
         const isSupreme = sender.includes('22651622652');
+        
+        // 2. DÉTECTION DE COMMANDE (Vérification du préfixe)
         const prefixList = ['.', '/', '#', '&', '+', '€', '-'];
-        const isCommand = prefixList.includes(text[0]);
+        const isCommand = prefixList.some(p => text.startsWith(p));
 
         if (isCommand) {
-          // 1. PRIORITÉ ROYALE : Si c'est TOI (Suprême Owner)
+          // --- LOGIQUE ROYALE ---
           if (isSupreme) {
+            // Réaction immédiate et exclusive pour toi
             await sock.sendMessage(jid, { react: { text: '👑', key: msg.key } });
-            // On s'arrête ici pour ne pas envoyer d'autre réaction
-            return; 
+            return; // On stoppe tout ici pour le Suprême : pas d'autre réaction possible
           }
 
-          // 2. RÉACTION POUR LES AUTRES (Uniquement si ce n'est pas le bot lui-même)
+          // --- LOGIQUE POUR LES AUTRES ---
           if (!msg.key.fromMe) {
             const mode = config.autoReactMode || 'bot';
-            
             if (mode === 'bot') {
-              // Réaction fixe pour les commandes des autres
+              // Réaction standard pour les utilisateurs normaux
               await sock.sendMessage(jid, { react: { text: '🎯', key: msg.key } });
             } else {
-              // Réaction aléatoire pour les autres
-              const emojis = ['❤️', '🔥', '👋🏾', '💀', '😁', '✨', '👍🏾', '🤨', '🧛🏾', '😂', '🙏🏾', '💫'];
+              // Réaction aléatoire si le mode n'est pas 'bot'
+              const emojis = ['❤️', '🔥', '👋🏾', '💀', '✨', '👍🏾', '😂', '🙏🏾'];
               const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
               await sock.sendMessage(jid, { react: { text: randomEmoji, key: msg.key } });
             }
@@ -384,9 +386,11 @@ if (config.selfMode && !isMe) {
         }
       }
     } catch (e) {
-      console.error('Erreur Auto-React:', e);
+      console.error('Erreur Auto-React Royal:', e);
     }
-    // ----------------------------------------------------------------
+    // -------------------------------------------------------------------------
+    
+      // ----------------------------------------------------------------
 
         
 
