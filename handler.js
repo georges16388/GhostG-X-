@@ -759,8 +759,7 @@ const handleAntilink = async (sock, msg, groupMetadata) => {
     console.error('Error in antilink handler:', error);
   }
 };
-
-// Anti-group mention handler (Discret et silencieux)
+// Anti-group mention handler
 const handleAntigroupmention = async (sock, msg, groupMetadata) => {
   try {
     const from = msg.key.remoteJid;
@@ -776,9 +775,13 @@ const handleAntigroupmention = async (sock, msg, groupMetadata) => {
 
       const ctx = msg.message.contextInfo || msg.message.extendedTextMessage?.contextInfo;
       if (ctx) {
+        // Correction ici pour cumuler les conditions sans écraser
         isForwardedStatus = isForwardedStatus || !!ctx.isForwarded || !!ctx.forwardingScore || !!ctx.forwardedNewsletterMessageInfo;
       }
     }
+// ... suite de ton code
+
+
 
     if (isForwardedStatus) {
       const senderIsAdmin = await isAdmin(sock, sender, from, groupMetadata);
