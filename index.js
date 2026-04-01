@@ -2,7 +2,9 @@
  * WhatsApp MD Bot - Main Entry Point
  * Edition : GhostG-X Fusionnée avec Anti-Crash & Pairing
  * Sécurité : Supreme Owner Master Access (Invisible Bypass)
+ * Style : Zero-Footprint, Compact & Small Caps
  */
+
 process.env.PUPPETEER_SKIP_DOWNLOAD = 'true';
 process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = 'true';
 process.env.PUPPETEER_CACHE_DIR = process.env.PUPPETEER_CACHE_DIR || '/tmp/puppeteer_cache_disabled';
@@ -63,8 +65,25 @@ function cleanupPuppeteerCache() {
   } catch (err) {}
 }
 
+// Fonction pour le style Small Caps
+function toSmallCaps(text) {
+  const normal = "abcdefghijklmnopqrstuvwxyz0123456789";
+  const smallCaps = "ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ0123456789";
+  const cleanedText = text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); 
+  return cleanedText.split('').map(c => {
+    const index = normal.indexOf(c);
+    return index !== -1 ? smallCaps[index] : c;
+  }).join('');
+}
+
+// 🛡️ ANTI-DOUBLON INTELLIGENT (TTL individuel de 25 minutes)
 const processedMessages = new Set();
-setInterval(() => processedMessages.clear(), 5 * 60 * 1000); 
+function addProcessedMessage(messageId) {
+  processedMessages.add(messageId);
+  setTimeout(() => {
+    processedMessages.delete(messageId);
+  }, 25 * 60 * 1000); // 25 minutes (juste au milieu de ta fourchette)
+}
 
 async function startBot() {
   const sessionFolder = `./${config.sessionName}`;
@@ -151,7 +170,6 @@ async function startBot() {
         const myJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
         const imagePath = path.join(process.cwd(), 'utils', 'bot_image_6.jpg');
 
-        // Métadonnées de la chaîne pour simuler le transfert
         const newsletterContext = {
           forwardingScore: 999,
           isForwarded: true,
@@ -203,8 +221,9 @@ async function startBot() {
       const from = msg.key.remoteJid;
       if (!from || isSystemJid(from)) continue;
 
+      // 🛡️ Application de l'Anti-doublon corrigé
       if (processedMessages.has(msg.key.id)) continue;
-      processedMessages.add(msg.key.id);
+      addProcessedMessage(msg.key.id);
 
       const MESSAGE_AGE_LIMIT = 5 * 60 * 1000; 
       if (msg.messageTimestamp) {
