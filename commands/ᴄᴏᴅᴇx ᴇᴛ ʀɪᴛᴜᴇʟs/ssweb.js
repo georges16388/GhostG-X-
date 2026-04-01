@@ -1,15 +1,17 @@
 /**
  * SSWeb - Screenshot Website Command
+ * GhostG-X Edition
  */
 
+const axios = require('axios');
 const APIs = require('../../utils/api');
+const config = require('../../config.js');
 
-// Fonction pour le style Small Caps (sécurisée pour le français)
+// Fonction pour le style Small Caps (Cohérence visuelle du sanctuaire)
 function toSmallCaps(text) {
   const normal = "abcdefghijklmnopqrstuvwxyz0123456789";
   const smallCaps = "ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ0123456789";
 
-  // On passe en minuscule et on retire les accents pour une conversion propre
   const cleanedText = text.toLowerCase()
     .normalize("NFD").replace(/[\u0300-\u036f]/g, ""); 
 
@@ -22,20 +24,27 @@ function toSmallCaps(text) {
 module.exports = {
   name: 'ssweb',
   aliases: ['screenshot', 'ss', 'webss', 'capture'],
-  category: '☬ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
-  description: '**ᴘʀᴇɴᴅ ᴜɴᴇ ᴄᴀᴘᴛᴜʀᴇ ᴅ\'ᴇ́ᴄʀᴀɴ ᴅ\'ᴜɴ ꜱᴀɴᴄᴛᴜᴀɪʀᴇ ᴡᴇʙ**',
-  usage: 'ssweb',
+  category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
+  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴘʀᴇɴᴅ ᴜɴᴇ ᴄᴀᴘᴛᴜʀᴇ ᴅ\'ᴇᴄʀᴀɴ ᴅ\'ᴜɴ sᴀɴᴄᴛᴜᴀɪʀᴇ ᴡᴇʙ**',
+  usage: `${config.prefix || '.'}ssweb [lien du site]`,
+  groupOnly: false,
+  adminOnly: false,
+  botAdminNeeded: false,
 
   async execute(sock, msg, args, extra) {
+    const { reply } = extra;
+    const chatId = extra.from;
+
     try {
       if (args.length === 0) {
-        return extra.reply(
+        return reply(
           `╭╼━≪• *⚠️ ᴇᴄʜᴇᴄ ᴅᴇ ʟɪɴᴠᴏᴄᴀᴛɪᴏɴ* •≫━╾╮\n` +
           `┃\n` +
           `┃ 🔮 *${toSmallCaps('indique ladresse dun sanctuaire web')} !*\n` +
           `┃ 💡 *${toSmallCaps('exemple')} :* .ssweb google.com\n` +
           `┃\n` +
-          `╰━━━━━━━━━━━━━━━━━━━━━━━╯`
+          `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
+          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`
         );
       }
 
@@ -46,11 +55,23 @@ module.exports = {
         url = 'https://' + url;
       }
 
-      await sock.sendMessage(extra.from, {
+      // Petite réaction d'attente
+      await sock.sendMessage(chatId, {
         react: { text: '📸', key: msg.key }
       });
 
-      const screenshotBuffer = await APIs.screenshotWebsite(url);
+      // Appel à l'API
+      const screenshotResult = await APIs.screenshotWebsite(url);
+
+      let screenshotBuffer;
+      
+      // Sécurité si l'API renvoie un lien au lieu d'un Buffer directement
+      if (typeof screenshotResult === 'string' && screenshotResult.startsWith('http')) {
+        const response = await axios.get(screenshotResult, { responseType: 'arraybuffer' });
+        screenshotBuffer = Buffer.from(response.data);
+      } else {
+        screenshotBuffer = screenshotResult;
+      }
 
       const captionText = 
           `╭╼━≪• *🖼️ ᴠɪsɪᴏɴ ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ* •≫━╾╮\n` +
@@ -58,17 +79,17 @@ module.exports = {
           `┃ 🌐 *${toSmallCaps('source')} :* ${url}\n` +
           `┃\n` +
           `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
-      
- `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`;
 
-      await sock.sendMessage(extra.from, {
+      // Envoi de l'image de capture
+      await sock.sendMessage(chatId, {
         image: screenshotBuffer,
         caption: captionText
       }, { quoted: msg });
 
     } catch (error) {
       console.error('SSWeb command error:', error);
-      await extra.reply(`❌ *ᴇʀʀᴇᴜʀ :* ${toSmallCaps('impossible de capturer ce sanctuaire')}`);
+      await reply(`*❌ ${toSmallCaps('erreur')} :* ${toSmallCaps('impossible de capturer ce sanctuaire')} (${error.message})\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
     }
   }
 };
