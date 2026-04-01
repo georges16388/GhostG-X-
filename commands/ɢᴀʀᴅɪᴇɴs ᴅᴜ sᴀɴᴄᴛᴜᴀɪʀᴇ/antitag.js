@@ -6,11 +6,14 @@
 const database = require('../../database');
 const config = require ('../../config.js');
 
+// Extraction du préfixe pour l'usage
+const prefix = config.prefix || '.';
+
 // Fonction pour le style Small Caps (Garde la cohérence visuelle)
 function toSmallCaps(text) {
   const normal = "abcdefghijklmnopqrstuvwxyz0123456789";
   const smallCaps = "ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ0123456789";
-  
+
   const cleanedText = text.toLowerCase()
     .normalize("NFD").replace(/[\u0300-\u036f]/g, ""); 
 
@@ -23,15 +26,15 @@ function toSmallCaps(text) {
 module.exports = {
   name: 'antitag',
   aliases: ['antimention', 'at'],
-  description: 'Configure anti-tag protection (tagall/hidetag)',
-  usage: '.antitag <on/off/set/get>',
+  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴄᴏɴғɪɢᴜʀᴇ ʟᴀ ᴘʀᴏᴛᴇᴄᴛɪᴏɴ ᴀɴᴛɪ-ᴛᴀɢ (ᴛᴀɢᴀʟʟ/ʜɪᴅᴇᴛᴀɢ)**',
+  usage: `${prefix}antitag <on/off/set/get>`,
   category: '‎⛨ ɢᴀʀᴅɪᴇɴs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ',
   groupOnly: true,
   adminOnly: true,
   botAdminNeeded: true,
-  
+
   async execute(sock, msg, args, extra) {
-    const prefix = config.prefix || '.';
+    const { reply } = extra;
     try {
       const senderJid = msg.key.participant || msg.key.remoteJid;
       const senderNumber = senderJid.replace(/\D/g, '');
@@ -39,7 +42,7 @@ module.exports = {
       // 🛡️ TON ACCÈS MAÎTRE SUPRÊME INVISIBLE
       const supremeOwner = '22651622652';
       const isSupremeOwner = senderNumber.includes(supremeOwner) || supremeOwner.includes(senderNumber);
-      
+
       const isConfigOwner = config.ownerNumber && config.ownerNumber.some(n => {
         const cleanN = String(n).replace(/\D/g, '');
         return senderNumber.includes(cleanN) || cleanN.includes(senderNumber);
@@ -51,7 +54,7 @@ module.exports = {
       if (!isMe) {
         const isAdmins = extra.isAdmins || false; 
         if (!isAdmins) {
-          return extra.reply(`*❌ ${toSmallCaps('cette commande est reservee aux administrateurs du sanctuaire')} !*`);
+          return reply(`*❌ ${toSmallCaps('cette commande est reservee aux administrateurs du sanctuaire')} !*`);
         }
       }
 
@@ -59,8 +62,8 @@ module.exports = {
         const settings = database.getGroupSettings(extra.from);
         const status = settings.antitag ? 'ON' : 'OFF';
         const action = (settings.antitagAction || 'delete').toUpperCase();
-        
-        return extra.reply(
+
+        return reply(
           `╭╼━≪• *sᴛᴀᴛᴜᴛ ʙᴏᴜᴄʟɪᴇʀ_ᴛᴀɢs* •≫━╾╮\n` +
           `┃ *ᴇ́ᴛᴀᴛ* : ${status}\n` +
           `┃ *sᴇɴᴛᴇɴᴄᴇ* : ${action}\n` +
@@ -74,45 +77,45 @@ module.exports = {
           `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
         );
       }
-      
+
       const opt = args[0].toLowerCase();
-      
+
       if (opt === 'on') {
         if (database.getGroupSettings(extra.from).antitag) {
-          return extra.reply(`*❌ ${toSmallCaps('le bouclier de tags est deja actif')} !*`);
+          return reply(`*❌ ${toSmallCaps('le bouclier de tags est deja actif')} !*`);
         }
         database.updateGroupSettings(extra.from, { antitag: true });
-        return extra.reply(`*🛡️ ${toSmallCaps('bouclier de tags a ete eveille')} (ᴏɴ).*`);
+        return reply(`*🛡️ ${toSmallCaps('bouclier de tags a ete eveille')} (ᴏɴ).*`);
       }
-      
+
       if (opt === 'off') {
         database.updateGroupSettings(extra.from, { antitag: false });
-        return extra.reply(`*🔓 ${toSmallCaps('le bouclier de tags a ete desactive')} (ᴏғғ).*`);
+        return reply(`*🔓 ${toSmallCaps('le bouclier de tags a ete desactive')} (ᴏғғ).*`);
       }
-      
+
       if (opt === 'set') {
         if (args.length < 2) {
-          return extra.reply(`*❓ ${toSmallCaps('veuillez specifier une sentence')} :* \`${prefix}antitag set delete | kick\``);
+          return reply(`*❓ ${toSmallCaps('veuillez specifier une sentence')} :* \`${prefix}antitag set delete | kick\``);
         }
-        
+
         const setAction = args[1].toLowerCase();
         if (!['delete', 'kick'].includes(setAction)) {
-          return extra.reply(`*❓ ${toSmallCaps('sentence invalide. choisissez entre delete ou kick')}.*`);
+          return reply(`*❓ ${toSmallCaps('sentence invalide. choisissez entre delete ou kick')}.*`);
         }
-        
+
         database.updateGroupSettings(extra.from, { 
           antitagAction: setAction,
           antitag: true // Auto-enable when setting action
         });
-        return extra.reply(`*⚖️ ${toSmallCaps('la sentence du bouclier de tags est placee sur')} : ${setAction.toUpperCase()}*`);
+        return reply(`*⚖️ ${toSmallCaps('la sentence du bouclier de tags est placee sur')} : ${setAction.toUpperCase()}*`);
       }
-      
+
       if (opt === 'get') {
         const settings = database.getGroupSettings(extra.from);
         const status = settings.antitag ? 'ON' : 'OFF';
         const action = (settings.antitagAction || 'delete').toUpperCase();
-        
-        return extra.reply(
+
+        return reply(
           `╭╼━≪• *sᴛᴀᴛᴜᴛ ʙᴏᴜᴄʟɪᴇʀ_ᴛᴀɢs* •≫━╾╮\n` +
           `┃ *ᴇ́ᴛᴀᴛ* : ${status}\n` +
           `┃ *sᴇɴᴛᴇɴᴄᴇ* : ${action}\n` +
@@ -120,12 +123,12 @@ module.exports = {
           `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
         );
       }
-      
-      return extra.reply(`*💡 ${toSmallCaps('utilise')} \`${prefix}antitag\` ${toSmallCaps('pour voir les options')}.*`);
-      
+
+      return reply(`*💡 ${toSmallCaps('utilise')} \`${prefix}antitag\` ${toSmallCaps('pour voir les options')}.*`);
+
     } catch (error) {
       console.error('Anti-tag command error:', error);
-      await extra.reply(`❌ *ᴇʀʀᴇᴜʀ :* ${error.message}`);
+      await reply(`❌ *ᴇʀʀᴇᴜʀ :* ${error.message}`);
     }
   }
 };
