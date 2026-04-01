@@ -602,7 +602,7 @@ module.exports = {
   aliases: ['igstickercrop', 'igsc', 'igcrop', 'sceau_ig_carre', 'sceau_ig_carré'],
   description: 'Convert Instagram post/reel to cropped square sticker',
   usage: '.sᴄᴇᴀᴜ_ɪɢ_ᴄᴀʀʀᴇ <Instagram URL>',
-  category: 'ᴇ́ᴄʜᴏs ᴅᴜ ᴍᴏɴᴅᴇ',
+  category: '‎⌘ ᴇ́ᴄʜᴏs ᴅᴜ ᴍᴏɴᴅᴇ',
 
   async execute(sock, msg, args, extra) {
     await igsCommand(sock, msg, args, extra, true);
