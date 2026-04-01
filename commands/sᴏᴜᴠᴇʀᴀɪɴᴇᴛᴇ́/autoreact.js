@@ -12,7 +12,7 @@ module.exports = {
   category: '♛ sᴏᴜᴠᴇʀᴀɪɴᴇᴛᴇ́',
   ownerOnly: true, // Géré par ton handler
   description: '*『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴄᴏɴғɪɢᴜʀᴇ ʟᴇs ʀᴇ́ᴀᴄᴛɪᴏɴs ᴀᴜᴛᴏᴍᴀᴛɪǫᴜᴇs ᴅᴇs sᴄᴇᴀᴜx*',
-  usage: (prefix) => `${prefix}ʀᴇғʟᴇxᴇ_sʏsᴛᴇᴍᴇ ᴏɴ/ᴏғғ/sᴇᴛ ʙᴏᴛ/sᴇᴛ ᴀʟʟ`,
+  usage: `${prefix}ʀᴇғʟᴇxᴇ_sʏsᴛᴇᴍᴇ ᴏɴ/ᴏғғ/sᴇᴛ ʙᴏᴛ/sᴇᴛ ᴀʟʟ`,
 
   async execute(sock, msg, args, extra) {
     const { reply, isOwner } = extra;
