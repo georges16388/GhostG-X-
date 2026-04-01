@@ -1,7 +1,15 @@
+/**
+ * Rejet Appels Command - GhostG-X Edition
+ * Active ou désactive le bouclier anti-appels en modifiant le fichier .env
+ */
+
 const fs = require('fs');
 const path = require('path');
 const config = require('../../config');
-const prefix = config.prefix || '.';
+
+// Une seule définition propre du préfixe en haut
+const prefix = config.prefix; 
+
 module.exports = {
   name: 'ʀᴇᴊᴇᴛ_ᴀᴘᴘᴇʟs',
   aliases: ['rejet_appels', 'anticall', 'anti-call', 'rejeter'],
@@ -11,21 +19,21 @@ module.exports = {
   usage: `${prefix}ʀᴇᴊᴇᴛ_ᴀᴘᴘᴇʟs ᴏɴ/ᴏғғ/sᴛᴀᴛᴜs`,
 
   async execute(sock, msg, args, extra) {
-    const configPath = path.join(__dirname, '../../config.js');
-    const prefix = config.prefix || '.';
-    
     if (!args[0]) {
       return extra.reply(`*ᴜsᴀɢᴇ : ${prefix}ʀᴇᴊᴇᴛ_ᴀᴘᴘᴇʟs ᴏɴ / ᴏғғ / sᴛᴀᴛᴜs*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
     }
 
     const option = args[0].toLowerCase();
+    const envPath = path.join(process.cwd(), '.env');
 
     try {
-      let configFile = fs.readFileSync(configPath, 'utf8');
+      // Lecture du fichier .env
+      let envContent = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf8') : '';
+      
+      // On cherche précisément "ANTICALL=true" dans le fichier
+      const isCurrentlyEnabled = /^ANTICALL=true/m.test(envContent);
 
-      // Regex plus robuste qui ignore les espaces autour des deux-points
-      const isCurrentlyEnabled = /anticall\s*:\s*true/.test(configFile);
-
+      // Traitement de l'option STATUS
       if (option === 'status') {
         const statusText = isCurrentlyEnabled 
           ? '*🛡️ ʟᴇ ʙᴏᴜᴄʟɪᴇʀ ᴀɴᴛɪ-ᴀᴘᴘᴇʟs ᴇsᴛ ᴀᴄᴛɪᴠᴇ́.*' 
@@ -39,6 +47,7 @@ module.exports = {
 
       const enable = option === 'on';
 
+      // Vérification si le statut demandé est déjà le statut actuel
       if (enable === isCurrentlyEnabled) {
         return extra.reply(enable 
           ? '*🛡️ ʟᴇ ʙᴏᴜᴄʟɪᴇʀ ᴇsᴛ ᴅᴇ́ᴊᴀ̀ ᴀᴄᴛɪᴠᴇ́.*' 
@@ -46,15 +55,20 @@ module.exports = {
         );
       }
 
-      // Remplacement intelligent peu importe l'espacement initial
-      if (enable) {
-        configFile = configFile.replace(/anticall\s*:\s*false/g, 'anticall: true');
+      // Modification chirurgicale de la ligne dans le .env
+      const targetValue = enable ? 'true' : 'false';
+      if (envContent.match(/^ANTICALL=/m)) {
+        envContent = envContent.replace(/^ANTICALL=.*/m, `ANTICALL=${targetValue}`);
       } else {
-        configFile = configFile.replace(/anticall\s*:\s*true/g, 'anticall: false');
+        // Au cas où la ligne n'existe pas (par sécurité)
+        envContent += `\nANTICALL=${targetValue}`;
       }
 
-      fs.writeFileSync(configPath, configFile, 'utf8');
-      delete require.cache[require.resolve('../../config')];
+      // Sauvegarde du fichier
+      fs.writeFileSync(envPath, envContent.trim() + '\n', 'utf8');
+      
+      // Injection de la nouvelle valeur en mémoire vive
+      config.defaultGroupSettings.anticall = enable;
 
       const successMessage = enable
         ? `*🛡️ ʟᴇ ʙᴏᴜᴄʟɪᴇʀ ᴀɴᴛɪ-ᴀᴘᴘᴇʟs ᴇsᴛ ᴀᴄᴛɪᴠᴇ́. ᴛᴏᴜᴛᴇ ɪɴᴛʀᴜsɪᴏɴ ᴠᴏᴄᴀʟᴇ sᴇʀᴀ ʀᴇᴊᴇᴛᴇ́ᴇ ᴇᴛ sᴄᴇʟʟᴇ́ᴇ.*`
