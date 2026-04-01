@@ -12,7 +12,7 @@ module.exports = {
   name: 'glitch',
   aliases: [],
   category: '‎✎ ғᴏʀɢᴇ ᴅᴇ ᴛᴇxᴛᴇ',
-  description: '**ᴄʀᴇ́ᴇ ᴜɴ ᴇғғᴇᴛ ᴅᴇ ᴛᴇxᴛᴇ sᴛʏʟᴇ ɢʟɪᴛᴄʜ**',
+  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴄʀᴇ́ᴇ ᴜɴ ᴇғғᴇᴛ ᴅᴇ ᴛᴇxᴛᴇ sᴛʏʟᴇ ɢʟɪᴛᴄʜ**',
   usage: `${prefix}glitch <ᴛᴇxᴛᴇ>`,
 
   async execute(sock, msg, args) {
