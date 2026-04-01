@@ -71,7 +71,8 @@ module.exports = {
         
         if (formattedUsage) {
           const usageLines = formattedUsage.split('\n');
-          const indentedUsage = usageLines.map(line => `┃ 💡 *ᴜsᴀɢᴇ* : ${line}`).join('\n');
+  const activePrefix = config.prefix || '.';
+          const indentedUsage = usageLines.map(line => `┃ [ ${activePrefix} ] 💡 *ᴜsᴀɢᴇ* : ${line}`).join('\n');
           helpDetail += indentedUsage + '\n';
         }
 
