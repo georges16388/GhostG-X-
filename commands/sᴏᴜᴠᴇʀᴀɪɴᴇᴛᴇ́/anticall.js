@@ -8,7 +8,7 @@ module.exports = {
   category: '♛ sᴏᴜᴠᴇʀᴀɪɴᴇᴛᴇ́',
   ownerOnly: true,
   description: '*『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀᴄᴛɪᴠᴇ ᴏᴜ ᴅᴇ́sᴀᴄᴛɪᴠᴇ ʟᴇ ʙᴏᴜᴄʟɪᴇʀ ᴀɴᴛɪ-ᴀᴘᴘᴇʟs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ*',
-  usage: `${config.prefix || '.'}ʀᴇᴊᴇᴛ_ᴀᴘᴘᴇʟs ᴏɴ/ᴏғғ/sᴛᴀᴛᴜs`,
+  usage: `${prefix}ʀᴇᴊᴇᴛ_ᴀᴘᴘᴇʟs ᴏɴ/ᴏғғ/sᴛᴀᴛᴜs`,
 
   async execute(sock, msg, args, extra) {
     const configPath = path.join(__dirname, '../../config.js');
