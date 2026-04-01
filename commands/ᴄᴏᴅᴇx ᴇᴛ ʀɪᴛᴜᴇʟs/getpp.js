@@ -24,7 +24,12 @@ module.exports = {
   aliases: ['gp', 'getpic', 'pp'],
   category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
   description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ʀᴇᴄᴜᴘᴇʀᴇ ʟᴀ ᴘʜᴏᴛᴏ ᴅᴇ ᴘʀᴏғɪʟ ᴅ\'ᴜɴ ᴜᴛɪʟɪsᴀᴛᴇᴜʀ**',
-  usage: `${config.prefix || '.'}getpp [@mention / reponse]`,
+  
+  get usage() {
+    const activePrefix = config.prefix || '.';
+    return `${activePrefix}getpp [@mention / reponse]`;
+  },
+
   groupOnly: false,
   adminOnly: false,
   botAdminNeeded: false,
