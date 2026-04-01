@@ -8,20 +8,30 @@ const { loadCommands } = require('../../utils/commandLoader');
 const fs = require('fs');
 const path = require('path');
 
-// Fonction pour convertir du texte normal en Small Caps
-function toSmallCaps(text) {
+// Fonction avancée pour convertir du texte normal en Small Caps GRAS (Bold Small Caps)
+function toBoldSmallCaps(text) {
   const normal = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  const smallCaps = "ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ0123456789";
+  // Alphabet Small Caps en gras
+  const boldSmallCaps = "ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ0123456789";
+  
   return text.split('').map(c => {
     const index = normal.indexOf(c);
-    return index !== -1 ? smallCaps[index] : c;
+    return index !== -1 ? boldSmallCaps[index] : c;
   }).join('');
+}
+
+// Fonction pour nettoyer les caractères invisibles parasites dans les noms de catégories
+function cleanCategoryName(name) {
+  return name
+    .replace(/[\u200B-\u200D\uFEFF]/g, '') // Supprime les espaces invisibles
+    .trim()
+    .toUpperCase();
 }
 
 module.exports = {
   name: 'grimoire', 
   aliases: ['commands', 'menu', 'arcanes', 'index', 'm'],
-  category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
+  category: '☬ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
   description: 'Affiche l\'ensemble des rituels et commandes disponibles',
   usage: '.grimoire',
 
@@ -30,51 +40,51 @@ module.exports = {
       const commands = loadCommands();
       const categories = {};
 
-      // Groupement des commandes directement par le texte de leur catégorie
+      // Groupement et nettoyage des catégories
       commands.forEach((cmd, name) => {
         if (cmd.name === name) { // Ne compte que les noms principaux, pas les alias
-          const categoryName = cmd.category || '🔮 ᴀᴜᴛʀᴇs sᴏʀᴛs';
+          let rawCategory = cmd.category || '🔮 ᴀᴜᴛʀᴇs sᴏʀᴛs';
+          let cleanedCategory = cleanCategoryName(rawCategory);
 
-          if (!categories[categoryName]) {
-            categories[categoryName] = [];
+          if (!categories[cleanedCategory]) {
+            categories[cleanedCategory] = [];
           }
-          categories[categoryName].push(cmd);
+          categories[cleanedCategory].push(cmd);
         }
       });
 
       const prefix = config.prefix || '.';
       const fileCount = commands.size;
-      const pushName = msg.pushName || 'ᴜᴛɪʟɪsᴀᴛᴇᴜʀ';
       const userTag = `@${extra.sender.split('@')[0]}`;
-      const botNameCaps = toSmallCaps(config.botName || 'ɢʜᴏsᴛɢ-𝐗');
+      const botNameCaps = toBoldSmallCaps(config.botName || 'ɢʜᴏsᴛɢ-𝐗');
 
-             // En-tête avec ton design GhostG-X 100% Immersif
-      let menuText = `╭╼━≪• *ɢʜᴏsᴛɢ-𝐗* •≫━╾╮\n` +
+      // En-tête avec ton design GhostG-X 100% Immersif
+      let menuText = `╭╼━≪• *${botNameCaps}* •≫━╾╮\n` +
                      `┃ *ᴠɪɢɪʟᴀɴᴄᴇ* : 🟢 ᴇ́ᴠᴇɪʟʟᴇ́\n` +
                      `┃ *ᴘᴇ̀ʟᴇʀɪɴ* : ${userTag}\n` +
                      `┃ *ᴀʟʟɪᴀɴᴄᴇ* : ♰ sᴄᴇʟʟᴇ́ᴇ ♰\n` +
-                     `┃ *ɪɴᴄᴀɴᴛᴀᴛɪᴏɴ* : [ ${prefix} ]\n` +
+                     `┃ *ɪɴᴄᴀɴᴛᴀᴛɪᴏɴ* : [ *${prefix}* ]\n` +
                      `┃ *ᴀʀᴄᴀɴᴇs* : ${fileCount} sᴏʀᴛs\n` +
                      `┃ *♛ sᴜᴢᴇʀᴀɪɴ* : https://wa.me/22651622652\n` +
                      `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n`;
 
-
-      // Tri alphabétique des catégories
+      // Tri alphabétique des catégories uniques
       const sortedCategories = Object.keys(categories).sort();
 
       sortedCategories.forEach(catKey => {
         const cmdList = categories[catKey];
         if (cmdList && cmdList.length > 0) {
 
-          // Ton titre de catégorie
-          menuText += `╭╼━≪• *${catKey.toUpperCase()}* •≫━╾╮\n`;
+          // Titre de la catégorie en Bold Small Caps
+          menuText += `╭╼━≪• *${catKey}* •≫━╾╮\n`;
 
           // Tri alphabétique des commandes à l'intérieur de la catégorie
           const sortedCmds = cmdList.sort((a, b) => a.name.localeCompare(b.name));
 
           sortedCmds.forEach(cmd => {
-            const smallCapsName = toSmallCaps(cmd.name);
-            menuText += `┃➽ *${smallCapsName}*\n`;
+            // Toutes les commandes passent par la même police Small Caps
+            const boldSmallCapsName = toBoldSmallCaps(cmd.name);
+            menuText += `┃➽ *${boldSmallCapsName}*\n`;
           });
 
           menuText += `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n`;
@@ -82,18 +92,13 @@ module.exports = {
       });
 
       menuText += `*_♰ ǫᴜᴇ ʟᴀ ʟᴜᴍɪᴇ̀ʀᴇ ᴅɪssɪᴘᴇ ᴛᴇs ᴛᴇ́ɴᴇ̀ʙʀᴇs ♰_*\n` +
-            `> *sᴄᴇʟʟᴇ́ ᴘᴀʀ ʟᴇs ᴀʀᴄᴀɴᴇs ᴅᴇ ${botNameCaps}*`;
+                  `> *sᴄᴇʟʟᴇ́ ᴘᴀʀ ʟᴇs ᴀʀᴄᴀɴᴇs ᴅᴇ ${botNameCaps}*`;
 
-
-      // 🎲 SÉLECTION ALÉATOIRE DE L'IMAGE 🎲
-      // Génère un chiffre aléatoire entre 1 et 7
+      // 🎲 SÉLECTION ALÉATOIRE DE L'IMAGE
       const randomNumber = Math.floor(Math.random() * 7) + 1;
-      
-      // Construction du nom de fichier (ex: bot_image_4.jpg)
       const imageName = `bot_image_${randomNumber}.jpg`;
       const imagePath = path.join(__dirname, '../../utils', imageName);
 
-      // Si l'image aléatoire existe, on l'envoie
       if (fs.existsSync(imagePath)) {
         const imageBuffer = fs.readFileSync(imagePath);
 
@@ -113,7 +118,7 @@ module.exports = {
         }, { quoted: msg });
 
       } else {
-        // 🔄 Repli de secours : Si l'image aléatoire n'existe pas, on tente de charger l'ancienne bot_image.jpg
+        // Repli de secours
         const fallbackPath = path.join(__dirname, '../../utils/bot_image.jpg');
         
         if (fs.existsSync(fallbackPath)) {
@@ -124,7 +129,6 @@ module.exports = {
             mentions: [extra.sender]
           }, { quoted: msg });
         } else {
-          // Repli ultime en texte brut
           await sock.sendMessage(extra.from, { 
             text: menuText,
             mentions: [extra.sender]
