@@ -1,6 +1,6 @@
 /**
  * Ping Command - Check bot response time
- * Nom d'invocation : .ᴠɪᴛᴇssᴇ
+ * Nom d'invocation : ᴠɪᴛᴇssᴇ
  */
 
 // Fonction pour convertir du texte normal en Small Caps
@@ -17,18 +17,18 @@ module.exports = {
     name: 'ᴠɪᴛᴇssᴇ',
     aliases: ['ping', 'p', 'flux', 'latence', 'vitesse'],
     category: '☬ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
-    description: 'Mesure la vitesse de réaction de l\'entité',
-    usage: '.ᴠɪᴛᴇssᴇ',
-    
+    description: '**ᴍᴇꜱᴜʀᴇ ʟᴀ ᴠɪᴛᴇꜱꜱᴇ ᴅᴇ ʀᴇ́ᴀᴄᴛɪᴏɴ ᴅᴇ ʟ\'ᴇɴᴛɪᴛᴇ́**',
+    usage: 'ᴠɪᴛᴇssᴇ',
+
     async execute(sock, msg, args, extra) {
       try {
         const start = Date.now();
         const sent = await extra.reply('🔮 *ɪɴᴠᴏᴄᴀᴛɪᴏɴ ᴅᴜ ғʟᴜx...*');
         const end = Date.now();
-        
+
         const responseTime = end - start;
         const timeStr = toSmallCaps(`${responseTime} ms`);
-        
+
         const textDesign = `╭╼━≪• *⚡ ᴍᴇsᴜʀᴇ ᴅᴜ ғʟᴜx* •≫━╾╮\n` +
                            `┃\n` +
                            `┃ 📡 *sᴛᴀᴛᴜᴛ* : 🟢 ᴏɴʟɪɴᴇ\n` +
@@ -38,13 +38,16 @@ module.exports = {
                            `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
                            `_❤️ ᴊᴇsᴜs ᴛᴀɪᴍᴇ ᴇᴛ ᴛᴇ ʙᴇ́ɴɪssᴇ_ ❤️\n` +
                            `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
-        
+
+        // Sécurité pour récupérer la clé du message envoyé
+        const messageKey = sent?.key || sent;
+
         // On édite le message précédent avec le nouveau style complet
         await sock.sendMessage(extra.from, {
           text: textDesign,
-          edit: sent.key
+          edit: messageKey
         });
-        
+
       } catch (error) {
         console.error('[vitesse] ERROR:', error);
         await extra.reply(`❌ *ʟ'ᴀɴᴀʟʏsᴇ ᴅᴜ ғʟᴜx ᴀ ᴇ́ᴄʜᴏᴜᴇ́.*`);
