@@ -18,7 +18,7 @@ module.exports = {
   async execute(sock, msg, args, extra) {
     const configPath = path.join(__dirname, '../../config.js');
      // Utilisation du préfixe de la config
-    
+    const prefix = config.prefix || '.';
     if (!args[0]) {
       return extra.reply(`*ᴜsᴀɢᴇ : ${prefix}ʀᴇᴊᴇᴛ_ᴀᴘᴘᴇʟs ᴏɴ / ᴏғғ / sᴛᴀᴛᴜs*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
     }
