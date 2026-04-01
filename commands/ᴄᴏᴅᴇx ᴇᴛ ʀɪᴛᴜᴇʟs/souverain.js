@@ -9,7 +9,7 @@ module.exports = {
     name: 'sᴏᴜᴠᴇʀᴀɪɴ',
     aliases: ['owner', 'creator', 'dev', 'developpeur' ,'maitre', 'developper','architecte', 'souverain'],
     category: '☬ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
-    description: '**ɪɴᴠᴏQᴜᴇ ʟᴇꜱ ɪɴꜰᴏʀᴍᴀᴛɪᴏɴꜱ ꜱᴀᴄʀᴇ́ᴇꜱ ᴅᴜ ɢʀᴀɴᴅ ᴀʀᴄʜɪᴛᴇᴄᴛᴇ**',
+    description: '**ɪɴᴠᴏǫᴜᴇ ʟᴇꜱ ɪɴꜰᴏʀᴍᴀᴛɪᴏɴꜱ ꜱᴀᴄʀᴇ́ᴇꜱ ᴅᴜ ɢʀᴀɴᴅ ᴀʀᴄʜɪᴛᴇᴄᴛᴇ**',
     usage: 'sᴏᴜᴠᴇʀᴀɪɴ',
     ownerOnly: false,
 
