@@ -14,8 +14,6 @@ module.exports = {
  // Configuration de **ʟ'ᴏʀᴀᴄʟᴇ**
     botName: 'ɢʜᴏsᴛɢ-𝐗',
     prefix: process.env.PREFIX || '.',
-    sessionName: 'session',
-    sessionID: process.env.SESSION_ID || '',
     newsletterJid: '120363425540434745@newsletter',
     updateZipUrl: 'https://github.com/georges16388/GhostG-X-/archive/refs/heads/main.zip',
 
