@@ -1,10 +1,11 @@
 /**
  * Support Command - Display project links and developer contact
+ * GhostG-X Edition
  */
 
 const config = require('../../config.js');
 
-// Fonction pour le style Small Caps (sécurisée pour le français)
+// Fonction pour le style Small Caps (Cohérence visuelle du sanctuaire)
 function toSmallCaps(text) {
   const normal = "abcdefghijklmnopqrstuvwxyz0123456789";
   const smallCaps = "ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ0123456789";
@@ -19,19 +20,23 @@ function toSmallCaps(text) {
 }
 
 module.exports = {
-  name: 'sᴜᴘᴘᴏʀᴛ',
-  aliases: ['support', 'group', 'aide', 'links', 'liens', 'ᴄᴏɴᴛᴀᴄᴛ'],
-  category: '☬ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
-  description: '**ᴀꜰꜰɪᴄʜᴇ ʟᴇꜱ ʟɪᴇɴꜱ ᴅᴇꜱ ꜱᴀɴᴄᴛᴜᴀɪʀᴇꜱ ᴇᴛ ʟᴇ ᴄᴏɴᴛᴀᴄᴛ ᴅᴜ ᴍᴀɪ̂ᴛʀᴇ**',
-  usage: 'sᴜᴘᴘᴏʀᴛ',
+  name: 'support',
+  aliases: ['group', 'aide', 'links', 'liens', 'contact'],
+  category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
+  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀғғɪᴄʜᴇ ʟᴇs ʟɪᴇɴs ᴅᴇs sᴀɴᴄᴛᴜᴀɪʀᴇs ᴇᴛ ʟᴇ ᴄᴏɴᴛᴀᴄᴛ ᴅᴜ ᴍᴀɪᴛʀᴇ**',
+  usage: `${config.prefix || '.'}support`,
+  groupOnly: false,
+  adminOnly: false,
+  botAdminNeeded: false,
 
   async execute(sock, msg, args, extra) {
-    try {
-      const chatId = msg.key.remoteJid;
+    const { reply } = extra;
+    const chatId = msg.key.remoteJid;
 
+    try {
       // Construction du message avec ton identité visuelle et un ton motivant
       const supportText = 
-          `╭╼━≪• *⚡ ɢʜᴏsᴛɢ-x sᴜᴘᴘᴏʀᴛ* •≫━╾╮\n` +
+          `╭╼━≪• *⚡ ɢʜᴏsᴛɢ 𝐗 sᴜᴘᴘᴏʀᴛ* •≫━╾╮\n` +
           `┃\n` +
           `┃ 🔮 *${toSmallCaps('rejoignez la legende')} !*\n` +
           `┃ *${toSmallCaps('ne restez pas dans lombre')}...* 🌌\n` +
@@ -46,7 +51,7 @@ module.exports = {
           `┃ 👉 https://t.me/ghostgxbot\n` +
           `┃\n` +
           `┃ 🟢 *${toSmallCaps('chaine whatsapp')} :* (🔥 *${toSmallCaps('mises a jour')}*)\n` +
-          `┃ 👉 https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c\n` +
+          `┃ 👉🏾 https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c\n` +
           `┃\n` +
           `┃ 💬 *${toSmallCaps('groupe dentraide')} :* (🤝 *${toSmallCaps('la famille')}*)\n` +
           `┃ 👉 https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf?mode=gi_t\n` +
@@ -61,7 +66,7 @@ module.exports = {
           `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
 
           `_❤️ ᴊᴇsᴜs ᴛᴀɪᴍᴇ ᴇᴛ ᴛᴇ ʙᴇ́ɴɪssᴇ_ ❤️\n` +
-          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`;
 
       // Envoi du message avec la configuration d'officialisation (Newsletter)
       await sock.sendMessage(chatId, {
@@ -71,15 +76,15 @@ module.exports = {
           isForwarded: true,
           forwardedNewsletterMessageInfo: {
             newsletterJid: '120363425540434745@newsletter',
-            newsletterName: 'ɢʜᴏsᴛɢ-𝐗',
+            newsletterName: 'ɢʜᴏsᴛɢ 𝐗',
             serverMessageId: -1
           }
         }
       }, { quoted: msg });
 
     } catch (error) {
-      // Style d'erreur simple et direct selon tes préférences
-      await extra.reply(`❌ *ᴇʀʀᴇᴜʀ :* ${error.message.toUpperCase()}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-x*`);
+      console.error('Support command error:', error);
+      await reply(`*❌ ${toSmallCaps('les liens du sanctuaire sont inaccessibles')} : ${error.message}*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
     }
   }
 };
