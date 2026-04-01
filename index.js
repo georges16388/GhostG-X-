@@ -225,9 +225,8 @@ async function startBot() {
       // 3. MISE À JOUR DE L'AUTOBIO
       if (config.autoBio) {
         await sock.updateProfileStatus(`*ɢʜᴏsᴛɢ-𝐗* | *♛ᴊᴇsᴜs ᴇsᴛ ʀᴏɪ♛*`);
-      }
+                  }
 
-      }
       handler.initializeAntiCall(sock);
     }
   });
