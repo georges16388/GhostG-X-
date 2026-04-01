@@ -8,7 +8,7 @@ module.exports = {
     name: 'ᴘᴀʟᴍᴀʀᴇ̀s',
     // Ajout de 'groupstats', 'stats', 'leaderboard', 'gstats', 'msgs' et 'palmares' en texte brut !
     aliases: ['stats', 'leaderboard', 'gstats', 'topmembers', 'msgs', 'messagestats', 'groupstats', 'palmarès', 'palmares'],
-    category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
+    category: '☬ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
     description: "Show today's group chat statistics",
     usage: '.ᴘᴀʟᴍᴀʀᴇ̀s',
     groupOnly: true,
