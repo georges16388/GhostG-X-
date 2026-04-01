@@ -6,6 +6,7 @@ require('dotenv').config();
 
 module.exports = {
     // Configuration du Souverain
+    // Récupère le numéro du .env, sinon utilise ton numéro par défaut.
     ownerNumber: [process.env.PHONE_NUMBER || '22651622652'],
     ownerName: ['ᴛʀᴜᴛʜ ᴅᴇᴠɪᴄᴇs'],
 
@@ -20,20 +21,26 @@ module.exports = {
     // Configuration des Sceaux (Stickers)
     packname: 'ɢʜᴏsᴛɢ-𝐗',
 
-    // Comportement de **ʟ'ᴏʀᴀᴄʟᴇ**
-    // selfMode: true  = Seul l'Owner peut utiliser les commandes (groupes + privé + inbox)
-    // selfMode: false = Tout le monde peut utiliser les commandes
+    // 🔐 GESTION DES ACCÈS (RÈGLES D'OR GHOSTG-X)
+    
+    // public: true  = Le bot répond à tout le monde (DM et Groupes)
+    // public: false = Le bot ignore les commandes des autres (DM et Groupes)
+    public: process.env.PUBLIC_MODE ? process.env.PUBLIC_MODE === 'true' : false,
+
+    // selfMode: true  = Seul l'Owner peut utiliser les commandes partout
+    // selfMode: false = Tout le monde peut utiliser les commandes (si public est sur true)
     selfMode: process.env.SELF_MODE === 'true',
 
     // Récupère la variable depuis le .env, ou force 'on' par défaut si elle est absente
     ghostgMode: process.env.GHOSTG_MODE ? process.env.GHOSTG_MODE.toLowerCase() : 'on',
 
+    // Comportement de **ʟ'ᴏʀᴀᴄʟᴇ**
     autoRead: false,
     autoTyping: false,
     autoBio: process.env.AUTO_BIO === 'true',
     autoSticker: false,
     autoReact: process.env.AUTOREACT === 'true',
-    autoReactMode: 'bot',
+    autoReactMode: 'bot', // 'bot' pour ta réaction standard ou 'random'
     autoDownload: false,
 
     // Paramètres par défaut des Cercles (Groupes)
@@ -71,7 +78,7 @@ module.exports = {
 > *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`,
 
       antiSpam: false,
-      antidelete: false,
+      antidelete: false, // Géré directement par le store/index
       nsfw: false,
       detect: false,
       chatbot: false,
