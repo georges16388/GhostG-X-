@@ -23,9 +23,9 @@ function toSmallCaps(text) {
 module.exports = {
   name: 'ᴛᴛs',
   aliases: ['speak', 'say', 'tts', 'murmure'],
-  category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
-  description: 'ɪɴᴠᴏǫᴜᴇ ᴜɴᴇ ᴠᴏɪx ᴘᴏᴜʀ ᴘʀᴏɴᴏɴᴄᴇʀ ᴠᴏs ᴍᴜʀᴍᴜʀᴇs (ᴛᴛs)',
-  usage: '.ᴛᴛs <ᴍᴜʀᴍᴜʀᴇ>',
+  category: '☬ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
+  description: '**ɪɴᴠᴏQᴜᴇ ᴜɴᴇ ᴠᴏɪx ᴘᴏᴜʀ ᴘʀᴏɴᴏɴᴄᴇʀ ᴠᴏꜱ ᴍᴜʀᴍᴜʀᴇꜱ (ᴛᴛꜱ)**',
+  usage: 'ᴛᴛs',
   
   async execute(sock, msg, args, extra) {
     try {
