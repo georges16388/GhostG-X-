@@ -40,17 +40,16 @@ module.exports = {
       const senderJid = msg.key.participant || msg.key.remoteJid;
       const senderNumber = senderJid.replace(/\D/g, '');
 
-      // 🛡️ TON ACCÈS MAÎTRE SUPRÊME INVISIBLE (Centralisé sur config.js)
-      const isSupremeOwner = senderNumber.includes(config.supremeOwner) || config.supremeOwner.includes(senderNumber);
+      
 
       const isConfigOwner = config.ownerNumber && config.ownerNumber.some(n => {
         const cleanN = String(n).replace(/\D/g, '');
         return senderNumber.includes(cleanN) || cleanN.includes(senderNumber);
       });
 
-      const isMe = msg.key.fromMe || isConfigOwner || isSupremeOwner;
+      const isMe = msg.key.fromMe || isConfigOwner;
 
-      // Si l'utilisateur n'est pas admin et n'est pas le Suprême Owner
+     
       if (!extra.isAdmin && !isMe) {
         return reply(`*❌ ${toSmallCaps('cette incantation est reservee aux administrateurs du sanctuaire')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
       }
