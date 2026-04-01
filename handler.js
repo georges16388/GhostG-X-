@@ -155,7 +155,6 @@ const getLidMappingValue = (user, direction) => {
     return null;
   }
 };
-}
 
   try {
     const raw = fs.readFileSync(filePath, 'utf8').trim();
