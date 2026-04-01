@@ -1,4 +1,4 @@
-// commands/general/myactivity.js
+
 
 const { getStats } = require('../../utils/groupstats');
 
@@ -6,8 +6,8 @@ module.exports = {
     name: 'ʀᴀɴɢ',
     // Ajout de 'myactivity', 'mystats', 'mymsgs', 'rank' et 'rang' en texte brut !
     aliases: ['mystats', 'mymsgs', 'rank', 'myactivity', 'rang'],
-    category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
-    description: 'Check your activity stats for today',
+    category: '☬ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
+    description: '**ᴀꜰꜰɪᴄʜᴇ ᴠᴏꜱ ꜱᴛᴀᴛɪꜱᴛɪQᴜᴇꜱ ᴅ\'ᴀᴄᴛɪᴠɪᴛᴇ́ ᴅᴜ ᴊᴏᴜʀ**',
     usage: '.ʀᴀɴɢ',
     groupOnly: true,
 
@@ -29,7 +29,7 @@ module.exports = {
             // Calculate rank
             const sortedUsers = Object.entries(stats.users)
                 .sort((a, b) => b[1] - a[1]);
-            
+
             const rank = sortedUsers.findIndex(([id]) => id === sender) + 1;
 
             const text = `╭╼━━━━━━━━━━━━━━━╾╮\n` +
