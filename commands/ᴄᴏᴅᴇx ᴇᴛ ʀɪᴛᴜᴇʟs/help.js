@@ -43,7 +43,7 @@ module.exports = {
         }
 
         let helpDetail = `╭╼━≪• *${toSmallCaps('aide rituel')}* •≫━╾╮\n` +
-                         `┃ 🔮 *sᴏʀᴛ* : ${toSmallCaps(targetCmd.name).toUpperCase()}\n` +
+                         `┃ 🔮 *sᴏʀᴛ* : ${targetCmd.name}.` +
                          `┃ 🏷️ *ᴀʟɪᴀs* : ${targetCmd.aliases ? targetCmd.aliases.join(', ') : 'Aucun'}\n` +
                          `┃ *ᴄᴀᴛᴇ́ɢᴏʀɪᴇ* : ${targetCmd.category || '🔮 ᴀᴜᴛʀᴇs sᴏʀᴛs'}\n` +
                          `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
