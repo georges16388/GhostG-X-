@@ -10,7 +10,7 @@ const { writeExifVid } = require('../../utils/exif');
 module.exports = {
   name: 'effet', // 💡 Passage en texte brut pour éviter les bugs de lecture !
   aliases: ['ttp', 'attp', 'effet', 'ᴇғғᴇᴛ'],
-  category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
+  category: '☬ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
   description: 'Create animated text sticker',
   usage: '.effet <text>',
   
