@@ -1,5 +1,7 @@
 /**
  * Global Configuration for WhatsApp MD - GhostG-X Edition
+ * * Toutes les variables booléennes (true/false) sont lues depuis le fichier .env
+ * pour une synchronisation totale.
  */
 
 require('dotenv').config();
@@ -7,14 +9,14 @@ require('dotenv').config();
 module.exports = {
     supremeOwner: '22651622652', 
 
-    // Configuration des gérants secondaires (récupère le .env ou ton numéro par défaut)
+    // Configuration des gérants secondaires
     ownerNumber: [process.env.PHONE_NUMBER || '22651622652'],
     ownerName: ['ᴛʀᴜᴛʜ ᴅᴇᴠɪᴄᴇs'],
 
     // Configuration de **ʟ'ᴏʀᴀᴄʟᴇ**
     botName: 'ɢʜᴏsᴛɢ-𝐗',
     
-    // 🔮 LE PRÉFIXE (Placé ici pour être lu facilement par toutes les commandes)
+    // Le préfixe lu directement depuis le .env
     prefix: process.env.PREFIX || '.',
     
     newsletterJid: '120363425540434745@newsletter',
@@ -27,7 +29,7 @@ module.exports = {
 
     // public: true  = Le bot répond à tout le monde (DM et Groupes)
     // public: false = Le bot ignore les commandes des autres (DM et Groupes)
-    public: process.env.PUBLIC_MODE ? process.env.PUBLIC_MODE === 'true' : false,
+    public: process.env.PUBLIC_MODE === 'true',
 
     // selfMode: true  = Seul l'Owner peut utiliser les commandes partout
     // selfMode: false = Tout le monde peut utiliser les commandes (si public est sur true)
@@ -65,7 +67,7 @@ module.exports = {
       goodbyeMsg: `╭╼━≪• 🕯️ *ᴀ̂ᴍᴇ ᴇ́ɢᴀʀᴇ́ᴇ* •≫━╾╮\n┃ *ᴅᴇ́ᴘᴀʀᴛ* : @\${userNumber} 🚪\n┃ *ᴍᴜʀᴍᴜʀᴇ* : ᴛᴜ ɴᴇ ɴᴏᴜs ᴍᴀɴǫᴜᴇʀᴀs ᴊᴀᴍᴀɪs 🚮\n┃ *ᴀ̂ᴍᴇs ʀᴇsᴛᴀɴᴛᴇs* : \${groupMetadata.participants.length} 📊\n┃ *ᴄʏᴄʟᴇ* : \${timeString} ⏰\n╰━━━━━━━━━━━━━━━━━╯\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`,
 
       antiSpam: false,
-      antidelete: false, 
+      antidelete: false, // 🛑 Désactivé car le Store mémoire a été retiré
       nsfw: false,
       detect: false,
       chatbot: false,
@@ -92,13 +94,9 @@ module.exports = {
       invalidCommand: '❓ *ɪɴᴄᴀɴᴛᴀᴛɪᴏɴ ɪɴᴄᴏɴɴᴜᴇ ! ɪɴᴠᴏǫᴜᴇ .ɢʀɪᴍᴏɪʀᴇ ᴘᴏᴜʀ ᴛ\'ᴏʀɪᴇɴᴛᴇʀ.*'
     },
 
-    // Fuseau Horaire
     timezone: 'Africa/Ouagadougou',
-
-    // Limites
     maxWarnings: 3,
 
-    // Liens de ralliement
     social: {
       github: 'https://github.com/georges16388/GhostG-X-',
       whatsappChannel: 'https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c',
