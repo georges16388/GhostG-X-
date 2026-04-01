@@ -1,6 +1,6 @@
 /**
  * Owner Command - GhostG-X Prestige Edition
- * Nom d'invocation : .sᴏᴜᴠᴇʀᴀɪɴ
+ * Nom d'invocation : sᴏᴜᴠᴇʀᴀɪɴ
  */
 
 const config = require('../../config');
@@ -8,9 +8,9 @@ const config = require('../../config');
 module.exports = {
     name: 'sᴏᴜᴠᴇʀᴀɪɴ',
     aliases: ['owner', 'creator', 'dev', 'developpeur' ,'maitre', 'developper','architecte', 'souverain'],
-    category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
-    description: 'Invoque les informations sacrées du Grand Architecte',
-    usage: '.sᴏᴜᴠᴇʀᴀɪɴ',
+    category: '☬ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
+    description: '**ɪɴᴠᴏQᴜᴇ ʟᴇꜱ ɪɴꜰᴏʀᴍᴀᴛɪᴏɴꜱ ꜱᴀᴄʀᴇ́ᴇꜱ ᴅᴜ ɢʀᴀɴᴅ ᴀʀᴄʜɪᴛᴇᴄᴛᴇ**',
+    usage: 'sᴏᴜᴠᴇʀᴀɪɴ',
     ownerOnly: false,
 
     async execute(sock, msg, args, extra) {
