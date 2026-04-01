@@ -12,7 +12,7 @@ module.exports = {
   name: 'blackpink',
   aliases: [],
   category: '‎✎ ғᴏʀɢᴇ ᴅᴇ ᴛᴇxᴛᴇ',
-  description: '**ᴄʀᴇ́ᴇ ᴜɴ ᴇғғᴇᴛ ᴅᴇ ᴛᴇxᴛᴇ sᴛʏʟᴇ ʙʟᴀᴄᴋᴘɪɴᴋ**',
+  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴄʀᴇ́ᴇ ᴜɴ ᴇғғᴇᴛ ᴅᴇ ᴛᴇxᴛᴇ sᴛʏʟᴇ ʙʟᴀᴄᴋᴘɪɴᴋ**',
   usage: `${prefix}blackpink <ᴛᴇxᴛᴇ>`,
 
   async execute(sock, msg, args) {
