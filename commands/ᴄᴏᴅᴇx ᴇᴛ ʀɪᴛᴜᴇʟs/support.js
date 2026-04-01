@@ -8,7 +8,7 @@ const config = require('../../config.js');
 function toSmallCaps(text) {
   const normal = "abcdefghijklmnopqrstuvwxyz0123456789";
   const smallCaps = "ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ0123456789";
-  
+
   const cleanedText = text.toLowerCase()
     .normalize("NFD").replace(/[\u0300-\u036f]/g, ""); 
 
@@ -21,10 +21,10 @@ function toSmallCaps(text) {
 module.exports = {
   name: 'sᴜᴘᴘᴏʀᴛ',
   aliases: ['support', 'group', 'aide', 'links', 'liens', 'ᴄᴏɴᴛᴀᴄᴛ'],
-  category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
-  description: 'ᴀғғɪᴄʜᴇ ʟᴇs ʟɪᴇɴs ᴅᴇs sᴀɴᴄᴛᴜᴀɪʀᴇs ᴇᴛ ʟᴇ ᴄᴏɴᴛᴀᴄᴛ ᴅᴜ ᴍᴀɪ̂ᴛʀᴇ',
-  usage: '.sᴜᴘᴘᴏʀᴛ',
-  
+  category: '☬ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
+  description: '**ᴀꜰꜰɪᴄʜᴇ ʟᴇꜱ ʟɪᴇɴꜱ ᴅᴇꜱ ꜱᴀɴᴄᴛᴜᴀɪʀᴇꜱ ᴇᴛ ʟᴇ ᴄᴏɴᴛᴀᴄᴛ ᴅᴜ ᴍᴀɪ̂ᴛʀᴇ**',
+  usage: 'sᴜᴘᴘᴏʀᴛ',
+
   async execute(sock, msg, args, extra) {
     try {
       const chatId = msg.key.remoteJid;
@@ -39,7 +39,7 @@ module.exports = {
           `┃ *${toSmallCaps('maitriser la puissance du bot')} !*\n` +
           `┃\n` +
           `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
-          
+
           `╭╼━≪• *🔗 ɴᴏs sᴀɴᴄᴛᴜᴀɪʀᴇs* •≫━╾╮\n` +
           `┃\n` +
           `┃ 📢 *${toSmallCaps('chaine telegram')} :* (⚡ *${toSmallCaps('exclusivites')}*)\n` +
@@ -52,14 +52,14 @@ module.exports = {
           `┃ 👉 https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf?mode=gi_t\n` +
           `┃\n` +
           `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
-          
+
           `╭╼━≪• *👑 ʟᴇ ɢʀᴀɴᴅ ᴍᴀɪᴛʀᴇ* •≫━╾╮\n` +
           `┃\n` +
           `┃ 👤 *${toSmallCaps('createur')} :* ɢʜᴏsᴛɢ\n` +
           `┃ 📱 *${toSmallCaps('contact prive')} :* ᴡᴀ.ᴍᴇ/22651622652\n` +
           `┃\n` +
           `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
-          
+
           `_❤️ ᴊᴇsᴜs ᴛᴀɪᴍᴇ ᴇᴛ ᴛᴇ ʙᴇ́ɴɪssᴇ_ ❤️\n` +
           `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
