@@ -46,7 +46,7 @@ function getDomain(url) {
 module.exports = {
   name: 'song',
   aliases: ['play', 'music', 'yta', 'cantique_youtube'],
-  category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
+  category: '‎⌘ ᴇ́ᴄʜᴏs ᴅᴜ ᴍᴏɴᴅᴇ',
   description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴅᴏᴡɴʟᴏᴀᴅ ᴀᴜᴅɪᴏ ғʀᴏᴍ ʏᴏᴜᴛᴜʙᴇ**',
   usage: `${config.prefix || '.'}song [nom ou lien youtube]`,
   groupOnly: false,
