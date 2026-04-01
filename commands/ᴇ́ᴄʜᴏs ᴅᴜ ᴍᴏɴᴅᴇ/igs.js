@@ -281,7 +281,7 @@ async function igsCommand(sock, msg, args, extra, crop = false) {
 module.exports = {
   name: 'igs',
   aliases: ['igsticker', 'sceau_ig', 'igsc'],
-  category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
+  category: '‎⌘ ᴇ́ᴄʜᴏs ᴅᴜ ᴍᴏɴᴅᴇ',
   description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴛʀᴀɴsᴍᴜᴛᴇ ᴜɴᴇ ᴘᴜʙʟɪᴄᴀᴛɪᴏɴ/ʀᴇᴇʟ ɪɴsᴛᴀɢʀᴀᴍ ᴇɴ sᴛɪᴄᴋᴇʀ**',
   usage: `${config.prefix || '.'}igs [url instagram]`,
   groupOnly: false,
