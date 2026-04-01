@@ -27,7 +27,7 @@ function toSmallCaps(text) {
 module.exports = {
   name: 'forger',
   aliases: ['magic', 'magicai', 'aiimage', 'generate', 'imagine', 'ғᴏʀɢᴇʀ'],
-  category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
+  category: '⍟ ᴏʀᴀᴄʟᴇ & ᴀʀᴄᴀɴᴇs',
   description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ɢᴇɴᴇʀᴀᴛᴇ ᴀɪ ᴀʀᴛ ғʀᴏᴍ ᴛᴇxᴛ ᴘʀᴏᴍᴘᴛ**',
   usage: `${config.prefix || '.'}forger [prompt]`,
   groupOnly: false,
