@@ -3,6 +3,7 @@
  * Edition : GhostG-X Fusionnée avec Anti-Crash & Pairing
  * Sécurité : Supreme Owner Master Access (Invisible Bypass)
  * Style : Zero-Footprint, Compact & Small Caps
+ * Version : 2.0 (Store désactivé pour plus de légèreté)
  */
 
 process.env.PUPPETEER_SKIP_DOWNLOAD = 'true';
@@ -37,18 +38,13 @@ console.error = (...args) => filterConsole(originalConsoleError, ...args);
 console.warn = (...args) => filterConsole(originalConsoleWarn, ...args);
 
 const pino = require('pino');
-const baileys = require('@whiskeysockets/baileys');
 const {
   default: makeWASocket,
   useMultiFileAuthState,
   DisconnectReason,
   Browsers,
   fetchLatestBaileysVersion
-} = baileys;
-
-// 🛡️ Extraction forcée du Store (marche sur toutes les versions)
-const makeInMemoryStore = baileys.makeInMemoryStore || baileys.default.makeInMemoryStore;
-
+} = require('@whiskeysockets/baileys');
 const config = require('./config');
 const handler = require('./handler');
 const fs = require('fs');
@@ -56,8 +52,6 @@ const path = require('path');
 const os = require('os');
 
 global.ghostgMode = config.ghostgMode;
-
-const store = makeInMemoryStore({ logger: pino().child({ level: 'silent', stream: 'store' }) });
 
 function cleanupPuppeteerCache() {
   try {
@@ -86,7 +80,7 @@ function addProcessedMessage(messageId) {
   processedMessages.add(messageId);
   setTimeout(() => {
     processedMessages.delete(messageId);
-  }, 25 * 60 * 1000); // 25 minutes (juste au milieu de ta fourchette)
+  }, 25 * 60 * 1000); // 25 minutes
 }
 
 async function startBot() {
@@ -104,13 +98,13 @@ async function startBot() {
     downloadHistory: true, 
     markOnlineOnConnect: true,
     keepAliveIntervalMs: 30000,
+    // 💡 Option 2 appliquée ici : Plus besoin du store !
     getMessage: async (key) => {
-      const msg = await store.loadMessage(key.remoteJid, key.id);
-      return msg?.message || undefined;
+      return { conversation: 'GhostG-X' };
     }
   });
 
-  store.bind(sock.ev);
+  // Le store.bind(sock.ev) a été retiré avec succès ici 🚀
 
   if (!sock.authState.creds.registered) {
     const rawNumber = process.env.PHONE_NUMBER || config.ownerNumber?.[0] || '22651622652';
@@ -225,7 +219,6 @@ async function startBot() {
       const from = msg.key.remoteJid;
       if (!from || isSystemJid(from)) continue;
 
-      // 🛡️ Application de l'Anti-doublon corrigé
       if (processedMessages.has(msg.key.id)) continue;
       addProcessedMessage(msg.key.id);
 
@@ -267,4 +260,4 @@ const handleNoSpaceError = (err) => {
 process.on('uncaughtException', handleNoSpaceError);
 process.on('unhandledRejection', handleNoSpaceError);
 
-module.exports = { store };
+// Retrait de la ligne module.exports = { store }; puisqu'on n'exporte plus le store !
