@@ -1,7 +1,8 @@
 /**
- * Update Command - GhostG-X Edition
+ * Update Command - GhostG-X Prestige Edition
  * Récupère le dernier code via une archive ZIP
  * PRÉSERVE : node_modules, session, .env, config.js, etc.
+ * AUTOMATISE : npm install si nécessaire
  */
 
 const { exec } = require('child_process');
@@ -10,7 +11,6 @@ const path = require('path');
 const https = require('https');
 const http = require('http');
 
-// On tente de charger config, sinon on passe par process.env
 let config;
 try {
   config = require('../../config');
@@ -18,10 +18,19 @@ try {
   config = {};
 }
 
-// Extraction du préfixe pour l'usage
 const prefix = config.prefix || '.';
-
 const MAX_REDIRECTS = 5;
+
+// Fonction utilitaire pour Small Caps
+function toSmallCaps(text) {
+  const normal = "abcdefghijklmnopqrstuvwxyz0123456789";
+  const smallCaps = "ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ0123456789";
+  const cleanedText = text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); 
+  return cleanedText.split('').map(c => {
+    const index = normal.indexOf(c);
+    return index !== -1 ? smallCaps[index] : c;
+  }).join('');
+}
 
 function run(cmd) {
   return new Promise((resolve, reject) => {
@@ -38,9 +47,11 @@ async function extractZip(zipPath, outDir) {
     await run(cmd);
     return;
   }
+  
+  // Sur Linux, on tente unzip puis 7z
   try { await run(`unzip -o '${zipPath}' -d '${outDir}'`); return; } catch {}
   try { await run(`7z x -y '${zipPath}' -o'${outDir}'`); return; } catch {}
-  throw new Error('Aucun outil d\'extraction trouvé (unzip/7z).');
+  throw new Error('Aucun outil d\'extraction trouvé sur le système (unzip/7z). Installez-le sur votre VPS.');
 }
 
 function downloadFile(url, dest, visited = new Set()) {
@@ -48,7 +59,7 @@ function downloadFile(url, dest, visited = new Set()) {
     if (visited.has(url) || visited.size > MAX_REDIRECTS) return reject(new Error('Trop de redirections'));
     visited.add(url);
     const client = url.startsWith('https://') ? https : http;
-    client.get(url, { headers: { 'User-Agent': 'GhostG-X-Updater/1.0' } }, res => {
+    client.get(url, { headers: { 'User-Agent': 'GhostG-X-Updater/2.0' } }, res => {
       if ([301, 302, 303, 307, 308].includes(res.statusCode)) {
         return downloadFile(new URL(res.headers.location, url).toString(), dest, visited).then(resolve).catch(reject);
       }
@@ -63,7 +74,6 @@ function downloadFile(url, dest, visited = new Set()) {
 function copyRecursive(src, dest, ignore = [], relative = '', outList = []) {
   if (!fs.existsSync(dest)) fs.mkdirSync(dest, { recursive: true });
   for (const entry of fs.readdirSync(src)) {
-    // 🛡️ PROTECTION CRUCIALE : Si le fichier est dans la liste d'ignore, on passe.
     if (ignore.includes(entry)) continue;
 
     const s = path.join(src, entry);
@@ -92,7 +102,7 @@ async function updateViaZip(zipUrl) {
   const rootCandidate = entries.length === 1 ? path.join(extractTo, entries[0]) : extractTo;
   const srcRoot = fs.existsSync(rootCandidate) && fs.lstatSync(rootCandidate).isDirectory() ? rootCandidate : extractTo;
 
-  // 🚨 LISTE DES FICHIERS À NE JAMAIS ÉCRASER
+  // 🛡️ LISTE DES ÉLÉMENTS PRÉSERVÉS (RÈGLE D'OR)
   const ignore = [
     'node_modules',
     '.git',
@@ -101,48 +111,79 @@ async function updateViaZip(zipUrl) {
     'temp',
     'database',
     'config.js',
-    '.env' // <--- TON FICHIER ENV EST ICI, IL EST PROTÉGÉ
+    '.env'
   ];
+
+  // Vérification de mise à jour des dépendances
+  let needNpmInstall = false;
+  const oldPkgPath = path.join(process.cwd(), 'package.json');
+  const newPkgPath = path.join(srcRoot, 'package.json');
+
+  if (fs.existsSync(oldPkgPath) && fs.existsSync(newPkgPath)) {
+    const oldPkg = fs.readFileSync(oldPkgPath, 'utf-8');
+    const newPkg = fs.readFileSync(newPkgPath, 'utf-8');
+    if (oldPkg !== newPkg) {
+      needNpmInstall = true;
+    }
+  }
 
   const copied = [];
   copyRecursive(srcRoot, process.cwd(), ignore, '', copied);
 
+  // Nettoyage
   try { fs.rmSync(extractTo, { recursive: true, force: true }); fs.rmSync(zipPath, { force: true }); } catch {}
-  return { copiedFiles: copied };
+
+  // Installation auto des dépendances si nécessaire
+  let npmSuccess = true;
+  if (needNpmInstall) {
+    try {
+      await run('npm install --production');
+    } catch (e) {
+      console.error('Erreur npm install:', e);
+      npmSuccess = false;
+    }
+  }
+
+  return { copiedFiles: copied, needNpmInstall, npmSuccess };
 }
 
 module.exports = {
   name: 'ᴍɪsᴇ_ᴀ_ᴊᴏᴜʀ',
   aliases: ['update', 'maj'],
   category: '♛ sᴏᴜᴠᴇʀᴀɪɴᴇᴛᴇ́',
-  ownerOnly: true, // Géré par ton handler
+  ownerOnly: true,
   description: `**『 ɢʜᴏsᴛɢ-𝐗 』➪ sᴇ ᴍᴇᴛ ᴀ̀ ᴊᴏᴜʀ ᴅᴇᴘᴜɪs ʟᴇ ʀᴇᴘᴏ ᴅᴇ ʟ'ᴏʀᴀᴄʟᴇ`,
   usage: `${prefix}ᴍɪsᴇ_ᴀ_ᴊᴏᴜʀ [ʟɪᴇɴ_ᴢɪᴘ]`,
 
   async execute(sock, msg, args, extra) {
     const { isOwner, reply, from } = extra;
 
-    // Sécurité supplémentaire si le handler n'utilise pas 'ownerOnly'
-    if (!isOwner) return reply('*〆 ᴛᴜ ɴ\'ᴀs ᴘᴀs ʟ\'ᴀᴜᴛᴏʀɪsᴀᴛɪᴏɴ sᴜᴘʀᴇ̂ᴍᴇ ᴘᴏᴜʀ ɪɴᴠᴏǫᴜᴇʀ ᴄᴇᴛᴛᴇ ᴘᴜɪssᴀɴᴄᴇ.*');
+    if (!isOwner) return reply(`*〆 ᴛᴜ ɴ\'ᴀs ᴘᴀs ʟ\'ᴀᴜᴛᴏʀɪsᴀᴛɪᴏɴ sᴜᴘʀᴇ̂ᴍᴇ ᴘᴏᴜʀ ɪɴᴠᴏǫᴜᴇʀ ᴄᴇᴛᴛᴇ ᴘᴜɪssᴀɴᴄᴇ.*`);
 
-    // Récupération de l'URL (Arguments > Config > Env)
     const zipUrl = (args[0] || config.updateZipUrl || process.env.UPDATE_ZIP_URL || '').trim();
 
     if (!zipUrl) {
-      return reply('*〆 ᴀᴜᴄᴜɴ ʟɪᴇɴ ᴅᴇ ᴍɪsᴇ ᴀ̀ ᴊᴏᴜʀ ᴛʀᴏᴜᴠᴇ́.*');
+      return reply(`*〆 ᴀᴜᴄᴜɴ ʟɪᴇɴ ᴅᴇ ᴍɪsᴇ ᴀ̀ ᴊᴏᴜʀ ᴛʀᴏᴜᴠᴇ́.*`);
     }
 
     try {
-      await reply('*🔮 ʟ\'ᴏʀᴀᴄʟᴇ ᴘʀᴏᴄᴇ̀ᴅᴇ ᴀ̀ ʟ\'ᴀsᴘɪʀᴀᴛɪᴏɴ ᴅᴇs ɴᴏᴜᴠᴇᴀᴜx ᴀʀᴄᴀɴᴇs... ᴘᴀᴛɪᴇɴᴛᴇ.*');
+      await reply(`*🔮 ʟ\'ᴏʀᴀᴄʟᴇ ᴘʀᴏᴄᴇ̀ᴅᴇ ᴀ̀ ʟ\'ᴀsᴘɪʀᴀᴛɪᴏɴ ᴅᴇs ɴᴏᴜᴠᴇᴀᴜx ᴀʀᴄᴀɴᴇs... ᴘᴀᴛɪᴇɴᴛᴇ.*`);
 
-      const { copiedFiles } = await updateViaZip(zipUrl);
+      const { copiedFiles, needNpmInstall, npmSuccess } = await updateViaZip(zipUrl);
 
-      const summary = `*✅ ᴍɪsᴇ ᴀ̀ ᴊᴏᴜʀ ᴀᴄᴄᴏᴍᴘʟɪᴇ ᴀᴠᴇᴄ sᴜᴄᴄᴇ̀s !*\n*📦 ғɪᴄʜɪᴇʀs ᴍɪs ᴀ̀ ᴊᴏᴜʀ : ${copiedFiles.length}*\n*🛡️ ᴛᴏɴ sᴇssɪᴏɴ_ɪᴅ, ᴛᴏɴ ᴄᴏɴғɪɢ.ᴊs ᴇᴛ ᴛᴏɴ .ᴇɴᴠ ᴏɴᴛ ᴇ́ᴛᴇ́ ᴘʀᴇ́sᴇʀᴠᴇ́s.*`;
+      let summary = `*✅ ᴍɪsᴇ ᴀ̀ ᴊᴏᴜʀ ᴀᴄᴄᴏᴍᴘʟɪᴇ ᴀᴠᴇᴄ sᴜᴄᴄᴇ̀s !*\n*📦 ғɪᴄʜɪᴇʀs ᴍɪs ᴀ̀ ᴊᴏᴜʀ : ${copiedFiles.length}*\n*🛡️ ᴛᴏɴ sᴇssɪᴏɴ, ᴛᴏɴ ᴄᴏɴғɪɢ.ᴊs ᴇᴛ ᴛᴏɴ .ᴇɴᴠ ᴏɴᴛ ᴇ́ᴛᴇ́ ᴘʀᴇ́sᴇʀᴠᴇ́s.*`;
+
+      if (needNpmInstall) {
+        if (npmSuccess) {
+          summary += `\n\n*⚡ ʟᴇs ɴᴏᴜᴠᴇʟʟᴇs ᴅᴇ́ᴘᴇɴᴅᴀɴᴄᴇs ᴏɴᴛ ᴇ́ᴛᴇ́ ɪɴsᴛᴀʟʟᴇ́ᴇs !*`;
+        } else {
+          summary += `\n\n*⚠️ ʟ\'ɪɴsᴛᴀʟʟᴀᴛɪᴏɴ ᴅᴇs ᴅᴇ́ᴘᴇɴᴅᴀɴᴄᴇs ᴀ ᴇ́ᴄʜᴏᴜᴇ́. ғᴀɪs ᴜɴ 'ɴᴘᴍ ɪɴsᴛᴀʟʟ' ᴍᴀɴᴜᴇʟ.*`;
+        }
+      }
 
       await sock.sendMessage(from, { text: `${summary}\n\n*🔄 ʀᴇ́ɪɴᴄᴀʀɴᴀᴛɪᴏɴ (ʀᴇᴅᴇ́ᴍᴀʀʀᴀɢᴇ) ᴇɴ ᴄᴏᴜʀs...*` }, { quoted: msg });
 
-      // Petite pause pour laisser le temps au message de partir avant de tuer le processus
-      setTimeout(() => process.exit(0), 1000);
+      setTimeout(() => process.exit(0), 1500);
     } catch (error) {
       await reply(`*〆 ʟ\'ɪɴᴠᴏᴄᴀᴛɪᴏɴ ᴀ ᴇ́ᴄʜᴏᴜᴇ́ : ${error.message}*`);
     }
