@@ -1,33 +1,33 @@
 /**
- * Global Configuration for WhatsApp MD Bot
+ * Global Configuration for WhatsApp MD - GhostG-X Edition
  */
 
 require('dotenv').config();
 
 module.exports = {
-    // Bot Owner Configuration
+    // Configuration du Souverain
     ownerNumber: [process.env.PHONE_NUMBER || '22651622652'],
     ownerName: ['ᴛʀᴜᴛʜ ᴅᴇᴠɪᴄᴇs'],
-    
-    // Bot Configuration
+
+    // Configuration de **ʟ'ᴏʀᴀᴄʟᴇ**
     botName: 'ɢʜᴏsᴛɢ-𝐗',
     prefix: process.env.PREFIX || '.',
     sessionName: 'session',
     sessionID: process.env.SESSION_ID || '',
     newsletterJid: '120363425540434745@newsletter',
     updateZipUrl: 'https://github.com/georges16388/GhostG-X-/archive/refs/heads/main.zip',
-    
-    // Sticker Configuration
+
+    // Configuration des Sceaux (Stickers)
     packname: 'ɢʜᴏsᴛɢ-𝐗',
-    
-    // Bot Behavior
-    // selfMode: true  = seul l'owner peut utiliser les commandes (groupes + privé + inbox)
-    // selfMode: false = tout le monde peut utiliser les commandes
+
+    // Comportement de **ʟ'ᴏʀᴀᴄʟᴇ**
+    // selfMode: true  = Seul l'Owner peut utiliser les commandes (groupes + privé + inbox)
+    // selfMode: false = Tout le monde peut utiliser les commandes
     selfMode: process.env.SELF_MODE === 'true',
-    
+
     // Récupère la variable depuis le .env, ou force 'on' par défaut si elle est absente
     ghostgMode: process.env.GHOSTG_MODE ? process.env.GHOSTG_MODE.toLowerCase() : 'on',
-    
+
     autoRead: false,
     autoTyping: false,
     autoBio: process.env.AUTO_BIO === 'true',
@@ -35,8 +35,8 @@ module.exports = {
     autoReact: process.env.AUTOREACT === 'true',
     autoReactMode: 'bot',
     autoDownload: false,
-    
-    // Group Settings Defaults
+
+    // Paramètres par défaut des Cercles (Groupes)
     defaultGroupSettings: {
       antilink: false,
       antilinkAction: 'delete',
@@ -52,7 +52,7 @@ module.exports = {
       welcome: process.env.WELCOME_MSG === 'true',
       welcomeMsg: `╭╼━≪• *ᴇɴᴛɪᴛᴇ́ ᴅᴇ́ᴛᴇᴄᴛᴇ́ᴇ* •≫━╾╮
 ┃ *ᴀ̂ᴍᴇ* : @\${displayName} 👁️
-┃ *ᴇғғᴇᴄᴛɪғ ᴅᴜ ɴᴇ́ᴀɴᴛ* : #\${groupMetadata.participants.length}
+┃ *ᴇғғᴇᴄᴛɪғ ᴅᴜ ɴᴇ́ᴀɴᴛ* : *#\${groupMetadata.participants.length}*
 ┃ *ʜᴇᴜʀᴇ sᴏᴍʙʀᴇ* : \${timeString.toUpperCase()} ⏰
 ┃ *ᴛᴜ ᴠɪᴇɴs ᴅᴇ ғʀᴀɴᴄʜɪʀ ʟᴇs ᴘᴏʀᴛᴇs 
 ┃ ᴅᴇ* *\${groupName.toUpperCase()}*... 🚪
@@ -77,34 +77,34 @@ module.exports = {
       chatbot: false,
       autosticker: false
     },
-    
-    // API Keys
+
+    // Clés d'API (Invocations tierces)
     apiKeys: {
       openai: '',
       deepai: '',
       remove_bg: ''
     },
-    
-    // Message Configuration
+
+    // Ordonnances et Messages de **ʟ'ᴏʀᴀᴄʟᴇ**
     messages: {
       wait: '⏳ *ɪɴᴄᴀɴᴛᴀᴛɪᴏɴ ᴇɴ ᴄᴏᴜʀs... ᴘᴀᴛɪᴇɴᴛᴇ.*',
       success: '✅ *ʟᴇ sᴏʀᴛɪʟᴇ̀ɢᴇ ᴀ ʀᴇ́ᴜssɪ !*',
-      error: '❌ *ᴜɴᴇ ᴍᴀʟᴇ́ᴅɪᴄᴛɪᴏɴ (ᴇʀʀᴇᴜʀ) s\'ᴇsᴛ ᴘʀᴏᴅᴜɪᴛᴇ !*',
+      error: '❌ *ᴜɴᴇ ᴍᴀʟᴇ́ᴅɪᴄᴛɪᴏɴ s\'ᴇsᴛ ᴘʀᴏᴅᴜɪᴛᴇ !*',
       ownerOnly: '👑 *sᴇᴜʟ ʟ\'ᴇ́ʟᴜ (ʟᴇ ᴄʀᴇ́ᴀᴛᴇᴜʀ) ᴘᴇᴜᴛ ᴍᴀɴɪᴘᴜʟᴇʀ ᴄᴇᴛ ᴀʀᴛᴇғᴀᴄᴛ !*',
       adminOnly: '🛡️ *ᴄᴇᴛᴛᴇ ɪɴᴄᴀɴᴛᴀᴛɪᴏɴ ᴇsᴛ ʀᴇ́sᴇʀᴠᴇ́ᴇ ᴀᴜx ɢᴀʀᴅɪᴇɴs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ !*',
       groupOnly: '👥 *ᴄᴇᴛ ᴀʀᴛᴇғᴀᴄᴛ ɴᴇ s\'ᴀᴄᴛɪᴠᴇ ǫᴜᴇ ᴅᴀɴs ʟᴇs ᴄᴇʀᴄʟᴇs (ɢʀᴏᴜᴘᴇs) !*',
       privateOnly: '💬 *ᴄᴇᴛᴛᴇ ɪɴᴄᴀɴᴛᴀᴛɪᴏɴ ɴᴇ sᴇ ғᴀɪᴛ ǫᴜ\'ᴇɴ ᴛᴇ̂ᴛᴇ-ᴀ̀-ᴛᴇ̂ᴛ ᴀᴠᴇᴄ ʟᴇ sᴘᴇᴄᴛʀᴇ !*',
-      botAdminNeeded: '🤖 *ʟᴇ ɢᴀʀᴅɪᴇɴ ɢʜᴏsᴛ ᴅᴏɪᴛ ᴇ̂ᴛʀᴇ ᴀᴅᴍɪɴ ᴘᴏᴜʀ ᴇxᴇ́ᴄᴜᴛᴇʀ ᴄᴇᴛ ᴏʀᴅʀᴇ !*',
-      invalidCommand: '❓ *ɪɴᴄᴀɴᴛᴀᴛɪᴏɴ ɪɴᴄᴏɴɴᴜᴇ ! ɪɴᴠᴏǫᴜᴇ .ᴍᴇɴᴜ ᴘᴏᴜʀ ᴛ\'ᴏʀɪᴇɴᴛᴇʀ.*'
+      botAdminNeeded: '🤖 ***ʟ\'ᴏʀᴀᴄʟᴇ*** ᴅᴏɪᴛ ᴇ̂ᴛʀᴇ ᴀᴅᴍɪɴ ᴘᴏᴜʀ ᴇxᴇ́ᴄᴜᴛᴇʀ ᴄᴇᴛ ᴏʀᴅʀᴇ !*',
+      invalidCommand: '❓ *ɪɴᴄᴀɴᴛᴀᴛɪᴏɴ ɪɴᴄᴏɴɴᴜᴇ ! ɪɴᴠᴏǫᴜᴇ .ɢʀɪᴍᴏɪʀᴇ ᴘᴏᴜʀ ᴛ\'ᴏʀɪᴇɴᴛᴇʀ.*'
     },
 
-    // Timezone
+    // Fuseau Horaire
     timezone: 'Africa/Ouagadougou',
-    
-    // Limits
+
+    // Limites
     maxWarnings: 3,
-    
-    // Social Links
+
+    // Liens de ralliement
     social: {
       github: 'https://github.com/georges16388/GhostG-X-',
       whatsappChannel: 'https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c',
