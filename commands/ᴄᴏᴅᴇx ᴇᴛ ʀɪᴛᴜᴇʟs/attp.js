@@ -28,13 +28,21 @@ module.exports = {
   aliases: ['ttp', 'attp', 'effet'],
   category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
   description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴄʀᴇᴇ ᴜɴ sᴛɪᴄᴋᴇʀ ᴀɴɪᴍᴇ ᴀ ᴘᴀʀᴛɪʀ ᴅ\'ᴜɴ ᴛᴇxᴛᴇ**',
-  usage: `${config.prefix || '.'}effet [votre texte]`,
+  
+  // 1. On utilise un getter pour un usage 100% dynamique
+  get usage() {
+    const activePrefix = config.prefix || '.';
+    return `${activePrefix}effet [texte]`;
+  },
+  
   groupOnly: false,
   adminOnly: false,
   botAdminNeeded: false,
 
   async execute(sock, msg, args, extra) {
     const { reply } = extra;
+    
+    // 2. On récupère aussi le préfixe frais ici pour les messages d'erreur
     const prefix = config.prefix || '.';
 
     try {
@@ -62,7 +70,7 @@ module.exports = {
       try {
         const mp4Buffer = await renderBlinkingVideoWithFfmpeg(text);
         const webpBuffer = await writeExifVid(mp4Buffer, { packname: config.packname || 'GhostG-X' });
-        
+
         await sock.sendMessage(extra.from, { sticker: webpBuffer }, { quoted: msg });
       } catch (error) {
         console.error('Error generating attp sticker:', error);
