@@ -6,13 +6,18 @@
  * Powered by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
+const config = require('../../config');
+
+// Extraction du préfixe pour l'usage
+const prefix = config.prefix || '.';
+
 module.exports = {
   name: 'prier',
   aliases: ['priere', 'prière','interceder', 'oraison', 'ᴘʀɪᴇʀ'],
   category: '♰ sᴀɪɴᴛᴇᴛᴇ́ ᴄᴇ́ʟᴇsᴛᴇ',
-  description: 'Génère une sainte prière d\'intercession ou de protection.',
-  usage: '.prier [@user ou en réponse à un message]',
-  
+  description: '**ɢᴇ́ɴᴇ̀ʀᴇ ᴜɴᴇ sᴀɪɴᴛᴇ ᴘʀɪᴇ̀ʀᴇ ᴅ\'ɪɴᴛᴇʀᴄᴇssɪᴏɴ ᴏᴜ ᴅᴇ ᴘʀᴏᴛᴇᴄᴛɪᴏɴ**',
+  usage: `${prefix}prier [@user ou en réponse à un message]`,
+
   async execute(sock, msg, args, extra) {
     try {
       const ctx = msg.message?.extendedTextMessage?.contextInfo || {};
@@ -20,7 +25,7 @@ module.exports = {
       let targetId = null;
 
       // --- DÉTECTION DE LA CIBLE (Priorités) ---
-      
+
       // 1. Si l'utilisateur a mentionné quelqu'un (@user)
       if (mentioned.length > 0) {
         targetId = mentioned[0];
@@ -47,16 +52,16 @@ module.exports = {
       const actions = [
         "ᴇɴᴛᴏᴜʀᴇ ᴄᴇᴛᴛᴇ ᴀ̂ᴍᴇ ᴅᴇ ᴛᴏɴ ʙᴏᴜᴄʟɪᴇʀ ᴅᴇ ғᴇᴜ",
         "ɪɴᴏɴᴅᴇ sᴏɴ ᴄᴏᴇᴜʀ ᴅᴇ ᴛᴀ ᴘᴀɪx sᴜʀɴᴀᴛᴜʀᴇʟʟᴇ",
-        "ʙʀɪsᴇ ᴛᴏᴜᴛᴇs ʟᴇs ᴄʜᴀɪ̂ɴᴇs ᴅᴇ ʟ'ᴇɴɴᴇᴍɪ ᴀᴜᴛᴏᴜʀ ᴅᴇ",
+        "ʙʀɪsᴇ ᴛᴏᴜᴛᴇs ʟᴇs ᴄʜᴀɪ̂ɴᴇs ᴅᴇ ʟ'ᴇɴɴᴇᴍɪ ᴀᴜᴛᴏᴜʀ ᴅᴇ ᴄᴇᴛᴛᴇ ᴠɪᴇ,",
         "ᴏᴜᴠʀᴇ ʟᴇs ᴇ́ᴄʟᴜsᴇs ᴅᴇs ᴄɪᴇᴜx ᴘᴏᴜʀ ʙᴇ́ɴɪʀ",
         "ᴅᴏɴɴᴇ-ʟᴜɪ ʟᴀ ғᴏʀᴄᴇ ᴅᴇ ᴠᴀɪɴᴄʀᴇ ᴛᴏᴜs ʟᴇs ᴏʙsᴛᴀᴄʟᴇs"
       ];
 
       const desirs = [
-        "ᴇᴛ ǫᴜᴇ ᴛᴀ ʟᴜᴍɪᴇ̀ʀᴇ ᴅɪssɪᴘᴇ ᴛᴏᴜᴛᴇs sᴇs ᴛᴇ́ɴᴇ̀ʙʀᴇs.",
-        "ᴀғɪɴ ǫᴜ'ᴇʟʟᴇ ᴍᴀʀᴄʜᴇ ᴛᴏᴜᴊᴏᴜʀs ʟᴀ ᴛᴇ̂ᴛᴇ ʜᴀᴜᴛᴇ.",
-        "ᴇᴛ ǫᴜᴇ ᴛᴀ sᴀɢᴇssᴇ ɢᴜɪᴅᴇ ᴄʜᴀᴄᴜɴ ᴅᴇ sᴇs ᴘᴀs.",
-        "ᴄᴀʀ ᴛᴜ ᴇs sᴏɴ ʀᴏᴄʜᴇʀ ᴇᴛ sᴏɴ ʟɪʙᴇ́ʀᴀᴛᴇᴜʀ."
+        "ᴇᴛ ǫᴜᴇ ᴛᴀ ʟᴜᴍɪᴇ̀ʀᴇ ᴅɪssɪᴘᴇ ᴛᴏᴜᴛᴇs sᴇs ᴛᴇ́ɴᴇ̀ʙʀᴇs",
+        "ᴀғɪɴ ǫᴜ'ᴇʟʟᴇ ᴍᴀʀᴄʜᴇ ᴛᴏᴜᴊᴏᴜʀs ʟᴀ ᴛᴇ̂ᴛᴇ ʜᴀᴜᴛᴇ",
+        "ᴇᴛ ǫᴜᴇ ᴛᴀ sᴀɢᴇssᴇ ɢᴜɪᴅᴇ ᴄʜᴀᴄᴜɴ ᴅᴇ sᴇs ᴘᴀs",
+        "ᴄᴀʀ ᴛᴜ ᴇs sᴏɴ ʀᴏᴄʜᴇʀ ᴇᴛ sᴏɴ ʟɪʙᴇ́ʀᴀᴛᴇᴜʀ"
       ];
 
       const amens = [
@@ -73,14 +78,14 @@ module.exports = {
       const rAmen = amens[Math.floor(Math.random() * amens.length)];
 
       // Construction de la prière unique
-      const priereGeneree = `*${rIntro}* ${targetTag} *ᴇɴ ᴄᴇ ᴊᴏᴜʀ. ${rAction} ${rDesir} ${rAmen}* 🙏🕊️`;
+      const priereGeneree = `*${rIntro}* ${targetTag} *ᴇɴ ᴄᴇ ᴊᴏᴜʀ. ${rAction} ${rDesir}. ${rAmen}* 🙏🏾🕊️`;
 
       await sock.sendMessage(msg.key.remoteJid, {
         text: `╭╼━≪• *ᴏʀᴀɪsᴏɴ_sᴀɪɴᴛᴇ* •≫━╾╮\n` +
               `┃ *ᴘᴏᴜʀ* : ${targetTag}\n` +
               `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
               `${priereGeneree}\n\n` +
-              `*_❤️ ᴊᴇsᴜs ᴛᴀɪᴍᴇ ᴇᴛ ᴛᴇ ʙᴇ́ɴɪssᴇ_❤️*\n` +
+              `*_❤️ ᴊᴇsᴜs ᴛᴀɪᴍᴇ ᴇᴛ ᴛᴇ ʙᴇ́ɴɪssᴇ ❤️_*\n` +
               `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`,
         mentions: [targetId]
       }, { quoted: msg });
@@ -88,7 +93,7 @@ module.exports = {
     } catch (error) {
       console.error('Prier Command Error:', error);
       await sock.sendMessage(msg.key.remoteJid, {
-        text: `❌ *ᴇʀʀᴇᴜʀ :* ${error.message}`
+        text: `*〆 ᴇ́ᴄʜᴇᴄ ᴅ'ɪɴᴠᴏᴄᴀᴛɪᴏɴ :* ${error.message}`
       }, { quoted: msg });
     }
   }
