@@ -20,13 +20,13 @@ function toSmallCaps(text) {
     return index !== -1 ? smallCaps[index] : c;
   }).join('');
 }
-
+const prefix = config.prefix || '.';
 module.exports = {
   name: 'antigroupmention',
-  aliases: ['agm', 'antitagall'],
+  aliases: ['antitagall'],
   category: '‎⛨ ɢᴀʀᴅɪᴇɴs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ',
   description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴄᴏɴғɪɢᴜʀᴇ ʟᴀ ᴘʀᴏᴛᴇᴄᴛɪᴏɴ ᴄᴏɴᴛʀᴇ ʟᴇs ᴍᴇɴᴛɪᴏɴs ɢʟᴏʙᴀʟᴇs (ᴅᴇʟᴇᴛᴇ/ᴋɪᴄᴋ)**',
-  usage: '.antigroupmention <on/off/set/get>',
+  usage: `${prefix}antigroupmention <on/off/set/get>`,
   groupOnly: true,
   adminOnly: true,
   botAdminNeeded: true,
