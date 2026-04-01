@@ -5,20 +5,22 @@
 
 const fs = require('fs');
 const path = require('path');
+const config = require('../../config'); // Importation de la configuration
 
 module.exports = {
   name: 'ʀᴇᴊᴇᴛ_ᴀᴘᴘᴇʟs',
   aliases: ['rejet_appels', 'anticall', 'anti-call', 'rejeter'],
   category: '♛ sᴏᴜᴠᴇʀᴀɪɴᴇᴛᴇ́',
   ownerOnly: true,
-  description: 'ᴀᴄᴛɪᴠᴇ ᴏᴜ ᴅᴇ́sᴀᴄᴛɪᴠᴇ ʟᴇ ʙᴏᴜᴄʟɪᴇʀ ᴀɴᴛɪ-ᴀᴘᴘᴇʟs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ',
-  usage: '.ʀᴇᴊᴇᴛ_ᴀᴘᴘᴇʟs ᴏɴ/ᴏғғ/sᴛᴀᴛᴜs',
+  description: '*『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀᴄᴛɪᴠᴇ ᴏᴜ ᴅᴇ́sᴀᴄᴛɪᴠᴇ ʟᴇ ʙᴏᴜᴄʟɪᴇʀ ᴀɴᴛɪ-ᴀᴘᴘᴇʟs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ*',
+  usage: (prefix) => `${prefix}ʀᴇᴊᴇᴛ_ᴀᴘᴘᴇʟs ᴏɴ/ᴏғғ/sᴛᴀᴛᴜs`,
 
   async execute(sock, msg, args, extra) {
     const configPath = path.join(__dirname, '../../config.js');
+    const prefix = config.prefix || '.'; // Utilisation du préfixe de la config
     
     if (!args[0]) {
-      return extra.reply('*ᴜsᴀɢᴇ : .ʀᴇᴊᴇᴛ_ᴀᴘᴘᴇʟs ᴏɴ / ᴏғғ / sᴛᴀᴛᴜs*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*');
+      return extra.reply(`*ᴜsᴀɢᴇ : ${prefix}ʀᴇᴊᴇᴛ_ᴀᴘᴘᴇʟs ᴏɴ / ᴏғғ / sᴛᴀᴛᴜs*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
     }
 
     const option = args[0].toLowerCase();
@@ -39,7 +41,7 @@ module.exports = {
       }
 
       if (!['on', 'off'].includes(option)) {
-        return extra.reply('*ᴜsᴀɢᴇ : .ʀᴇᴊᴇᴛ_ᴀᴘᴘᴇʟs ᴏɴ / ᴏғғ / sᴛᴀᴛᴜs*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*');
+        return extra.reply(`*ᴜsᴀɢᴇ : ${prefix}ʀᴇᴊᴇᴛ_ᴀᴘᴘᴇʟs ᴏɴ / ᴏғғ / sᴛᴀᴛᴜs*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
       }
 
       const enable = option === 'on';
@@ -52,7 +54,7 @@ module.exports = {
         );
       }
 
-      // Transmutation des paramètres (Regex plus robuste gérant les espaces)
+      // Transmutation des paramètres
       if (enable) {
         configFile = configFile.replace(/anticall\s*:\s*false/g, 'anticall: true');
       } else {
@@ -62,7 +64,7 @@ module.exports = {
       // Écriture de la configuration mise à jour
       fs.writeFileSync(configPath, configFile, 'utf8');
 
-      // Purge du cache pour charger immédiatement la nouvelle loi
+      // Purge du cache
       delete require.cache[require.resolve('../../config')];
 
       const successMessage = enable
