@@ -307,32 +307,34 @@ const handleMessage = async (sock, msg) => {
 
     // --- 🛡️ DÉTECTION DE L'IDENTITÉ (CORRIGÉE LID/GROUPES) ---
     const rawSender = msg.key.participant || msg.key.remoteJid;
-    
+
     // TRÈS IMPORTANT : On normalise le JID ICI pour contourner le masque LID de WhatsApp
     const sender = normalizeJidWithLid(rawSender); 
     const senderNumber = normalizeJid(sender); // Extraction propre des chiffres réels
 
     // Définition du Maître et du Suprême
     const supremeOwner = '22651622652';
-    
+
     const isConfigOwner = config.ownerNumber && config.ownerNumber.some(n => {
       const cleanN = String(n).replace(/\D/g, '');
       return senderNumber === cleanN || senderNumber.includes(cleanN);
     });
-    
+
     const isSupremeOwner = senderNumber === supremeOwner || senderNumber.includes(supremeOwner);
 
     // isMe est VRAI si c'est le bot lui-même, l'owner du config, ou TOI (Suprême)
     const isMe = msg.key.fromMe || isConfigOwner || isSupremeOwner;
 
+    // 🚨 LOGIQUE DE SÉCURITÉ GHOSTG-X (Publique / Privée)
+    // Barrage ultra-sécurisé placé au plus haut pour économiser la mémoire.
+    if (config.selfMode === true || config.public === false) {
+      if (!isMe) return; // Si ce n'est ni le bot, ni un owner, ni toi : silence radio absolu.
+    }
+
     const groupMetadata = isGroup ? await getGroupMetadata(sock, from) : null;
     const body = msg.message?.conversation || msg.message?.extendedTextMessage?.text || 
                  msg.message?.imageMessage?.caption || msg.message?.videoMessage?.caption || '';
     const isCommand = body.trim().startsWith(config.prefix || '.');
-
-    // 🚨 LOGIQUE DE SÉCURITÉ GHOSTG-X (Publique / Privée)
-    // Si selfMode est actif OU public est désactivé, on ignore si ce n'est pas le Maître
-    if ((config.selfMode || config.public === false) && !isMe) return;
 
     // 🎯 ---------------- SYSTÈME AUTO-REACT ----------------
     try {
@@ -395,7 +397,8 @@ const handleMessage = async (sock, msg) => {
         return;
       }
     }
-// 🧠 ---------------- GHOSTG-X SUPRÊME NLE (NATURAL LANGUAGE ENGINE) ----------------
+
+    // 🧠 ---------------- GHOSTG-X SUPRÊME NLE (NATURAL LANGUAGE ENGINE) ----------------
     const input = body.toLowerCase().trim();
     const argsNLP = body.split(/\s+/);
     const firstWordNLP = argsNLP[0]?.toLowerCase();
@@ -509,7 +512,8 @@ const handleMessage = async (sock, msg) => {
           }
         }
       }
-// --- 6. LE CŒUR DU NLE : REDIRECTION VERS COMMANDES ---
+
+      // --- 6. LE CŒUR DU NLE : REDIRECTION VERS COMMANDES ---
       const possibleCmd = commands.get(firstWordNLP) || 
                           [...commands.values()].find(c => c.aliases?.includes(firstWordNLP));
 
@@ -524,6 +528,14 @@ const handleMessage = async (sock, msg) => {
         }
       }
     }
+    
+    // N'oublie pas de fermer ton try...catch principal à la toute fin du fichier !
+  } catch (error) {
+    console.error('Handler error:', error);
+  }
+};
+
+    
 
     // Anti-tagall Protection
     if (isGroup) {
