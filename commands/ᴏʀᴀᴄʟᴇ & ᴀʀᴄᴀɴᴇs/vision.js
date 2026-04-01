@@ -27,7 +27,7 @@ function toSmallCaps(text) {
 module.exports = {
   name: 'vision',
   aliases: ['gptimg', 'editimage', 'aiimage', 'gi', 'gptimage', 'ᴠɪsɪᴏɴ'],
-  category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
+  category: '⍟ ᴏʀᴀᴄʟᴇ & ᴀʀᴄᴀɴᴇs',
   description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴛʀᴀɴsᴍᴜᴛᴇ ᴜɴᴇ ɪᴍᴀɢᴇ ᴠɪᴀ ʟᴀʟᴄʜɪᴍɪᴇ ᴅᴇ ʟɪᴀ (ɢᴘᴛ ᴠɪsɪᴏɴ)**',
   usage: `${config.prefix || '.'}vision [murmure] (repondre a une image)`,
   groupOnly: false,
