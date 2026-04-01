@@ -99,7 +99,7 @@ module.exports = {
         }
       }
 
-      // ==========================================
+       // ==========================================
       // OPTION 1 : Verset au hasard (JSON Local)
       // ==========================================
       const jsonPath = path.join(__dirname, 'bible.json');
@@ -118,13 +118,11 @@ module.exports = {
       const randomVerse = verses[Math.floor(Math.random() * verses.length)];
 
       await sock.sendMessage(chatId, {
-        text: `╭╼━≪• *sᴀɪɴᴛᴇs_ᴇ́ᴄʀɪᴛᴜʀᴇs* •≫━╾╮\n` +
-              `┃ *ᴍᴏᴅᴇ* : ᴀʟᴇ́ᴀᴛᴏɪʀᴇ\n` +
-              `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
-              `${randomVerse}\n\n` +
-              `*_❤️ ᴊᴇsᴜs ᴛᴀɪᴍᴇ ᴇᴛ ᴛᴇ ʙᴇ́ɴɪssᴇ ❤️_*\n` +
+        text: `${randomVerse}\n\n` +
+              `*_❤️ ᴊᴇsᴜs ᴛ'ᴀɪᴍᴇ ᴇᴛ ᴛᴇ ʙᴇ́ɴɪssᴇ ❤️_*\n` +
               `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
       }, { quoted: msg });
+
 
     } catch (error) {
       console.error('Bible Command Error:', error);
