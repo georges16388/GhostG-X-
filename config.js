@@ -11,9 +11,12 @@ module.exports = {
     ownerNumber: [process.env.PHONE_NUMBER || '22651622652'],
     ownerName: ['ᴛʀᴜᴛʜ ᴅᴇᴠɪᴄᴇs'],
 
- // Configuration de **ʟ'ᴏʀᴀᴄʟᴇ**
+    // Configuration de **ʟ'ᴏʀᴀᴄʟᴇ**
     botName: 'ɢʜᴏsᴛɢ-𝐗',
+    
+    // 🔮 LE PRÉFIXE (Placé ici pour être lu facilement par toutes les commandes)
     prefix: process.env.PREFIX || '.',
+    
     newsletterJid: '120363425540434745@newsletter',
     updateZipUrl: 'https://github.com/georges16388/GhostG-X-/archive/refs/heads/main.zip',
 
@@ -21,7 +24,7 @@ module.exports = {
     packname: 'ɢʜᴏsᴛɢ-𝐗',
 
     // 🔐 GESTION DES ACCÈS (RÈGLES D'OR GHOSTG-X)
-    
+
     // public: true  = Le bot répond à tout le monde (DM et Groupes)
     // public: false = Le bot ignore les commandes des autres (DM et Groupes)
     public: process.env.PUBLIC_MODE ? process.env.PUBLIC_MODE === 'true' : false,
@@ -56,28 +59,13 @@ module.exports = {
       antigroupmentionAction: 'delete',
 
       welcome: process.env.WELCOME_MSG === 'true',
-      welcomeMsg: `╭╼━≪• *ᴇɴᴛɪᴛᴇ́ ᴅᴇ́ᴛᴇᴄᴛᴇ́ᴇ* •≫━╾╮
-┃ *ᴀ̂ᴍᴇ* : @\${displayName} 👁️
-┃ *ᴇғғᴇᴄᴛɪғ ᴅᴜ ɴᴇ́ᴀɴᴛ* : *#\${groupMetadata.participants.length}*
-┃ *ʜᴇᴜʀᴇ sᴏᴍʙʀᴇ* : \${timeString.toUpperCase()} ⏰
-┃ *ᴛᴜ ᴠɪᴇɴs ᴅᴇ ғʀᴀɴᴄʜɪʀ ʟᴇs ᴘᴏʀᴛᴇs 
-┃ ᴅᴇ* *\${groupName.toUpperCase()}*... 🚪
-┃ 🔮 *ʀᴇsᴘᴇᴄᴛᴇ ʟ'ᴏʀᴅʀᴇ ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ*
-┃ *ᴘᴏᴜʀ ɴᴇ ᴘᴀs ᴇ̂ᴛʀᴇ ʙᴀɴɴɪ* ┃ *ᴅᴀɴs ʟᴇs ᴀʙʏssᴇs...* ⛓️‍💥
-╰━━━━━━━━━━━━━━━╯
-> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`,
+      welcomeMsg: `╭╼━≪• *ᴇɴᴛɪᴛᴇ́ ᴅᴇ́ᴛᴇᴄᴛᴇ́ᴇ* •≫━╾╮\n┃ *ᴀ̂ᴍᴇ* : @\${displayName} 👁️\n┃ *ᴇғғᴇᴄᴛɪғ ᴅᴜ ɴᴇ́ᴀɴᴛ* : *#\${groupMetadata.participants.length}*\n┃ *ʜᴇᴜʀᴇ sᴏᴍʙʀᴇ* : \${timeString.toUpperCase()} ⏰\n┃ *ᴛᴜ ᴠɪᴇɴs ᴅᴇ ғʀᴀɴᴄʜɪʀ ʟᴇs ᴘᴏʀᴛᴇs \n┃ ᴅᴇ* *\${groupName.toUpperCase()}*... 🚪\n┃ 🔮 *ʀᴇsᴘᴇᴄᴛᴇ ʟ'ᴏʀᴅʀᴇ ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ*\n┃ *ᴘᴏᴜʀ ɴᴇ ᴘᴀs ᴇ̂ᴛʀᴇ ʙᴀɴɴɪ* ┃ *ᴅᴀɴs ʟᴇs ᴀʙʏssᴇs...* ⛓️‍💥\n╰━━━━━━━━━━━━━━━╯\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`,
 
       goodbye: process.env.GOODBYE_MSG === 'true',
-      goodbyeMsg: `╭╼━≪• 🕯️ *ᴀ̂ᴍᴇ ᴇ́ɢᴀʀᴇ́ᴇ* •≫━╾╮
-┃ *ᴅᴇ́ᴘᴀʀᴛ* : @\${userNumber} 🚪
-┃ *ᴍᴜʀᴍᴜʀᴇ* : ᴛᴜ ɴᴇ ɴᴏᴜs ᴍᴀɴǫᴜᴇʀᴀs ᴊᴀᴍᴀɪs 🚮
-┃ *ᴀ̂ᴍᴇs ʀᴇsᴛᴀɴᴛᴇs* : \${groupMetadata.participants.length} 📊
-┃ *ᴄʏᴄʟᴇ* : \${timeString} ⏰
-╰━━━━━━━━━━━━━━━━━╯
-> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`,
+      goodbyeMsg: `╭╼━≪• 🕯️ *ᴀ̂ᴍᴇ ᴇ́ɢᴀʀᴇ́ᴇ* •≫━╾╮\n┃ *ᴅᴇ́ᴘᴀʀᴛ* : @\${userNumber} 🚪\n┃ *ᴍᴜʀᴍᴜʀᴇ* : ᴛᴜ ɴᴇ ɴᴏᴜs ᴍᴀɴǫᴜᴇʀᴀs ᴊᴀᴍᴀɪs 🚮\n┃ *ᴀ̂ᴍᴇs ʀᴇsᴛᴀɴᴛᴇs* : \${groupMetadata.participants.length} 📊\n┃ *ᴄʏᴄʟᴇ* : \${timeString} ⏰\n╰━━━━━━━━━━━━━━━━━╯\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`,
 
       antiSpam: false,
-      antidelete: false, // Géré directement par le store/index
+      antidelete: false, 
       nsfw: false,
       detect: false,
       chatbot: false,
