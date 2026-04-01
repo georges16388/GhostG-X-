@@ -156,16 +156,6 @@ const getLidMappingValue = (user, direction) => {
   }
 };
 
-  try {
-    const raw = fs.readFileSync(filePath, 'utf8').trim();
-    const value = raw ? JSON.parse(raw) : null;
-    lidMappingCache.set(cacheKey, value || null);
-    return value || null;
-  } catch (error) {
-    lidMappingCache.set(cacheKey, null);
-    return null;
-  }
-};
 
 const normalizeJidWithLid = (jid) => {
   if (!jid) return jid;
