@@ -10,11 +10,11 @@ const config = require('../../config');
 // Stockage des ID de messages traités pour éviter les doublons
 const processedMessages = new Set();
 
-// Fonction pour le style Small Caps
+// Fonction pour le style Small Caps (Cohérence visuelle du sanctuaire)
 function toSmallCaps(text) {
   const normal = "abcdefghijklmnopqrstuvwxyz0123456789";
   const smallCaps = "ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ0123456789";
-  
+
   const cleanedText = text.toLowerCase()
     .normalize("NFD").replace(/[\u0300-\u036f]/g, ""); 
 
@@ -25,33 +25,40 @@ function toSmallCaps(text) {
 }
 
 module.exports = {
-  name: 'ɪʟʟᴜsɪᴏɴ_ғᴀᴄᴇʙᴏᴏᴋ',
-  aliases: ['illusions_facebook', 'facebook', 'fb', 'fbdl', 'facebookdl'],
-  category: '‎⌘ ᴇ́ᴄʜᴏs ᴅᴜ ᴍᴏɴᴅᴇ', 
-  description: 'ᴀsᴘɪʀᴇ ᴇᴛ ᴛᴇ́ʟᴇ́ᴄʜᴀʀɢᴇ ᴅᴇs ᴠɪᴅᴇ́ᴏs ғᴀᴄᴇʙᴏᴏᴋ',
-  usage: '.ɪʟʟᴜsɪᴏɴ_ғᴀᴄᴇʙᴏᴏᴋ <ʟɪᴇɴ ғᴀᴄᴇʙᴏᴏᴋ>',
-  
+  name: 'facebook',
+  aliases: ['illusions_facebook', 'fb', 'fbdl', 'facebookdl', 'illusion_facebook'],
+  category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs', 
+  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀsᴘɪʀᴇ ᴇᴛ ᴛᴇʟᴇᴄʜᴀʀɢᴇ ᴅᴇs ᴠɪᴅᴇᴏs ғᴀᴄᴇʙᴏᴏᴋ**',
+  usage: `${config.prefix || '.'}facebook [lien facebook]`,
+  groupOnly: false,
+  adminOnly: false,
+  botAdminNeeded: false,
+
   async execute(sock, msg, args, extra) {
+    const { reply } = extra;
+    const prefix = config.prefix || '.';
+
     try {
       // Vérification si le message a déjà été traité
       if (processedMessages.has(msg.key.id)) return;
-      
+
       processedMessages.add(msg.key.id);
       setTimeout(() => processedMessages.delete(msg.key.id), 5 * 60 * 1000);
-      
+
       const url = args[0] || '';
-      
+
       if (!url) {
-        return await extra.reply(
+        return await reply(
           `╭╼━≪• *⚠️ ᴇᴄʜᴇᴄ ᴅᴇ ʟɪɴᴠᴏᴄᴀᴛɪᴏɴ* •≫━╾╮\n` +
-          `┃\n` +
+          `┃ \n` +
           `┃ 🔮 *${toSmallCaps('indique un lien facebook')}*\n` +
           `┃ *${toSmallCaps('pour aspirer la video')} !*\n` +
-          `┃\n` +
-          `╰━━━━━━━━━━━━━━━━━━━━━━━╯`
+          `┃ \n` +
+          `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
+          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
         );
       }
-      
+
       const facebookPatterns = [
         /https?:\/\/(?:www\.|m\.)?facebook\.com\//,
         /https?:\/\/(?:www\.|m\.)?fb\.com\//,
@@ -59,43 +66,43 @@ module.exports = {
         /https?:\/\/(?:www\.)?facebook\.com\/watch/,
         /https?:\/\/(?:www\.)?facebook\.com\/.*\/videos\//
       ];
-      
+
       const isValidUrl = facebookPatterns.some(pattern => pattern.test(url));
-      
+
       if (!isValidUrl) {
-        return await extra.reply(`❌ *${toSmallCaps('ce lien nest pas une illusion facebook valide')} !*`);
+        return await reply(`*❌ ${toSmallCaps('ce lien nest pas une illusion facebook valide')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
       }
-      
+
       // Réaction avec l'orbe de chargement
       await sock.sendMessage(extra.from, {
         react: { text: '⏳', key: msg.key }
       });
-      
+
       try {
         // Extraction via l'API de Bochilteam
         const data = await facebookdl(url);
-        
+
         // Vérification des résultats
         if (!data || (!data.hd && !data.sd)) {
           throw new Error('Aucun lien de téléchargement trouvé.');
         }
-        
+
         // Priorité à la HD, sinon repli sur la SD
         const videoUrl = data.hd || data.sd;
-        
+
         // Construction de la légende
         const botName = toSmallCaps(config.botName || 'ɢʜᴏsᴛɢ-x');
-        
+
         let caption = `╭╼━≪• *🎬 ᴀsᴘɪʀᴀᴛɪᴏɴ ʀᴇ́ᴜssɪᴇ* •≫━╾╮\n` +
-                      `┃\n` +
+                      `┃ \n` +
                       `┃ 🔮 *${toSmallCaps('extrait par')} :* ${botName}\n` +
                       `┃ 🔗 *${toSmallCaps('source')} :* ${url.length > 30 ? url.substring(0, 27) + '...' : url}\n` +
                       `┃ 📹 *${toSmallCaps('qualite')} :* ${data.hd ? 'ʜᴅ' : 'sᴅ'}\n` +
-                      `┃\n` +
+                      `┃ \n` +
                       `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
                       `_❤️ ᴊᴇsᴜs ᴛᴀɪᴍᴇ ᴇᴛ ᴛᴇ ʙᴇ́ɴɪssᴇ_ ❤️\n` +
                       `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ${botName.toUpperCase()}*`;
-        
+
         // Envoi de la vidéo (directement via l'URL pour économiser la RAM de ton serveur)
         try {
           await sock.sendMessage(extra.from, {
@@ -105,7 +112,7 @@ module.exports = {
           }, { quoted: msg });
         } catch (urlError) {
           console.error('URL send failed, trying buffer method:', urlError.message);
-          
+
           // Méthode de secours : On télécharge d'abord la vidéo en mémoire
           const videoResponse = await axios.get(videoUrl, {
             responseType: 'arraybuffer',
@@ -115,31 +122,31 @@ module.exports = {
               'Referer': 'https://www.facebook.com/'
             }
           });
-          
+
           const buffer = Buffer.from(videoResponse.data);
-          
+
           await sock.sendMessage(extra.from, {
             video: buffer,
             mimetype: 'video/mp4',
             caption: caption
           }, { quoted: msg });
         }
-        
+
       } catch (error) {
         console.error('Error in Facebook download action:', error);
-        await extra.reply(
+        await reply(
           `╭╼━≪• *❌ ᴇᴄʜᴇᴄ ᴅᴇ ʟɪʟʟᴜsɪᴏɴ* •≫━╾╮\n` +
-          `┃\n` +
+          `┃ \n` +
           `┃ 🥀 *${toSmallCaps('loracle a echoue a aspirer la video')}*\n` +
           `┃ ⚠️ *${toSmallCaps('erreur')} :* ${error.message}\n` +
-          `┃\n` +
+          `┃ \n` +
           `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
           `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
         );
       }
     } catch (error) {
       console.error('Error in Facebook main command:', error);
-      await extra.reply(`❌ *${toSmallCaps('une singularite est survenue')}...*`);
+      await reply(`*❌ ${toSmallCaps('une singularite est survenue')}...*`);
     }
   }
 };
