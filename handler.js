@@ -400,12 +400,14 @@ const handleMessage = async (sock, msg) => {
     let body = content.conversation || content.extendedTextMessage?.text || 
                content.imageMessage?.caption || content.videoMessage?.caption || '';
     body = body.trim();
-// 🧠 ---------------- GHOSTG INTELLIGENCE SANS PRÉFIXE ----------------
-    const input = body.toLowerCase();
+    // 🧠 ---------------- GHOSTG-X SUPRÊME NLE (NATURAL LANGUAGE ENGINE) ----------------
+    // Ce moteur traite le langage naturel pour transformer le bot en IA indépendante.
+
+    const input = body.toLowerCase().trim();
     const argsNLP = body.split(/\s+/);
     const firstWordNLP = argsNLP[0]?.toLowerCase();
 
-    // On n'écoute que TOI pour le NLP de commandement direct
+    // Filtre de sécurité : Seul le Maître (Toi) déclenche l'intelligence sans préfixe
     if (isMe && global.ghostgMode === 'on' && !body.startsWith(config.prefix)) {
       
       const extraNLP = {
@@ -413,24 +415,82 @@ const handleMessage = async (sock, msg) => {
         isOwner: isMe,
         isAdmin: isMe || await isAdmin(sock, sender, from, groupMetadata),
         isBotAdmin: await isBotAdmin(sock, from, groupMetadata),
-        isMod: isMe || isMod(sender),
         reply: (text) => sock.sendMessage(from, { text }, { quoted: msg }),
         react: (emoji) => sock.sendMessage(from, { react: { text: emoji, key: msg.key } })
       };
 
-      // 1. Salutations
-      if (input.includes("bonjour") || input.includes("salut") || input.includes("hey") || input === "ghostg") {
-        await extraNLP.reply(`👋🏾 *ᴘʀᴇ́sᴇɴᴛ, ᴍᴏɴ ᴍᴀɪ̂ᴛʀᴇ. ᴊ'ᴀᴛᴛᴇɴᴅs ᴛᴇs ᴏʀᴅʀᴇs.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+      // --- 1. FONCTIONS DE CONVERSATION & ÉTAT ---
+      const salutRegex = /^(bonjour|salut|hey|ghostg|yo|wsh|tu es la|dispo)/i;
+      if (salutRegex.test(input)) {
+        const responses = [
+          `👋🏾 *ᴀ̀ ᴛᴇs ᴏʀᴅʀᴇs, ᴍᴏɴ ᴍᴀɪ̂ᴛʀᴇ. ʟᴇ sᴀɴᴄᴛᴜᴀɪʀᴇ ᴇsᴛ sᴏᴜs ᴄᴏɴᴛʀᴏ̂ʟᴇ.*`,
+          `✨ *ɢʜᴏsᴛɢ-𝐗 ᴇ́ᴠᴇɪʟʟᴇ́. Qᴜᴇ ᴘᴜɪs-ᴊᴇ ғᴀɪʀᴇ ᴘᴏᴜʀ ᴛᴏɪ ?*`,
+          `🛡️ *ᴘʀᴇ́sᴇɴᴛ. ᴍᴇs sʏsᴛᴇ̀ᴍᴇs sᴏɴᴛ ᴏᴘᴇ́ʀᴀᴛɪᴏɴɴᴇʟs.*`
+        ];
+        await extraNLP.reply(responses[Math.floor(Math.random() * responses.length)]);
         return;
       }
 
-      // 2. Suppression (Répondre à un message et dire "supprime")
-      if (input.includes("supprime") || input.includes("efface") || input.includes("delete")) {
+      if (input.includes("qui t'a fait") || input.includes("createur") || input.includes("ton pere")) {
+        await extraNLP.reply(`👑 *ᴊᴇ sᴜɪs ʟ'ᴏᴇᴜᴠʀᴇ sᴜᴘʀᴇ̂ᴍᴇ ᴅᴇ ᴛʀᴜᴛʜ ᴅᴇᴠɪᴄᴇs (ɢᴇᴏʀɢᴇs), ʟ'ᴀʀᴛɪsᴀɴ ᴅᴇ ғᴀᴅᴀ.*`);
+        return;
+      }
+
+      // --- 2. GESTION DES MÉDIAS (CONVERSION AUTOMATIQUE) ---
+      // Si tu réponds à une image en disant "sticker" ou "fait un sticker"
+      const stickerRegex = /sticker|autocollant|fais un sticker/i;
+      if (stickerRegex.test(input)) {
+        const isQuotedImage = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage?.imageMessage;
+        if (isQuotedImage || msg.message?.imageMessage) {
+          const stickCmd = commands.get('s') || commands.get('sticker');
+          if (stickCmd) {
+            await extraNLP.react('🎨');
+            return await stickCmd.execute(sock, msg, argsNLP, extraNLP);
+          }
+        }
+      }
+
+      // --- 3. ACTIONS DE GROUPE AVANCÉES ---
+      if (isGroup) {
+        // Tagall intelligent
+        if (/tous|tout le monde|tagall|alerte|invoque/i.test(input)) {
+          const participants = groupMetadata.participants;
+          const mentions = participants.map(p => p.id);
+          const text = `*☬ ɪɴᴠᴏᴄᴀᴛɪᴏɴ ɢᴇ́ɴᴇ́ʀᴀʟᴇ ᴘᴀʀ ʟᴇ ᴍᴀɪ̂ᴛʀᴇ ☬*\n\n` + participants.map(p => `@${p.id.split('@')[0]}`).join(' ');
+          await sock.sendMessage(from, { text, mentions });
+          return;
+        }
+
+        // Fermeture/Ouverture
+        if (/ferme|bloque|verrouille/i.test(input) && input.includes("groupe")) {
+          await sock.groupSettingUpdate(from, 'announcement');
+          await extraNLP.reply(`🔒 *ʟᴇ sᴀɴᴄᴛᴜᴀɪʀᴇ ᴇsᴛ ᴅᴇ́sᴏʀᴍᴀɪs sᴏᴜs sɪʟᴇɴᴄᴇ.*`);
+          return;
+        }
+        if (/ouvre|debloque|deverrouille/i.test(input) && input.includes("groupe")) {
+          await sock.groupSettingUpdate(from, 'not_announcement');
+          await extraNLP.reply(`🔓 *ʟᴀ ᴘᴀʀᴏʟᴇ ᴇsᴛ ʟɪʙᴇ́ʀᴇ́ᴇ ᴅᴀɴs ʟᴇ sᴀɴᴄᴛᴜᴀɪʀᴇ.*`);
+          return;
+        }
+
+        // Kick par réponse (Si tu dis "vire-le" ou "kick")
+        if (/kick|vire|degage|bannis/i.test(input)) {
+          const quotedParticipant = msg.message?.extendedTextMessage?.contextInfo?.participant;
+          if (quotedParticipant) {
+            await sock.groupParticipantsUpdate(from, [quotedParticipant], 'remove');
+            await extraNLP.react('⚔️');
+            return;
+          }
+        }
+      }
+
+      // --- 4. SUPPRESSION UNIVERSELLE ---
+      if (/supprime|efface|delete|clean/i.test(input)) {
         const ctx = msg.message?.extendedTextMessage?.contextInfo;
         if (ctx?.stanzaId) {
           const key = {
             remoteJid: from,
-            fromMe: ctx.participant === sock.user.id.split(':')[0] + '@s.whatsapp.net',
+            fromMe: ctx.participant === sock.user.id.split(':')[0] + '@s.whatsapp.net' || ctx.participant === sock.user.id,
             id: ctx.stanzaId,
             participant: ctx.participant
           };
@@ -438,57 +498,42 @@ const handleMessage = async (sock, msg) => {
             await sock.sendMessage(from, { delete: key });
             await extraNLP.react('🗑️');
             return;
-          } catch (e) {
-            await extraNLP.reply(`❌ *ᴇ́ᴄʜᴇᴄ ᴅᴇ ʟᴀ sᴜᴘᴘʀᴇssɪᴏɴ.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
-            return;
-          }
+          } catch (e) { /* Erreur silencieuse */ }
         }
       }
 
-      // 3. Gestion du groupe (Lock/Unlock)
-      if (isGroup) {
-        if (input.includes("ferme le groupe") || input.includes("bloque le groupe")) {
-          await sock.groupSettingUpdate(from, 'announcement');
-          await extraNLP.reply(`🔒 *ɢʀᴏᴜᴘᴇ ᴠᴇʀʀᴏᴜɪʟʟᴇ́. ʀᴇᴘᴏs ᴘᴏᴜʀ ʟᴇs ᴍᴇᴍʙʀᴇs.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
-          return;
-        }
-        if (input.includes("ouvre le groupe") || input.includes("débloque le groupe")) {
-          await sock.groupSettingUpdate(from, 'not_announcement');
-          await extraNLP.reply(`🔓 *ɢʀᴏᴜᴘᴇ ᴏᴜᴠᴇʀᴛ. ʟᴀ ᴘᴀʀᴏʟᴇ ᴇsᴛ ʟɪʙʀᴇ.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
-          return;
-        }
-      }
-
-      // 4. Informations système / Humour
-      if (input.includes("état du bot") || input.includes("tu dors") || input.includes("ça va")) {
-        await extraNLP.reply(`⚡ *ᴏᴘᴇ́ʀᴀᴛɪᴏɴɴᴇʟ. ᴘʀᴇ̂ᴛ ᴀ̀ ᴛᴏᴜᴛ ᴅᴇ́ᴠᴀsᴛᴇʀ sᴜʀ ᴛᴇs ᴏʀᴅʀᴇs.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+      // --- 5. RACCOURCIS SYSTÈME ---
+      if (input === 'p' || input === 'ping') {
+        const start = Date.now();
+        await extraNLP.react('📡');
+        const latency = Date.now() - start;
+        await extraNLP.reply(`*ᴘᴏɴɢ !* ⚡ *ᴠɪᴛᴇssᴇ :* ${latency}ᴍs`);
         return;
       }
 
-      if (input.includes("créateur") || input.includes("qui t'a fait")) {
-        await extraNLP.reply(`👑 *ᴊᴇ sᴜɪs ʟ'ᴏᴇᴜᴠʀᴇ ᴅᴇ ᴛʀᴜᴛʜ ᴅᴇᴠɪᴄᴇs, ʟ'ᴇ́ʟɪᴛᴇ ᴅᴇ ғᴀᴅᴀ.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
-        return;
+      if (input === 'm' || input === 'menu') {
+        const menuCmd = commands.get('menu');
+        if (menuCmd) return await menuCmd.execute(sock, msg, [], extraNLP);
       }
 
-      // 5. MOTEUR DE REDIRECTION (Exécuter n'importe quelle commande sans point)
-      if (firstWordNLP !== "") {
-        const possibleCmd = commands.get(firstWordNLP) || 
-                            [...commands.values()].find(c => c.aliases?.includes(firstWordNLP));
+      // --- 6. LE CŒUR DU NLE : REDIRECTION VERS COMMANDES ---
+      // Si le premier mot correspond au nom d'une commande ou d'un alias
+      const possibleCmd = commands.get(firstWordNLP) || 
+                          [...commands.values()].find(c => c.aliases?.includes(firstWordNLP));
 
-        if (possibleCmd) {
-          const newArgs = argsNLP.slice(1); 
-          try {
-            await extraNLP.react('⚡'); 
-            await possibleCmd.execute(sock, msg, newArgs, extraNLP);
-            return;
-          } catch (err) {
-            console.error(err);
-            await extraNLP.reply(`❌ *ᴇʀʀᴇᴜʀ : ᴇ́ᴄʜᴇᴄ ᴅᴇ ʟ'ᴇxᴇ́ᴄᴜᴛɪᴏɴ ᴀᴜᴛᴏᴍᴀᴛɪǫᴜᴇ*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
-            return;
-          }
+      if (possibleCmd) {
+        const newArgs = argsNLP.slice(1);
+        try {
+          await extraNLP.react('⚡');
+          await possibleCmd.execute(sock, msg, newArgs, extraNLP);
+          return;
+        } catch (err) {
+          console.error(err);
         }
       }
-    }// ---------------------------------------------------------------------
+    }
+    // ----------------------------------------------------------------------------------
+// ---------------------------------------------------------------------
 
     // Anti-tagall Protection
     if (isGroup) {
