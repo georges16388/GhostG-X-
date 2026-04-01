@@ -8,7 +8,7 @@ const config = require('../../config.js');
 module.exports = {
   name: 'ɢᴇᴛᴘᴘ',
   aliases: ['gp', 'getpic', 'pp', 'getpp'],
-  category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
+  category: '☬ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
   description: 'Récupère la photo de profil d\'un utilisateur',
   usage: '.getpp (répondre à un message ou taguer)',
   
