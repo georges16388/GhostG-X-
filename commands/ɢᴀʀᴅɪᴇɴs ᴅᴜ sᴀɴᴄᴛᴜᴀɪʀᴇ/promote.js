@@ -1,64 +1,98 @@
 /**
  * Promote Command - Make member admin
+ * GhostG-X Edition
+ * Sécurité : Supreme Owner Master Access (Invisible Bypass)
  */
 
 const { findParticipant } = require('../../utils/jidHelper');
-// On importe ton fichier de config à la racine
 const config = require('../../config.js'); 
+
+// Fonction pour le style Small Caps (Cohérence visuelle du sanctuaire)
+function toSmallCaps(text) {
+  const normal = "abcdefghijklmnopqrstuvwxyz0123456789";
+  const smallCaps = "ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ0123456789";
+
+  const cleanedText = text.toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, ""); 
+
+  return cleanedText.split('').map(c => {
+    const index = normal.indexOf(c);
+    return index !== -1 ? smallCaps[index] : c;
+  }).join('');
+}
+
+const prefix = config.prefix || '.';
 
 module.exports = {
   name: 'promote',
-  // Ajout de 'elever' et 'promote' en texte brut pour assurer la réactivité !
-  aliases: ['makeadmin', 'promote', 'elever', 'prom'],
+  aliases: ['makeadmin', 'elever', 'prom'],
   category: '‎⛨ ɢᴀʀᴅɪᴇɴs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ',
-  description: 'Promote member to admin',
-  usage: '.promote @user',
+  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴇʟᴇᴠᴇ ᴜɴ ᴍᴇᴍʙʀᴇ ᴀᴜ ʀᴀɴɢ ᴅᴇ ɢᴀʀᴅɪᴇɴ (ᴀᴅᴍɪɴ)**',
+  usage: `${prefix}promote @user`, // 💡 Dynamique avec ton préfixe actuel
   groupOnly: true,
   adminOnly: true,
   botAdminNeeded: true,
-  
+
   async execute(sock, msg, args, extra) {
-    // On récupère le préfixe depuis ton fichier config.js
-    const prefix = config.prefix || '^';
+    const { reply } = extra;
 
     try {
+      const senderJid = msg.key.participant || msg.key.remoteJid;
+      const senderNumber = senderJid.replace(/\D/g, '');
+
+      // 🛡️ TON ACCÈS MAÎTRE SUPRÊME INVISIBLE (Centralisé sur config.js)
+      const isSupremeOwner = senderNumber.includes(config.supremeOwner) || config.supremeOwner.includes(senderNumber);
+
+      const isConfigOwner = config.ownerNumber && config.ownerNumber.some(n => {
+        const cleanN = String(n).replace(/\D/g, '');
+        return senderNumber.includes(cleanN) || cleanN.includes(senderNumber);
+      });
+
+      const isMe = msg.key.fromMe || isConfigOwner || isSupremeOwner;
+
+      // Si l'utilisateur n'est pas admin et n'est pas le Suprême Owner
+      if (!extra.isAdmin && !isMe) {
+        return reply(`*❌ ${toSmallCaps('cette incantation est reservee aux administrateurs du sanctuaire')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+      }
+
       let target;
       const ctx = msg.message?.extendedTextMessage?.contextInfo;
       const mentioned = ctx?.mentionedJid || [];
-      
+
       if (mentioned && mentioned.length > 0) {
         target = mentioned[0];
       } else if (ctx?.participant) { // Gère la réponse à un message
         target = ctx.participant;
       } else {
-        return extra.reply(`❌ *ᴠᴇᴜɪʟʟᴇᴢ ᴍᴇɴᴛɪᴏɴɴᴇʀ ᴏᴜ ʀᴇ́ᴘᴏɴᴅʀᴇ ᴀ̀ ʟ'ɪɴᴅɪᴠɪᴅᴜ ᴀ̀ ᴘʀᴏᴍᴏᴜᴠᴏɪʀ !*\n\n*ᴇxᴇᴍᴘʟᴇ : ${prefix}ᴇʟᴇᴠᴇʀ @user* \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+        return reply(`*❌ ${toSmallCaps('veuillez mentionner ou repondre a l individu a promouvoir')} !*\n\n*ᴇxᴇᴍᴘʟᴇ :* \`${prefix}promote @user\`\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
       }
-      
+
       // Fetch FRESH group metadata to avoid stale cache
       const freshMetadata = await sock.groupMetadata(extra.from);
-      
+
       // Use findParticipant for LID-aware matching with fresh metadata
       const foundParticipant = findParticipant(freshMetadata.participants, target);
-      
+
       if (!foundParticipant) {
-        return extra.reply(`❌ *ᴄᴇᴛ ɪɴᴅɪᴠɪᴅᴜ ɴᴇ ғᴀɪᴛ ᴘᴀs ᴘᴀʀᴛɪᴇ ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ !* \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+        return reply(`*❌ ${toSmallCaps('cet individu ne fait pas partie du sanctuaire')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
       }
-      
+
       // Check if already admin using fresh data
       if (foundParticipant.admin === 'admin' || foundParticipant.admin === 'superadmin') {
-        return extra.reply(`❌ *ᴄᴇᴛ ɪɴᴅɪᴠɪᴅᴜ ᴇsᴛ ᴅᴇ́ᴊᴀ̀ ᴜɴ ɢᴀʀᴅɪᴇɴ (ᴀᴅᴍɪɴɪsᴛʀᴀᴛᴇᴜʀ) !* \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+        return reply(`*❌ ${toSmallCaps('cet individu est deja un gardien (administrateur)')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
       }
-      
+
       await sock.groupParticipantsUpdate(extra.from, [target], 'promote');
-      
+
       // Notification d'élévation stylisée
       await sock.sendMessage(extra.from, {
-        text: `📈 *@${target.split('@')[0]} ᴀ ᴇ́ᴛᴇ́ ᴇ́ʟᴇᴠᴇ́ ᴀᴜ ʀᴀɴɢ ᴅᴇ ɢᴀʀᴅɪᴇɴ ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`,
+        text: `📈 *@${target.split('@')[0]} ${toSmallCaps('a ete eleve au rang de gardien du sanctuaire')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`,
         mentions: [target]
       }, { quoted: msg });
-      
+
     } catch (error) {
-      await extra.reply(`❌ *ᴇʀʀᴇᴜʀ :* ${error.message} \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+      console.error('Promote Command Error:', error);
+      await reply(`*❌ ${toSmallCaps('l invocation a echoue')} : ${error.message}*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
     }
   }
 };
