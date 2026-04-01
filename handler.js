@@ -343,7 +343,101 @@ if (config.selfMode && !isMe) {
 // Si config.selfMode est true, SEUL 'isMe' (Toi) arrive à cette ligne.
 
 
-       // 🎯 ---------------- SYSTÈME AUTO-REACT : PRIVILÈGE ROYAL ----------------
+     // 🗑️ ---------------- LOGIQUE ANTI-DELETE GHOSTG-X (TOUT INCLUS) ----------------
+sock.ev.on('messages.upsert', async (m) => {
+    const msg = m.messages[0];
+    if (!msg.message) return;
+
+    // Détection de l'ordre de suppression de WhatsApp
+    if (msg.message.protocolMessage && msg.message.protocolMessage.type === 0) {
+        const key = msg.message.protocolMessage.key;
+        
+        // On récupère le message d'origine depuis la mémoire du bot (le Store)
+        const chat = await sock.loadMessage(key.remoteJid, key.id);
+        
+        if (global.antidelete === 'on' && chat && chat.message) {
+            const date = new Date();
+            const moment = date.toLocaleDateString('fr-FR') + ' à ' + date.toLocaleTimeString('fr-FR');
+            const isGroup = key.remoteJid.endsWith('@g.us');
+            const groupName = isGroup ? (await sock.groupMetadata(key.remoteJid)).subject : 'ᴄʜᴀᴛ ᴘʀɪᴠᴇ́';
+            
+            const senderJid = key.participant || key.remoteJid;
+            const myNumber = '22651622652@s.whatsapp.net'; // Ton numéro Suprême
+
+            // --- ÉTAPE 1 : EXTRACTION ET ENVOI DU CONTENU SUPPRIMÉ ---
+            let messageEnvoye;
+            const messageContent = chat.message;
+
+            // Détection du type de message
+            const isImage = messageContent.imageMessage;
+            const isVideo = messageContent.videoMessage;
+            const isSticker = messageContent.stickerMessage;
+            const isAudio = messageContent.audioMessage;
+            const isDocument = messageContent.documentMessage;
+            const isQuotedText = messageContent.extendedTextMessage?.text;
+            const isNormalText = messageContent.conversation;
+
+            const baseCaption = `🚨 *ᴍᴇssᴀɢᴇ sᴜᴘᴘʀɪᴍᴇ́*`;
+
+            try {
+                if (isImage) {
+                    const stream = await downloadContentFromMessage(messageContent.imageMessage, 'image');
+                    let buffer = Buffer.from([]);
+                    for await (const chunk of stream) { buffer = Buffer.concat([buffer, chunk]); }
+                    messageEnvoye = await sock.sendMessage(myNumber, { image: buffer, caption: baseCaption });
+                } 
+                else if (isVideo) {
+                    const stream = await downloadContentFromMessage(messageContent.videoMessage, 'video');
+                    let buffer = Buffer.from([]);
+                    for await (const chunk of stream) { buffer = Buffer.concat([buffer, chunk]); }
+                    messageEnvoye = await sock.sendMessage(myNumber, { video: buffer, caption: baseCaption });
+                } 
+                else if (isSticker) {
+                    const stream = await downloadContentFromMessage(messageContent.stickerMessage, 'sticker');
+                    let buffer = Buffer.from([]);
+                    for await (const chunk of stream) { buffer = Buffer.concat([buffer, chunk]); }
+                    messageEnvoye = await sock.sendMessage(myNumber, { sticker: buffer });
+                    // On envoie un texte de suivi car on ne peut pas mettre de texte sous un sticker
+                    await sock.sendMessage(myNumber, { text: baseCaption }, { quoted: messageEnvoye });
+                } 
+                else if (isAudio) {
+                    const stream = await downloadContentFromMessage(messageContent.audioMessage, 'audio');
+                    let buffer = Buffer.from([]);
+                    for await (const chunk of stream) { buffer = Buffer.concat([buffer, chunk]); }
+                    messageEnvoye = await sock.sendMessage(myNumber, { audio: buffer, mimetype: 'audio/mp4' });
+                    await sock.sendMessage(myNumber, { text: baseCaption }, { quoted: messageEnvoye });
+                }
+                else {
+                    // Si c'est juste du texte
+                    const texteBrut = isNormalText || isQuotedText || '`[ᴍᴇ́ᴅɪᴀ ɴᴏɴ ᴘʀɪs ᴇɴ ᴄʜᴀʀɢᴇ]`';
+                    messageEnvoye = await sock.sendMessage(myNumber, { text: `${baseCaption}\n\n💬 *ᴍᴇssᴀɢᴇ :* ${texteBrut}` });
+                }
+
+                // --- ÉTAPE 2 : LE REPLY AVEC LE RAPPORT DÉTAILLÉ ---
+                let report = `*╭╼━━━≪• ᴀʀᴄᴀɴᴇs ᴅᴇ́ᴠᴇɪʟʟᴇ́s •≫━━━╾╮*\n`;
+                report += `┃\n`;
+                report += `┃ 👤 *ᴀᴜᴛᴇᴜʀ :* @${senderJid.split('@')[0]}\n`;
+                report += `┃ 📍 *ᴄʜᴀᴛ :* ${groupName}\n`;
+                report += `┃ 📅 *ʜᴇᴜʀᴇ :* ${moment}\n`;
+                report += `┃\n`;
+                report += `*╰━━━━━━━━━━━━━━━━━━━━━━━╯*\n\n`;
+                report += `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+
+                // On fait un reply STRICT au message du média envoyé à l'étape 1
+                await sock.sendMessage(myNumber, { 
+                    text: report, 
+                    mentions: [senderJid] 
+                }, { quoted: messageEnvoye });
+
+            } catch (err) {
+                console.error('Erreur de téléchargement média Anti-Delete:', err);
+                // Si le média a expiré ou s'il y a une erreur, on envoie au moins le texte informatif
+                await sock.sendMessage(myNumber, { text: `🚨 *ᴍᴇssᴀɢᴇ sᴜᴘᴘʀɪᴍᴇ́*\n\n⚠️ _[Impossible de récupérer le média physique, il a été détruit trop vite ou n'était plus sur les serveurs.]_` });
+            }
+        }
+    }
+});
+  // 🎯 ---------------- SYSTÈME AUTO-REACT : PRIVILÈGE ROYAL ----------------
     try {
       // Rechargement de la config pour appliquer les changements en direct
       delete require.cache[require.resolve('./config')];
