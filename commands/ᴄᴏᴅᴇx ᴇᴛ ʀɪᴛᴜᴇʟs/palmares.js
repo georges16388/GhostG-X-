@@ -1,18 +1,38 @@
+/**
+ * Leaderboard Command - Display group daily statistics
+ * GhostG-X Edition
+ */
+
 const { getStats } = require('../../utils/groupstats');
-// On importe ton fichier de config à la racine pour le préfixe
 const config = require('../../config.js'); 
 
+// Fonction pour le style Small Caps (Cohérence visuelle du sanctuaire)
+function toSmallCaps(text) {
+  const normal = "abcdefghijklmnopqrstuvwxyz0123456789";
+  const smallCaps = "ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ0123456789";
+
+  const cleanedText = text.toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, ""); 
+
+  return cleanedText.split('').map(c => {
+    const index = normal.indexOf(c);
+    return index !== -1 ? smallCaps[index] : c;
+  }).join('');
+}
+
 module.exports = {
-    name: 'ᴘᴀʟᴍᴀʀᴇ̀s',
-    // Ajout de 'groupstats', 'stats', 'leaderboard', 'gstats', 'msgs' et 'palmares' en texte brut !
-    aliases: ['stats', 'leaderboard', 'gstats', 'topmembers', 'msgs', 'messagestats', 'groupstats', 'palmarès', 'palmares'],
-    category: '☬ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
-    description: '**ᴀꜰꜰɪᴄʜᴇ ʟᴇꜱ ꜱᴛᴀᴛɪꜱᴛɪQᴜᴇꜱ ᴅᴇ ᴅɪꜱᴄᴜꜱꜱɪᴏɴ ᴅᴜ ɢʀᴏᴜᴘᴇ ᴘᴏᴜʀ ʟᴀ ᴊᴏᴜʀɴᴇ́ᴇ**',
-    usage: 'ᴘᴀʟᴍᴀʀᴇ̀s',
+    name: 'palmares',
+    // Ajout de 'groupstats', 'stats', 'leaderboard', 'gstats', 'msgs' en texte brut pour assurer la réactivité !
+    aliases: ['stats', 'leaderboard', 'gstats', 'topmembers', 'msgs', 'messagestats', 'groupstats', 'palmarès'],
+    category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
+    description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀғғɪᴄʜᴇ ʟᴇs sᴛᴀᴛɪsᴛɪǫᴜᴇs ᴅᴇ ᴅɪsᴄᴜssɪᴏɴ ᴅᴜ ɢʀᴏᴜᴘᴇ ᴘᴏᴜʀ ʟᴀ ᴊᴏᴜʀɴᴇᴇ**',
+    usage: `${config.prefix || '.'}palmares`,
     groupOnly: true,
+    adminOnly: false,
+    botAdminNeeded: false,
 
     async execute(sock, msg, args, extra) {
-        // On récupère le préfixe depuis ton fichier config.js
+        const { reply } = extra;
         const prefix = config.prefix || '.';
 
         try {
@@ -21,7 +41,7 @@ module.exports = {
 
             // Vérification si des statistiques existent et s'il y a des utilisateurs enregistrés
             if (!stats || !stats.users || Object.keys(stats.users).length === 0) {
-                return extra.reply(`📊 *ᴀᴜᴄᴜɴᴇ ᴀᴄᴛɪᴠɪᴛᴇ́ ɴ'ᴀ ᴇ́ᴛᴇ́ ᴇɴʀᴇɢɪsᴛʀᴇ́ᴇ ᴀᴜᴊᴏᴜʀᴅ'ʜᴜɪ.* \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+                return reply(`📊 *${toSmallCaps('aucune activite n\'a ete enregistree aujourd\'hui')}.* \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
             }
 
             const { total, users } = stats;
@@ -31,18 +51,18 @@ module.exports = {
                 .sort((a, b) => b[1] - a[1])
                 .slice(0, 5);
 
-            // Correction de la condition pour vérifier si le tableau n'est pas vide
+            // Formulation du texte pour le top 5
             let topText = sortedUsers.length > 0
                 ? sortedUsers.map(([id, count], i) => `  ${i + 1}. @${id.split('@')[0]} — *${count} msgs*`).join('\n')
-                : '  ᴀᴜᴄᴜɴ ɪɴᴅɪᴠɪᴅᴜ ᴀᴄᴛɪғ ᴘᴏᴜʀ ʟᴇ ᴍᴏᴍᴇɴᴛ.';
+                : `  ${toSmallCaps('aucun individu actif pour le moment')}.`;
 
             const text = `╭╼━━━━━━━━━━━━━━━╾╮\n` +
                          `┃     📊 *ᴘᴀʟᴍᴀʀᴇ̀s ᴅᴜ ᴊᴏᴜʀ* ┃\n` +
                          `╰╼━━━━━━━━━━━━━━━╾╯\n\n` +
-                         `📌 *ᴛᴏᴛᴀʟ ᴅᴇs ᴍᴇssᴀɢᴇs :* ${total}\n\n` +
-                         `👥 *ʟᴇs sᴄʀɪʙᴇs ʟᴇs ᴘʟᴜs ᴀᴄᴛɪғs :*\n` +
+                         `📌 *${toSmallCaps('total des messages')} :* ${total}\n\n` +
+                         `👥 *${toSmallCaps('les scribes les plus actifs')} :*\n` +
                          `${topText}\n\n` +
-                         `*💡 ᴛᴀᴘᴇ \`${prefix}rang\` ᴘᴏᴜʀ ᴠᴏɪʀ ᴠᴏs sᴛᴀᴛɪsᴛɪǫᴜᴇs ᴘᴇʀsᴏɴɴᴇʟʟᴇs.*\n\n` +
+                         `*💡 ${toSmallCaps('tapez')} \`${prefix}rang\` ${toSmallCaps('pour voir vos statistiques personnelles')}.*\n\n` +
                          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
             await sock.sendMessage(from, {
@@ -52,7 +72,7 @@ module.exports = {
 
         } catch (err) {
             console.error('[groupstats cmd] error:', err);
-            extra.reply(`❌ *ᴇʀʀᴇᴜʀ ʟᴏʀs ᴅᴜ ᴄʜᴀʀɢᴇᴍᴇɴᴛ ᴅᴇs sᴛᴀᴛɪsᴛɪǫᴜᴇs.* \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+            await reply(`*❌ ${toSmallCaps('erreur lors du chargement des statistiques')}.* \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
         }
     }
 };
