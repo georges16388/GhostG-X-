@@ -40,7 +40,7 @@ module.exports = {
   aliases: ['square', 'cropper', 'cisaille', 'ᴄɪsᴀɪʟʟᴇ', 'cr'],
   description: 'Crop sticker/image/video to a perfect square sticker (animated for videos)',
   usage: '.crop (reply to sticker/image/video)',
-  category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
+  category: '☬ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
   
   async execute(sock, msg, args, extra) {
     // Declare temp files outside try block so they're available in finally
