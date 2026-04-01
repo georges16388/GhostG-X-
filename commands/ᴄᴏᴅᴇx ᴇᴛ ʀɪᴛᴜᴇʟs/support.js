@@ -55,8 +55,8 @@ module.exports = {
 
           `╭╼━≪• *👑 ʟᴇ ɢʀᴀɴᴅ ᴍᴀɪᴛʀᴇ* •≫━╾╮\n` +
           `┃\n` +
-          `┃ 👤 *${toSmallCaps('createur')} :* ɢʜᴏsᴛɢ\n` +
-          `┃ 📱 *${toSmallCaps('contact prive')} :* ᴡᴀ.ᴍᴇ/22651622652\n` +
+          `┃ 👤 *${toSmallCaps('createur')} :* ᴛʀᴜᴛʜ ᴅᴇᴠɪᴄᴇs\n` +
+          `┃ 📱 *${toSmallCaps('contact prive')} :* https://wa.me/22651622652\n` +
           `┃\n` +
           `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
 
