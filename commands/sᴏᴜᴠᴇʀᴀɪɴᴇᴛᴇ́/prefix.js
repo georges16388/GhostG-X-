@@ -11,7 +11,7 @@ module.exports = {
   aliases: ['ᴘʀᴇғɪx','prefixe', 'préfixe', 'monprefix'],
   category: '♛ sᴏᴜᴠᴇʀᴀɪɴᴇᴛᴇ́',
   ownerOnly: false, // On laisse à false pour forcer l'écoute manuelle du handler
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ʀᴇ́ᴠᴇ̀ʟᴇ ʟᴇ sɪɢɴᴇ ᴅ\'ɪɴᴠᴏᴄᴀᴛɪᴏɴ ᴀᴄᴛᴜᴇʟ ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ**',
+  description: `**『 ɢʜᴏsᴛɢ-𝐗 』➪ ʀᴇ́ᴠᴇ̀ʟᴇ ʟᴇ sɪɢɴᴇ ᴅ\'ɪɴᴠᴏᴄᴀᴛɪᴏɴ ᴀᴄᴛᴜᴇʟ ᴅᴇ ʟ'ᴏʀᴀᴄʟᴇ **`,
   usage: `${prefix}ᴘʀᴇғɪx `, 
 
   async execute(sock, msg, args, extra) {
