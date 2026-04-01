@@ -1,6 +1,7 @@
 /**
  * Sticker Command
  * Uses ffmpeg + webpmux-style EXIF metadata to always embed packname
+ * GhostG-X Edition
  */
 
 const fs = require('fs');
@@ -16,16 +17,33 @@ const { getTempDir, deleteTempFile } = require('../../utils/tempManager');
 // Max file size: 50MB
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
 
+// Fonction pour le style Small Caps (Cohérence visuelle du sanctuaire)
+function toSmallCaps(text) {
+  const normal = "abcdefghijklmnopqrstuvwxyz0123456789";
+  const smallCaps = "ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ0123456789";
+
+  const cleanedText = text.toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, ""); 
+
+  return cleanedText.split('').map(c => {
+    const index = normal.indexOf(c);
+    return index !== -1 ? smallCaps[index] : c;
+  }).join('');
+}
+
 module.exports = {
-  name: 'sᴄᴇᴀᴜ',
-  aliases: ['s', 'stiker', 'stc', 'sceau'],
-  category: '☬ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
-  description: '**ᴄᴏɴᴠᴇʀᴛɪꜱ ᴜɴᴇ ɪᴍᴀɢᴇ ᴏᴜ ᴜɴᴇ ᴠɪᴅᴇᴏ ᴇɴ ꜱᴛɪᴄᴋᴇʀ (ᴀᴜᴛᴏ ᴄᴏᴍᴘʀᴇꜱꜱɪᴏɴ)**',
-  usage: 'sᴄᴇᴀᴜ',
+  name: 'sceau',
+  aliases: ['s', 'stiker', 'stc', 'sticker'],
+  category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
+  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴄᴏɴᴠᴇʀᴛɪᴛ ᴜɴᴇ ɪᴍᴀɢᴇ ᴏᴜ ᴜɴᴇ ᴠɪᴅᴇᴏ ᴇɴ sᴛɪᴄᴋᴇʀ (ᴀᴜᴛᴏ ᴄᴏᴍᴘʀᴇssɪᴏɴ)**',
+  usage: `${config.prefix || '.'}sceau [reponse ou legende]`,
+  groupOnly: false,
+  adminOnly: false,
+  botAdminNeeded: false,
 
   async execute(sock, msg, args, extra) {
+    const { reply } = extra;
     const chatId = extra.from;
-    const messageToQuote = msg;
     let targetMessage = msg;
 
     const ctxInfo = msg.message?.extendedTextMessage?.contextInfo;
@@ -45,9 +63,9 @@ module.exports = {
       targetMessage.message?.videoMessage ||
       targetMessage.message?.documentMessage;
     const prefix = config.prefix || '.';
-    
+
     if (!mediaMessage) {
-      return extra.reply(`*〆 ʀᴇ́ᴘᴏɴᴅᴇᴢ ᴀ̀ ᴜɴᴇ ɪᴍᴀɢᴇ / ᴠɪᴅᴇ́ᴏ ᴀᴠᴇᴄ ${prefix}sᴄᴇᴀᴜ ᴏᴜ ᴇɴᴠᴏʏᴇᴢ ʟᴇ ᴍᴇ́ᴅɪᴀ ᴀᴠᴇᴄ ${prefix}sᴄᴇᴀᴜ ᴇɴ ʟᴇ́ɢᴇɴᴅᴇ*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+      return reply(`*⚠️ ${toSmallCaps('repondez a une image ou video avec')} ${prefix}${toSmallCaps('sceau ou envoyez le media avec')} ${prefix}${toSmallCaps('sceau en legende')}*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
     }
 
     const tempDir = getTempDir();
@@ -57,6 +75,7 @@ module.exports = {
     let tempFiles = [tempInput, tempOutput];
 
     try {
+      // Téléchargement du média
       const mediaBuffer = await downloadMediaMessage(
         targetMessage,
         'buffer',
@@ -65,14 +84,13 @@ module.exports = {
       );
 
       if (!mediaBuffer) {
-        await extra.reply(`*〆 ᴇ́ᴄʜᴇᴄ ᴅᴇ ʟᴀ ᴄʀᴇ́ᴀᴛɪᴏɴ : ᴀssᴜʀᴇᴢ-ᴠᴏᴜs ǫᴜᴇ ʟᴇ ᴍᴇ́ᴅɪᴀ ᴇsᴛ ᴠᴀʟɪᴅᴇ*`);
-        return;
+        return reply(`*❌ ${toSmallCaps('echec de la creation : assurez vous que le media est valide')}*`);
       }
 
-      // Check file size
+      // Vérification de la taille du fichier
       if (mediaBuffer.length > MAX_FILE_SIZE) {
-        await extra.reply(`❌ File too large: ${(mediaBuffer.length / 1024 / 1024).toFixed(2)}MB (max: ${MAX_FILE_SIZE / 1024 / 1024}MB)`);
-        return;
+        const sizeMB = (mediaBuffer.length / 1024 / 1024).toFixed(2);
+        return reply(`*❌ ${toSmallCaps('fichier trop volumineux')} : ${sizeMB}MB (max: 50MB)*`);
       }
 
       fs.writeFileSync(tempInput, mediaBuffer);
@@ -82,6 +100,7 @@ module.exports = {
         mediaMessage.mimetype?.includes('video') ||
         (mediaMessage.seconds || 0) > 0;
 
+      // Commande de base FFMPEG
       const baseFfmpegCmd = isAnimated
         ? `"${ffmpegPath}" -i "${tempInput}" -vf "scale=512:512:force_original_aspect_ratio=decrease,fps=15,pad=512:512:(ow-iw)/2:(oh-ih)/2:color=#00000000" -c:v libwebp -preset default -loop 0 -vsync 0 -pix_fmt yuva420p -quality 75 -compression_level 6 "${tempOutput}"`
         : `"${ffmpegPath}" -i "${tempInput}" -vf "scale=512:512:force_original_aspect_ratio=decrease,format=rgba,pad=512:512:(ow-iw)/2:(oh-ih)/2:color=#00000000" -c:v libwebp -preset default -loop 0 -vsync 0 -pix_fmt yuva420p -quality 75 -compression_level 6 "${tempOutput}"`;
@@ -93,6 +112,7 @@ module.exports = {
 
       let webpBuffer = fs.readFileSync(tempOutput);
 
+      // Fallback si l'animé dépasse 1MB (Limite de confort de WhatsApp)
       if (isAnimated && webpBuffer.length > 1000 * 1024) {
         const tempOutput2 = path.join(tempDir, `out_fallback_${Date.now()}.webp`);
         tempFiles.push(tempOutput2);
@@ -110,12 +130,13 @@ module.exports = {
         }
       }
 
+      // Injection des métadonnées EXIF (node-webpmux)
       const img = new webp.Image();
       await img.load(webpBuffer);
 
       const json = {
         'sticker-pack-id': crypto.randomBytes(32).toString('hex'),
-        'sticker-pack-name': config.packname || 'ɢʜᴏsᴛɢ-𝐗',
+        'sticker-pack-name': config.packname || 'ɢʜᴏsᴛɢ 𝐗',
         emojis: ['🤖'],
       };
 
@@ -132,13 +153,14 @@ module.exports = {
       img.exif = exif;
       const finalBuffer = await img.save(null);
 
+      // Envoi du sticker
       await sock.sendMessage(extra.from, { sticker: finalBuffer }, { quoted: msg });
 
     } catch (error) {
       console.error('Sticker command error:', error);
-      await extra.reply(`*〆 ᴇ́ᴄʜᴇᴄ ᴅᴇ ʟᴀ ᴄʀᴇ́ᴀᴛɪᴏɴ : ᴀssᴜʀᴇᴢ-ᴠᴏᴜs ǫᴜᴇ ʟᴇ ᴍᴇ́ᴅɪᴀ ᴇsᴛ ᴠᴀʟɪᴅᴇ*\n\n>  *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+      await reply(`*❌ ${toSmallCaps('echec de la creation : le sanctuaire a rencontre une erreur')}*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
     } finally {
-      // Always cleanup temp files
+      // Nettoyage systématique des fichiers temporaires
       tempFiles.forEach(file => deleteTempFile(file));
     }
   },
