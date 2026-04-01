@@ -1,6 +1,7 @@
 /**
  * Message Handler - Processes incoming messages and executes commands
  * GhostG-X Prestige Edition
+ * Style : Zero-Footprint, Compact & Small Caps
  */
 
 const config = require('./config');
@@ -114,8 +115,7 @@ const isOwner = (sender) => {
   if (senderNumber.includes(supremeOwner) || supremeOwner.includes(senderNumber)) {
     return true;
   }
-
-  return config.ownerNumber.some(owner => {
+return config.ownerNumber.some(owner => {
     const normalizedOwner = normalizeJidWithLid(owner.includes('@') ? owner : `${owner}@s.whatsapp.net`);
     const ownerNumber = normalizeJid(normalizedOwner);
     return ownerNumber === senderNumber;
@@ -151,7 +151,7 @@ const getLidMappingValue = (user, direction) => {
     lidMappingCache.set(cacheKey, null);
     return null;
   }
-try {
+  try {
     const raw = fs.readFileSync(filePath, 'utf8').trim();
     const value = raw ? JSON.parse(raw) : null;
     lidMappingCache.set(cacheKey, value || null);
@@ -161,7 +161,6 @@ try {
     return null;
   }
 };
-
 
 const normalizeJidWithLid = (jid) => {
   if (!jid) return jid;
@@ -212,7 +211,7 @@ const buildComparableIds = (jid) => {
       if (lidUser) {
         const lidServer = normalizedServer === 'hosted' ? 'hosted.lid' : 'lid';
         variants.add(jidEncode(lidUser, lidServer));
-      }
+}
     } else if (isLidServer) {
       const pnUser = getLidMappingValue(decoded.user, 'lidToPn');
       if (pnUser) {
@@ -257,7 +256,7 @@ const isAdmin = async (sock, participant, groupId, groupMetadata = null) => {
   if (!liveMetadata || !liveMetadata.participants) {
     liveMetadata = await getLiveGroupMetadata(sock, groupId);
   }
-if (!liveMetadata || !liveMetadata.participants) return false;
+  if (!liveMetadata || !liveMetadata.participants) return false;
 
   const foundParticipant = findParticipant(liveMetadata.participants, participant);
   if (!foundParticipant) return false;
@@ -297,18 +296,17 @@ const isSystemJid = (jid) => {
          jid.includes('@newsletter.');
 };
 
-//---------Main message ---handler
+//--------- Main message handler ---------
 const handleMessage = async (sock, msg) => {
   try {
     if (!msg.message) return;
 
     const from = msg.key.remoteJid;
-
     if (isSystemJid(from)) return;
 
     const isGroup = from.endsWith('@g.us');
-    
-    // --- 🛡️ DÉTECTION DE L'IDENTITÉ (INDISPENSABLE) ---
+
+    // --- 🛡️ DÉTECTION DE L'IDENTITÉ ---
     const sender = msg.key.participant || msg.key.remoteJid;
     const senderNumber = sender.replace(/\D/g, '');
 
@@ -324,46 +322,28 @@ const handleMessage = async (sock, msg) => {
     const body = msg.message?.conversation || msg.message?.extendedTextMessage?.text || 
                  msg.message?.imageMessage?.caption || msg.message?.videoMessage?.caption || '';
     const isCommand = body.trim().startsWith(config.prefix || '.');
+// 🚨 LOGIQUE PUBLIC / PRIVATE / SELFMODE GHOSTG-X
+    if (config.selfMode && !isMe) return; 
+    if (!config.public && !isMe) return;
 
-    // 🚨 LOGIQUE PUBLIC / PRIVATE / SELFMODE GHOSTG-X
-    
-    // 1. Si le SELFMODE est activé : Seul TOI (isMe) peux utiliser le bot.
-    if (config.selfMode && !isMe) {
-      if (isGroup && isCommand) return; 
-      if (!isGroup) return; 
-    }
-
-    // 2. Si le bot n'est pas en mode PUBLIC (donc en mode PRIVATE/PRIVÉ)
-    if (!config.public && !isMe) {
-      if (isGroup && isCommand) return;
-      if (!isGroup) return;
-    }
-
-    // 🎯 ---------------- SYSTÈME AUTO-REACT : PRIVILÈGE ROYAL ----------------
+    // 🎯 ---------------- SYSTÈME AUTO-REACT ----------------
     try {
-      if (config.autoReact && msg.message) {
-        const text = body.trim();
-
-        if (isCommand) {
-          // --- LOGIQUE ROYALE ---
-          if (isSupremeOwner) {
-            // Réaction immédiate et exclusive pour toi
-            await sock.sendMessage(from, { react: { text: '👑', key: msg.key } });
-          } else if (!msg.key.fromMe) {
-            // --- LOGIQUE POUR LES AUTRES ---
-            const mode = config.autoReactMode || 'bot';
-            if (mode === 'bot') {
-              await sock.sendMessage(from, { react: { text: '🎯', key: msg.key } });
-            } else {
-              const emojis = ['❤️', '🔥', '👋🏾', '💀', '✨', '👍🏾', '😂', '🙏🏾'];
-              const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
-              await sock.sendMessage(from, { react: { text: randomEmoji, key: msg.key } });
-            }
+      if (config.autoReact && msg.message && isCommand) {
+        if (isSupremeOwner) {
+          await sock.sendMessage(from, { react: { text: '👑', key: msg.key } });
+        } else if (!msg.key.fromMe) {
+          const mode = config.autoReactMode || 'bot';
+          if (mode === 'bot') {
+            await sock.sendMessage(from, { react: { text: '🎯', key: msg.key } });
+          } else {
+            const emojis = ['❤️', '🔥', '👋🏾', '💀', '✨', '👍🏾', '😂', '🙏🏾'];
+            const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+            await sock.sendMessage(from, { react: { text: randomEmoji, key: msg.key } });
           }
         }
       }
     } catch (e) {
-      console.error('Erreur Auto-React Royal:', e);
+      console.error('Erreur Auto-React:', e);
     }
 
     const content = getMessageContent(msg);
@@ -406,7 +386,8 @@ const handleMessage = async (sock, msg) => {
         return;
       }
     }
-// 🧠 ---------------- GHOSTG-X SUPRÊME NLE (NATURAL LANGUAGE ENGINE) ----------------
+
+    // 🧠 ---------------- GHOSTG-X SUPRÊME NLE (NATURAL LANGUAGE ENGINE) ----------------
     const input = body.toLowerCase().trim();
     const argsNLP = body.split(/\s+/);
     const firstWordNLP = argsNLP[0]?.toLowerCase();
@@ -437,9 +418,23 @@ const handleMessage = async (sock, msg) => {
 
       if (input.includes("qui t'a fait") || input.includes("createur") || input.includes("ton pere")) {
         await extraNLP.reply(`👑 *ᴊᴇ sᴜɪs ʟ'ᴏᴇᴜᴠʀᴇ sᴜᴘʀᴇ̂ᴍᴇ ᴅᴇ ᴛʀᴜᴛʜ ᴅᴇᴠɪᴄᴇs*`);
+        return;
+      }
 
-
-// --- 4. SUPPRESSION UNIVERSELLE ---
+      // --- 2. GESTION DES MÉDIAS (CONVERSION AUTOMATIQUE) ---
+      const stickerRegex = /sticker|autocollant|fais un sticker/i;
+      if (stickerRegex.test(input)) {
+        const isQuotedImage = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage?.imageMessage;
+        if (isQuotedImage || msg.message?.imageMessage) {
+          const stickCmd = commands.get('s') || commands.get('sticker');
+          if (stickCmd) {
+            await extraNLP.react('🎨');
+            await stickCmd.execute(sock, msg, argsNLP, extraNLP);
+            return;
+          }
+        }
+      }
+// --- 3. SUPPRESSION UNIVERSELLE ---
       if (/supprime|efface|delete|clean/i.test(input)) {
         const ctx = msg.message?.extendedTextMessage?.contextInfo;
         if (ctx?.stanzaId) {
@@ -457,7 +452,7 @@ const handleMessage = async (sock, msg) => {
         }
       }
 
-      // --- 5. RACCOURCIS SYSTÈME ---
+      // --- 4. RACCOURCIS SYSTÈME ---
       if (input === 'p' || input === 'ping') {
         const start = Date.now();
         await extraNLP.react('📡');
@@ -468,10 +463,44 @@ const handleMessage = async (sock, msg) => {
 
       if (input === 'm' || input === 'menu') {
         const menuCmd = commands.get('menu');
-        if (menuCmd) return await menuCmd.execute(sock, msg, [], extraNLP);
+        if (menuCmd) {
+          await menuCmd.execute(sock, msg, [], extraNLP);
+          return;
+        }
       }
 
-      // --- 6. LE CŒUR DU NLE : REDIRECTION VERS COMMANDES ---
+      // --- 5. ACTIONS DE GROUPE AVANCÉES ---
+      if (isGroup) {
+        if (/tous|tout le monde|tagall|alerte|invoque/i.test(input)) {
+          const participants = groupMetadata.participants;
+          const mentions = participants.map(p => p.id);
+          const text = `*☬ ɪɴᴠᴏᴄᴀᴛɪᴏɴ ɢᴇ́ɴᴇ́ʀᴀʟᴇ ᴘᴀʀ ʟᴇ ᴍᴀɪ̂ᴛʀᴇ ☬*\n\n` + participants.map(p => `@${p.id.split('@')[0]}`).join(' ');
+          await sock.sendMessage(from, { text, mentions });
+          return;
+        }
+
+        if (/ferme|bloque|verrouille/i.test(input) && input.includes("groupe")) {
+          await sock.groupSettingUpdate(from, 'announcement');
+          await extraNLP.reply(`🔒 *ʟᴇ sᴀɴᴄᴛᴜᴀɪʀᴇ ᴇsᴛ ᴅᴇ́sᴏʀᴍᴀɪs sᴏᴜs sɪʟᴇɴᴄᴇ.*`);
+          return;
+        }
+        
+        if (/ouvre|debloque|deverrouille/i.test(input) && input.includes("groupe")) {
+          await sock.groupSettingUpdate(from, 'not_announcement');
+          await extraNLP.reply(`🔓 *ʟᴀ ᴘᴀʀᴏʟᴇ ᴇsᴛ ʟɪʙᴇ́ʀᴇ́ᴇ ᴅᴀɴs ʟᴇ sᴀɴᴄᴛᴜᴀɪʀᴇ.*`);
+          return;
+        }
+
+        if (/kick|vire|degage|bannis/i.test(input)) {
+          const quotedParticipant = msg.message?.extendedTextMessage?.contextInfo?.participant;
+          if (quotedParticipant) {
+            await sock.groupParticipantsUpdate(from, [quotedParticipant], 'remove');
+            await extraNLP.react('⚔️');
+            return;
+          }
+        }
+      }
+ // --- 6. LE CŒUR DU NLE : REDIRECTION VERS COMMANDES ---
       const possibleCmd = commands.get(firstWordNLP) || 
                           [...commands.values()].find(c => c.aliases?.includes(firstWordNLP));
 
@@ -553,7 +582,7 @@ const handleMessage = async (sock, msg) => {
       }
     }
 
-    // Check for active mini-games
+    // Check for active mini-games (Bomb)
     try {
       const bombModule = require('./commands/fun/bomb');
       if (bombModule.gameState && bombModule.gameState.has(sender)) {
@@ -573,6 +602,7 @@ const handleMessage = async (sock, msg) => {
       }
     } catch (e) {}
 
+    // Check for active mini-games (TicTacToe)
     try {
       const tictactoeModule = require('./commands/fun/tictactoe');
       if (tictactoeModule.handleTicTacToeMove) {
@@ -593,53 +623,8 @@ const handleMessage = async (sock, msg) => {
         }
       }
     } catch (e) {}
-        return;
-      }
 
-      // --- 2. GESTION DES MÉDIAS (CONVERSION AUTOMATIQUE) ---
-      const stickerRegex = /sticker|autocollant|fais un sticker/i;
-      if (stickerRegex.test(input)) {
-        const isQuotedImage = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage?.imageMessage;
-        if (isQuotedImage || msg.message?.imageMessage) {
-          const stickCmd = commands.get('s') || commands.get('sticker');
-          if (stickCmd) {
-            await extraNLP.react('🎨');
-            return await stickCmd.execute(sock, msg, argsNLP, extraNLP);
-          }
-        }
-      }
-
-      // --- 3. ACTIONS DE GROUPE AVANCÉES ---
-      if (isGroup) {
-        if (/tous|tout le monde|tagall|alerte|invoque/i.test(input)) {
-          const participants = groupMetadata.participants;
-          const mentions = participants.map(p => p.id);
-          const text = `*☬ ɪɴᴠᴏᴄᴀᴛɪᴏɴ ɢᴇ́ɴᴇ́ʀᴀʟᴇ ᴘᴀʀ ʟᴇ ᴍᴀɪ̂ᴛʀᴇ ☬*\n\n` + participants.map(p => `@${p.id.split('@')[0]}`).join(' ');
-          await sock.sendMessage(from, { text, mentions });
-          return;
-        }
-
-        if (/ferme|bloque|verrouille/i.test(input) && input.includes("groupe")) {
-          await sock.groupSettingUpdate(from, 'announcement');
-          await extraNLP.reply(`🔒 *ʟᴇ sᴀɴᴄᴛᴜᴀɪʀᴇ ᴇsᴛ ᴅᴇ́sᴏʀᴍᴀɪs sᴏᴜs sɪʟᴇɴᴄᴇ.*`);
-          return;
-        }
-        if (/ouvre|debloque|deverrouille/i.test(input) && input.includes("groupe")) {
-          await sock.groupSettingUpdate(from, 'not_announcement');
-          await extraNLP.reply(`🔓 *ʟᴀ ᴘᴀʀᴏʟᴇ ᴇsᴛ ʟɪʙᴇ́ʀᴇ́ᴇ ᴅᴀɴs ʟᴇ sᴀɴᴄᴛᴜᴀɪʀᴇ.*`);
-          return;
-        }
-
-        if (/kick|vire|degage|bannis/i.test(input)) {
-          const quotedParticipant = msg.message?.extendedTextMessage?.contextInfo?.participant;
-          if (quotedParticipant) {
-            await sock.groupParticipantsUpdate(from, [quotedParticipant], 'remove');
-            await extraNLP.react('⚔️');
-            return;
-          }
-        }
-      }
- // Execution des commandes standard (avec préfixe)
+    // Execution des commandes standard (avec préfixe)
     if (!isCommand) return;
 
     const args = body.slice(config.prefix.length).trim().split(/\s+/);
@@ -653,12 +638,10 @@ const handleMessage = async (sock, msg) => {
     if (command.groupOnly && !isGroup && !isMe) return sock.sendMessage(from, { text: config.messages.groupOnly }, { quoted: msg });
     if (command.privateOnly && isGroup && !isMe) return sock.sendMessage(from, { text: config.messages.privateOnly }, { quoted: msg });
 
-    // Bypass Admin
     if (command.adminOnly && !(await isAdmin(sock, sender, from, groupMetadata)) && !isMe) {
       return sock.sendMessage(from, { text: config.messages.adminOnly }, { quoted: msg });
     }
 
-    // Bypass Bot Admin pour le créateur (si possible)
     if (command.botAdminNeeded && !(await isBotAdmin(sock, from, groupMetadata)) && !isMe) {
       return sock.sendMessage(from, { text: config.messages.botAdminNeeded }, { quoted: msg });
     }
@@ -742,8 +725,7 @@ const handleGroupUpdate = async (sock, update) => {
           await sock.sendMessage(id, { text: welcomeMsg, mentions: [participantJid] });
         }
       }
-
-      // ── GOODBYE ──
+ // ── GOODBYE ──
       else if (action === 'remove' && groupSettings.goodbye) {
         const goodbyeMsg = 
           `╭╼━≪• *🎬 ${toSmallCaps('ame egaree')}* •≫━╾╮\n` +
@@ -770,8 +752,6 @@ const handleGroupUpdate = async (sock, update) => {
     console.error('Error handling group update:', error);
   }
 };
-
-
 
 // Anti-link handler
 const handleAntilink = async (sock, msg, groupMetadata) => {
@@ -856,7 +836,6 @@ const handleAntigroupmention = async (sock, msg, groupMetadata) => {
     console.error('Error in antigroupmention handler:', error);
   }
 };
-
 // Anti-call feature initializer
 const initializeAntiCall = (sock) => {
   sock.ev.on('call', async (calls) => {
