@@ -176,40 +176,57 @@ async function startBot() {
       const ownerNames = Array.isArray(config.ownerName) ? config.ownerName.join(', ') : config.ownerName;
       const botNumber = sock.user.id.split(':')[0];
 
-      console.log('\n╭╼━≪• ɢʜᴏsᴛɢ-𝐗 ɪs ᴀʟɪᴠᴇ •≫━╾╮');
-      console.log(`┃ sᴛᴀᴛᴜᴛ  : 🟢 ᴏɴʟɪɴᴇ`);
-      console.log(`┃ ɴᴜᴍᴇ́ʀᴏ : ${botNumber}`);
-      console.log(`┃ ɴᴏᴍ     : ${config.botName || 'ɢʜᴏsᴛɢ-𝐗'}`);
-      console.log(`┃ ᴘʀᴇ́ғɪxᴇ : [ ${config.prefix || '.'} ]`);
-      console.log(`┃ ᴍᴀɪ̂ᴛʀᴇ  : ${ownerNames}`);
-      console.log(`┃ ᴍᴏᴅᴇ    : ${config.selfMode ? '🔒 ᴘʀɪᴠᴇ́' : '🌐 ᴘᴜʙʟɪᴄ'}`);
-      console.log('╰━━━━━━━━━━━━━━━━━━━━━━━╯\n');
+            // 1. AFFICHAGE ÉPURÉ DANS LA CONSOLE
+      console.log('╭╼━≪• ɢʜᴏsᴛɢ-𝐗 ɪs ᴀʟɪᴠᴇ •≫━╾╮');
+      console.log('╰━━━━━━━━━━━━━━━━━━━━━━━╯');
 
+      // 2. MESSAGE DE BIENVENUE WHATSAPP (100% STYLE CHEVALIER)
       const bigWelcomeMessage = 
           `╭╼━≪• *ɢʜᴏsᴛɢ-𝐗 ɪs ᴀʟɪᴠᴇ* •≫━╾╮\n` +
-          `┃ 🔮 *sᴛᴀᴛᴜᴛ* : 🟢 ᴏɴʟɪɴᴇ\n` +
+          `┃ 🔮 *ᴠɪɢɪʟᴀɴᴄᴇ* : 🟢 ᴇ́ᴠᴇɪʟʟᴇ́\n` +
           `┃ 🤖 *ɴᴏᴍ* : ${config.botName || 'ɢʜᴏsᴛɢ-𝐗'}\n` +
-          `┃ ⚡ *ᴘʀᴇ́ғɪxᴇ* : [ ${config.prefix || '.'} ]\n` +
-          `┃ 👑 *ᴍᴀɪ̂ᴛʀᴇ* : ${ownerNames}\n` +
+          `┃ ⚡ *ɪɴᴄᴀɴᴛᴀᴛɪᴏɴ* : [ ${config.prefix || '.'} ]\n` +
+          `┃ 🗡️ *ᴄᴏᴍᴍᴀɴᴅᴇᴜʀ* : ${ownerNames}\n` +
           `┃ 🔒 *ᴍᴏᴅᴇ* : ${config.selfMode ? '🔒 ᴘʀɪᴠᴇ́' : '🌐 ᴘᴜʙʟɪᴄ'}\n` +
           `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
-          `📢 *ᴄʜᴀɪɴᴇ ᴡʜᴀᴛsᴀᴘᴘ* : https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c\n` +
-          `📢 *ᴄʜᴀɪɴᴇ ᴛᴇʟᴇɢʀᴀᴍ* : https://t.me/ghostgxbot\n` +
-          `👥 *ɢʀᴏᴜᴘᴇ* : https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf?mode=gi_t\n` +
-          `💻 *ᴅᴇᴠ* : https://wa.me/22651622652\n\n` +
-          `📖 "*_ᴊᴇ ᴘᴜɪs ᴛᴏᴜᴛ ᴘᴀʀ ᴄᴇʟᴜɪ ǫᴜɪ ᴍᴇ ғᴏʀᴛɪғɪᴇ_*" ❤️✝️\n` +
-          `👻 *ɢʜᴏsᴛɢ-𝐗 ᴇsᴛ ᴘʀᴇ̂ᴛ ᴀ̀ ᴛᴇ sᴇʀᴠɪʀ !*`;
+          `📡 *ᴄᴀɴᴀʟ ᴅᴇ ʟ'ᴏᴍʙʀᴇ* : https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c\n` +
+          `🦇 *ʀᴇᴘᴇɪʀᴇ sᴇᴄʀᴇᴛ* : https://t.me/ghostgxbot\n` +
+          `🏰 *ʟᴇ sᴀɴᴄᴛᴜᴀɪʀᴇ* : https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf?mode=gi_t\n` +
+          `📜 *ᴘᴀᴄᴛᴇ ᴀᴠᴇᴄ ʟ'ᴀʀᴛɪsᴀɴ* : https://wa.me/22651622652\n\n` +
+          `⚔️ "*_ᴀᴜᴄᴜɴᴇ ᴀʀᴍᴇ ғᴏʀɢᴇ́ᴇ ᴄᴏɴᴛʀᴇ ᴄᴇ sᴀɴᴄᴛᴜᴀɪʀᴇ ɴᴇ ᴘᴇᴜᴛ ᴘʀᴏsᴘᴇ́ʀᴇʀ_*"\n` +
+          `👻 *ʟᴇ ɢʀɪᴍᴏɪʀᴇ ᴇsᴛ ᴏᴜᴠᴇʀᴛ, ᴘʀᴇ̂ᴛ ᴀ̀ sᴇʀᴠɪʀ !*`;
 
       try {
         const myJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
-        await sock.sendMessage(myJid, { text: bigWelcomeMessage });
-        console.log('✉️ Message complet de démarrage envoyé sur ton WhatsApp !');
+        const path = require('path');
+        const fs = require('fs');
+        
+        // Puisque utils est à la racine, on part du dossier de travail actuel
+        const imagePath = path.join(process.cwd(), 'utils', 'bot_image_6.jpg');
+
+        if (fs.existsSync(imagePath)) {
+          const imageBuffer = fs.readFileSync(imagePath);
+          
+          // Envoi de l'image avec le texte complet dans le Inbox de l'owner
+          await sock.sendMessage(myJid, { 
+            image: imageBuffer, 
+            caption: bigWelcomeMessage 
+          });
+          console.log('✉️ Image et message de démarrage scellés envoyés sur ton WhatsApp !');
+        } else {
+          // Secours si l'image n'est pas trouvée
+          await sock.sendMessage(myJid, { text: bigWelcomeMessage });
+          console.log('✉️ Message de démarrage envoyé en texte seul (image 6 introuvable dans utils).');
+        }
       } catch (err) {
         console.log('⚠️ Impossible d\'envoyer le message de démarrage sur WhatsApp.');
       }
 
+      // 3. MISE À JOUR DE L'AUTOBIO
       if (config.autoBio) {
-        await sock.updateProfileStatus(`*ɢʜᴏsᴛɢ-𝐗* | *ᴊᴇꜱᴜꜱ ᴛ'ᴀɪᴍᴇ♥️✝️*`);
+        await sock.updateProfileStatus(`*ɢʜᴏsᴛɢ-𝐗* | *♛ᴊᴇsᴜs ᴇsᴛ ʀᴏɪ♛*`);
+      }
+
       }
       handler.initializeAntiCall(sock);
     }
