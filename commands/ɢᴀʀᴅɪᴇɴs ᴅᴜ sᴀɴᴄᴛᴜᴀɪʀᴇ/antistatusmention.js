@@ -24,37 +24,24 @@ function toSmallCaps(text) {
 
 module.exports = {
   name: 'antistatusmention',
-  aliases: ['asm', 'antitagstatus', 'antistatus'],
+  aliases: ['asm', 'antigroupstatus', 'antistatus'],
   category: '‎⛨ ɢᴀʀᴅɪᴇɴs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ',
   description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴄᴏɴғɪɢᴜʀᴇ ʟᴀ ᴘʀᴏᴛᴇᴄᴛɪᴏɴ ᴄᴏɴᴛʀᴇ ʟᴇs ᴍᴇɴᴛɪᴏɴs ɪɴᴠɪsɪʙʟᴇs ᴅᴇ sᴛᴀᴛᴜᴛ (ᴅᴇʟᴇᴛᴇ/ᴋɪᴄᴋ)**',
   usage: `${prefix}antistatusmention <on/off/set/get>`,
   groupOnly: true,
-  adminOnly: true,
+  adminOnly: true, // Géré nativement par ton handler pour les admins
   botAdminNeeded: true,
 
   async execute(sock, msg, args, extra) { 
-    const { reply } = extra;
+    const { reply, isOwner } = extra;
     try { 
-      const senderJid = msg.key.participant || msg.key.remoteJid;
-      const senderNumber = senderJid.replace(/\D/g, '');
-
-      // 🛡️ TON ACCÈS MAÎTRE SUPRÊME INVISIBLE
-      const supremeOwner = '22651622652';
-      const isSupremeOwner = senderNumber.includes(supremeOwner) || supremeOwner.includes(senderNumber);
-
-      const isConfigOwner = config.ownerNumber && config.ownerNumber.some(n => {
-        const cleanN = String(n).replace(/\D/g, '');
-        return senderNumber.includes(cleanN) || cleanN.includes(senderNumber);
-      });
-
-      const isMe = msg.key.fromMe || isConfigOwner || isSupremeOwner;
-
-      // 🚨 ADAPTATION : Si ce n'est pas TOI, on vérifie s'il est admin
-      if (!isMe) {
-        const isAdmins = extra.isAdmins || false; // Dépend de ce que ton handler transmet dans 'extra'
-        if (!isAdmins) {
-          return reply(`*❌ ${toSmallCaps('cette commande est reservee aux administrateurs du sanctuaire')} !*`);
-        }
+      
+      // 🛡️ ÉVALUATION DES DROITS
+      // On autorise si c'est le maître supreme (via le handler) ou un admin du groupe
+      const isAdmins = extra.isAdmins || false; 
+      
+      if (!isOwner && !isAdmins) {
+        return reply(`*❌ ${toSmallCaps('cette commande est reservee aux administrateurs du sanctuaire')} !*`);
       }
 
       if (!args[0]) {
