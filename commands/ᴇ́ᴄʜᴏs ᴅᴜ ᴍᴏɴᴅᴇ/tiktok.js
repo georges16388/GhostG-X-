@@ -38,7 +38,7 @@ function getDomain(url) {
 module.exports = {
   name: 'tiktok',
   aliases: ['illusions_tiktok', 'tt', 'ttdl', 'tiktokdl', 'illusion_tiktok'],
-  category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
+  category: '‎⌘ ᴇ́ᴄʜᴏs ᴅᴜ ᴍᴏɴᴅᴇ',
   description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀsᴘɪʀᴇ ᴇᴛ ᴛᴇʟᴇᴄʜᴀʀɢᴇ ᴅᴇs ᴠɪᴅᴇᴏs ᴛɪᴋᴛᴏᴋ**',
   usage: `${config.prefix || '.'}tiktok [lien tiktok]`,
   groupOnly: false,
