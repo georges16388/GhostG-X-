@@ -1,32 +1,56 @@
-
+/**
+ * Rang Command - Display user activity statistics
+ * GhostG-X Edition
+ */
 
 const { getStats } = require('../../utils/groupstats');
+const config = require('../../config.js');
+
+// Fonction pour le style Small Caps (Cohérence visuelle du sanctuaire)
+function toSmallCaps(text) {
+  const normal = "abcdefghijklmnopqrstuvwxyz0123456789";
+  const smallCaps = "ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ0123456789";
+
+  const cleanedText = text.toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, ""); 
+
+  return cleanedText.split('').map(c => {
+    const index = normal.indexOf(c);
+    return index !== -1 ? smallCaps[index] : c;
+  }).join('');
+}
 
 module.exports = {
-    name: 'ʀᴀɴɢ',
-    // Ajout de 'myactivity', 'mystats', 'mymsgs', 'rank' et 'rang' en texte brut !
-    aliases: ['mystats', 'mymsgs', 'rank', 'myactivity', 'rang'],
-    category: '☬ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
-    description: '**ᴀꜰꜰɪᴄʜᴇ ᴠᴏꜱ ꜱᴛᴀᴛɪꜱᴛɪQᴜᴇꜱ ᴅ\'ᴀᴄᴛɪᴠɪᴛᴇ́ ᴅᴜ ᴊᴏᴜʀ**',
-    usage: '.ʀᴀɴɢ',
+    name: 'rang',
+    // Ajout de 'myactivity', 'mystats', 'mymsgs', 'rank' en texte brut pour assurer la réactivité !
+    aliases: ['mystats', 'mymsgs', 'rank', 'myactivity'],
+    category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
+    description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀғғɪᴄʜᴇ ᴠᴏs sᴛᴀᴛɪsᴛɪǫᴜᴇs ᴅ\'ᴀᴄᴛɪᴠɪᴛᴇ ᴅᴜ ᴊᴏᴜʀ**',
+    usage: `${config.prefix || '.'}rang`,
     groupOnly: true,
+    adminOnly: false,
+    botAdminNeeded: false,
 
     async execute(sock, msg, args, extra) {
+        const { reply } = extra;
+        const from = extra.from;
+        const sender = extra.sender;
+
         try {
-            const from = extra.from;
-            const sender = extra.sender;
             const stats = getStats(from);
 
+            // Si aucune donnée ou aucun message aujourd'hui pour cet utilisateur
             if (!stats || !stats.users || !stats.users[sender]) {
-                return extra.reply(`📊 *ᴠᴏᴜs ɴ'ᴀᴠᴇᴢ ᴇɴᴄᴏʀᴇ ᴇɴᴠᴏʏᴇ́ ᴀᴜᴄᴜɴ ᴍᴇssᴀɢᴇ ᴀᴜᴊᴏᴜʀᴅ'ʜᴜɪ !* \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+                return reply(`📊 *${toSmallCaps('vous n\'avez encore envoye aucun message aujourd\'hui')} !* \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
             }
 
             const userCount = stats.users[sender];
             const totalMessages = stats.total;
-            // Utilisation directe du calcul de pourcentage sans LaTeX car l'expression est simple
+            
+            // Calcul de la part d'activité en pourcentage
             const percentage = ((userCount / totalMessages) * 100).toFixed(1);
 
-            // Calculate rank
+            // Calcul du rang de l'utilisateur
             const sortedUsers = Object.entries(stats.users)
                 .sort((a, b) => b[1] - a[1]);
 
@@ -37,9 +61,9 @@ module.exports = {
                          `╰╼━━━━━━━━━━━━━━━╾╯\n\n` +
                          `👤 *ɪɴᴅɪᴠɪᴅᴜ :* @${sender.split('@')[0]}\n` +
                          `📝 *ᴍᴇssᴀɢᴇs ᴇɴᴠᴏʏᴇ́s :* ${userCount}\n` +
-                         `📈 *ᴘᴀʀᴛ ᴅ'ᴀᴄᴛɪᴠɪᴛᴇ́ :* ${percentage}%\n` +
+                         `📈 *ᴘᴀʀᴛ ᴅ\'ᴀᴄᴛɪᴠɪᴛᴇ́ :* ${percentage}%\n` +
                          `🏆 *ʀᴀɴɢ :* #${rank} sur ${sortedUsers.length}\n\n` +
-                         `*ᴄᴏɴᴛɪɴᴜᴇᴢ ᴀ̀ ᴇ́ᴄʀɪʀᴇ ʟ'ʜɪsᴛᴏɪʀᴇ ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ !* 💬\n\n` +
+                         `*ᴄᴏɴᴛɪɴᴜᴇᴢ ᴀ̀ ᴇ́ᴄʀɪʀᴇ ʟ\'ʜɪsᴛᴏɪʀᴇ ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ !* 💬\n\n` +
                          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
             await sock.sendMessage(from, {
@@ -49,7 +73,7 @@ module.exports = {
 
         } catch (err) {
             console.error('[myactivity cmd] error:', err);
-            extra.reply(`❌ *ᴇʀʀᴇᴜʀ ʟᴏʀs ᴅᴜ ᴄʜᴀʀɢᴇᴍᴇɴᴛ ᴅᴇ ᴠᴏs sᴛᴀᴛɪsᴛɪǫᴜᴇs.* \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+            await reply(`*❌ ${toSmallCaps('erreur lors du chargement de vos statistiques')}.* \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
         }
     }
 };
