@@ -13,7 +13,7 @@ const prefix = config.prefix || '.';
 
 module.exports = {
   name: 'prier',
-  aliases: ['priere', 'prière','interceder', 'oraison', 'ᴘʀɪᴇʀ'],
+  aliases: ['priere', 'prière','interceder', 'oraison', 'ᴘʀɪᴇʀ', 'pr'],
   category: '♰ sᴀɪɴᴛᴇᴛᴇ́ ᴄᴇ́ʟᴇsᴛᴇ',
   description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ɪɴᴠᴏǫᴜᴇ ᴜɴᴇ ᴘᴜɪssᴀɴᴛᴇ ᴘʀɪᴇ̀ʀᴇ ᴍʏsᴛɪǫᴜᴇ ᴅ\'ɪɴᴛᴇʀᴄᴇssɪᴏɴ**',
   usage: `${prefix}prier [@user ou en réponse à un message]`,
