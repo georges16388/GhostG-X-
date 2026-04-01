@@ -1,78 +1,72 @@
-// 🧠 ---------------- GHOSTG-X SUPRÊME NLE (INTELLIGENCE INDÉPENDANTE) ----------------
-const input = body.toLowerCase().trim();
-const argsNLP = body.split(/\s+/);
-const firstWordNLP = argsNLP[0]?.toLowerCase();
+/**
+ * WhatsApp Channel Info Command - GhostG-X Edition
+ * Extrait les informations d'un canal WhatsApp à partir de son lien
+ */
 
-if (isMe && global.ghostgMode === 'on' && !body.startsWith(config.prefix)) {
-    
-    const extraNLP = {
-        from, sender, isGroup, groupMetadata,
-        isOwner: isMe,
-        isAdmin: isMe || await isAdmin(sock, sender, from, groupMetadata),
-        isBotAdmin: await isBotAdmin(sock, from, groupMetadata),
-        reply: (text) => sock.sendMessage(from, { text }, { quoted: msg }),
-        react: (emoji) => sock.sendMessage(from, { react: { text: emoji, key: msg.key } })
-    };
+const axios = require('axios');
+const config = require('../../config.js');
 
-    // --- 1. DÉTECTION D'INTENTION : INFOS CANAL ---
-    // Si tu envoies un lien de canal ou si tu demandes "infos de ce canal"
-    if (input.includes("whatsapp.com/channel/") || input.includes("infos canal") || input === "channel") {
-        const channelCmd = commands.get('ɪɴғᴏs_ᴄᴀɴᴀʟ') || commands.get('newsletter');
-        if (channelCmd) {
-            await extraNLP.react('📡');
-            // On extrait le lien du texte pour le passer en argument
-            const linkMatch = body.match(/https:\/\/whatsapp\.com\/channel\/[A-Za-z0-9]+/);
-            const finalArgs = linkMatch ? [linkMatch[0]] : argsNLP;
-            return await channelCmd.execute(sock, msg, finalArgs, extraNLP);
-        }
+// Extraction du préfixe pour l'usage
+const prefix = config.prefix || '.';
+
+module.exports = {
+  name: 'ɪɴғᴏs_ᴄᴀɴᴀʟ',
+  aliases: ['newsletter', 'channel', 'canal', 'channelid'],
+  category: '♛ sᴏᴜᴠᴇʀᴀɪɴᴇᴛᴇ́',
+  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ɢᴇ́ɴᴇ̀ʀᴇ ᴜɴᴇ ɴᴇᴡsʟᴇᴛᴛᴇʀ ᴅᴇᴘᴜɪs ʟᴇ ʟɪᴇɴ ᴅ\'ᴜɴᴇ ᴄʜᴀɪ̂ɴᴇ ᴡʜᴀᴛsᴀᴘᴘ**',
+  usage: `${prefix}ɪɴғᴏs_ᴄᴀɴᴀʟ <ʟɪᴇɴ_ᴄᴀɴᴀʟ>`,
+
+  async execute(sock, msg, args, extra) {
+    const { reply } = extra;
+    const chatId = msg.key.remoteJid;
+
+    try {
+      const text = args.join(' ');
+
+      // Extraction propre du lien de canal s'il est noyé dans du texte
+      const linkMatch = text.match(/https:\/\/whatsapp\.com\/channel\/[A-Za-z0-9]+/);
+      const channelLink = linkMatch ? linkMatch[0] : null;
+
+      if (!channelLink) {
+        return await reply(`*〆 ɪɴᴠᴏ́ǫᴜᴇ ᴜɴ ʟɪᴇɴ ᴅᴇ ᴄᴀɴᴀʟ ᴠᴀʟɪᴅᴇ !*\n\n*ᴇxᴇᴍᴘʟᴇ : _${prefix}ɪɴғᴏs_ᴄᴀɴᴀʟ https://whatsapp.com/channel/xxxxxxxxx_*`);
+      }
+
+      await reply('*📡 ɪɴᴛᴇʀʀᴏɢᴀᴛɪᴏɴ ᴅᴇs ᴀʀᴄᴀɴᴇs ᴅᴜ ᴄᴀɴᴀʟ ᴇɴ ᴄᴏᴜʀs...*');
+
+      // Appel de l'API de secours pour récupérer les données du canal (nom, bio, photo, etc.)
+      const apiURL = `https://aemt.me/download/wa-channel?url=${encodeURIComponent(channelLink)}`;
+      const response = await axios.get(apiURL);
+
+      if (!response.data || !response.data.status) {
+        throw new Error('Impossible de lire les données de ce canal.');
+      }
+
+      const data = response.data.result;
+
+      // Construction du message style "Newsletter" du sanctuaire
+      const newsletterText = 
+        `*╭╼━━━≪• ɪɴғᴏs ᴅᴜ ᴄᴀɴᴀʟ •≫━━━╾╮*\n\n` +
+        `*📢 ɴᴏᴍ :* ${data.title || 'ɪɴᴄᴏɴɴᴜ'}\n` +
+        `*👥 ᴀʙᴏɴɴᴇ́s :* ${data.subscribers || 'ᴄᴀᴄʜᴇ́'}\n` +
+        `*🔗 ʟɪᴇɴ :* ${channelLink}\n\n` +
+        `*📝 ᴅᴇsᴄʀɪᴘᴛɪᴏɴ :*\n${data.description || 'ᴀᴜᴄᴜɴᴇ ᴅᴇsᴄʀɪᴘᴛɪᴏɴ'}\n\n` +
+        `*╰━━━━━━━━━━━━━━━━━━━━━━━╯*\n\n` +
+        `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+
+      // Si l'API renvoie une photo de profil pour le canal, on l'envoie avec la légende
+      if (data.img) {
+        await sock.sendMessage(chatId, {
+          image: { url: data.img },
+          caption: newsletterText
+        }, { quoted: msg });
+      } else {
+        // Sinon, on envoie simplement le texte
+        await reply(newsletterText);
+      }
+
+    } catch (error) {
+      console.error('Error in channel command:', error);
+      await reply(`*〆 ʟ'ɪɴᴠᴏᴄᴀᴛɪᴏɴ ᴀ ᴇ́ᴄʜᴏᴜᴇ́ :* ʟᴇs ᴀʀᴄᴀɴᴇs ᴅᴜ ᴄᴀɴᴀʟ sᴏɴᴛ ɪɴᴀᴄᴄᴇssɪʙʟᴇs.`);
     }
-
-    // --- 2. DÉTECTION D'INTENTION : MÉDIAS & STICKERS ---
-    if (/sticker|autocollant|fais un s/i.test(input)) {
-        const isMedia = msg.message?.imageMessage || msg.message?.videoMessage || 
-                        msg.message?.extendedTextMessage?.contextInfo?.quotedMessage?.imageMessage ||
-                        msg.message?.extendedTextMessage?.contextInfo?.quotedMessage?.videoMessage;
-        if (isMedia) {
-            const sCmd = commands.get('s') || commands.get('sticker');
-            if (sCmd) {
-                await extraNLP.react('🎨');
-                return await sCmd.execute(sock, msg, argsNLP, extraNLP);
-            }
-        }
-    }
-
-    // --- 3. CONVERSATION ET SYSTÈME ---
-    if (/^p$|^ping$/i.test(input)) {
-        const start = Date.now();
-        await extraNLP.react('⚡');
-        return await extraNLP.reply(`*ᴘᴏɴɢ !* 📡 *${Date.now() - start}ᴍs*`);
-    }
-
-    if (/^m$|^menu$/i.test(input)) {
-        const mCmd = commands.get('menu');
-        if (mCmd) return await mCmd.execute(sock, msg, [], extraNLP);
-    }
-
-    // --- 4. GESTION DE GROUPE PAR INTENTION ---
-    if (isGroup) {
-        if (/ferme|bloque|verrouille/i.test(input) && input.includes("groupe")) {
-            await sock.groupSettingUpdate(from, 'announcement');
-            return await extraNLP.reply(`🔒 *sᴀɴᴄᴛᴜᴀɪʀᴇ sᴄᴇʟʟᴇ́.*`);
-        }
-        if (/ouvre|debloque|deverrouille/i.test(input) && input.includes("groupe")) {
-            await sock.groupSettingUpdate(from, 'not_announcement');
-            return await extraNLP.reply(`🔓 *ᴘᴀʀᴏʟᴇ ʟɪʙᴇ́ʀᴇ́ᴇ.*`);
-        }
-        if (/tagall|tous|tout le monde/i.test(input)) {
-            const mentions = groupMetadata.participants.map(p => p.id);
-            return await sock.sendMessage(from, { text: `*☬ ɪɴᴠᴏᴄᴀᴛɪᴏɴ ɢᴇ́ɴᴇ́ʀᴀʟᴇ ☬*`, mentions });
-        }
-    }
-
-    // --- 5. REDIRECTION AUTOMATIQUE (ALIAS ET COMMANDES) ---
-    const possibleCmd = commands.get(firstWordNLP) || [...commands.values()].find(c => c.aliases?.includes(firstWordNLP));
-    if (possibleCmd) {
-        await extraNLP.react('👑');
-        return await possibleCmd.execute(sock, msg, argsNLP.slice(1), extraNLP);
-    }
-}
+  }
+};
