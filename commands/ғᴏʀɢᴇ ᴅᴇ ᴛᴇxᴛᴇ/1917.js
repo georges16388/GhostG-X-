@@ -11,7 +11,7 @@ const prefix = config.prefix || '.';
 module.exports = {
   name: '1917',
   aliases: [],
-  category: '‎✎ғᴏʀɢᴇ ᴅᴇ ᴛᴇxᴛᴇ',
+  category: '‎✎ ғᴏʀɢᴇ ᴅᴇ ᴛᴇxᴛᴇ',
   description: '**ᴄʀᴇ́ᴇ ᴜɴ ᴇғғᴇᴛ ᴅᴇ ᴛᴇxᴛᴇ sᴛʏʟᴇ 1917**',
   usage: `${prefix}1917 <ᴛᴇxᴛᴇ>`,
   
