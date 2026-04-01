@@ -34,7 +34,7 @@ function getDomain(url) {
 module.exports = {
   name: 'video',
   aliases: ['illusions_youtube', 'ytvideo', 'ytv', 'ytmp4', 'ytvid', 'illusion_youtube'],
-  category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
+  category: '‎⌘ ᴇ́ᴄʜᴏs ᴅᴜ ᴍᴏɴᴅᴇ',
   description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀsᴘɪʀᴇ ᴇᴛ ᴛᴇʟᴇᴄʜᴀʀɢᴇ ʟᴀ ᴠɪᴅᴇᴏ ᴅᴇᴘᴜɪs ʏᴏᴜᴛᴜʙᴇ**',
   usage: `${config.prefix || '.'}video [nom ou lien youtube]`,
   groupOnly: false,
