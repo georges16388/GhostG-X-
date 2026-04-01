@@ -9,11 +9,6 @@
   <strong>ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴛʀᴜᴛʜ ᴅᴇᴠɪᴄᴇs.</strong>
 </p>
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Version-1.1.1-blue.svg" alt="Version">
-  <img src="https://img.shields.io/badge/Maintained%3F-yes-green.svg" alt="Maintained">
-  <img src="https://img.shields.io/badge/Platform-WhatsApp-brightgreen.svg" alt="Platform">
-</p>
 
 🔮 *ʀᴇᴊᴏɪɢɴᴇᴢ ʟᴀ ʟᴇɢᴇɴᴅᴇ !* *ɴᴇ ʀᴇsᴛᴇᴢ ᴘᴀs ᴅᴀɴs ʟᴏᴍʙʀᴇ...* 🌌  
 *ᴇɴᴛʀᴇᴢ ᴅᴀɴs ɴᴏs ᴄᴇʀᴄʟᴇs ᴘᴏᴜʀ* *ᴍᴀɪᴛʀɪsᴇʀ ʟᴀ ᴘᴜɪssᴀɴᴄᴇ ᴅᴜ ʙᴏᴛ !*
