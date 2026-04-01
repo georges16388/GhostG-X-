@@ -55,7 +55,12 @@ module.exports = {
   aliases: ['square', 'cropper', 'cisaille', 'cr','c'],
   category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
   description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴄᴏᴜᴘᴇ ᴜɴ sᴛɪᴄᴋᴇʀ/ɪᴍᴀɢᴇ/ᴠɪᴅᴇᴏ ᴇɴ ᴜɴ ᴘᴀʀғᴀɪᴛ sᴛɪᴄᴋᴇʀ ᴄᴀʀʀᴇ (ᴀɴɪᴍᴇ ᴘᴏᴜʀ ʟᴇs ᴠɪᴅᴇᴏs)**',
-  usage: `${config.prefix || '.'}crop [reponse au media]`,
+  
+  get usage() {
+    const activePrefix = config.prefix || '.';
+    return `${activePrefix}crop [reponse au media]`;
+  },
+
   groupOnly: false,
   adminOnly: false,
   botAdminNeeded: false,
@@ -94,7 +99,7 @@ module.exports = {
       const mediaMessage = media;
 
       if (!mediaMessage) {
-        return reply(`*✂️ ${toSmallCaps('veuillez repondre a un media avec .crop, ou l\'envoyer avec .crop en legende')}.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+        return reply(`*✂️ ${toSmallCaps('veuillez repondre a un media with .crop, ou l\'envoyer with .crop en legende')}.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
       }
 
       // Téléchargement du média d'origine
