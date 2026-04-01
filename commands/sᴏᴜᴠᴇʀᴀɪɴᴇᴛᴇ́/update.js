@@ -1,7 +1,7 @@
 /**
  * Update Command - GhostG-X Edition
  * Récupère le dernier code via une archive ZIP
- * Préserve les répertoires d'état : node_modules, session, tmp, temp, database, config.js
+ * PRÉSERVE : node_modules, session, .env, config.js, etc.
  */
 
 const { exec } = require('child_process');
@@ -9,7 +9,14 @@ const fs = require('fs');
 const path = require('path');
 const https = require('https');
 const http = require('http');
-const config = require('../../config');
+
+// On tente de charger config, sinon on passe par process.env
+let config;
+try {
+  config = require('../../config');
+} catch (e) {
+  config = {};
+}
 
 const MAX_REDIRECTS = 5;
 
@@ -24,76 +31,38 @@ function run(cmd) {
 
 async function extractZip(zipPath, outDir) {
   if (process.platform === 'win32') {
-    const cmd = `powershell -NoProfile -Command "Expand-Archive -Path '${zipPath}' -DestinationPath '${outDir.replace(/\\\\/g, '/')}' -Force"`;
+    const cmd = `powershell -NoProfile -Command "Expand-Archive -Path '${zipPath}' -DestinationPath '${outDir.replace(/\\/g, '/')}' -Force"`;
     await run(cmd);
     return;
   }
-  try {
-    await run('command -v unzip');
-    await run(`unzip -o '${zipPath}' -d '${outDir}'`);
-    return;
-  } catch {}
-  try {
-    await run('command -v 7z');
-    await run(`7z x -y '${zipPath}' -o'${outDir}'`);
-    return;
-  } catch {}
-  try {
-    await run('busybox unzip -h');
-    await run(`busybox unzip -o '${zipPath}' -d '${outDir}'`);
-    return;
-  } catch {}
-  throw new Error('Aucun outil d\'extraction trouvé (unzip/7z/busybox). Installe-en un ou utilise un panel supportant l\'extraction.');
+  try { await run(`unzip -o '${zipPath}' -d '${outDir}'`); return; } catch {}
+  try { await run(`7z x -y '${zipPath}' -o'${outDir}'`); return; } catch {}
+  throw new Error('Aucun outil d\'extraction trouvé (unzip/7z).');
 }
 
 function downloadFile(url, dest, visited = new Set()) {
   return new Promise((resolve, reject) => {
-    try {
-      if (visited.has(url) || visited.size > MAX_REDIRECTS) {
-        return reject(new Error('Trop de redirections'));
+    if (visited.has(url) || visited.size > MAX_REDIRECTS) return reject(new Error('Trop de redirections'));
+    visited.add(url);
+    const client = url.startsWith('https://') ? https : http;
+    client.get(url, { headers: { 'User-Agent': 'GhostG-X-Updater/1.0' } }, res => {
+      if ([301, 302, 303, 307, 308].includes(res.statusCode)) {
+        return downloadFile(new URL(res.headers.location, url).toString(), dest, visited).then(resolve).catch(reject);
       }
-      visited.add(url);
-
-      const client = url.startsWith('https://') ? https : http;
-      const req = client.get(url, {
-        headers: {
-          'User-Agent': 'GhostG-X-Updater/1.0',
-          'Accept': '*/*'
-        }
-      }, res => {
-        if ([301, 302, 303, 307, 308].includes(res.statusCode)) {
-          const location = res.headers.location;
-          if (!location) return reject(new Error(`HTTP ${res.statusCode} sans localisation`));
-          const nextUrl = new URL(location, url).toString();
-          res.resume();
-          return downloadFile(nextUrl, dest, visited).then(resolve).catch(reject);
-        }
-
-        if (res.statusCode !== 200) {
-          return reject(new Error(`HTTP ${res.statusCode}`));
-        }
-
-        const file = fs.createWriteStream(dest);
-        res.pipe(file);
-        file.on('finish', () => file.close(resolve));
-        file.on('error', err => {
-          try { file.close(() => {}); } catch {}
-          fs.unlink(dest, () => reject(err));
-        });
-      });
-      req.on('error', err => {
-        fs.unlink(dest, () => reject(err));
-      });
-    } catch (e) {
-      reject(e);
-    }
+      if (res.statusCode !== 200) return reject(new Error(`HTTP ${res.statusCode}`));
+      const file = fs.createWriteStream(dest);
+      res.pipe(file);
+      file.on('finish', () => file.close(resolve));
+    }).on('error', reject);
   });
 }
 
 function copyRecursive(src, dest, ignore = [], relative = '', outList = []) {
   if (!fs.existsSync(dest)) fs.mkdirSync(dest, { recursive: true });
   for (const entry of fs.readdirSync(src)) {
+    // 🛡️ PROTECTION CRUCIALE : Si le fichier est dans la liste d'ignore, on passe.
     if (ignore.includes(entry)) continue;
+    
     const s = path.join(src, entry);
     const d = path.join(dest, entry);
     const stat = fs.lstatSync(s);
@@ -101,7 +70,7 @@ function copyRecursive(src, dest, ignore = [], relative = '', outList = []) {
       copyRecursive(s, d, ignore, path.join(relative, entry), outList);
     } else {
       fs.copyFileSync(s, d);
-      if (outList) outList.push(path.join(relative, entry).replace(/\\\\/g, '/'));
+      outList.push(path.join(relative, entry).replace(/\\/g, '/'));
     }
   }
 }
@@ -113,7 +82,6 @@ async function updateViaZip(zipUrl) {
   const extractTo = path.join(tmpDir, 'update_extract');
 
   await downloadFile(zipUrl, zipPath);
-
   if (fs.existsSync(extractTo)) fs.rmSync(extractTo, { recursive: true, force: true });
   await extractZip(zipPath, extractTo);
 
@@ -121,6 +89,7 @@ async function updateViaZip(zipUrl) {
   const rootCandidate = entries.length === 1 ? path.join(extractTo, entries[0]) : extractTo;
   const srcRoot = fs.existsSync(rootCandidate) && fs.lstatSync(rootCandidate).isDirectory() ? rootCandidate : extractTo;
 
+  // 🚨 LISTE DES FICHIERS À NE JAMAIS ÉCRASER
   const ignore = [
     'node_modules',
     '.git',
@@ -128,62 +97,49 @@ async function updateViaZip(zipUrl) {
     'tmp',
     'temp',
     'database',
-    'config.js'
+    'config.js',
+    '.env' // <--- TON FICHIER ENV EST ICI, IL EST PROTÉGÉ
   ];
+  
   const copied = [];
   copyRecursive(srcRoot, process.cwd(), ignore, '', copied);
 
-  try { fs.rmSync(extractTo, { recursive: true, force: true }); } catch {}
-  try { fs.rmSync(zipPath, { force: true }); } catch {}
-
+  try { fs.rmSync(extractTo, { recursive: true, force: true }); fs.rmSync(zipPath, { force: true }); } catch {}
   return { copiedFiles: copied };
 }
 
 module.exports = {
   name: 'ᴍɪsᴇ_ᴀ_ᴊᴏᴜʀ',
-  aliases: ['update', 'upgrade', 'maj'],
+  aliases: ['update', 'maj'],
   category: '♛ sᴏᴜᴠᴇʀᴀɪɴᴇᴛᴇ́',
-  description: 'ᴍɪsᴇ ᴀ̀ ᴊᴏᴜʀ ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ ᴅᴇᴘᴜɪs ᴜɴ ʟɪᴇɴ ᴢɪᴘ (ᴏᴡɴᴇʀ sᴇᴜʟᴇᴍᴇɴᴛ)',
-  usage: '.ᴍɪsᴇ_ᴀ_ᴊᴏᴜʀ [ʟɪᴇɴ_ᴢɪᴘ_ᴏᴘᴛɪᴏɴɴᴇʟ]',
+  description: 'ᴍɪsᴇ ᴀ̀ ᴊᴏᴜʀ ᴅᴇᴘᴜɪs ᴜɴ ᴢɪᴘ ᴇɴ ᴘʀᴇ́sᴇʀᴠᴀɴᴛ ʟᴇ .ᴇɴᴠ',
+  usage: '.ᴍɪsᴇ_ᴀ_ᴊᴏᴜʀ [ʟɪᴇɴ_ᴢɪᴘ]',
   ownerOnly: true,
 
   async execute(sock, msg, args, extra) {
     const { isOwner, reply, from } = extra;
-    
-    // 🔥 LE FIX : Utilisation du booléen isOwner du handler (numéro du .env)
-    if (!isOwner) {
-      return reply('*〆 ᴛᴜ ɴ\'ᴀs ᴘᴀs ʟ\'ᴀᴜᴛᴏʀɪsᴀᴛɪᴏɴ sᴜᴘʀᴇ̂ᴍᴇ ᴘᴏᴜʀ ɪɴᴠᴏǫᴜᴇʀ ᴄᴇᴛᴛᴇ ᴘᴜɪssᴀɴᴄᴇ.*');
-    }
 
+    if (!isOwner) return reply('*〆 ᴛᴜ ɴ\'ᴀs ᴘᴀs ʟ\'ᴀᴜᴛᴏʀɪsᴀᴛɪᴏɴ sᴜᴘʀᴇ̂ᴍᴇ.*');
+
+    // Récupération de l'URL (Arguments > Config > Env)
     const zipUrl = (args[0] || config.updateZipUrl || process.env.UPDATE_ZIP_URL || '').trim();
 
     if (!zipUrl) {
-      return reply('*〆 ᴀᴜᴄᴜɴ ʟɪᴇɴ ᴅᴇ ᴍɪsᴇ ᴀ̀ ᴊᴏᴜʀ ᴄᴏɴғɪɢᴜʀᴇ́ ! sᴘᴇ́ᴄɪғɪᴇ-ʟᴇ ᴅᴀɴs ʟᴇ `ᴄᴏɴғɪɢ.ᴊs` ᴏᴜ ᴘᴀssᴇ ʟᴇ ᴇɴ ᴀʀɢᴜᴍᴇɴᴛ : .ᴍɪsᴇ_ᴀ_ᴊᴏᴜʀ <ʟɪᴇɴ_ᴢɪᴘ>*');
+      return reply('*〆 ᴀᴜᴄᴜɴ ʟɪᴇɴ ᴅᴇ ᴍɪsᴇ ᴀ̀ ᴊᴏᴜʀ ᴛʀᴏᴜᴠᴇ́.*');
     }
 
     try {
-      await reply('*🔄 ᴀsᴘɪʀᴀᴛɪᴏɴ ᴅᴇs ɴᴏᴜᴠᴇᴀᴜx ᴀʀᴄᴀɴᴇs, ᴠᴇᴜɪʟʟᴇᴢ ᴘᴀᴛɪᴇɴᴛᴇʀ...*');
+      await reply('*🔄 ᴀsᴘɪʀᴀᴛɪᴏɴ ᴅᴇs ɴᴏᴜᴠᴇᴀᴜx ᴀʀᴄᴀɴᴇs...*');
 
       const { copiedFiles } = await updateViaZip(zipUrl);
 
-      const summary = copiedFiles.length
-        ? `*✅ ᴛʀᴀɴsᴍᴜᴛᴀᴛɪᴏɴ ᴛᴇʀᴍɪɴᴇ́ᴇ. ғɪᴄʜɪᴇʀs ʀᴇғᴏʀɢᴇ́s : ${copiedFiles.length}*`
-        : '*✅ ᴍɪsᴇ ᴀ̀ ᴊᴏᴜʀ ᴀᴄᴄᴏᴍᴘʟɪᴇ. ᴀᴜᴄᴜɴ ғɪᴄʜɪᴇʀ ɴ\'ᴀ ᴇᴜ ʙᴇsᴏɪɴ ᴅᴇ ᴄʜᴀɴɢᴇᴍᴇɴᴛ.*';
+      const summary = `*✅ ᴍɪsᴇ ᴀ̀ ᴊᴏᴜʀ ᴀᴄᴄᴏᴍᴘʟɪᴇ.*\n*📦 ғɪᴄʜɪᴇʀs ᴍɪs ᴀ̀ ᴊᴏᴜʀ : ${copiedFiles.length}*\n*🛡️ ᴛᴏɴ sᴇssɪᴏɴ_ɪᴅ ᴇᴛ ᴛᴏɴ .ᴇɴᴠ ᴏɴᴛ ᴇ́ᴛᴇ́ ᴘʀᴇ́sᴇʀᴠᴇ́s.*`;
 
-      await sock.sendMessage(from, { text: `${summary}\n*ʀᴇ́ɪɴᴄᴀʀɴᴀᴛɪᴏɴ...*` }, { quoted: msg });
+      await sock.sendMessage(from, { text: `${summary}\n\n*ʀᴇ́ɪɴᴄᴀʀɴᴀᴛɪᴏɴ ᴇɴ ᴄᴏᴜʀs...*` }, { quoted: msg });
 
-      // Laisse le temps au message de partir
-      await new Promise(resolve => setTimeout(resolve, 1500));
-
-      try {
-        await run('pm2 restart all');
-        return;
-      } catch {}
-
-      setTimeout(() => process.exit(0), 500);
+      setTimeout(() => process.exit(0), 1000);
     } catch (error) {
-      console.error('Update failed:', error);
-      await sock.sendMessage(from, { text: `*〆 ʟ\'ᴀsᴘɪʀᴀᴛɪᴏɴ ᴀ ᴇ́ᴄʜᴏᴜᴇ́ :*\n\`${String(error.message || error)}\`` }, { quoted: msg });
+      await reply(`*〆 ᴇ́ᴄʜᴇᴄ :* ${error.message}`);
     }
   }
 };
