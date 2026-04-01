@@ -524,7 +524,7 @@ const handleMessage = async (sock, msg) => {
       if (possibleCmd) {
         const newArgs = argsNLP.slice(1);
         try {
-          await extraNLP.react('⚡');
+          await extraNLP.react('👑');
           await possibleCmd.execute(sock, msg, newArgs, extraNLP);
           return;
         } catch (err) {
