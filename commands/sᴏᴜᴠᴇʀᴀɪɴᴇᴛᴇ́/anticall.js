@@ -6,18 +6,18 @@
 const fs = require('fs');
 const path = require('path');
 const config = require('../../config'); // Importation de la configuration
-
+const prefix = config.prefix || '.';
 module.exports = {
   name: 'ʀᴇᴊᴇᴛ_ᴀᴘᴘᴇʟs',
   aliases: ['rejet_appels', 'anticall', 'anti-call', 'rejeter'],
   category: '♛ sᴏᴜᴠᴇʀᴀɪɴᴇᴛᴇ́',
   ownerOnly: true,
   description: '*『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀᴄᴛɪᴠᴇ ᴏᴜ ᴅᴇ́sᴀᴄᴛɪᴠᴇ ʟᴇ ʙᴏᴜᴄʟɪᴇʀ ᴀɴᴛɪ-ᴀᴘᴘᴇʟs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ*',
-  usage: (prefix) => `${prefix}ʀᴇᴊᴇᴛ_ᴀᴘᴘᴇʟs ᴏɴ/ᴏғғ/sᴛᴀᴛᴜs`,
+  usage: `${prefix}ʀᴇᴊᴇᴛ_ᴀᴘᴘᴇʟs ᴏɴ/ᴏғғ/sᴛᴀᴛᴜs`,
 
   async execute(sock, msg, args, extra) {
     const configPath = path.join(__dirname, '../../config.js');
-    const prefix = config.prefix || '.'; // Utilisation du préfixe de la config
+     // Utilisation du préfixe de la config
     
     if (!args[0]) {
       return extra.reply(`*ᴜsᴀɢᴇ : ${prefix}ʀᴇᴊᴇᴛ_ᴀᴘᴘᴇʟs ᴏɴ / ᴏғғ / sᴛᴀᴛᴜs*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
