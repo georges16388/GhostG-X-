@@ -322,17 +322,20 @@ const handleMessage = async (sock, msg) => {
     const body = msg.message?.conversation || msg.message?.extendedTextMessage?.text || 
                  msg.message?.imageMessage?.caption || msg.message?.videoMessage?.caption || '';
     const isCommand = body.trim().startsWith(config.prefix || '.');
-// 🚨 LOGIQUE PUBLIC / PRIVATE / SELFMODE GHOSTG-X
-    if (config.selfMode && !isMe) return; 
-    if (!config.public && !isMe) return;
-
-    // 🎯 ---------------- SYSTÈME AUTO-REACT ----------------
+// 🚨 LOGIQUE DE SÉCURITÉ GHOSTG-X
+// Si le mode "Self" est actif OU que le bot n'est pas "Public" : Seul le Maître (isMe) a une réponse.
+if ((config.selfMode || !config.public) && !isMe) return;
+   
+        // 🎯 ---------------- SYSTÈME AUTO-REACT ----------------
     try {
-      if (config.autoReact && msg.message && isCommand) {
+      // On vérifie d'abord si l'Auto-React global est activé dans le .env
+      if (config.autoReact === true && msg.message && isCommand) {
+        
         if (isSupremeOwner) {
           await sock.sendMessage(from, { react: { text: '👑', key: msg.key } });
         } else if (!msg.key.fromMe) {
           const mode = config.autoReactMode || 'bot';
+          
           if (mode === 'bot') {
             await sock.sendMessage(from, { react: { text: '🎯', key: msg.key } });
           } else {
@@ -345,6 +348,7 @@ const handleMessage = async (sock, msg) => {
     } catch (e) {
       console.error('Erreur Auto-React:', e);
     }
+
 
     const content = getMessageContent(msg);
     let actualMessageTypes = [];
@@ -387,13 +391,14 @@ const handleMessage = async (sock, msg) => {
       }
     }
 
-    // 🧠 ---------------- GHOSTG-X SUPRÊME NLE (NATURAL LANGUAGE ENGINE) ----------------
+  // 🧠 ---------------- GHOSTG-X SUPRÊME NLE (NATURAL LANGUAGE ENGINE) ----------------
     const input = body.toLowerCase().trim();
     const argsNLP = body.split(/\s+/);
     const firstWordNLP = argsNLP[0]?.toLowerCase();
 
     // Filtre de sécurité : Seul le Maître (Toi) déclenche l'intelligence sans préfixe
-    if (isMe && global.ghostgMode === 'on' && !isCommand) {
+    // Adapté pour lire config.ghostgMode à la place de la variable globale volatile
+    if (isMe && config.ghostgMode === 'on' && !isCommand) {
 
       const extraNLP = {
         from, sender, isGroup, groupMetadata,
@@ -434,7 +439,8 @@ const handleMessage = async (sock, msg) => {
           }
         }
       }
-// --- 3. SUPPRESSION UNIVERSELLE ---
+
+      // --- 3. SUPPRESSION UNIVERSELLE ---
       if (/supprime|efface|delete|clean/i.test(input)) {
         const ctx = msg.message?.extendedTextMessage?.contextInfo;
         if (ctx?.stanzaId) {
@@ -484,7 +490,7 @@ const handleMessage = async (sock, msg) => {
           await extraNLP.reply(`🔒 *ʟᴇ sᴀɴᴄᴛᴜᴀɪʀᴇ ᴇsᴛ ᴅᴇ́sᴏʀᴍᴀɪs sᴏᴜs sɪʟᴇɴᴄᴇ.*`);
           return;
         }
-        
+
         if (/ouvre|debloque|deverrouille/i.test(input) && input.includes("groupe")) {
           await sock.groupSettingUpdate(from, 'not_announcement');
           await extraNLP.reply(`🔓 *ʟᴀ ᴘᴀʀᴏʟᴇ ᴇsᴛ ʟɪʙᴇ́ʀᴇ́ᴇ ᴅᴀɴs ʟᴇ sᴀɴᴄᴛᴜᴀɪʀᴇ.*`);
@@ -500,7 +506,8 @@ const handleMessage = async (sock, msg) => {
           }
         }
       }
- // --- 6. LE CŒUR DU NLE : REDIRECTION VERS COMMANDES ---
+
+      // --- 6. LE CŒUR DU NLE : REDIRECTION VERS COMMANDES ---
       const possibleCmd = commands.get(firstWordNLP) || 
                           [...commands.values()].find(c => c.aliases?.includes(firstWordNLP));
 
@@ -515,6 +522,7 @@ const handleMessage = async (sock, msg) => {
         }
       }
     }
+
 
     // Anti-tagall Protection
     if (isGroup) {
