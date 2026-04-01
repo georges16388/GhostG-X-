@@ -1,11 +1,14 @@
 /**
  * Auto-React Command - GhostG-X Edition
- * Configure les réactions automatiques du système
+ * Configure les réactions automatiques du système (.env Synced)
  */
 
-const { load, save } = require('../../utils/autoReact');
+const fs = require('fs');
+const path = require('path');
 const config = require('../../config'); // Importation de la configuration
-const prefix = config.prefix || '.';
+
+const prefix = config.prefix;
+
 module.exports = {
   name: 'ʀᴇғʟᴇxᴇ_sʏsᴛᴇᴍᴇ',
   aliases: ['reflexe_systeme', 'autoreact', 'ar', 'reflexe', 'reaction', 'reactions'],
@@ -15,19 +18,17 @@ module.exports = {
   usage: `${prefix}ʀᴇғʟᴇxᴇ_sʏsᴛᴇᴍᴇ ᴏɴ/ᴏғғ/sᴇᴛ ʙᴏᴛ/sᴇᴛ ᴀʟʟ`,
 
   async execute(sock, msg, args, extra) {
-    const { reply, isOwner } = extra;
-    const prefix = config.prefix || '.'; // Utilisation du préfixe de la config
-    
-    // Sécurité supplémentaire si le handler n'utilise pas 'ownerOnly'
-    if (!isOwner) return reply('*〆 ᴀᴄᴄᴇ̀s ʀᴇғᴜsᴇ́. sᴇᴜʟ ʟᴇ ᴍᴀɪ̂ᴛʀᴇ ᴘᴇᴜᴛ ᴠᴏɪʀ ʟ\'ɪɴᴠɪsɪʙʟᴇ.*');
+    const { reply } = extra;
+    const envPath = path.join(process.cwd(), '.env');
 
     try {
-      const db = load();
-      const opt = args.join(' ').toLowerCase();
+      // 1️⃣ Lecture du fichier .env pour connaître le statut physique actuel
+      let envContent = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf8') : '';
+      
+      const isCurrentlyOn = /^AUTOREACT=true/m.test(envContent);
+      const currentMode = config.autoReactMode || 'bot';
 
-      // Constantes d'état basées sur ton fichier JSON/DB
-      const isCurrentlyOn = db.enabled === true;
-      const currentMode = db.mode;
+      const opt = args.join(' ').toLowerCase();
 
       if (!args[0]) {
         return reply(
@@ -41,39 +42,63 @@ module.exports = {
         );
       }
 
+      // Cas ON : Activation
       if (opt === 'on') {
         if (isCurrentlyOn) {
           return reply(`*🛡️ ʟᴇs ʀᴇ́ғʟᴇxᴇs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ sᴏɴᴛ ᴅᴇ́ᴊᴀ̀ ᴀᴄᴛɪᴠᴇ́s.*`);
         }
-        db.enabled = true;
-        save(db);
+        
+        // Modification du fichier .env
+        if (envContent.match(/^AUTOREACT=/m)) {
+          envContent = envContent.replace(/^AUTOREACT=.*/m, `AUTOREACT=true`);
+        } else {
+          envContent += `\nAUTOREACT=true`;
+        }
+        fs.writeFileSync(envPath, envContent.trim() + '\n', 'utf8');
+
+        // Application immédiate en mémoire
+        config.autoReact = true;
+
         return reply(`*🛡️ ʟᴇs ʀᴇ́ғʟᴇxᴇs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ sᴏɴᴛ ᴀᴄᴛɪᴠᴇ́s.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
       }
 
+      // Cas OFF : Désactivation
       if (opt === 'off') {
         if (!isCurrentlyOn) {
           return reply(`*🔓 ʟᴇs ʀᴇ́ғʟᴇxᴇs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ sᴏɴᴛ ᴅᴇ́ᴊᴀ̀ ᴇ́ᴛᴇɪɴᴛs.*`);
         }
-        db.enabled = false;
-        save(db);
+        
+        // Modification du fichier .env
+        if (envContent.match(/^AUTOREACT=/m)) {
+          envContent = envContent.replace(/^AUTOREACT=.*/m, `AUTOREACT=false`);
+        } else {
+          envContent += `\nAUTOREACT=false`;
+        }
+        fs.writeFileSync(envPath, envContent.trim() + '\n', 'utf8');
+
+        // Application immédiate en mémoire
+        config.autoReact = false;
+
         return reply(`*🔓 ʟᴇs ʀᴇ́ғʟᴇxᴇs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ sᴏɴᴛ ᴇ́ᴛᴇɪɴᴛs.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
       }
 
+      // Cas SET BOT : Réaction seulement aux commandes
       if (opt === 'set bot') {
         if (currentMode === 'bot') {
           return reply(`*🤖 ʟᴇ ᴍᴏᴅᴇ ᴇsᴛ ᴅᴇ́ᴊᴀ̀ ᴄᴏɴғɪɢᴜʀᴇ́ sᴜʀ : ʙᴏᴛ.*`);
         }
-        db.mode = 'bot';
-        save(db);
+        
+        config.autoReactMode = 'bot';
         return reply(`*🤖 ᴍᴏᴅᴇ : ʀᴇ́ᴀᴄᴛɪᴏɴ ᴜɴɪǫᴜᴇᴍᴇɴᴛ ᴀᴜx ᴄᴏᴍᴍᴀɴᴅᴇs ᴅᴜ ʙᴏᴛ (⏳).*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
       }
 
+      // Cas SET ALL : Réaction à tous les messages
       if (opt === 'set all') {
         if (currentMode === 'all') {
           return reply(`*🌟 ʟᴇ ᴍᴏᴅᴇ ᴇsᴛ ᴅᴇ́ᴊᴀ̀ ᴄᴏɴғɪɢᴜʀᴇ́ sᴜʀ : ᴀʟʟ.*`);
         }
-        db.mode = 'all';
-        save(db);
+        
+        config.autoReactMode = 'all';
         return reply(`*🌟 ᴍᴏᴅᴇ : ʀᴇ́ᴀᴄᴛɪᴏɴ ᴀʟᴇ́ᴀᴛᴏɪʀᴇ ᴀ̀ ᴛᴏᴜs ʟᴇs ᴍᴇssᴀɢᴇs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
       }
 
