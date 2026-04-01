@@ -6,13 +6,13 @@
 const config = require('../../config');
 const fs = require('fs');
 const path = require('path');
-
+const prefix = config.prefix ||'.';
 module.exports = {
   name: 'sɪɢɴᴇ_ᴄᴏᴍᴍᴀɴᴅᴇ',
   aliases: ['signe_commande', 'setprefix', 'prefix', 'prefixe'],
   category: '♛ sᴏᴜᴠᴇʀᴀɪɴᴇᴛᴇ́',
-  description: 'ᴛʀᴀɴsᴍᴜᴛᴇ ʟᴇ sɪɢɴᴇ ᴅ\'ɪɴᴠᴏᴄᴀᴛɪᴏɴ ᴅᴇs ᴄᴏᴍᴍᴀɴᴅᴇs',
-  usage: '.sɪɢɴᴇ_ᴄᴏᴍᴍᴀɴᴅᴇ <ɴᴏᴜᴠᴇᴀᴜ ᴘʀᴇ́ғɪxᴇ>',
+  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴛʀᴀɴsᴍᴜᴛᴇ ʟᴇ sɪɢɴᴇ ᴅ\'ɪɴᴠᴏᴄᴀᴛɪᴏɴ ᴅᴇs ᴄᴏᴍᴍᴀɴᴅᴇs**',
+  usage: `${prefix}sɪɢɴᴇ_ᴄᴏᴍᴍᴀɴᴅᴇ <ɴᴏᴜᴠᴇᴀᴜ ᴘʀᴇ́ғɪxᴇ>`,
   ownerOnly: true, // Reste accessible uniquement aux owners déclarés du bot
   
   async execute(sock, msg, args, extra) {
@@ -22,7 +22,7 @@ module.exports = {
           `*╭╼━━━≪• sɪɢɴᴇ ᴀᴄᴛᴜᴇʟ •≫━━━╾╮*\n` +
           `*┃ 🔮 ᴘʀᴇ́ғɪxᴇ : ${config.prefix}*\n` +
           `*╰━━━━━━━━━━━━━━━━━━━━━━━╯*\n\n` +
-          `*☬ ᴜsᴀɢᴇ : .sɪɢɴᴇ_ᴄᴏᴍᴍᴀɴᴅᴇ <ɴᴏᴜᴠᴇᴀᴜ ᴘʀᴇ́ғɪxᴇ>*\n\n` +
+          `*☬ ᴜsᴀɢᴇ : ${prefix}sɪɢɴᴇ_ᴄᴏᴍᴍᴀɴᴅᴇ <ɴᴏᴜᴠᴇᴀᴜ ᴘʀᴇ́ғɪxᴇ>*\n\n` +
           `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
         );
       }
