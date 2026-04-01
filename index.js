@@ -37,14 +37,18 @@ console.error = (...args) => filterConsole(originalConsoleError, ...args);
 console.warn = (...args) => filterConsole(originalConsoleWarn, ...args);
 
 const pino = require('pino');
+const baileys = require('@whiskeysockets/baileys');
 const {
   default: makeWASocket,
   useMultiFileAuthState,
   DisconnectReason,
   Browsers,
-  fetchLatestBaileysVersion,
-  makeInMemoryStore 
-} = require('@whiskeysockets/baileys');
+  fetchLatestBaileysVersion
+} = baileys;
+
+// 🛡️ Extraction forcée du Store (marche sur toutes les versions)
+const makeInMemoryStore = baileys.makeInMemoryStore || baileys.default.makeInMemoryStore;
+
 const config = require('./config');
 const handler = require('./handler');
 const fs = require('fs');
