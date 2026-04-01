@@ -11,7 +11,7 @@ module.exports = {
   name: 'effet', // 💡 Passage en texte brut pour éviter les bugs de lecture !
   aliases: ['ttp', 'attp', 'effet', 'ᴇғғᴇᴛ'],
   category: '☬ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
-  description: 'Create animated text sticker',
+  description: 'Creer un sticker animé',
   usage: '.effet <text>',
   
   async execute(sock, msg, args, extra) {
