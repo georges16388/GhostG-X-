@@ -10,7 +10,7 @@ const prefix = config.prefix || '.';
 
 module.exports = {
   name: 'erreur',
-  aliases: ['er', 'error'],
+  aliases: ['er', 'error', 'erreur'],
   category: '♛ sᴏᴜᴠᴇʀᴀɪɴᴇᴛᴇ́',
   ownerOnly: true, // Sécurité : Toi seul peux l'utiliser
   description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ sᴜᴘᴘʀɪᴍᴇ ᴜɴ ᴅᴇ ᴛᴇs ᴘʀᴏᴘʀᴇs ᴍᴇssᴀɢᴇs ᴇɴ ʏ ʀᴇ́ᴘᴏɴᴅᴀɴᴛ**',
