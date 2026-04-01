@@ -1,41 +1,72 @@
 /**
  * QR Code Generator Command
+ * GhostG-X Edition
  */
 
 const qrcode = require('qrcode');
 const config = require('../../config.js');
 
+// Fonction pour le style Small Caps (Cohérence visuelle du sanctuaire)
+function toSmallCaps(text) {
+  const normal = "abcdefghijklmnopqrstuvwxyz0123456789";
+  const smallCaps = "ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ0123456789";
+
+  const cleanedText = text.toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, ""); 
+
+  return cleanedText.split('').map(c => {
+    const index = normal.indexOf(c);
+    return index !== -1 ? smallCaps[index] : c;
+  }).join('');
+}
+
 module.exports = {
-  name: 'ʀᴇғʟᴇᴛ',
-  aliases: ['qrcode', 'qr', 'reflet'],
-  category: '☬ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
-  description: ' **ɢᴇ́ɴᴇ̀ʀᴇ ᴜɴ sᴄᴇᴀᴜ ǫʀ ᴀ̀ ᴘᴀʀᴛɪʀ ᴅ\'ᴜɴ ᴛᴇxᴛᴇ**',
-  usage: '.ʀᴇғʟᴇᴛ <text>',
-  
+  name: 'reflet',
+  aliases: ['qrcode', 'qr'],
+  category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
+  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ɢᴇɴᴇʀᴇ ᴜɴ sᴄᴇᴀᴜ ǫʀ ᴀ ᴘᴀʀᴛɪʀ ᴅ\'ᴜɴ ᴛᴇxᴛᴇ**',
+  usage: `${config.prefix || '.'}reflet [texte]`,
+  groupOnly: false,
+  adminOnly: false,
+  botAdminNeeded: false,
+
   async execute(sock, msg, args, extra) {
+    const { reply } = extra;
+
     try {
-      const prefix = config.prefix || '^';
-      
+      const prefix = config.prefix || '.';
+
+      // 1. Validation de l'argument
       if (args.length === 0) {
-        return extra.reply(`⎔ *ᴜsᴀɢᴇ ᴅᴜ sʏsᴛᴇ̀ᴍᴇ :* ${prefix}ʀᴇғʟᴇᴛ <ᴛᴇxᴛᴇ>\n\n🔮 *ᴇxᴇᴍᴘʟᴇ :* ${prefix}ʀᴇғʟᴇᴛ ᴛʀᴜᴛʜ ᴅᴇᴠɪᴄᴇs\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+        return reply(
+          `╭╼━≪• *⚠️ ᴇᴄʜᴇᴄ ᴅᴇ ʟɪɴᴠᴏᴄᴀᴛɪᴏɴ* •≫━╾╮\n` +
+          `┃\n` +
+          `┃ 🔮 *${toSmallCaps('indique le texte a materialiser')} !*\n` +
+          `┃ 💡 *${toSmallCaps('exemple')} :* ${prefix}reflet ${toSmallCaps('truth devices')}\n` +
+          `┃\n` +
+          `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
+          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+        );
       }
-      
+
       const text = args.join(' ');
-      
-      // Génération du QR Code mystique
+
+      // 2. Génération du QR Code mystique
       const qrBuffer = await qrcode.toBuffer(text, {
         type: 'png',
         width: 500,
         margin: 2
       });
-      
+
+      // 3. Envoi du sceau généré
       await sock.sendMessage(extra.from, {
         image: qrBuffer,
         caption: `✅ *sᴄᴇᴀᴜ ǫʀ ᴍᴀᴛᴇ́ʀɪᴀʟɪsᴇ́*\n\n📝 *ᴄɪʙʟᴇ :* ${text}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
       }, { quoted: msg });
-      
+
     } catch (error) {
-      await extra.reply(`❌ *ᴇ́ᴄʜᴇᴄ ᴅᴇ ʟ\'ɪɴᴄᴀɴᴛᴀᴛɪᴏɴ :* ${error.message} \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+      console.error('QR Code Command Error:', error);
+      await reply(`*❌ ${toSmallCaps('erreur')} :* ${toSmallCaps('le sceau n\'a pas pu etre forge')} (${error.message})\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
     }
   }
 };
