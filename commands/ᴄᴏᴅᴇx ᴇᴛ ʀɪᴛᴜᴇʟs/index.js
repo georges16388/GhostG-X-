@@ -7,6 +7,9 @@ const { loadCommands } = require('../../utils/commandLoader');
 const fs = require('fs');
 const path = require('path');
 
+// Extraction du préfixe pour l'usage
+const prefix = config.prefix || '.';
+
 // Fonction avancée pour convertir du texte normal en Small Caps GRAS (Bold Small Caps)
 function toBoldSmallCaps(text) {
   const normal = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -19,20 +22,20 @@ function toBoldSmallCaps(text) {
   }).join('');
 }
 
-// Fonction pour nettoyer les caractères invisibles parasites dans les noms de catégories
+// Nettoyage des espaces invisibles parasites SANS toucher à la casse
 function cleanCategoryName(name) {
   return name
-    .replace(/[\u200B-\u200D\uFEFF]/g, '') // Supprime les espaces invisibles
-    .trim()
-    .toUpperCase();
+    .replace(/[\u200B-\u200D\uFEFF]/g, '') 
+    .trim(); 
 }
 
 module.exports = {
   name: 'ɢʀɪᴍᴏɪʀᴇ', 
   aliases: ['commands', 'menu', 'arcanes', 'index', 'm'],
-  category: '☬ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
+  category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
   description: '**ᴀꜰꜰɪᴄʜᴇ ʟ\'ᴇɴꜱᴇᴍʙʟᴇ ᴅᴇꜱ ʀɪᴛᴜᴇʟꜱ ᴇᴛ ᴄᴏᴍᴍᴀɴᴅᴇꜱ ᴅɪꜱᴘᴏɴɪʙʟᴇꜱ**',
-  usage: 'ɢʀɪᴍᴏɪʀᴇ',
+  // 🔥 LE FIX : Ajout du préfixe ici
+  usage: `${prefix}ɢʀɪᴍᴏɪʀᴇ`,
 
   async execute(sock, msg, args, extra) {
     try {
@@ -52,7 +55,6 @@ module.exports = {
         }
       });
 
-      const prefix = config.prefix || '.';
       const fileCount = commands.size;
       const userTag = `@${extra.sender.split('@')[0]}`;
       const botNameCaps = toBoldSmallCaps(config.botName || 'ɢʜᴏsᴛɢ-𝐗');
@@ -74,16 +76,15 @@ module.exports = {
         const cmdList = categories[catKey];
         if (cmdList && cmdList.length > 0) {
 
-          // Titre de la catégorie en Bold Small Caps
+          // Affichage strict de ta catégorie aérée
           menuText += `╭╼━≪• *${catKey}* •≫━╾╮\n`;
 
           // Tri alphabétique des commandes à l'intérieur de la catégorie
           const sortedCmds = cmdList.sort((a, b) => a.name.localeCompare(b.name));
 
           sortedCmds.forEach(cmd => {
-            // Toutes les commandes passent par la même police Small Caps
             const boldSmallCapsName = toBoldSmallCaps(cmd.name);
-            menuText += `┃➽ *${boldSmallCapsName}*\n`;
+            menuText += `┃➻ **${boldSmallCapsName}**\n`;
           });
 
           menuText += `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n`;
