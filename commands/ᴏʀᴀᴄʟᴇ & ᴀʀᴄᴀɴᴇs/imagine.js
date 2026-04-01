@@ -10,34 +10,51 @@ const config = require('../../config.js');
 
 const BASE = 'https://api.siputzx.my.id/api/ai/magicstudio';
 
+// Fonction pour le style Small Caps (Cohérence visuelle du sanctuaire)
+function toSmallCaps(text) {
+  const normal = "abcdefghijklmnopqrstuvwxyz0123456789";
+  const smallCaps = "ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ0123456789";
+
+  const cleanedText = text.toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, ""); 
+
+  return cleanedText.split('').map(c => {
+    const index = normal.indexOf(c);
+    return index !== -1 ? smallCaps[index] : c;
+  }).join('');
+}
+
 module.exports = {
-  name: 'forger', // Le name en minuscules pour la cohérence du système de commande
-  aliases: ['magic', 'magicai', 'aiimage', 'generate', 'imagine', 'forger', 'ғᴏʀɢᴇʀ'],
-  category: '‎⍟ ᴏʀᴀᴄʟᴇ & ᴀʀᴄᴀɴᴇs',
-  description: 'Generate AI art from text prompt',
-  usage: '.forger <prompt>',
-  
+  name: 'forger',
+  aliases: ['magic', 'magicai', 'aiimage', 'generate', 'imagine', 'ғᴏʀɢᴇʀ'],
+  category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
+  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ɢᴇɴᴇʀᴀᴛᴇ ᴀɪ ᴀʀᴛ ғʀᴏᴍ ᴛᴇxᴛ ᴘʀᴏᴍᴘᴛ**',
+  usage: `${config.prefix || '.'}forger [prompt]`,
+  groupOnly: false,
+  adminOnly: false,
+  botAdminNeeded: false,
+
   async execute(sock, msg, args, extra) {
-    const prefix = config.prefix || '.';
-    
+    const chatId = msg.key.remoteJid;
+    const { reply } = extra;
+
     try {
       const prompt = args.join(' ').trim();
 
       if (!prompt) {
-        return await extra.reply(
-          `╭╼━≪• *ᴍᴀɢɪᴄ_sᴛᴜᴅɪᴏ* •≫━╾╮\n` +
-          `┃ *ᴇ́ᴛᴀᴛ* : ᴀᴛᴛᴇɴᴛᴇ ⏳\n` +
-          `╰━━━━━━━━━━━━━━━╯\n\n` +
-          `🔮 *ɪɴᴄᴀɴᴛᴀᴛɪᴏɴ :*\n` +
-          `*ᴄᴇᴛ ᴀʀᴛᴇ́ғᴀᴄᴛ ᴍᴀᴛᴇ́ʀɪᴀʟɪsᴇ ᴠᴏs ᴠɪsɪᴏɴs ᴇɴ ɪʟʟᴜsɪᴏɴs ᴠɪsᴜᴇʟʟᴇs.*\n\n` +
-          `  ${prefix}forger <murmure>\n\n` +
-          `📜 *ᴇxᴇᴍᴘʟᴇ :*\n` +
-          `  ${prefix}forger une cité cyberpunk\n\n` +
+        return reply(
+          `╭╼━≪• *⚠️ ᴇᴄʜᴇᴄ ᴅᴇ ʟɪɴᴠᴏᴄᴀᴛɪᴏɴ* •≫━╾╮\n` +
+          `┃ 🔮 *${toSmallCaps('indique une description')}*\n` +
+          `┃ *${toSmallCaps('pour forger lillusion')} !*\n` +
+          `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
           `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
         );
       }
 
-      await extra.reply(`⏳ *ɪɴᴄᴀɴᴛᴀᴛɪᴏɴ ᴇɴ ᴄᴏᴜʀs... ʟᴇs ᴏᴍʙʀᴇs s'ᴀᴄᴛɪᴠᴇɴᴛ ᴘᴏᴜʀ ғᴏʀɢᴇʀ ᴛᴀ ᴠɪsɪᴏɴ.*`);
+      // Réaction avec l'orbe de forgeage
+      await sock.sendMessage(chatId, {
+        react: { text: '⏳', key: msg.key }
+      });
 
       // 1. Appel de l'API pour obtenir le JSON
       const url = `${BASE}?prompt=${encodeURIComponent(prompt)}`;
@@ -49,11 +66,11 @@ module.exports = {
         timeout: 120000 // 2 minutes
       });
 
-      // 2. Extraction de l'URL de l'image (selon la structure de siputzx)
+      // 2. Extraction de l'URL de l'image
       const imageUrl = apiResponse.data?.result || apiResponse.data?.data?.url || apiResponse.data?.url;
 
       if (!imageUrl) {
-        throw new Error('Impossible de récupérer le lien de l\'image depuis l\'Oracle.');
+        throw new Error('impossible de recuperer le lien de limage depuis loracle');
       }
 
       // 3. Téléchargement de l'image réelle en ArrayBuffer
@@ -64,30 +81,39 @@ module.exports = {
 
       const imageBuffer = Buffer.from(imageResponse.data);
 
-      // Vérification de la taille
-      const maxImageSize = 5 * 1024 * 1024; // 5MB
+      // Vérification de la taille (5MB)
+      const maxImageSize = 5 * 1024 * 1024;
       if (imageBuffer.length > maxImageSize) {
-        throw new Error(`Image trop lourde : ${(imageBuffer.length / 1024 / 1024).toFixed(2)}MB (max 5MB)`);
+        throw new Error(`image trop lourde pour le sanctuaire`);
       }
 
-      // 4. Envoi de l'image forgée
-      await sock.sendMessage(extra.from, {
+      const botName = toSmallCaps(config.botName || 'ɢʜᴏsᴛɢ-x');
+
+      // 4. Envoi de l'image forgée avec une légende compacte
+      await sock.sendMessage(chatId, {
         image: imageBuffer,
-        caption: `✨ *ᴠᴏɪᴄɪ ʟ'ɪʟʟᴜsɪᴏɴ ᴍᴀᴛᴇ́ʀɪᴀʟɪsᴇ́ᴇ :*\n\n> "${prompt}"\n\n*ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+        caption: `╭╼━≪• *🎬 ᴀsᴘɪʀᴀᴛɪᴏɴ ʀᴇ́ᴜssɪᴇ* •≫━╾╮\n` +
+                 `┃ 🔮 *${toSmallCaps('extrait par')} :* ${botName}\n` +
+                 `┃ 🔗 *${toSmallCaps('source')} :* ᴍᴀɢɪᴄsᴛᴜᴅɪᴏ\n` +
+                 `┃ 🔖 *${toSmallCaps('prompt')} :* ${toSmallCaps(prompt)}\n` +
+                 `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
+                 `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
       }, { quoted: msg });
 
     } catch (error) {
       console.error('Error in magicstudio command:', error);
 
+      let errorMessage = `*❌ ${toSmallCaps('le sort a echoue')} : ${toSmallCaps(error.message || 'erreur inconnue')} !*`;
+      
       if (error.response?.status === 429) {
-        await extra.reply('❌ *ʟ'ᴏʀᴀᴄʟᴇ ᴇsᴛ sᴀᴛᴜʀᴇ́. ʀᴇ́ᴇssᴀʏᴇ ᴅᴀɴs ǫᴜᴇʟǫᴜᴇs ɪɴsᴛᴀɴᴛs.*');
+        errorMessage = `*❌ ${toSmallCaps('loracle est sature. reessaie dans quelques instants')} !*`;
       } else if (error.response?.status === 400 || error.response?.status === 404) {
-        await extra.reply('❌ *ᴍᴜʀᴍᴜʀᴇ ɪɴᴠᴀʟɪᴅᴇ. ʟ'ᴀᴘɪ ɴ'ᴀ ᴘᴀs ᴘᴜ ᴄᴏᴍᴘʀᴇɴᴅʀᴇ ᴛᴀ ᴅᴇᴍᴀɴᴅᴇ.*');
+        errorMessage = `*❌ ${toSmallCaps('murmure invalide. lapi na pas pu comprendre ta demande')} !*`;
       } else if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
-        await extra.reply('❌ *ʟᴇ sᴘᴇᴄᴛʀᴇ ᴀ ᴍɪs ᴛʀᴏᴘ ᴅᴇ ᴛᴇᴍᴘs ᴀ̀ ʀᴇ́ᴘᴏɴᴅʀᴇ. ʟᴇ sᴏʀᴛ ᴀ ᴇ́ᴄʜᴏᴜᴇ́.*');
-      } else {
-        await extra.reply(`❌ *ᴇ́ᴄʜᴇᴄ ᴅᴇ ʟᴀ ғᴏʀɢᴇ :* ${error.message}`);
+        errorMessage = `*❌ ${toSmallCaps('le spectre a mis trop de temps a repondre')} !*`;
       }
+
+      await reply(`${errorMessage}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
     }
   }
 };
