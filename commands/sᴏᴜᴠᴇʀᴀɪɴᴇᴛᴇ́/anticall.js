@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const config = require('../../config');
-
+const prefix = config.prefix || '.';
 module.exports = {
   name: 'ʀᴇᴊᴇᴛ_ᴀᴘᴘᴇʟs',
   aliases: ['rejet_appels', 'anticall', 'anti-call', 'rejeter'],
