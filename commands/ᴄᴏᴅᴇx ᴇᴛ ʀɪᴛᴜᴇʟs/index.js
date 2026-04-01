@@ -48,15 +48,16 @@ module.exports = {
       const userTag = `@${extra.sender.split('@')[0]}`;
       const botNameCaps = toSmallCaps(config.botName || 'ɢʜᴏsᴛɢ-𝐗');
 
-      // En-tête avec ton design
-      let menuText = `╭╼━≪• *${botNameCaps}* •≫━╾╮\n` +
-                     `┃ *sᴛᴀᴛᴜᴛ* : 🟢 ᴏɴʟɪɴᴇ\n` +
-                     `┃ *ᴜᴛɪʟɪsᴀᴛᴇᴜʀ* : ${userTag}\n` +
-                     `┃ *ᴊᴇsᴜs ᴛᴀɪᴍᴇ* : ❤️✝\n` +
-                     `┃ *ᴘʀᴇғɪxᴇ* : [ ${prefix} ]\n` +
-                     `┃ *ᴄᴏᴍᴍᴀɴᴅᴇs* : ${fileCount} ғɪʟᴇs\n` +
-                     `┃ *ᴅᴇᴠᴇʟᴏᴘᴘᴇᴜʀ* : https://wa.me/22651622652\n` +
+             // En-tête avec ton design GhostG-X 100% Immersif
+      let menuText = `╭╼━≪• *ɢʜᴏsᴛɢ-𝐗* •≫━╾╮\n` +
+                     `┃ *ᴠɪɢɪʟᴀɴᴄᴇ* : 🟢 ᴇ́ᴠᴇɪʟʟᴇ́\n` +
+                     `┃ *ᴘᴇ̀ʟᴇʀɪɴ* : ${userTag}\n` +
+                     `┃ *ᴀʟʟɪᴀɴᴄᴇ* : ♰ sᴄᴇʟʟᴇ́ᴇ ♰\n` +
+                     `┃ *ɪɴᴄᴀɴᴛᴀᴛɪᴏɴ* : [ ${prefix} ]\n` +
+                     `┃ *ᴀʀᴄᴀɴᴇs* : ${fileCount} sᴏʀᴛs\n` +
+                     `┃ *♛ sᴜᴢᴇʀᴀɪɴ* : https://wa.me/22651622652\n` +
                      `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n`;
+
 
       // Tri alphabétique des catégories
       const sortedCategories = Object.keys(categories).sort();
@@ -80,8 +81,9 @@ module.exports = {
         }
       });
 
-      menuText += `*_❤️ ᴊᴇsᴜs ᴛᴀɪᴍᴇ ᴇᴛ ᴛᴇ ʙᴇ́ɴɪssᴇ_❤️*\n` +
-                  `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ${botNameCaps}*`;
+      menuText += `*_♰ ǫᴜᴇ ʟᴀ ʟᴜᴍɪᴇ̀ʀᴇ ᴅɪssɪᴘᴇ ᴛᴇs ᴛᴇ́ɴᴇ̀ʙʀᴇs ♰_*\n` +
+            `> *sᴄᴇʟʟᴇ́ ᴘᴀʀ ʟᴇs ᴀʀᴄᴀɴᴇs ᴅᴇ ${botNameCaps}*`;
+
 
       // 🎲 SÉLECTION ALÉATOIRE DE L'IMAGE 🎲
       // Génère un chiffre aléatoire entre 1 et 7
