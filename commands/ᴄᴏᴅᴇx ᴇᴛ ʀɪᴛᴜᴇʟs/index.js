@@ -67,7 +67,7 @@ module.exports = {
           menuText += `╭╼━≪• *${catKey}* •≫━╾╮\n`;
           const sortedCmds = cmdList.sort((a, b) => a.name.localeCompare(b.name));
           sortedCmds.forEach(cmd => {
-            menuText += `┃➻ **${toBoldSmallCaps(cmd.name)}**\n`;
+            menuText += `┃➻ ${toBoldSmallCaps(cmd.name)}\n`;
           });
           menuText += `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n`;
         }
