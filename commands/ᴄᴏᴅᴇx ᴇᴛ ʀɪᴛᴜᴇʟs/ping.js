@@ -16,7 +16,7 @@ function toSmallCaps(text) {
 module.exports = {
     name: 'ᴠɪᴛᴇssᴇ',
     aliases: ['ping', 'p', 'flux', 'latence', 'vitesse'],
-    category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
+    category: '☬ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
     description: 'Mesure la vitesse de réaction de l\'entité',
     usage: '.ᴠɪᴛᴇssᴇ',
     
