@@ -46,7 +46,7 @@ module.exports = {
   name: 'bible',
   aliases: ['ecritures', 'verset', 'saint', 'ᴇᴄʀɪᴛᴜʀᴇs'],
   category: '♰ sᴀɪɴᴛᴇᴛᴇ́ ᴄᴇ́ʟᴇsᴛᴇ',
-  description: '**ɢᴇ́ɴᴇ̀ʀᴇ ᴜɴ ᴠᴇʀsᴇᴛ ᴀʟᴇ́ᴀᴛᴏɪʀᴇ ᴏᴜ ʀᴇᴄʜᴇʀᴄʜᴇ ᴜɴ ᴠᴇʀsᴇᴛ sᴘᴇ́ᴄɪғɪǫᴜᴇ ᴇɴ ғʀᴀɴᴄ̧ᴀɪs**',
+  description: '** 『 ɢʜᴏsᴛɢ-𝐗 』➪ ɢᴇ́ɴᴇ̀ʀᴇ ᴜɴ ᴠᴇʀsᴇᴛ ᴀʟᴇ́ᴀᴛᴏɪʀᴇ ᴏᴜ ʀᴇᴄʜᴇʀᴄʜᴇ ᴜɴ ᴠᴇʀsᴇᴛ sᴘᴇ́ᴄɪғɪǫᴜᴇ ᴇɴ ғʀᴀɴᴄ̧ᴀɪs**',
   usage: `${prefix}bible [ʟɪᴠʀᴇ ᴄʜᴀᴘɪᴛʀᴇ:ᴠᴇʀsᴇᴛ]`,
 
   async execute(sock, msg, args, extra) {
