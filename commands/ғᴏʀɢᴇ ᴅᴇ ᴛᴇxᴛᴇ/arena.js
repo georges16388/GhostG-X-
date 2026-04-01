@@ -12,7 +12,7 @@ module.exports = {
   name: 'arena',
   aliases: [],
   category: '‎✎ ғᴏʀɢᴇ ᴅᴇ ᴛᴇxᴛᴇ',
-  description: '**ᴄʀᴇ́ᴇ ᴜɴ ᴇғғᴇᴛ ᴅᴇ ᴛᴇxᴛᴇ sᴛʏʟᴇ ᴀʀᴇɴᴀ**',
+  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴄʀᴇ́ᴇ ᴜɴ ᴇғғᴇᴛ ᴅᴇ ᴛᴇxᴛᴇ sᴛʏʟᴇ ᴀʀᴇɴᴀ**',
   usage: `${prefix}arena <ᴛᴇxᴛᴇ>`,
 
   async execute(sock, msg, args) {
