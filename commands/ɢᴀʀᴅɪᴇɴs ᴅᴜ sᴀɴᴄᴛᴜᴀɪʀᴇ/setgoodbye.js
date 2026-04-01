@@ -1,66 +1,92 @@
 /**
  * Set Goodbye - Customize goodbye message
+ * GhostG-X Edition
  */
 
 const db = require('../../database');
-// On importe ton fichier de config à la racine
 const config = require('../../config.js'); 
+
+// Fonction pour le style Small Caps (Cohérence visuelle du sanctuaire)
+function toSmallCaps(text) {
+  const normal = "abcdefghijklmnopqrstuvwxyz0123456789";
+  const smallCaps = "ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ0123456789";
+
+  const cleanedText = text.toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, ""); 
+
+  return cleanedText.split('').map(c => {
+    const index = normal.indexOf(c);
+    return index !== -1 ? smallCaps[index] : c;
+  }).join('');
+}
+
+const prefix = config.prefix || '.';
 
 module.exports = {
   name: 'motsadieu',
-  // Ajout de 'motsadieu', 'setgoodbye' et 'traceadieu' en texte brut pour assurer la réactivité !
-  aliases: ['goodbyetext', 'setgoodbye', 'motsadieu', 'traceadieu'],
+  aliases: ['goodbyetext', 'setgoodbye', 'traceadieu'],
   category: '‎⛨ ɢᴀʀᴅɪᴇɴs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ',
-  desc: 'Set custom goodbye message',
-  usage: '.motsadieu <message> (use @user for member mention)',
+  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴘᴇʀsᴏɴɴᴀʟɪsᴇ ʟᴇ ᴍᴇssᴀɢᴇ ᴅ\'ᴀᴅɪᴇᴜ ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ**',
+  usage: `${prefix}motsadieu <message>`, // 💡 Dynamique avec ton préfixe actuel
   groupOnly: true,
-  adminOnly: false,
+  adminOnly: true, // 🔐 Sécurisé pour éviter que n'importe qui le modifie
   botAdminNeeded: false,
-  execute: async (sock, msg, args) => {
-    // On récupère le préfixe depuis ton fichier config.js
-    const prefix = config.prefix || '^';
+
+  async execute(sock, msg, args, extra) {
+    const { reply } = extra;
+    const from = extra.from;
 
     try {
-      const groupId = msg.key.remoteJid;
-      
+      const senderJid = msg.key.participant || msg.key.remoteJid;
+      const senderNumber = senderJid.replace(/\D/g, '');
+
+      // 🛡️ SÉCURITÉ : Vérification via le config.js uniquement
+      const isConfigOwner = config.ownerNumber && config.ownerNumber.some(n => {
+        const cleanN = String(n).replace(/\D/g, '');
+        return senderNumber.includes(cleanN) || cleanN.includes(senderNumber);
+      });
+
+      const isMe = msg.key.fromMe || isConfigOwner;
+
+      // Si l'utilisateur n'est pas admin et n'est pas listé comme Owner
+      if (!extra.isAdmin && !isMe) {
+        return reply(`*❌ ${toSmallCaps('cette incantation est reservee aux administrateurs du sanctuaire')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+      }
+
       if (!args.length) {
-        const groupSettings = db.getGroupSettings(groupId);
-        
-        return await sock.sendMessage(groupId, {
-          text: `╭╼━≪• *ᴍᴇssᴀɢᴇ ᴅ'ᴀᴅɪᴇᴜx* •≫━╾╮\n` +
-                `╰━━━━━━━━━━━━━━━╯\n\n` +
-                `📝 *ᴍᴇssᴀɢᴇ ᴀᴄᴛᴜᴇʟ :*\n` +
-                `${groupSettings.goodbyeMessage || 'ᴀᴜᴄᴜɴ'}\n\n` +
-                `🔮 *ɪɴᴄᴀɴᴛᴀᴛɪᴏɴ :*\n` +
-                `  ${prefix}ᴍᴏᴛsᴀᴅɪᴇᴜ <ᴍᴇssᴀɢᴇ>\n\n` +
-                `💡 *ᴀsᴛᴜᴄᴇ :* ᴜᴛɪʟɪsᴇᴢ \`@user\` ᴘᴏᴜʀ ᴍᴇɴᴛɪᴏɴɴᴇʀ ʟ'ɪɴᴅɪᴠɪᴅᴜ ǫᴜɪ ǫᴜɪᴛᴛᴇ ʟᴇ sᴀɴᴄᴛᴜᴀɪʀᴇ.\n\n` +
-                `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
-        }, { quoted: msg });
+        const groupSettings = db.getGroupSettings(from);
+
+        return reply(
+          `╭╼━≪• *ᴍᴇssᴀɢᴇ ᴅ'ᴀᴅɪᴇᴜx* •≫━╾╮\n` +
+          `╰━━━━━━━━━━━━━━━╯\n\n` +
+          `📝 *ᴍᴇssᴀɢᴇ ᴀᴄᴛᴜᴇʟ :*\n` +
+          `${groupSettings.goodbyeMessage || 'ᴀᴜᴄᴜɴ'}\n\n` +
+          `🔮 *ɪɴᴄᴀɴᴛᴀᴛɪᴏɴ :*\n` +
+          `  ${prefix}motsadieu <message>\n\n` +
+          `💡 *${toSmallCaps('astuce')} :* ${toSmallCaps('utilisez')} \`@user\` ${toSmallCaps('pour mentionner l individu qui quitte le sanctuaire')}.\n\n` +
+          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`
+        );
       }
-      
+
       const goodbyeMessage = args.join(' ');
-      
+
       if (goodbyeMessage.length > 500) {
-        return await sock.sendMessage(groupId, {
-          text: `❌ *ʟᴇ ᴍᴇssᴀɢᴇ ᴅ'ᴀᴅɪᴇᴜx ᴇsᴛ ᴛʀᴏᴘ ʟᴏɴɢ ! (ᴍᴀxɪᴍᴜᴍ 𝟻𝟶𝟶 ᴄᴀʀᴀᴄᴛᴇ̀ʀᴇs).* \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
-        }, { quoted: msg });
+        return reply(`*❌ ${toSmallCaps('le message d adieux est trop long')} ! (ᴍᴀxɪᴍᴜᴍ 𝟻𝟶𝟶 ᴄᴀʀᴀᴄᴛᴇʀᴇs).* \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
       }
-      
-      db.updateGroupSettings(groupId, { goodbyeMessage });
-      
-      await sock.sendMessage(groupId, {
-        text: `✅ *ᴍᴇssᴀɢᴇ ᴅ'ᴀᴅɪᴇᴜx ᴍɪs ᴀ̀ ᴊᴏᴜʀ !*\n\n` +
+
+      db.updateGroupSettings(from, { goodbyeMessage });
+
+      await sock.sendMessage(from, {
+        text: `*✅ ${toSmallCaps('message d adieux mis a jour')} !*\n\n` +
               `🔮 *ᴀᴘᴇʀᴄ̧ᴜ :*\n` +
-              `${goodbyeMessage.replace('@user', '@' + msg.key.participant.split('@')[0])}\n\n` +
-              `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`,
-        mentions: [msg.key.participant]
+              `${goodbyeMessage.replace('@user', '@' + senderNumber)}\n\n` +
+              `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`,
+        mentions: [senderJid]
       }, { quoted: msg });
-      
+
     } catch (error) {
       console.error('Set Goodbye Error:', error);
-      await sock.sendMessage(msg.key.remoteJid, {
-        text: `❌ *ᴇʀʀᴇᴜʀ :* ${error.message}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
-      }, { quoted: msg });
+      await reply(`*❌ ${toSmallCaps('l invocation a echoue')} : ${error.message}*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
     }
   }
 };
