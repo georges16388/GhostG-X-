@@ -1,5 +1,4 @@
 /**
- * Menu Command - GhostG-X Edition
  * Affiche l'ensemble des rituels et commandes disponibles avec une image locale aléatoire
  */
 
@@ -13,7 +12,7 @@ function toBoldSmallCaps(text) {
   const normal = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
   // Alphabet Small Caps en gras
   const boldSmallCaps = "ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ0123456789";
-  
+
   return text.split('').map(c => {
     const index = normal.indexOf(c);
     return index !== -1 ? boldSmallCaps[index] : c;
@@ -29,11 +28,11 @@ function cleanCategoryName(name) {
 }
 
 module.exports = {
-  name: 'grimoire', 
+  name: 'ɢʀɪᴍᴏɪʀᴇ', 
   aliases: ['commands', 'menu', 'arcanes', 'index', 'm'],
   category: '☬ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
-  description: 'Affiche l\'ensemble des rituels et commandes disponibles',
-  usage: '.grimoire',
+  description: '**ᴀꜰꜰɪᴄʜᴇ ʟ\'ᴇɴꜱᴇᴍʙʟᴇ ᴅᴇꜱ ʀɪᴛᴜᴇʟꜱ ᴇᴛ ᴄᴏᴍᴍᴀɴᴅᴇꜱ ᴅɪꜱᴘᴏɴɪʙʟᴇꜱ**',
+  usage: 'ɢʀɪᴍᴏɪʀᴇ',
 
   async execute(sock, msg, args, extra) {
     try {
@@ -120,7 +119,7 @@ module.exports = {
       } else {
         // Repli de secours
         const fallbackPath = path.join(__dirname, '../../utils/bot_image.jpg');
-        
+
         if (fs.existsSync(fallbackPath)) {
           const fallbackBuffer = fs.readFileSync(fallbackPath);
           await sock.sendMessage(extra.from, {
