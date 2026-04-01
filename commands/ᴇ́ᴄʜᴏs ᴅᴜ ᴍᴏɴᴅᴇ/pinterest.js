@@ -36,7 +36,7 @@ function getDomain(url) {
 module.exports = {
   name: 'pinterest',
   aliases: ['illusions_pinterest', 'pin', 'pindl', 'pinterestdl', 'illusion_pinterest'],
-  category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
+  category: '‎⌘ ᴇ́ᴄʜᴏs ᴅᴜ ᴍᴏɴᴅᴇ',
   description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀsᴘɪʀᴇ ᴇᴛ ᴛᴇʟᴇᴄʜᴀʀɢᴇ ᴅᴇs ɪᴍᴀɢᴇs/ᴠɪᴅᴇᴏs ᴘɪɴᴛᴇʀᴇsᴛ**',
   usage: `${config.prefix || '.'}pinterest [lien pinterest]`,
   groupOnly: false,
