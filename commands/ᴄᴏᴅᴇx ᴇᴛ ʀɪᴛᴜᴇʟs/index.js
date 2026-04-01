@@ -33,12 +33,15 @@ module.exports = {
   name: 'ɢʀɪᴍᴏɪʀᴇ', 
   aliases: ['commands', 'menu', 'arcanes', 'index', 'm'],
   category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
-  description: '**ᴀꜰꜰɪᴄʜᴇ ʟ\'ᴇɴꜱᴇᴍʙʟᴇ ᴅᴇꜱ ʀɪᴛᴜᴇʟꜱ ᴇᴛ ᴄᴏᴍᴍᴀɴᴅᴇꜱ ᴅɪꜱᴘᴏɴɪʙʟᴇꜱ**',
-  // 🔥 LE FIX : Ajout du préfixe ici
+  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀꜰꜰɪᴄʜᴇ ʟ\'ᴇɴꜱᴇᴍʙʟᴇ ᴅᴇꜱ ʀɪᴛᴜᴇʟꜱ ᴇᴛ ᴄᴏᴍᴍᴀɴᴅᴇꜱ ᴅɪꜱᴘᴏɴɪʙʟᴇꜱ**',
   usage: `${prefix}ɢʀɪᴍᴏɪʀᴇ`,
 
   async execute(sock, msg, args, extra) {
     try {
+      // Forcer la relecture du fichier config pour appliquer instantanément les modifs de apparence_systeme
+      delete require.cache[require.resolve('../../config')];
+      const freshConfig = require('../../config');
+
       const commands = loadCommands();
       const categories = {};
 
@@ -57,7 +60,9 @@ module.exports = {
 
       const fileCount = commands.size;
       const userTag = `@${extra.sender.split('@')[0]}`;
-      const botNameCaps = toBoldSmallCaps(config.botName || 'ɢʜᴏsᴛɢ-𝐗');
+      
+      // Utilisation du nom fraîchement lu pour garantir la prise en compte du changement
+      const botNameCaps = toBoldSmallCaps(freshConfig.botName || 'ɢʜᴏsᴛɢ-𝐗');
 
       // En-tête avec ton design GhostG-X 100% Immersif
       let menuText = `╭╼━≪• *${botNameCaps}* •≫━╾╮\n` +
@@ -110,8 +115,8 @@ module.exports = {
             forwardingScore: 1,
             isForwarded: true,
             forwardedNewsletterMessageInfo: {
-              newsletterJid: config.newsletterJid || '120363425540434745@newsletter',
-              newsletterName: config.botName || 'ɢʜᴏsᴛɢ-𝐗',
+              newsletterJid: freshConfig.newsletterJid || '120363425540434745@newsletter',
+              newsletterName: freshConfig.botName || 'ɢʜᴏsᴛɢ-𝐗',
               serverMessageId: -1
             }
           }
