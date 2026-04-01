@@ -4,7 +4,7 @@
  * Sécurité : Supreme Owner Master Access (Invisible Bypass)
  */
 
-const { findParticipant } = require('../../utils/jidHelper');
+const { findParticipant } = require('../../utils/jidHelpers');
 const config = require('../../config.js'); 
 
 // Fonction pour le style Small Caps (Cohérence visuelle du sanctuaire)
