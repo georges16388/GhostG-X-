@@ -12,7 +12,7 @@ module.exports = {
   name: 'thunder',
   aliases: [],
   category: '‎✎ ғᴏʀɢᴇ ᴅᴇ ᴛᴇxᴛᴇ',
-  description: '**ᴄʀᴇ́ᴇ ᴜɴ ᴇғғᴇᴛ ᴅᴇ ᴛᴇxᴛᴇ sᴛʏʟᴇ ᴛʜᴜɴᴅᴇʀ**',
+  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴄʀᴇ́ᴇ ᴜɴ ᴇғғᴇᴛ ᴅᴇ ᴛᴇxᴛᴇ sᴛʏʟᴇ ᴛʜᴜɴᴅᴇʀ**',
   usage: `${prefix}thunder <ᴛᴇxᴛᴇ>`,
 
   async execute(sock, msg, args) {
