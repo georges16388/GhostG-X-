@@ -1,6 +1,7 @@
 /**
  * Crop Command
  * Crop any sticker/image/video into a perfect square sticker (animated for videos)
+ * GhostG-X Edition
  */
 
 const fs = require('fs');
@@ -14,6 +15,20 @@ const { getTempDir, deleteTempFile } = require('../../utils/tempManager');
 
 // Max file size: 50MB
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
+
+// Fonction pour le style Small Caps (Cohérence visuelle du sanctuaire)
+function toSmallCaps(text) {
+  const normal = "abcdefghijklmnopqrstuvwxyz0123456789";
+  const smallCaps = "ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ0123456789";
+
+  const cleanedText = text.toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, ""); 
+
+  return cleanedText.split('').map(c => {
+    const index = normal.indexOf(c);
+    return index !== -1 ? smallCaps[index] : c;
+  }).join('');
+}
 
 const getQuotedMessage = (message) =>
   message.message?.extendedTextMessage?.contextInfo?.quotedMessage ||
@@ -36,27 +51,27 @@ const resolveMedia = (message) => {
 };
 
 module.exports = {
-  name: 'crop', // 💡 Passage en texte brut pour assurer la réactivité !
-  aliases: ['square', 'cropper', 'cisaille', 'ᴄɪsᴀɪʟʟᴇ', 'cr'],
-  description: 'couper un sticker/image/video en un parfait sticker carré  (animé pour les videos)',
-  usage: '.crop (répond à un sticker/image/video)',
-  category: '☬ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
-  
+  name: 'crop',
+  aliases: ['square', 'cropper', 'cisaille', 'cr','c'],
+  category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
+  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴄᴏᴜᴘᴇ ᴜɴ sᴛɪᴄᴋᴇʀ/ɪᴍᴀɢᴇ/ᴠɪᴅᴇᴏ ᴇɴ ᴜɴ ᴘᴀʀғᴀɪᴛ sᴛɪᴄᴋᴇʀ ᴄᴀʀʀᴇ (ᴀɴɪᴍᴇ ᴘᴏᴜʀ ʟᴇs ᴠɪᴅᴇᴏs)**',
+  usage: `${config.prefix || '.'}crop [reponse au media]`,
+  groupOnly: false,
+  adminOnly: false,
+  botAdminNeeded: false,
+
   async execute(sock, msg, args, extra) {
-    // Declare temp files outside try block so they're available in finally
+    const { reply } = extra;
     const tmpDir = getTempDir();
     const tempInput = path.join(tmpDir, `temp_${Date.now()}`);
     const tempOutput = path.join(tmpDir, `crop_${Date.now()}.webp`);
     const tempFiles = [tempInput, tempOutput];
-    
+
     try {
-      // The message that will be quoted in the reply
       const messageToQuote = msg;
-      
-      // The message object that contains the media to be downloaded
       let targetMessage = msg;
 
-      // If the message is a reply, the target media is in the quoted message
+      // Si le message est une réponse, le média cible est dans le message cité
       if (msg.message?.extendedTextMessage?.contextInfo?.quotedMessage) {
         const quotedInfo = msg.message.extendedTextMessage.contextInfo;
         targetMessage = {
@@ -70,19 +85,19 @@ module.exports = {
       }
 
       const mediaInfo = resolveMedia(targetMessage);
-      
+
       if (!mediaInfo) {
-        return extra.reply('✂️ *ᴠᴇᴜɪʟʟᴇᴢ ʀᴇ́ᴘᴏɴᴅʀᴇ ᴀ̀ ᴜɴ sᴛɪᴄᴋᴇʀ, ᴜɴᴇ ɪᴍᴀɢᴇ ᴏᴜ ᴜɴᴇ ᴠɪᴅᴇ́ᴏ ᴀ̀ ᴛᴀɪʟʟᴇʀ.* \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*');
+        return reply(`*✂️ ${toSmallCaps('veuillez repondre a un sticker, une image ou une video a tailler')}.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
       }
 
       const { type, media } = mediaInfo;
       const mediaMessage = media;
 
       if (!mediaMessage) {
-        return extra.reply(`✂️ *ᴠᴇᴜɪʟʟᴇᴢ ʀᴇ́ᴘᴏɴᴅʀᴇ ᴀ̀ ᴜɴ ᴍᴇ́ᴅɪᴀ ᴀᴠᴇᴄ .crop, ᴏᴜ ʟ'ᴇɴᴠᴏʏᴇʀ ᴀᴠᴇᴄ .crop ᴇɴ ʟᴇ́ɢᴇɴᴅᴇ.* \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+        return reply(`*✂️ ${toSmallCaps('veuillez repondre a un media avec .crop, ou l\'envoyer avec .crop en legende')}.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
       }
 
-      // Download media
+      // Téléchargement du média d'origine
       const mediaBuffer = await downloadMediaMessage(
         targetMessage,
         'buffer',
@@ -91,33 +106,31 @@ module.exports = {
       );
 
       if (!mediaBuffer) {
-        return extra.reply('❌ *ᴇ́ᴄʜᴇᴄ ᴅᴜ ᴛᴇ́ʟᴇ́ᴄʜᴀʀɢᴇᴍᴇɴᴛ ᴅᴜ ᴍᴇ́ᴅɪᴀ. ᴠᴇᴜɪʟʟᴇᴢ ʀᴇ́ᴇssᴀʏᴇʀ.* \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*');
+        return reply(`*❌ ${toSmallCaps('echec du telechargement du media. veuillez reessayer')}.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
       }
 
-      // Check file size
+      // Vérification de la taille du fichier
       if (mediaBuffer.length > MAX_FILE_SIZE) {
-        return extra.reply(`❌ *ғɪᴄʜɪᴇʀ ᴛʀᴏᴘ ᴠᴏʟᴜᴍɪɴᴇᴜx :* ${(mediaBuffer.length / 1024 / 1024).toFixed(2)}MB (max: ${MAX_FILE_SIZE / 1024 / 1024}MB) \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+        return reply(`*❌ ${toSmallCaps('fichier trop volumineux')} :* ${(mediaBuffer.length / 1024 / 1024).toFixed(2)}MB (max: ${MAX_FILE_SIZE / 1024 / 1024}MB)\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
       }
 
       // Notification d'attente
-      await extra.reply('*☬ ᴄɪsᴀɪʟʟᴇᴍᴇɴᴛ en cours... Veuillez patienter.*');
+      await reply(`*☬ ${toSmallCaps('cisaillement en cours')}... ${toSmallCaps('veuillez patienter')}.*`);
 
-      // Write media to temp file
       fs.writeFileSync(tempInput, mediaBuffer);
 
-      // Check if media is animated (GIF or video)
+      // Détection des médias animés
       const isAnimated = mediaMessage.mimetype?.includes('gif') || 
                         mediaMessage.mimetype?.includes('video') || 
                         mediaMessage.seconds > 0 ||
                         type === 'videoMessage';
 
-      // Get file size to determine compression level
       const fileSizeKB = mediaBuffer.length / 1024;
-      const isLargeFile = fileSizeKB > 5000; // 5MB threshold
+      const isLargeFile = fileSizeKB > 5000; // Seuil à 5MB
 
-      // Convert to WebP using ffmpeg with crop to square
+      // Commande de transmutation FFmpeg
       let ffmpegCommand;
-      
+
       if (isAnimated) {
         if (isLargeFile) {
           ffmpegCommand = `ffmpeg -i "${tempInput}" -t 2 -vf "crop=min(iw\\,ih):min(iw\\,ih),scale=512:512,fps=8" -c:v libwebp -preset default -loop 0 -vsync 0 -pix_fmt yuva420p -quality 30 -compression_level 6 -b:v 100k -max_muxing_queue_size 1024 "${tempOutput}"`;
@@ -132,10 +145,8 @@ module.exports = {
         exec(ffmpegCommand, (error, stdout, stderr) => {
           if (error) {
             console.error('FFmpeg error:', error);
-            console.error('FFmpeg stderr:', stderr);
             reject(error);
           } else {
-            console.log('FFmpeg stdout:', stdout);
             resolve();
           }
         });
@@ -151,15 +162,8 @@ module.exports = {
       }
 
       let webpBuffer = fs.readFileSync(tempOutput);
-      
-      const finalSizeKB = webpBuffer.length / 1024;
-      console.log(`Final sticker size: ${Math.round(finalSizeKB)} KB`);
-      
-      if (finalSizeKB > 1000) {
-        console.log(`⚠️ Warning: Sticker size (${Math.round(finalSizeKB)} KB) exceeds recommended limit but will be sent anyway`);
-      }
 
-      // Add metadata using webpmux
+      // Injection des métadonnées Exif
       const img = new webp.Image();
       await img.load(webpBuffer);
 
@@ -178,13 +182,14 @@ module.exports = {
 
       const finalBuffer = await img.save(null);
 
+      // Envoi du sticker rogné
       await sock.sendMessage(extra.from, { 
         sticker: finalBuffer
       }, { quoted: messageToQuote });
 
     } catch (error) {
       console.error('Crop command error:', error);
-      await extra.reply(`❌ *ᴇ́ᴄʜᴇᴄ ᴅᴜ sᴇᴄᴛɪᴏɴɴᴇᴍᴇɴᴛ. ᴛᴇɴᴛᴇᴢ ᴀᴠᴇᴄ ᴜɴᴇ ɪᴍᴀɢᴇ ᴏᴜ ᴠɪᴅᴇ́ᴏ ᴘʟᴜs ᴄᴏᴜʀᴛᴇ.* \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+      await reply(`*❌ ${toSmallCaps('echec du sectionnement. tentez avec une image ou video plus courte')}.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
     } finally {
       tempFiles.forEach(file => deleteTempFile(file));
     }
