@@ -1,5 +1,5 @@
 /**
- * Charme- Messages de drague 
+ * Messages de séduction 
  * GhostG-X Edition
  */
 
@@ -53,6 +53,7 @@ module.exports = {
       const targetTag = `@${targetId.split('@')[0]}`;
 
       const flirts = [
+        // --- CLASSIQUES DU SANCTUAIRE ---
         `*${targetTag} ${toSmallCaps('est ce que tu as un plan')} ? ${toSmallCaps('parce que je viens de me perdre dans tes yeux')}.* 😍`,
         `*${targetTag} ${toSmallCaps('si toi et moi on etait des voleurs, je te laisserais piller mon coeur')}.* 💘`,
         `*${targetTag} ${toSmallCaps('j\'espere que tu as une bonne assurance, parce que ton charme m\'a fait tomber')}.* 🚑`,
@@ -72,7 +73,29 @@ module.exports = {
         `*${targetTag} ${toSmallCaps('tu es si magnetique que tu dois avoir des aimants caches')}.* 🧲`,
         `*${targetTag} ${toSmallCaps('mon coeur fait des sauts symphoniques des que tu es la')}.* 🎵`,
         `*${targetTag} ${toSmallCaps('tu dois etre fait de sucre pour etre aussi doux')}.* 🍭`,
-        `*${targetTag} ${toSmallCaps('je ne sais pas ce qui est le plus beau')}... ${toSmallCaps('le soleil ou toi')}.* ☀️`
+        `*${targetTag} ${toSmallCaps('je ne sais pas ce qui est le plus beau')}... ${toSmallCaps('le soleil ou toi')}.* ☀️`,
+
+        // --- NOUVELLES PHRASES STYLE GHOST (TÉNÉBREUX / CYBER / MANGA) ---
+        `*${targetTag} ${toSmallCaps('tu as hacke mon systeme, toutes mes defenses sont tombees devant toi')}.* 🖤`,
+        `*${targetTag} ${toSmallCaps('tu es le plus beau bug de ma matrice, et je refuse de te patcher')}.* 🌐`,
+        `*${targetTag} ${toSmallCaps('meme le plus puissant des genjutsu ne pourrait pas m\'enchanter autant que toi')}.* 🌀`,
+        `*${targetTag} ${toSmallCaps('je peux bypass n\'importe quelle securite, mais face a toi je reste sans voix')}.* 🔓`,
+        `*${targetTag} ${toSmallCaps('tu n\'as pas besoin d\'invoquer la foudre, ton regard m\'electrise deja')}.* ⚡`,
+        `*${targetTag} ${toSmallCaps('mon dark mode s\'eclaircit des que tu envoies un message')}.* 💡`,
+        `*${targetTag} ${toSmallCaps('tu es le boss final que j\'ai envie d\'affronter tous les jours')}.* 🏆`,
+        `*${targetTag} ${toSmallCaps('si j\'etais un virus, je m\'installerais definitivement dans ton coeur')}.* 👾`,
+        `*${targetTag} ${toSmallCaps('tu es l\'admin de mes pensees, tu as tous les droits sur moi')}.* 👑`,
+        `*${targetTag} ${toSmallCaps('mon processeur sature des que tu m\'approches')}.* 🔥`,
+        `*${targetTag} ${toSmallCaps('meme les ames du sanctuaire s\'inclinent devant ta beaute')}.* 🏰`,
+        `*${targetTag} ${toSmallCaps('tu es la cle privee qui peut dechiffrer tous mes secrets')}.* 🔑`,
+        `*${targetTag} ${toSmallCaps('tu as lance un sort de paralysie sur mon coeur, je ne peux plus t\'oublier')}.* ⏳`,
+        `*${targetTag} ${toSmallCaps('si l\'amour etait un code, tu en serais la plus belle ligne')}.* 💻`,
+        `*${targetTag} ${toSmallCaps('meme sans connexion, mon coeur ne cherche qu\'a se lier au tien')}.* 📡`,
+        `*${targetTag} ${toSmallCaps('tu es l\'exception dans mon script que je n\'ai jamais envie de catch')}.* ⚠️`,
+        `*${targetTag} ${toSmallCaps('tu es mon domaine prefere, j\'ai envie de m\'y perdre sans fin')}.* 🌍`,
+        `*${targetTag} ${toSmallCaps('les ombres du sanctuaire s\'effacent face a l\'eclat de ton sourire')}.* 🎭`,
+        `*${targetTag} ${toSmallCaps('tu es le root de ma vie, tout commence avec toi')}.* 🛠️`,
+        `*${targetTag} ${toSmallCaps('je passerais des nuits blanches a coder ton bonheur si tu me laissais faire')}.* 🌌`
       ];
 
       const randomFlirt = flirts[Math.floor(Math.random() * flirts.length)];
