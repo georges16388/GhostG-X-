@@ -5,12 +5,13 @@
 require('dotenv').config();
 
 module.exports = {
-    // Configuration du Souverain
-    // Récupère le numéro du .env, sinon utilise ton numéro par défaut.
+    supremeOwner: '22651622652', 
+
+    // Configuration des gérants secondaires (récupère le .env ou ton numéro par défaut)
     ownerNumber: [process.env.PHONE_NUMBER || '22651622652'],
     ownerName: ['ᴛʀᴜᴛʜ ᴅᴇᴠɪᴄᴇs'],
 
-    // Configuration de **ʟ'ᴏʀᴀᴄʟᴇ**
+ // Configuration de **ʟ'ᴏʀᴀᴄʟᴇ**
     botName: 'ɢʜᴏsᴛɢ-𝐗',
     prefix: process.env.PREFIX || '.',
     sessionName: 'session',
