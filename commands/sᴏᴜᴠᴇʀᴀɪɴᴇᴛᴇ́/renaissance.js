@@ -1,22 +1,25 @@
 /**
  * Restart Command - GhostG-X Edition
- * Réinitialise et ressuscite le bot
+ * Réinitialise et ressuscite l'Oracle
  */
 
 const { exec } = require('child_process');
-const config = require('../../config'); 
+const config = require('../../config.js'); 
+
+// Extraction du préfixe pour l'usage
+const prefix = config.prefix || '.';
 
 module.exports = {
   name: 'ʀᴇɴᴀɪssᴀɴᴄᴇ',
   aliases: ['renaissance', 'reboot', 'reload', 'restart', 'resurrection'],
   category: '♛ sᴏᴜᴠᴇʀᴀɪɴᴇᴛᴇ́',
-  description: 'ʀᴇғᴏʀɢᴇ ᴇᴛ ʀᴇssᴜsᴄɪᴛᴇ ʟᴇ sᴀɴᴄᴛᴜᴀɪʀᴇ (ᴏᴡɴᴇʀ ᴜɴɪǫᴜᴇᴍᴇɴᴛ)',
-  usage: '.ʀᴇɴᴀɪssᴀɴᴄᴇ',
   ownerOnly: true, 
+  description: `**『 ɢʜᴏsᴛɢ-𝐗 』➪ ʀᴇғᴏʀɢᴇ ᴇᴛ ʀᴇssᴜsᴄɪᴛᴇ ʟᴇ ʟ'ᴏʀᴀᴄʟᴇ**`,
+  usage: `${prefix}ʀᴇɴᴀɪssᴀɴᴄᴇ`,
 
   async execute(sock, msg, args, extra) {
     const { isOwner, reply, from } = extra;
-    
+
     try {
       if (!isOwner) {
         return reply('*〆 ᴛᴜ ɴ\'ᴀs ᴘᴀs ʟ\'ᴀᴜᴛᴏʀɪsᴀᴛɪᴏɴ sᴜᴘʀᴇ̂ᴍᴇ ᴘᴏᴜʀ ɪɴᴠᴏǫᴜᴇʀ ᴄᴇᴛᴛᴇ ᴘᴜɪssᴀɴᴄᴇ.*');
@@ -51,7 +54,7 @@ module.exports = {
       setTimeout(() => {
         process.exit(0);
       }, 2000);
-      
+
     } catch (error) {
       console.error('Restart error:', error);
       await reply(`*〆 ʟᴀ ʀᴇɴᴀɪssᴀɴᴄᴇ ᴀ ᴇ́ᴄʜᴏᴜᴇ́ : ${error.message}*`);
