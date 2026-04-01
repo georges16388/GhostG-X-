@@ -23,26 +23,16 @@ const forbiddenPatternsConsole = [
   'ephemeralkeypair', 'indexinfo', 'basekey'
 ];
 
-console.log = (...args) => {
+const filterConsole = (originalFunc, ...args) => {
   const message = args.map(a => typeof a === 'string' ? a : typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ').toLowerCase();
   if (!forbiddenPatternsConsole.some(pattern => message.includes(pattern))) {
-    originalConsoleLog.apply(console, args);
+    originalFunc.apply(console, args);
   }
 };
 
-console.error = (...args) => {
-  const message = args.map(a => typeof a === 'string' ? a : typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ').toLowerCase();
-  if (!forbiddenPatternsConsole.some(pattern => message.includes(pattern))) {
-    originalConsoleError.apply(console, args);
-  }
-};
-
-console.warn = (...args) => {
-  const message = args.map(a => typeof a === 'string' ? a : typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ').toLowerCase();
-  if (!forbiddenPatternsConsole.some(pattern => message.includes(pattern))) {
-    originalConsoleWarn.apply(console, args);
-  }
-};
+console.log = (...args) => filterConsole(originalConsoleLog, ...args);
+console.error = (...args) => filterConsole(originalConsoleError, ...args);
+console.warn = (...args) => filterConsole(originalConsoleWarn, ...args);
 
 const pino = require('pino');
 const {
@@ -50,7 +40,8 @@ const {
   useMultiFileAuthState,
   DisconnectReason,
   Browsers,
-  fetchLatestBaileysVersion
+  fetchLatestBaileysVersion,
+  makeInMemoryStore 
 } = require('@whiskeysockets/baileys');
 const config = require('./config');
 const handler = require('./handler');
@@ -59,6 +50,8 @@ const path = require('path');
 const os = require('os');
 
 global.ghostgMode = config.ghostgMode;
+
+const store = makeInMemoryStore({ logger: pino().child({ level: 'silent', stream: 'store' }) });
 
 function cleanupPuppeteerCache() {
   try {
@@ -70,60 +63,27 @@ function cleanupPuppeteerCache() {
   } catch (err) {}
 }
 
-const store = {
-  messages: new Map(),
-  maxPerChat: 20,
-  bind: (ev) => {
-    ev.on('messages.upsert', ({ messages }) => {
-      for (const msg of messages) {
-        if (!msg.key?.id) continue;
-        const jid = msg.key.remoteJid;
-        if (!store.messages.has(jid)) store.messages.set(jid, new Map());
-        const chatMsgs = store.messages.get(jid);
-        chatMsgs.set(msg.key.id, msg);
-        if (chatMsgs.size > store.maxPerChat) {
-          const oldestKey = chatMsgs.keys().next().value;
-          chatMsgs.delete(oldestKey);
-        }
-      }
-    });
-  },
-  loadMessage: async (jid, id) => store.messages.get(jid)?.get(id) || null
-};
-
-// Activation du bouclier anti-doublon
 const processedMessages = new Set();
 setInterval(() => processedMessages.clear(), 5 * 60 * 1000); 
-
-const createSuppressedLogger = (level = 'silent') => {
-  let logger = pino({ level });
-  logger.debug = () => { }; 
-  logger.trace = () => { }; 
-  return logger;
-};
 
 async function startBot() {
   const sessionFolder = `./${config.sessionName}`;
   const { state, saveCreds } = await useMultiFileAuthState(sessionFolder);
   const { version } = await fetchLatestBaileysVersion();
-  const suppressedLogger = createSuppressedLogger('silent');
 
   const sock = makeWASocket({
     version,
-    logger: suppressedLogger,
+    logger: pino({ level: 'silent' }),
     printQRInTerminal: false,
     browser: Browsers.ubuntu('Chrome'), 
     auth: state,
     syncFullHistory: false,
     downloadHistory: true, 
     markOnlineOnConnect: true,
-    keepAliveIntervalMs: 30000, // Laisse Baileys gérer la stabilité de la connexion
+    keepAliveIntervalMs: 30000,
     getMessage: async (key) => {
-      if (store) {
-        const msg = await store.loadMessage(key.remoteJid, key.id);
-        return msg?.message || undefined;
-      }
-      return undefined;
+      const msg = await store.loadMessage(key.remoteJid, key.id);
+      return msg?.message || undefined;
     }
   });
 
@@ -152,15 +112,13 @@ async function startBot() {
     }
   }
 
-  // SUPPRESSION DU WATCHDOG INTERVAL ICI (Il causait le clonage du bot)
-
   sock.ev.on('connection.update', async (update) => {
     const { connection, lastDisconnect } = update;
 
     if (connection === 'close') {
       const statusCode = lastDisconnect?.error?.output?.statusCode;
       const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
-      
+
       if (shouldReconnect) {
         console.log('🔄 Reconnexion des circuits en cours...');
         setTimeout(() => startBot(), 3000);
@@ -169,13 +127,10 @@ async function startBot() {
       }
     } else if (connection === 'open') {
       const ownerNames = Array.isArray(config.ownerName) ? config.ownerName.join(', ') : config.ownerName;
-      const botNumber = sock.user.id.split(':')[0];
 
-      // 1. AFFICHAGE ÉPURÉ DANS LA CONSOLE
       console.log('╭╼━≪• ɢʜᴏsᴛɢ-𝐗 ɪs ᴀʟɪᴠᴇ •≫━╾╮');
       console.log('╰━━━━━━━━━━━━━━━━━━━━━━━╯');
 
-      // 2. MESSAGE DE BIENVENUE WHATSAPP
       const bigWelcomeMessage = 
           `╭╼━≪• *ɢʜᴏsᴛɢ-𝐗 ɪs ᴀʟɪᴠᴇ* •≫━╾╮\n` +
           `┃ 🔮 *ᴠɪɢɪʟᴀɴᴄᴇ* : 🟢 ᴇ́ᴠᴇɪʟʟᴇ́\n` +
@@ -184,30 +139,48 @@ async function startBot() {
           `┃ 🗡️ *ᴄᴏᴍᴍᴀɴᴅᴇᴜʀ* : ${ownerNames}\n` +
           `┃ 🔒 *ᴍᴏᴅᴇ* : ${config.selfMode ? '🔒 ᴘʀɪᴠᴇ́' : '🌐 ᴘᴜʙʟɪᴄ'}\n` +
           `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
-          `📡 *ᴄᴀɴᴀʟ ᴅᴇ ʟ'ᴏᴍʙʀᴇ* : https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c\n` +
-          `🦇 *ʀᴇᴘᴇɪʀᴇ sᴇᴄʀᴇᴛ* : https://t.me/ghostgxbot\n` +
-          `🏰 *ʟᴇ sᴀɴᴄᴛᴜᴀɪʀᴇ* : https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf?mode=gi_t\n` +
-          `📜 *ᴘᴀᴄᴛᴇ ᴀᴠᴇᴄ ʟ'ᴀʀᴛɪsᴀɴ* : https://wa.me/22651622652\n\n` +
-          `⚔️ "*_ᴀᴜᴄᴜɴᴇ ᴀʀᴍᴇ ғᴏʀɢᴇ́ᴇ ᴄᴏɴᴛʀᴇ ᴄᴇ sᴀɴᴄᴛᴜᴀɪʀᴇ ɴᴇ ᴘᴇᴜᴛ ᴘʀᴏsᴘᴇ́ʀᴇʀ_*"\n` +
-          `👻 *ʟᴇ ɢʀɪᴍᴏɪʀᴇ ᴇsᴛ ᴏᴜᴠᴇʀᴛ, ᴘʀᴇ̂ᴛ ᴀ̀ sᴇʀᴠɪʀ !*`;
+          `📡 *ᴄᴀɴᴀʟ ᴅᴇ l'ᴏᴍʙʀᴇ* : https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c\n\n` +
+          `🦇 *ʀᴇᴘᴇɪʀᴇ sᴇᴄʀᴇᴛ* : https://t.me/ghostgxbot\n\n` +
+          `🏰 *ʟᴇ sᴀɴᴄᴛᴜᴀɪʀᴇ* : https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf?mode=gi_t\n\n` +
+          `📜 *ᴘᴀᴄᴛᴇ ᴀᴠᴇᴄ l'ᴀʀᴛɪsᴀɴ* : https://wa.me/22651622652\n\n` +
+          `⚔️ "*_ᴀᴜᴄᴜɴᴇ ᴀʀᴍᴇ ғᴏʀɢᴇ́ᴇ ᴄᴏɴᴛʀᴇ ᴄᴇ sᴀɴᴄᴛᴜᴀɪʀᴇ ɴᴇ ᴘᴇᴜᴛ ᴘʀᴏsᴘᴇ́ʀᴇʀ_*"\n\n\n` +
+          `👑 *ʟᴇ ɢʀɪᴍᴏɪʀᴇ ᴇsᴛ ᴏᴜᴠᴇʀᴛ ᴇᴛ ᴘʀᴇ̂ᴛ ᴀ̀ ᴛᴇ sᴇʀᴠɪʀ, ᴍᴀɪᴛʀᴇ !*\n\n` +
+          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`;
 
       try {
         const myJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
         const imagePath = path.join(process.cwd(), 'utils', 'bot_image_6.jpg');
 
+        // Métadonnées de la chaîne pour simuler le transfert
+        const newsletterContext = {
+          forwardingScore: 999,
+          isForwarded: true,
+          forwardedNewsletterMessageInfo: {
+            newsletterJid: '120363425540434745@newsletter',
+            serverMessageId: 100,
+            newsletterName: 'ɢʜᴏsᴛɢ-𝐗'
+          }
+        };
+
         if (fs.existsSync(imagePath)) {
           const imageBuffer = fs.readFileSync(imagePath);
-          await sock.sendMessage(myJid, { image: imageBuffer, caption: bigWelcomeMessage });
+          await sock.sendMessage(myJid, { 
+            image: imageBuffer, 
+            caption: bigWelcomeMessage,
+            contextInfo: newsletterContext
+          });
           console.log('✉️ Message de démarrage scellé envoyé !');
         } else {
-          await sock.sendMessage(myJid, { text: bigWelcomeMessage });
-          console.log('✉️ Message envoyé en texte seul (image introuvable).');
+          await sock.sendMessage(myJid, { 
+            text: bigWelcomeMessage,
+            contextInfo: newsletterContext
+          });
+          console.log('✉️ Message envoyé en texte seul.');
         }
       } catch (err) {
-        console.log('⚠️ Impossible d\'envoyer le message de démarrage.');
+        console.log('⚠️ Impossible d\'envoyer le message de démarrage.', err);
       }
 
-      // 3. MISE À JOUR DE L'AUTOBIO
       if (config.autoBio) {
         try {
           await sock.updateProfileStatus(`*ɢʜᴏsᴛɢ-𝐗* | *♛ᴊᴇsᴜs ᴇsᴛ ʀᴏɪ♛*`);
@@ -230,34 +203,8 @@ async function startBot() {
       const from = msg.key.remoteJid;
       if (!from || isSystemJid(from)) continue;
 
-      // 🛡️ APPLICATION EFFECTIVE DU BOUCLIER ANTI-DOUBLON
       if (processedMessages.has(msg.key.id)) continue;
       processedMessages.add(msg.key.id);
-
-      // ── GESTION ROBUSTE DU SELFMODE ET DE L'IDENTIFICATION ──
-      // Fix: Récupère l'ID réel même si le message vient de toi dans un groupe
-      const senderJid = msg.key.fromMe ? sock.user.id : (msg.key.participant || msg.key.remoteJid);
-      const senderNumber = senderJid ? senderJid.split(':')[0].replace(/\D/g, '') : '';
-
-      const supremeOwner = '22651622652';
-      const isSupremeOwner = senderNumber.includes(supremeOwner) || supremeOwner.includes(senderNumber);
-      
-      // 👑 RÉACTION SUPRÊME AUTOMATIQUE
-      if (isSupremeOwner) {
-        try {
-          await sock.sendMessage(from, { react: { text: '👑', key: msg.key } });
-        } catch (e) { /* On ignore si échec */ }
-      }
-
-      const isConfigOwner = config.ownerNumber && config.ownerNumber.some(n => {
-        const cleanN = String(n).replace(/\D/g, '');
-        return senderNumber.includes(cleanN) || cleanN.includes(senderNumber);
-      });
-
-      const isMe = msg.key.fromMe || isConfigOwner || isSupremeOwner;
-
-      // Si selfMode est actif, le bot n'écoute QUE toi
-      if (config.selfMode && !isMe) continue;
 
       const MESSAGE_AGE_LIMIT = 5 * 60 * 1000; 
       if (msg.messageTimestamp) {
@@ -265,27 +212,15 @@ async function startBot() {
         if (messageAge > MESSAGE_AGE_LIMIT) continue;
       }
 
-      if (!store.messages.has(from)) store.messages.set(from, new Map());
-      const chatMsgs = store.messages.get(from);
-      chatMsgs.set(msg.key.id, msg);
-
       try {
         await handler.handleMessage(sock, msg);
       } catch (err) {
         console.error('Error handling message:', err.message);
       }
 
-      setImmediate(async () => {
-        if (config.autoRead && from.endsWith('@g.us')) {
-          try { await sock.readMessages([msg.key]); } catch (e) { }
-        }
-        if (from.endsWith('@g.us')) {
-          try {
-            const groupMetadata = await handler.getGroupMetadata(sock, from);
-            if (groupMetadata) await handler.handleAntilink(sock, msg, groupMetadata);
-          } catch (error) { }
-        }
-      });
+      if (config.autoRead && from.endsWith('@g.us')) {
+        try { await sock.readMessages([msg.key]); } catch (e) { }
+      }
     }
   });
 
@@ -293,28 +228,20 @@ async function startBot() {
     try { await handler.handleGroupUpdate(sock, update); } catch (e) {}
   });
 
-  sock.ev.on('error', (error) => {});
-
   return sock;
 }
 
 cleanupPuppeteerCache();
 startBot().catch(err => { process.exit(1); });
 
-process.on('uncaughtException', (err) => {
+const handleNoSpaceError = (err) => {
   if (err.code === 'ENOSPC' || err.message?.includes('no space left on device')) {
     const { cleanupOldFiles } = require('./utils/cleanup');
     cleanupOldFiles();
-    return; 
   }
-});
+};
 
-process.on('unhandledRejection', (err) => {
-  if (err.code === 'ENOSPC' || err.message?.includes('no space left on device')) {
-    const { cleanupOldFiles } = require('./utils/cleanup');
-    cleanupOldFiles();
-    return; 
-  }
-});
+process.on('uncaughtException', handleNoSpaceError);
+process.on('unhandledRejection', handleNoSpaceError);
 
 module.exports = { store };
