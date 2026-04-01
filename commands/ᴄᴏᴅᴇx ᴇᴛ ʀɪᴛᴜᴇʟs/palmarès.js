@@ -7,8 +7,8 @@ module.exports = {
     // Ajout de 'groupstats', 'stats', 'leaderboard', 'gstats', 'msgs' et 'palmares' en texte brut !
     aliases: ['stats', 'leaderboard', 'gstats', 'topmembers', 'msgs', 'messagestats', 'groupstats', 'palmarès', 'palmares'],
     category: '☬ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
-    description: "Affiche les statistiques de discussion du groupe pour la journée",
-    usage: '.ᴘᴀʟᴍᴀʀᴇ̀s',
+    description: '**ᴀꜰꜰɪᴄʜᴇ ʟᴇꜱ ꜱᴛᴀᴛɪꜱᴛɪQᴜᴇꜱ ᴅᴇ ᴅɪꜱᴄᴜꜱꜱɪᴏɴ ᴅᴜ ɢʀᴏᴜᴘᴇ ᴘᴏᴜʀ ʟᴀ ᴊᴏᴜʀɴᴇ́ᴇ**',
+    usage: 'ᴘᴀʟᴍᴀʀᴇ̀s',
     groupOnly: true,
 
     async execute(sock, msg, args, extra) {
