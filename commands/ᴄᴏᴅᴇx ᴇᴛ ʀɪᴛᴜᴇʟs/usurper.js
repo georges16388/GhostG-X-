@@ -1,6 +1,6 @@
 /**
- * Take Command
- * Steal a sticker and re-pack with custom or user packname
+ * Take Command - Steal a sticker and re-pack with custom or user packname
+ * GhostG-X Edition
  */
 
 const { downloadMediaMessage } = require('@whiskeysockets/baileys');
@@ -8,17 +8,36 @@ const webp = require('node-webpmux');
 const crypto = require('crypto');
 const config = require('../../config');
 
+// Fonction pour le style Small Caps (Cohérence visuelle du sanctuaire)
+function toSmallCaps(text) {
+  const normal = "abcdefghijklmnopqrstuvwxyz0123456789";
+  const smallCaps = "ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ0123456789";
+
+  const cleanedText = text.toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, ""); 
+
+  return cleanedText.split('').map(c => {
+    const index = normal.indexOf(c);
+    return index !== -1 ? smallCaps[index] : c;
+  }).join('');
+}
+
 module.exports = {
-  name: 'ᴜsᴜʀᴘᴇʀ',
-  aliases: ['steal', 'usurper', 'take', 't'],
-  category: '☬ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
-  description: '**ᴠᴏʟᴇ ᴜɴ ꜱᴛɪᴄᴋᴇʀ ᴇᴛ ᴍᴏᴅɪꜰɪᴇ ʟᴇ ɴᴏᴍ ᴅᴇ ꜱᴏɴ ᴘᴀᴄᴋ**',
-  usage: 'ᴜsᴜʀᴘᴇʀ',
+  name: 'usurper',
+  aliases: ['steal', 'take', 't'],
+  category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
+  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴠᴏʟᴇ ᴜɴ sᴛɪᴄᴋᴇʀ ᴇᴛ ᴍᴏᴅɪғɪᴇ ʟᴇ ɴᴏᴍ ᴅᴇ sᴏɴ ᴘᴀᴄᴋ**',
+  usage: `${config.prefix || '.'}usurper [nom du pack ou en reponse]`,
+  groupOnly: false,
+  adminOnly: false,
+  botAdminNeeded: false,
 
   async execute(sock, msg, args, extra) {
+    const { reply } = extra;
     let targetMessage = msg;
     const ctxInfo = msg.message?.extendedTextMessage?.contextInfo;
 
+    // Détection si c'est une réponse à un message
     if (ctxInfo?.quotedMessage) {
       targetMessage = {
         key: { 
@@ -32,11 +51,13 @@ module.exports = {
 
     const stickerMsg = targetMessage.message?.stickerMessage;
     const prefix = config.prefix || '.';
+
     if (!stickerMsg) {
-      return extra.reply(`*🎭 ʀᴇ́ᴘᴏɴᴅᴇᴢ ᴀ̀ ᴜɴ sᴛɪᴄᴋᴇʀ ᴀᴠᴇᴄ ${prefix}ᴜsᴜʀᴘᴇʀ ᴘᴏᴜʀ ᴠᴏᴜs ᴇɴ ᴇᴍᴘᴀʀᴇʀ*\n\n>  *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+      return reply(`*⚠️ ${toSmallCaps('repondez a un sticker avec')} ${prefix}${toSmallCaps('usurper pour vous en emparer')}*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
     }
 
     try {
+      // Téléchargement du média
       const mediaBuffer = await downloadMediaMessage(
         targetMessage,
         'buffer',
@@ -44,17 +65,21 @@ module.exports = {
         { logger: undefined, reuploadRequest: sock.updateMediaMessage },
       );
 
-      if (!mediaBuffer) return extra.reply(`*⎔ ᴇ́ᴄʜᴇᴄ ᴅᴇ ʟ'ɪɴᴠᴏᴄᴀᴛɪᴏɴ : ɪᴍᴘᴏssɪʙʟᴇ ᴅᴇ sᴀɪsɪʀ ʟᴇ sᴛɪᴄᴋᴇʀ. ʀᴇᴇssᴀɪᴇ.*`);
+      if (!mediaBuffer) {
+        return reply(`*⚠️ ${toSmallCaps('echec de l\'invocation : impossible de saisir le sticker. reessaie')}.*`);
+      }
 
+      // Définition du nom du pack (Argument passé ou pseudo de l'auteur)
       const userName = msg.pushName || extra.sender.split('@')[0];
-      const packname = args.length ? args.join(' ') : userName;
+      const packname = args.length ? args.join(' ') : toSmallCaps(userName);
 
       const img = new webp.Image();
       await img.load(mediaBuffer);
 
+      // Métadonnées du sticker
       const json = {
         'sticker-pack-id': crypto.randomBytes(32).toString('hex'),
-        'sticker-pack-name': packname || 'ɢʜᴏsᴛɢ-𝐗',
+        'sticker-pack-name': packname || 'ɢʜᴏsᴛɢ 𝐗',
         emojis: ['🤖'],
       };
 
@@ -71,11 +96,12 @@ module.exports = {
       img.exif = exif;
       const finalBuffer = await img.save(null);
 
+      // Envoi du sticker usurpé
       await sock.sendMessage(extra.from, { sticker: finalBuffer }, { quoted: msg });
 
     } catch (error) {
       console.error('Take command error:', error);
-      await extra.reply('❌ *ᴇ́ᴄʜᴇᴄ ᴅᴜ ᴠᴏʟ ᴅᴇ sᴛɪᴄᴋᴇʀ. ᴠᴇᴜɪʟʟᴇᴢ ʀᴇ́ᴇssᴀʏᴇʀ.*');
+      await reply(`*❌ ${toSmallCaps('echec du vol de sticker. veuillez reessayer')} : ${error.message}*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
     }
   },
 };
