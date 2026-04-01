@@ -14,7 +14,7 @@ module.exports = {
   name: 'courage',
   aliases: ['espoir', 'foi', 'grace', 'fortifier', 'force', 'f'],
   category: '♰ sᴀɪɴᴛᴇᴛᴇ́ ᴄᴇ́ʟᴇsᴛᴇ',
-  description: '**ʀᴇᴄ̧ᴏɪs ᴜɴ ᴍᴇssᴀɢᴇ ᴅᴇ ᴍᴏᴛɪᴠᴀᴛɪᴏɴ ᴄʜʀᴇ́ᴛɪᴇɴɴᴇ ᴘᴏᴜʀ ғᴏʀᴛɪғɪᴇʀ ᴛᴏɴ ᴀ̂ᴍᴇ**',
+  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ɢᴇ́ɴᴇ̀ʀᴇ ᴜɴ ᴍᴇssᴀɢᴇ ᴅᴇ ᴍᴏᴛɪᴠᴀᴛɪᴏɴ ᴄʜʀᴇ́ᴛɪᴇɴɴᴇ ᴘᴏᴜʀ ғᴏʀᴛɪғɪᴇʀ ᴛᴏɴ ᴀ̂ᴍᴇ**',
   usage: `${prefix}courage [@user ou réponds à un message]`,
 
   async execute(sock, msg, args, extra) {
