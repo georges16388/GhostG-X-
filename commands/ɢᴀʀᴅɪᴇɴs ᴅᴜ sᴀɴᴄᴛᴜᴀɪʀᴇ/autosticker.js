@@ -26,7 +26,7 @@ module.exports = {
   name: 'autosticker',
   aliases: ['autos', 'asticker', 'ᴀᴜᴛᴏsᴛɪᴄᴋᴇʀ'],
   category: '‎⛨ ɢᴀʀᴅɪᴇɴs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀᴄᴛɪᴠᴇʀ/ᴅᴇ́sᴀᴄᴛɪᴠᴇʀ ʟᴀ ᴍᴇ́ᴛᴀᴍᴏʀᴘʜᴏsᴇ ᴀᴜᴛᴏ-sᴛɪᴄᴋᴇʀ**',
+  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀᴄᴛɪᴠᴇ/ᴅᴇ́sᴀᴄᴛɪᴠᴇ ʟᴀ ᴍᴇ́ᴛᴀᴍᴏʀᴘʜᴏsᴇ ᴀᴜᴛᴏ-sᴛɪᴄᴋᴇʀ**',
   usage: `${prefix}autosticker <on/off>`,
   groupOnly: true,
   adminOnly: true,
