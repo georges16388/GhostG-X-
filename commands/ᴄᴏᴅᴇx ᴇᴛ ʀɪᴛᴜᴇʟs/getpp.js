@@ -1,23 +1,42 @@
 /**
  * GetPP Command - Get profile picture of a user
+ * GhostG-X Edition
  */
 
 const config = require('../../config.js');
 
+// Fonction pour le style Small Caps (Cohérence visuelle du sanctuaire)
+function toSmallCaps(text) {
+  const normal = "abcdefghijklmnopqrstuvwxyz0123456789";
+  const smallCaps = "ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ0123456789";
+
+  const cleanedText = text.toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, ""); 
+
+  return cleanedText.split('').map(c => {
+    const index = normal.indexOf(c);
+    return index !== -1 ? smallCaps[index] : c;
+  }).join('');
+}
+
 module.exports = {
-  name: 'ɢᴇᴛᴘᴘ',
-  aliases: ['gp', 'getpic', 'pp', 'getpp'],
-  category: '☬ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
-  description: '**ʀᴇ́ᴄᴜᴘᴇ̀ʀᴇ ʟᴀ ᴘʜᴏᴛᴏ ᴅᴇ ᴘʀᴏꜰɪʟ ᴅ\'ᴜɴ ᴜᴛɪʟɪꜱᴀᴛᴇᴜʀ**',
-  usage: '.ɢᴇᴛᴘᴘ',
+  name: 'getpp',
+  aliases: ['gp', 'getpic', 'pp'],
+  category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
+  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ʀᴇᴄᴜᴘᴇʀᴇ ʟᴀ ᴘʜᴏᴛᴏ ᴅᴇ ᴘʀᴏғɪʟ ᴅ\'ᴜɴ ᴜᴛɪʟɪsᴀᴛᴇᴜʀ**',
+  usage: `${config.prefix || '.'}getpp [@mention / reponse]`,
+  groupOnly: false,
+  adminOnly: false,
+  botAdminNeeded: false,
 
   async execute(sock, msg, args, extra) {
+    const { reply } = extra;
     const prefix = config.prefix || '.';
 
     try {
       let targetUser = null;
 
-      // Extraction de la cible (Reply ou Tag)
+      // 1. Extraction de la cible (Reply ou Tag)
       const ctx = msg.message?.extendedTextMessage?.contextInfo;
       const mentioned = ctx?.mentionedJid || [];
 
@@ -31,31 +50,38 @@ module.exports = {
       }
 
       if (!targetUser) {
-        return extra.reply(`❌ *ᴠᴇᴜɪʟʟᴇᴢ ᴍᴇɴᴛɪᴏɴɴᴇʀ ᴏᴜ ʀᴇ́ᴘᴏɴᴅʀᴇ ᴀ̀ ʟ'ɪɴᴅɪᴠɪᴅᴜ !*\n\n*ᴇxᴇᴍᴘʟᴇ : ${prefix}ɢᴇᴛᴘᴘ @user*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+        return reply(
+          `*❌ ${toSmallCaps('veuillez mentionner ou repondre a l\'individu')} !*\n\n` +
+          `*${toSmallCaps('exemple')} :* \`${prefix}getpp @user\`\n\n` +
+          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+        );
       }
 
       try {
-        // Tentative de récupération de l'URL
+        // 2. Tentative de récupération de l'URL de l'image
         const ppUrl = await sock.profilePictureUrl(targetUser, 'image');
 
         if (!ppUrl) {
-          return extra.reply(`❌ *ɪᴍᴀɢᴇ ᴅᴇ ᴘʀᴏғɪʟ ɪɴᴛʀᴏᴜᴠᴀʙʟᴇ ᴘᴏᴜʀ ᴄᴇᴛ ɪɴᴅɪᴠɪᴅᴜ* !\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+          return reply(`*❌ ${toSmallCaps('image de profil introuvable pour cet individu')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
         }
 
-        // Envoi direct de la photo de profil via l'URL (plus rapide)
+        // 3. Envoi direct de la photo de profil via l'URL (plus rapide)
         await sock.sendMessage(extra.from, { 
           image: { url: ppUrl },
-          caption: `👤 *ɪᴍᴀɢᴇ ᴅᴇ ᴘʀᴏғɪʟ ᴅᴇ* @${targetUser.split('@')[0]}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`,
+          caption: `👤 *${toSmallCaps('image de profil de')}* @${targetUser.split('@')[0]}\n\n` +
+                   `_❤️ ᴊᴇsᴜs ᴛᴀɪᴍᴇ ᴇᴛ ᴛᴇ ʙᴇ́ɴɪssᴇ_ ❤️\n` +
+                   `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`,
           mentions: [targetUser]
         }, { quoted: msg });
 
       } catch (profileError) {
         // Gestion propre des restrictions de confidentialité WhatsApp
-        return extra.reply(`❌ *ɪᴍᴀɢᴇ ᴅᴇ ᴘʀᴏғɪʟ ɪɴᴛʀᴏᴜᴠᴀʙʟᴇ ᴏᴜ ᴘʀɪᴠᴇ́ᴇ* !\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+        return reply(`*❌ ${toSmallCaps('image de profil introuvable ou privee')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
       }
 
     } catch (error) {
-      await extra.reply(`❌ *ᴇʀʀᴇᴜʀ :* ${error.message}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+      console.error('getpp.js error:', error);
+      await reply(`*❌ ${toSmallCaps('erreur')} :* ${error.message}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
     }
   }
 };
