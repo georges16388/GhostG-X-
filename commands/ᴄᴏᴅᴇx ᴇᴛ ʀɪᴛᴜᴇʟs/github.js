@@ -7,7 +7,7 @@ module.exports = {
     name: 'ғᴏʀɢᴇ',
     // Ajout de 'github', 'repo', 'source', 'sc', 'script' et 'forge' en texte brut pour assurer la réactivité !
     aliases: ['repo', 'git', 'source', 'sc', 'script', 'github', 'forge', 'r'],
-    category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
+    category: '☬ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
     description: 'Show bot GitHub repository and statistics',
     usage: '.ғᴏʀɢᴇ',
     ownerOnly: false,
