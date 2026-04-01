@@ -9,7 +9,7 @@ const config = require('../../config.js');
 function toSmallCaps(text) {
   const normal = "abcdefghijklmnopqrstuvwxyz0123456789";
   const smallCaps = "ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ0123456789";
-  
+
   const cleanedText = text.toLowerCase()
     .normalize("NFD").replace(/[\u0300-\u036f]/g, ""); 
 
@@ -22,10 +22,10 @@ function toSmallCaps(text) {
 module.exports = {
   name: 'ᴛᴏᴠᴠ',
   aliases: ['tovv', 'makevo', 'setviewonce', 'vo'],
-  category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
-  description: 'ᴄᴏɴᴠᴇʀᴛɪᴛ ᴜɴ ᴍᴇ́ᴅɪᴀ ɴᴏʀᴍᴀʟ ᴇɴ ᴍᴇssᴀɢᴇ ᴀ̀ ᴠᴜᴇ ᴜɴɪǫᴜᴇ ᴇᴛ sᴜᴘᴘʀɪᴍᴇ ʟ\'ᴏʀɪɢɪɴᴀʟ',
-  usage: '.ᴛᴏᴠᴠ (ʀᴇ́ᴘᴏɴᴅʀᴇ ᴀ̀ ᴜɴᴇ ɪᴍᴀɢᴇ ᴏᴜ ᴠɪᴅᴇ́ᴏ)',
-  
+  category: '☬ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
+  description: '**ᴄᴏɴᴠᴇʀᴛɪᴛ ᴜɴ ᴍᴇ́ᴅɪᴀ ɴᴏʀᴍᴀʟ ᴇɴ ᴍᴇssᴀɢᴇ ᴀ̀ ᴠᴜᴇ ᴜɴɪQᴜᴇ ᴇᴛ sᴜᴘᴘʀɪᴍᴇ ʟ\'ᴏʀɪɢɪɴᴀʟ**',
+  usage: 'ᴛᴏᴠᴠ',
+
   async execute(sock, msg, args, extra) {
     try {
       const chatId = msg.key.remoteJid;
