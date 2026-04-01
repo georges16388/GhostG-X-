@@ -25,7 +25,7 @@ module.exports = {
   name: 'clean',
   aliases: ['purge', 'clear', 'ᴄʟᴇᴀɴ'],
   category: '‎⛨ ɢᴀʀᴅɪᴇɴs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ sᴜᴘᴘʀɪᴍᴇʀ ʟᴇs ᴍᴇssᴀɢᴇs ᴅᴜ ɢʀᴏᴜᴘᴇ (ᴛᴏᴜs ᴏᴜ ᴘᴀʀ ᴜᴛɪʟɪsᴀᴛᴇᴜʀ)**',
+  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ sᴜᴘᴘʀɪᴍᴇ ʟᴇs ᴍᴇssᴀɢᴇs ᴅᴜ ɢʀᴏᴜᴘᴇ (ᴛᴏᴜs ᴏᴜ ᴘᴀʀ ᴜᴛɪʟɪsᴀᴛᴇᴜʀ)**',
   usage: `${prefix}clean <nombre>`,
   groupOnly: true,
   adminOnly: true,
