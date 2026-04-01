@@ -9,7 +9,7 @@ module.exports = {
   name: 'ʀᴇғʟᴇᴛ',
   aliases: ['qrcode', 'qr', 'reflet'],
   category: '☬ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
-  description: ' *ɢᴇ́ɴᴇ̀ʀᴇ ᴜɴ sᴄᴇᴀᴜ ǫʀ ᴀ̀ ᴘᴀʀᴛɪʀ ᴅ\'ᴜɴ ᴛᴇxᴛᴇ*',
+  description: ' **ɢᴇ́ɴᴇ̀ʀᴇ ᴜɴ sᴄᴇᴀᴜ ǫʀ ᴀ̀ ᴘᴀʀᴛɪʀ ᴅ\'ᴜɴ ᴛᴇxᴛᴇ**',
   usage: '.ʀᴇғʟᴇᴛ <text>',
   
   async execute(sock, msg, args, extra) {
