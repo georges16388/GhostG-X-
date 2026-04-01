@@ -5,13 +5,18 @@
  * Powered by -ّ⸙𓆩ɢʜᴏsᴛɢ 𝐗 𓆪⸙-ّ
  */
 
+const config = require('../../config');
+
+// Extraction du préfixe pour l'usage
+const prefix = config.prefix || '.';
+
 module.exports = {
   name: 'courage',
   aliases: ['espoir', 'foi', 'grace', 'fortifier', 'force', 'f'],
   category: '♰ sᴀɪɴᴛᴇᴛᴇ́ ᴄᴇ́ʟᴇsᴛᴇ',
-  description: 'Reçois un message de motivation chrétienne pour fortifier ton âme.',
-  usage: '.courage [@user ou réponds à un message]',
-  
+  description: '**ʀᴇᴄ̧ᴏɪs ᴜɴ ᴍᴇssᴀɢᴇ ᴅᴇ ᴍᴏᴛɪᴠᴀᴛɪᴏɴ ᴄʜʀᴇ́ᴛɪᴇɴɴᴇ ᴘᴏᴜʀ ғᴏʀᴛɪғɪᴇʀ ᴛᴏɴ ᴀ̂ᴍᴇ**',
+  usage: `${prefix}courage [@user ou réponds à un message]`,
+
   async execute(sock, msg, args, extra) {
     try {
       const ctx = msg.message?.extendedTextMessage?.contextInfo || {};
@@ -51,7 +56,18 @@ module.exports = {
         `*${targetTag} sᴏɪs sᴀɴs ᴄʀᴀɪɴᴛᴇ, ᴄᴀʀ ɪʟ ᴛᴇ ᴛɪᴇɴᴛ ᴘᴀʀ ʟᴀ ᴍᴀɪɴ ᴅʀᴏɪᴛᴇ ᴇᴛ ᴛᴇ ᴅɪᴛ : ɴᴇ ᴄʀᴀɪɴs ʀɪᴇɴ, ᴊᴇ ᴠɪᴇɴs ᴀ̀ ᴛᴏɴ sᴇᴄᴏᴜʀs.* 🤝`,
         `*${targetTag} ʟᴀ ᴘᴀɪx ǫᴜ'ɪʟ ᴛᴇ ᴅᴏɴɴᴇ sᴜʀᴘᴀssᴇ ᴛᴏᴜᴛᴇ ɪɴᴛᴇʟʟɪɢᴇɴᴄᴇ. ǫᴜ'ᴇʟʟᴇ ɢᴀʀᴅᴇ ᴛᴏɴ ᴄᴏᴇᴜʀ ᴇᴛ ᴛᴇs ᴘᴇɴsᴇ́ᴇs.* 🕊️`,
         `*${targetTag} ʟ'ᴇ́ᴛᴇʀɴᴇʟ ᴇsᴛ ᴍᴏɴ ʙᴇʀɢᴇʀ : ᴊᴇ ɴᴇ ᴍᴀɴǫᴜᴇʀᴀɪ ᴅᴇ ʀɪᴇɴ. ɪʟ ᴛᴇ ғᴀɪᴛ ʀᴇᴘᴏsᴇʀ ᴅᴀɴs ᴅᴇ ᴠᴇʀᴛs ᴘᴀ̂ᴛᴜʀᴀɢᴇs.* 🌿`,
-        `*${targetTag} ǫᴜᴇ ʟᴇ ᴅɪᴇᴜ ᴅᴇ ʟ'ᴇsᴘᴇ́ʀᴀɴᴄᴇ ᴛᴇ ʀᴇᴍᴘʟɪssᴇ ᴅᴇ ᴛᴏᴜᴛᴇ ᴊᴏɪᴇ ᴇᴛ ᴅᴇ ᴛᴏᴜᴛᴇ ᴘᴀɪx ᴅᴀɴs ʟᴀ ғᴏɪ !* 🌟❤️`
+        `*${targetTag} ǫᴜᴇ ʟᴇ ᴅɪᴇᴜ ᴅᴇ ʟ'ᴇsᴘᴇ́ʀᴀɴᴄᴇ ᴛᴇ ʀᴇᴍᴘʟɪssᴇ ᴅᴇ ᴛᴏᴜᴛᴇ ᴊᴏɪᴇ ᴇᴛ ᴅᴇ ᴛᴏᴜᴛᴇ ᴘᴀɪx ᴅᴀɴs ʟᴀ ғᴏɪ !* 🌟❤️`,
+        // 🔥 AJOUT DE 10 NOUVEAUX MESSAGES CÉLESTES :
+        `*${targetTag} ɴᴇ ᴛᴇ ʟᴀssᴇ ᴘᴀs ᴅᴇ ғᴀɪʀᴇ ʟᴇ ʙɪᴇɴ, ᴄᴀʀ ᴛᴜ ᴍᴏɪssᴏɴɴᴇʀᴀs ᴀᴜ ᴛᴇᴍᴘs ᴄᴏɴᴠᴇɴᴀʙʟᴇ sɪ ᴛᴜ ɴᴇ ᴛᴇ ʀᴇʟᴀ̂ᴄʜᴇs ᴘᴀs.* 🌱`,
+        `*${targetTag} sɪ ᴅɪᴇᴜ ᴇsᴛ ᴘᴏᴜʀ ᴛᴏɪ, ǫᴜɪ sᴇʀᴀ ᴄᴏɴᴛʀᴇ ᴛᴏɪ ? sᴏɪs sᴀɴs ᴄʀᴀɪɴᴛᴇ ᴇᴛ ᴍᴀʀᴄʜᴇ ʟᴀ ᴛᴇ̂ᴛᴇ ʜᴀᴜᴛᴇ.* 👑`,
+        `*${targetTag} ɪʟ ɢᴜᴇ́ʀɪᴛ ᴄᴇᴜx ǫᴜɪ ᴏɴᴛ ʟᴇ ᴄᴏᴇᴜʀ ʙʀɪsᴇ́ ᴇᴛ ɪʟ ᴘᴀɴsᴇ ʟᴇᴜʀs ʙʟᴇssᴜʀᴇs. ʟᴀɪssᴇ sᴏɴ ᴀᴍᴏᴜʀ ᴛᴇ ʀᴇsᴛᴀᴜʀᴇʀ.* 🩹✨`,
+        `*${targetTag} ʀᴇᴍᴇᴛs ᴛᴏɴ sᴏʀᴛ ᴀ̀ ʟ'ᴇ́ᴛᴇʀɴᴇʟ, ᴍᴇᴛs ᴇɴ ʟᴜɪ ᴛᴀ ᴄᴏɴғɪᴀɴᴄᴇ, ᴇᴛ ɪʟ ᴀɢɪʀᴀ. sᴏɴ ᴛᴇᴍᴘs ᴇsᴛ ʟᴇ ᴍᴇɪʟʟᴇᴜʀ.* ⏳`,
+        `*${targetTag} ǫᴜᴇ ʟᴀ ᴘᴀɪx ᴅᴜ ᴄʜʀɪsᴛ, ᴀ̀ ʟᴀǫᴜᴇʟʟᴇ ᴛᴜ ᴀs ᴇ́ᴛᴇ́ ᴀᴘᴘᴇʟᴇ́, ʀᴇ̀ɢɴᴇ ᴅᴀɴs ᴛᴏɴ ᴄᴏᴇᴜʀ ᴇɴ ᴄᴇ ᴊᴏᴜʀ.* 🕊️📜`,
+        `*${targetTag} ʟᴇ sᴇɪɢɴᴇᴜʀ ᴇsᴛ ᴛᴏɴ ʀᴏᴄʜᴇʀ, ᴛᴀ ғᴏʀᴛᴇʀᴇssᴇ ᴇᴛ ᴛᴏɴ ʟɪʙᴇ́ʀᴀᴛᴇᴜʀ. ᴀʙʀɪᴛᴇ-ᴛᴏɪ sᴏᴜs sᴏɴ ᴀɪʟᴇ.* 🏰`,
+        `*${targetTag} ɴᴇ ᴛ'ᴇɴ ғᴀɪs ᴘᴀs ᴘᴏᴜʀ ʟᴇ ʟᴇɴᴅᴇᴍᴀɪɴ, ᴄᴀʀ ᴄʜᴀǫᴜᴇ ᴊᴏᴜʀ sᴜғғɪᴛ sᴀ ᴘᴇɪɴᴇ. ᴄᴏɴғɪᴇ-ᴛᴏɪ ᴇɴ sᴀ ʙɪᴇɴᴠᴇɪʟʟᴀɴᴄᴇ.* 🌅`,
+        `*${targetTag} ᴛᴇs ᴘᴇɴsᴇ́ᴇs sᴏɴᴛ ᴄᴏɴɴᴜᴇs ᴅᴇ ʟᴜɪ, ɪʟ ɴ'ᴀʙᴀɴᴅᴏɴɴᴇ ᴊᴀᴍᴀɪs sᴇs ᴇɴғᴀɴᴛs. ᴛᴜ ᴇs ᴘʀᴇ́ᴄɪᴇᴜx ᴀ̀ sᴇs ʏᴇᴜx.* 💎`,
+        `*${targetTag} sᴀ sᴀɢᴇssᴇ sᴜʀᴘᴀssᴇ ᴛᴏᴜᴛᴇ sᴀɢᴇssᴇ ʜᴜᴍᴀɪɴᴇ. sᴜɪs sᴀ ʟᴜᴍɪᴇ̀ʀᴇ ᴇᴛ ᴛᴜ ɴᴇ ᴛᴇ ᴘᴇʀᴅʀᴀs ᴘᴀs.* 🕯️📖`,
+        `*${targetTag} ʀᴇ́ᴊᴏᴜɪs-ᴛᴏɪ ᴛᴏᴜᴊᴏᴜʀs ᴅᴀɴs ʟᴇ sᴇɪɢɴᴇᴜʀ ; ᴊᴇ ʟᴇ ʀᴇ́ᴘᴇ̀ᴛᴇ, ʀᴇ́ᴊᴏᴜɪs-ᴛᴏɪ ! ʟᴀ ᴊᴏɪᴇ ᴇsᴛ ᴛᴀ ғᴏʀᴄᴇ.* 🎉❤️`
       ];
 
       const randomMessage = messages[Math.floor(Math.random() * messages.length)];
@@ -59,7 +75,7 @@ module.exports = {
       // Envoi du message dans le Sanctuaire avec la signature
       await sock.sendMessage(msg.key.remoteJid, {
         text: `${randomMessage}\n\n` +
-              `*_❤️ ᴊᴇsᴜs ᴛᴀɪᴍᴇ ᴇᴛ ᴛᴇ ʙᴇ́ɴɪssᴇ_❤️*\n` +
+              `*_❤️ ᴊᴇsᴜs ᴛ'ᴀɪᴍᴇ ᴇᴛ ᴛᴇ ʙᴇ́ɴɪssᴇ ❤️_*\n` +
               `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`,
         mentions: [targetId]
       }, { quoted: msg });
@@ -67,7 +83,7 @@ module.exports = {
     } catch (error) {
       console.error('Courage Command Error:', error);
       await sock.sendMessage(msg.key.remoteJid, {
-        text: `❌ *ᴇʀʀᴇᴜʀ :* ${error.message}`
+        text: `*〆 ᴇ́ᴄʜᴇᴄ ᴅ'ɪɴᴠᴏᴄᴀᴛɪᴏɴ :* ${error.message}`
       }, { quoted: msg });
     }
   }
