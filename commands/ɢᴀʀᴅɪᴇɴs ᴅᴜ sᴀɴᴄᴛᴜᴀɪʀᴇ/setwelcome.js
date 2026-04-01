@@ -14,8 +14,8 @@ module.exports = {
   desc: 'Set custom welcome message',
   usage: '.inscription <message> (use @user for member mention)',
   groupOnly: true,
-  adminOnly: true,
-  botAdminNeeded: true,
+  adminOnly: false,
+  botAdminNeeded: false,
   execute: async (sock, msg, args) => {
     // On récupère le préfixe depuis ton fichier config.js
     const prefix = config.prefix || '^';
