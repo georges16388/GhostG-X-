@@ -19,11 +19,11 @@ const AXIOS_DEFAULTS = {
   }
 };
 
-// Fonction pour le style Small Caps
+// Fonction pour le style Small Caps (Cohérence visuelle du sanctuaire)
 function toSmallCaps(text) {
   const normal = "abcdefghijklmnopqrstuvwxyz0123456789";
   const smallCaps = "ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ0123456789";
-  
+
   const cleanedText = text.toLowerCase()
     .normalize("NFD").replace(/[\u0300-\u036f]/g, ""); 
 
@@ -33,80 +33,97 @@ function toSmallCaps(text) {
   }).join('');
 }
 
+// Fonction pour extraire proprement le domaine source
+function getDomain(url) {
+  try {
+    const domain = new URL(url).hostname;
+    return domain.replace('www.', '');
+  } catch (e) {
+    return 'youtube.com';
+  }
+}
+
 module.exports = {
   name: 'song',
   aliases: ['play', 'music', 'yta', 'cantique_youtube'],
-  category: '‎⌘ ᴇ́ᴄʜᴏs ᴅᴜ ᴍᴏɴᴅᴇ',
-  description: 'Download audio from YouTube',
-  usage: '.song <song name or YouTube link>',
-  
+  category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
+  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴅᴏᴡɴʟᴏᴀᴅ ᴀᴜᴅɪᴏ ғʀᴏᴍ ʏᴏᴜᴛᴜʙᴇ**',
+  usage: `${config.prefix || '.'}song [nom ou lien youtube]`,
+  groupOnly: false,
+  adminOnly: false,
+  botAdminNeeded: false,
+
   async execute(sock, msg, args) {
+    const chatId = msg.key.remoteJid;
+    const { reply } = { reply: async (text) => await sock.sendMessage(chatId, { text }, { quoted: msg }) };
+
     try {
       const text = args.join(' ');
-      const chatId = msg.key.remoteJid;
-      
+
       if (!text) {
         return await sock.sendMessage(chatId, { 
-          text: `*〆 ${toSmallCaps('usage')} : .song <${toSmallCaps('nom ou lien youtube')}>*` 
+          text: `╭╼━≪• *⚠️ ᴇᴄʜᴇᴄ ᴅᴇ ʟɪɴᴠᴏᴄᴀᴛɪᴏɴ* •≫━╾╮\n` +
+                `┃ 🔮 *${toSmallCaps('indique un nom ou un lien')}*\n` +
+                `┃ *${toSmallCaps('pour aspirer le media')} !*\n` +
+                `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
+                `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
         }, { quoted: msg });
       }
-      
+
       let video;
-      
+
       if (text.includes('youtube.com') || text.includes('youtu.be')) {
         video = { url: text, title: 'Lien Direct' };
       } else {
         const search = await yts(text);
         if (!search || !search.videos.length) {
-          return await sock.sendMessage(chatId, { 
-            text: `*〆 ${toSmallCaps('aucun resultat trouve dans les archives')}.*` 
-          }, { quoted: msg });
+          return await reply(`*❌ ${toSmallCaps('aucun resultat trouve dans les archives')}.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
         }
         video = search.videos[0];
       }
-      
-      const botName = (config.botName || 'ɢʜᴏsᴛɢ-x').toUpperCase();
 
-      // Information de l'utilisateur avec l'esthétique du sanctuaire et ajout du lien
+      const botName = toSmallCaps(config.botName || 'ɢʜᴏsᴛɢ-x');
+      const sourceDomain = video.url ? getDomain(video.url) : 'youtube.com';
+
+      // Information de l'utilisateur avec l'esthétique du sanctuaire sans ligne vide
       await sock.sendMessage(chatId, {
         image: { url: video.thumbnail || 'https://cdn-icons-png.flaticon.com/512/1384/1384060.png' },
-        caption: `╭╼━≪• *🎵 ᴀsᴘɪʀᴀᴛɪᴏɴ ᴀᴜᴅɪᴏ* •≫━╾╮\n` +
-                 `┃\n` +
-                 `┃ 🔮 *${toSmallCaps('titre')} :* ${video.title || 'Inconnu'}\n` +
-                 `┃ ⏱️ *${toSmallCaps('duree')} :* ${video.timestamp || 'Inconnue'}\n` +
-                 `┃ 🔗 *${toSmallCaps('lien')} :* ${video.url}\n` +
-                 `┃\n` +
+        caption: `╭╼━≪• *🎬 ᴀsᴘɪʀᴀᴛɪᴏɴ ʀᴇ́ᴜssɪᴇ* •≫━╾╮\n` +
+                 `┃ 🔮 *${toSmallCaps('extrait par')} :* ${botName}\n` +
+                 `┃ 🔗 *${toSmallCaps('source')} :* ${sourceDomain}\n` +
+                 `┃ 🔖 *${toSmallCaps('titre')} :* ${toSmallCaps(video.title || 'Inconnu')}\n` +
+                 `┃ ⏱️ *${toSmallCaps('duree')} :* ${toSmallCaps(video.timestamp || 'Inconnue')}\n` +
                  `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
-                 `>  *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+                 `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
       }, { quoted: msg });
-      
-      // Message d'attente pour signaler le début du téléchargement
-      await sock.sendMessage(chatId, { 
-        text: `*⏳ ${toSmallCaps('extraction de l essence audio en cours')}...*` 
-      }, { quoted: msg });
+
+      // Réaction avec l'orbe de téléchargement
+      await sock.sendMessage(chatId, {
+        react: { text: '⏳', key: msg.key }
+      });
 
       // Tentative de téléchargement avec chaîne de replis
       let audioData;
       let audioBuffer;
       let downloadSuccess = false;
-      
+
       const apiMethods = [
         { name: 'EliteProTech', method: () => APIs.getEliteProTechDownloadByUrl(video.url) },
         { name: 'Yupra', method: () => APIs.getYupraDownloadByUrl(video.url) },
         { name: 'Okatsu', method: () => APIs.getOkatsuDownloadByUrl(video.url) },
         { name: 'Izumi', method: () => APIs.getIzumiDownloadByUrl(video.url) }
       ];
-      
+
       for (const apiMethod of apiMethods) {
         try {
           audioData = await apiMethod.method();
           const audioUrl = audioData.download || audioData.dl || audioData.url;
-          
+
           if (!audioUrl) {
             console.log(`${apiMethod.name} returned no download URL, trying next API...`);
             continue;
           }
-          
+
           try {
             const audioResponse = await axios.get(audioUrl, {
               responseType: 'arraybuffer',
@@ -122,7 +139,7 @@ module.exports = {
               }
             });
             audioBuffer = Buffer.from(audioResponse.data);
-            
+
             if (audioBuffer && audioBuffer.length > 0) {
               downloadSuccess = true;
               break; 
@@ -133,7 +150,7 @@ module.exports = {
               console.log(`Download blocked (451) from ${apiMethod.name}, trying next API...`);
               continue;
             }
-            
+
             // Tentative en mode stream
             try {
               const audioResponse = await axios.get(audioUrl, {
@@ -155,7 +172,7 @@ module.exports = {
                 audioResponse.data.on('error', reject);
               });
               audioBuffer = Buffer.concat(chunks);
-              
+
               if (audioBuffer && audioBuffer.length > 0) {
                 downloadSuccess = true;
                 break; 
@@ -175,7 +192,7 @@ module.exports = {
           continue;
         }
       }
-      
+
       if (!downloadSuccess || !audioBuffer) {
         throw new Error('All download sources failed. The content may be unavailable or blocked in your region.');
       }
@@ -189,38 +206,21 @@ module.exports = {
       const hexSignature = firstBytes.toString('hex');
       const asciiSignature = firstBytes.toString('ascii', 4, 8);
 
-      let actualMimetype = 'audio/mpeg';
       let fileExtension = 'mp3';
-      let detectedFormat = 'unknown';
 
       if (asciiSignature === 'ftyp' || hexSignature.startsWith('000000')) {
         const ftypBox = audioBuffer.slice(4, 8).toString('ascii');
-        if (ftypBox === 'ftyp') {
-          detectedFormat = 'M4A/MP4';
-          actualMimetype = 'audio/mp4';
-          fileExtension = 'm4a';
-        }
+        if (ftypBox === 'ftyp') fileExtension = 'm4a';
       }
       else if (audioBuffer.toString('ascii', 0, 3) === 'ID3' || 
                (audioBuffer[0] === 0xFF && (audioBuffer[1] & 0xE0) === 0xE0)) {
-        detectedFormat = 'MP3';
-        actualMimetype = 'audio/mpeg';
         fileExtension = 'mp3';
       }
       else if (audioBuffer.toString('ascii', 0, 4) === 'OggS') {
-        detectedFormat = 'OGG/Opus';
-        actualMimetype = 'audio/ogg; codecs=opus';
         fileExtension = 'ogg';
       }
       else if (audioBuffer.toString('ascii', 0, 4) === 'RIFF') {
-        detectedFormat = 'WAV';
-        actualMimetype = 'audio/wav';
         fileExtension = 'wav';
-      }
-      else {
-        actualMimetype = 'audio/mp4';
-        fileExtension = 'm4a';
-        detectedFormat = 'Unknown (defaulting to M4A)';
       }
 
       // Conversion en MP3 si nécessaire
@@ -234,10 +234,8 @@ module.exports = {
           if (!finalBuffer || finalBuffer.length === 0) {
             throw new Error('Conversion returned empty buffer');
           }
-          finalMimetype = 'audio/mpeg';
-          finalExtension = 'mp3';
         } catch (convErr) {
-          throw new Error(`Failed to convert ${detectedFormat} to MP3: ${convErr.message}`);
+          throw new Error(`Failed to convert to MP3: ${convErr.message}`);
         }
       }
 
@@ -264,30 +262,24 @@ module.exports = {
                   fs.unlinkSync(filePath);
                 }
               }
-            } catch (e) {
-              // Ignore les erreurs individuelles de suppression
-            }
+            } catch (e) { /* ignore */ }
           });
         }
-      } catch (cleanupErr) {
-        // Ignore les erreurs de nettoyage
-      }
-      
+      } catch (cleanupErr) { /* ignore */ }
+
     } catch (err) {
       console.error('Song command error:', err);
-      
-      let errorMessage = `*〆 ${toSmallCaps('loracle a echoue a aspirer ce cantique')}.*`;
+
+      let errorMessage = `*❌ ${toSmallCaps('loracle a echoue a aspirer ce cantique')} !*`;
       if (err.message && err.message.includes('blocked')) {
-        errorMessage = `*〆 ${toSmallCaps('laspiration est sous le coup d un scelle geographique')}.*`;
-      } else if (err.response?.status === 451 || err.status === 451) {
-        errorMessage = `*〆 ${toSmallCaps('arcane indisponible (451). sous scelle legal ou regional')}.*`;
+        errorMessage = `*❌ ${toSmallCaps('laspiration est sous le coup d un scelle geographique')} !*`;
+      } else if (err.status === 451) {
+        errorMessage = `*❌ ${toSmallCaps('arcane indisponible sous scelle legal ou regional')} !*`;
       } else if (err.message && err.message.includes('All download sources failed')) {
-        errorMessage = `*〆 ${toSmallCaps('toutes les sources d invocation ont echoue')}.*`;
+        errorMessage = `*❌ ${toSmallCaps('toutes les sources d invocation ont echoue')} !*`;
       }
-      
-      await sock.sendMessage(msg.key.remoteJid, { 
-        text: errorMessage 
-      }, { quoted: msg });
+
+      await reply(`${errorMessage}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
     }
   }
 };
