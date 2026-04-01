@@ -12,7 +12,7 @@ module.exports = {
   name: 'hacker',
   aliases: [],
   category: '‎✎ ғᴏʀɢᴇ ᴅᴇ ᴛᴇxᴛᴇ',
-  description: '**ᴄʀᴇ́ᴇ ᴜɴ ᴇғғᴇᴛ ᴅᴇ ᴛᴇxᴛᴇ sᴛʏʟᴇ ʜᴀᴄᴋᴇʀ**',
+  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴄʀᴇ́ᴇ ᴜɴ ᴇғғᴇᴛ ᴅᴇ ᴛᴇxᴛᴇ sᴛʏʟᴇ ʜᴀᴄᴋᴇʀ**',
   usage: `${prefix}hacker <ᴛᴇxᴛᴇ>`,
 
   async execute(sock, msg, args) {
