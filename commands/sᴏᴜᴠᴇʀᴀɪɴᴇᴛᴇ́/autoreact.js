@@ -5,7 +5,7 @@
 
 const { load, save } = require('../../utils/autoReact');
 const config = require('../../config'); // Importation de la configuration
-
+const prefix = config.prefix || '.';
 module.exports = {
   name: 'ʀᴇғʟᴇxᴇ_sʏsᴛᴇᴍᴇ',
   aliases: ['reflexe_systeme', 'autoreact', 'ar', 'reflexe', 'reaction', 'reactions'],
