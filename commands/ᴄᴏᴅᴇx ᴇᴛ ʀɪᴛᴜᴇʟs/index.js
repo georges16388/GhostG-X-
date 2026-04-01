@@ -7,26 +7,19 @@ const { loadCommands } = require('../../utils/commandLoader');
 const fs = require('fs');
 const path = require('path');
 
-// Extraction du préfixe pour l'usage
 const prefix = config.prefix || '.';
 
-// Fonction avancée pour convertir du texte normal en Small Caps GRAS (Bold Small Caps)
 function toBoldSmallCaps(text) {
   const normal = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  // Alphabet Small Caps en gras
   const boldSmallCaps = "ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ0123456789";
-
   return text.split('').map(c => {
     const index = normal.indexOf(c);
     return index !== -1 ? boldSmallCaps[index] : c;
   }).join('');
 }
 
-// Nettoyage des espaces invisibles parasites SANS toucher à la casse
 function cleanCategoryName(name) {
-  return name
-    .replace(/[\u200B-\u200D\uFEFF]/g, '') 
-    .trim(); 
+  return name.replace(/[\u200B-\u200D\uFEFF]/g, '').trim(); 
 }
 
 module.exports = {
@@ -38,33 +31,26 @@ module.exports = {
 
   async execute(sock, msg, args, extra) {
     try {
-      // Forcer la relecture du fichier config pour appliquer instantanément les modifs de apparence_systeme
+      // Relecture dynamique de la configuration
       delete require.cache[require.resolve('../../config')];
       const freshConfig = require('../../config');
 
       const commands = loadCommands();
       const categories = {};
 
-      // Groupement et nettoyage des catégories
       commands.forEach((cmd, name) => {
-        if (cmd.name === name) { // Ne compte que les noms principaux, pas les alias
+        if (cmd.name === name) {
           let rawCategory = cmd.category || '🔮 ᴀᴜᴛʀᴇs sᴏʀᴛs';
           let cleanedCategory = cleanCategoryName(rawCategory);
-
-          if (!categories[cleanedCategory]) {
-            categories[cleanedCategory] = [];
-          }
+          if (!categories[cleanedCategory]) categories[cleanedCategory] = [];
           categories[cleanedCategory].push(cmd);
         }
       });
 
       const fileCount = commands.size;
       const userTag = `@${extra.sender.split('@')[0]}`;
-      
-      // Utilisation du nom fraîchement lu pour garantir la prise en compte du changement
       const botNameCaps = toBoldSmallCaps(freshConfig.botName || 'ɢʜᴏsᴛɢ-𝐗');
 
-      // En-tête avec ton design GhostG-X 100% Immersif
       let menuText = `╭╼━≪• *${botNameCaps}* •≫━╾╮\n` +
                      `┃ *ᴠɪɢɪʟᴀɴᴄᴇ* : 🟢 ᴇ́ᴠᴇɪʟʟᴇ́\n` +
                      `┃ *ᴘᴇ̀ʟᴇʀɪɴ* : ${userTag}\n` +
@@ -74,24 +60,15 @@ module.exports = {
                      `┃ *♛ sᴜᴢᴇʀᴀɪɴ* : https://wa.me/22651622652\n` +
                      `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n`;
 
-      // Tri alphabétique des catégories uniques
       const sortedCategories = Object.keys(categories).sort();
-
       sortedCategories.forEach(catKey => {
         const cmdList = categories[catKey];
         if (cmdList && cmdList.length > 0) {
-
-          // Affichage strict de ta catégorie aérée
           menuText += `╭╼━≪• *${catKey}* •≫━╾╮\n`;
-
-          // Tri alphabétique des commandes à l'intérieur de la catégorie
           const sortedCmds = cmdList.sort((a, b) => a.name.localeCompare(b.name));
-
           sortedCmds.forEach(cmd => {
-            const boldSmallCapsName = toBoldSmallCaps(cmd.name);
-            menuText += `┃➻ **${boldSmallCapsName}**\n`;
+            menuText += `┃➻ **${toBoldSmallCaps(cmd.name)}**\n`;
           });
-
           menuText += `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n`;
         }
       });
@@ -99,47 +76,37 @@ module.exports = {
       menuText += `*_♰ ǫᴜᴇ ʟᴀ ʟᴜᴍɪᴇ̀ʀᴇ ᴅɪssɪᴘᴇ ᴛᴇs ᴛᴇ́ɴᴇ̀ʙʀᴇs ♰_*\n` +
                   `> *sᴄᴇʟʟᴇ́ ᴘᴀʀ ʟᴇs ᴀʀᴄᴀɴᴇs ᴅᴇ ${botNameCaps}*`;
 
-      // 🎲 SÉLECTION ALÉATOIRE DE L'IMAGE
       const randomNumber = Math.floor(Math.random() * 7) + 1;
-      const imageName = `bot_image_${randomNumber}.jpg`;
-      const imagePath = path.join(__dirname, '../../utils', imageName);
+      const imagePath = path.join(__dirname, `../../utils/bot_image_${randomNumber}.jpg`);
+      const fallbackPath = path.join(__dirname, '../../utils/bot_image.jpg');
+      
+      let imageBuffer;
+      if (fs.existsSync(imagePath)) imageBuffer = fs.readFileSync(imagePath);
+      else if (fs.existsSync(fallbackPath)) imageBuffer = fs.readFileSync(fallbackPath);
 
-      if (fs.existsSync(imagePath)) {
-        const imageBuffer = fs.readFileSync(imagePath);
-
-        await sock.sendMessage(extra.from, {
-          image: imageBuffer,
-          caption: menuText,
-          mentions: [extra.sender],
-          contextInfo: {
-            forwardingScore: 1,
-            isForwarded: true,
-            forwardedNewsletterMessageInfo: {
-              newsletterJid: freshConfig.newsletterJid || '120363425540434745@newsletter',
-              newsletterName: freshConfig.botName || 'ɢʜᴏsᴛɢ-𝐗',
-              serverMessageId: -1
-            }
+      // Préparation des options d'envoi avec le JID dynamique
+      const messageOptions = {
+        mentions: [extra.sender],
+        contextInfo: {
+          forwardingScore: 1,
+          isForwarded: true,
+          forwardedNewsletterMessageInfo: {
+            // C'est ici que l'Oracle applique ton sᴇᴀᴜ_ᴄᴀɴᴀʟ dynamique !
+            newsletterJid: freshConfig.newsletterJid || '120363425540434745@newsletter',
+            newsletterName: freshConfig.botName || 'ɢʜᴏsᴛɢ-𝐗',
+            serverMessageId: -1
           }
-        }, { quoted: msg });
-
-      } else {
-        // Repli de secours
-        const fallbackPath = path.join(__dirname, '../../utils/bot_image.jpg');
-
-        if (fs.existsSync(fallbackPath)) {
-          const fallbackBuffer = fs.readFileSync(fallbackPath);
-          await sock.sendMessage(extra.from, {
-            image: fallbackBuffer,
-            caption: menuText,
-            mentions: [extra.sender]
-          }, { quoted: msg });
-        } else {
-          await sock.sendMessage(extra.from, { 
-            text: menuText,
-            mentions: [extra.sender]
-          }, { quoted: msg });
         }
+      };
+
+      if (imageBuffer) {
+        messageOptions.image = imageBuffer;
+        messageOptions.caption = menuText;
+      } else {
+        messageOptions.text = menuText;
       }
+
+      await sock.sendMessage(extra.from, messageOptions, { quoted: msg });
 
     } catch (error) {
       console.error('Menu error:', error);
