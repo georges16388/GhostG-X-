@@ -15,7 +15,7 @@ module.exports = {
   name: 'prier',
   aliases: ['priere', 'prière','interceder', 'oraison', 'ᴘʀɪᴇʀ'],
   category: '♰ sᴀɪɴᴛᴇᴛᴇ́ ᴄᴇ́ʟᴇsᴛᴇ',
-  description: '**ɢᴇ́ɴᴇ̀ʀᴇ ᴜɴᴇ sᴀɪɴᴛᴇ ᴘʀɪᴇ̀ʀᴇ ᴅ\'ɪɴᴛᴇʀᴄᴇssɪᴏɴ ᴏᴜ ᴅᴇ ᴘʀᴏᴛᴇᴄᴛɪᴏɴ**',
+  description: '**ɪɴᴠᴏǫᴜᴇ ᴜɴᴇ ᴘᴜɪssᴀɴᴛᴇ ᴘʀɪᴇ̀ʀᴇ ᴍʏsᴛɪǫᴜᴇ ᴅ\'ɪɴᴛᴇʀᴄᴇssɪᴏɴ**',
   usage: `${prefix}prier [@user ou en réponse à un message]`,
 
   async execute(sock, msg, args, extra) {
@@ -41,34 +41,34 @@ module.exports = {
 
       const targetTag = `@${targetId.split('@')[0]}`;
 
-      // --- BRIQUES DE LA FORGE DE PRIÈRES ---
+      // --- BRIQUES DE LA FORGE MYSTIQUE ---
       const intros = [
-        "ᴘᴇ̀ʀᴇ ᴄᴇ́ʟᴇsᴛᴇ, ɴᴏᴜs ᴘʟᴀᴄ̧ᴏɴs",
-        "sᴇɪɢɴᴇᴜʀ ᴛᴏᴜᴛ-ᴘᴜɪssᴀɴᴛ, ᴊᴇ ᴛ'ᴀᴘᴘᴏʀᴛᴇ",
-        "ᴅɪᴇᴜ ᴅᴇ ɢʀᴀ̂ᴄᴇ, ᴊᴇ ᴛᴇ ᴘʀᴇ́sᴇɴᴛᴇ",
-        "ᴍᴀɪ̂ᴛʀᴇ ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ, ɴᴏᴜs ʀᴇᴍᴇᴛᴛᴏɴs"
+        "Dans les profondeurs du Sanctuaire, nous invoquons le Père Céleste pour",
+        "Par le sang versé et les mystères de la foi, Seigneur Tout-Puissant, j'apporte",
+        "Devant le trône de gloire, dans le secret de l'esprit, Dieu de grâce, je Te présente",
+        "Maître suprême du visible et de l'invisible, nous remettons"
       ];
 
       const actions = [
-        "ᴇɴᴛᴏᴜʀᴇ ᴄᴇᴛᴛᴇ ᴀ̂ᴍᴇ ᴅᴇ ᴛᴏɴ ʙᴏᴜᴄʟɪᴇʀ ᴅᴇ ғᴇᴜ",
-        "ɪɴᴏɴᴅᴇ sᴏɴ ᴄᴏᴇᴜʀ ᴅᴇ ᴛᴀ ᴘᴀɪx sᴜʀɴᴀᴛᴜʀᴇʟʟᴇ",
-        "ʙʀɪsᴇ ᴛᴏᴜᴛᴇs ʟᴇs ᴄʜᴀɪ̂ɴᴇs ᴅᴇ ʟ'ᴇɴɴᴇᴍɪ ᴀᴜᴛᴏᴜʀ ᴅᴇ ᴄᴇᴛᴛᴇ ᴠɪᴇ,",
-        "ᴏᴜᴠʀᴇ ʟᴇs ᴇ́ᴄʟᴜsᴇs ᴅᴇs ᴄɪᴇᴜx ᴘᴏᴜʀ ʙᴇ́ɴɪʀ",
-        "ᴅᴏɴɴᴇ-ʟᴜɪ ʟᴀ ғᴏʀᴄᴇ ᴅᴇ ᴠᴀɪɴᴄʀᴇ ᴛᴏᴜs ʟᴇs ᴏʙsᴛᴀᴄʟᴇs"
+        "pour qu'Il entoure cette âme de Son impénétrable bouclier de feu",
+        "afin qu'Il inonde son cœur d'une paix surnaturelle et profonde",
+        "pour que soient brisées toutes les chaînes et ombres de l'ennemi autour de",
+        "afin que s'ouvrent les écluses des cieux pour bénir mystiquement",
+        "pour Lui accorder la force occulte de vaincre tous les obstacles dressés devant"
       ];
 
       const desirs = [
-        "ᴇᴛ ǫᴜᴇ ᴛᴀ ʟᴜᴍɪᴇ̀ʀᴇ ᴅɪssɪᴘᴇ ᴛᴏᴜᴛᴇs sᴇs ᴛᴇ́ɴᴇ̀ʙʀᴇs",
-        "ᴀғɪɴ ǫᴜ'ᴇʟʟᴇ ᴍᴀʀᴄʜᴇ ᴛᴏᴜᴊᴏᴜʀs ʟᴀ ᴛᴇ̂ᴛᴇ ʜᴀᴜᴛᴇ",
-        "ᴇᴛ ǫᴜᴇ ᴛᴀ sᴀɢᴇssᴇ ɢᴜɪᴅᴇ ᴄʜᴀᴄᴜɴ ᴅᴇ sᴇs ᴘᴀs",
-        "ᴄᴀʀ ᴛᴜ ᴇs sᴏɴ ʀᴏᴄʜᴇʀ ᴇᴛ sᴏɴ ʟɪʙᴇ́ʀᴀᴛᴇᴜʀ"
+        "et que Sa lumière pure dissipe définitivement toutes ses ténèbres",
+        "afin qu'elle marche victorieuse à travers les épreuves de ce monde",
+        "et que Sa sagesse infinie guide chacun de ses pas dans l'inconnu",
+        "car Il reste son rocher inébranlable et son ultime libérateur"
       ];
 
       const amens = [
-        "ᴀᴜ ɴᴏᴍ ᴘᴜɪssᴀɴᴛ ᴅᴇ ᴊᴇ́sᴜs, ᴀᴍᴇɴ.",
-        "ǫᴜᴇ ᴛᴀ ᴠᴏʟᴏɴᴛᴇ́ sᴏɪᴛ ғᴀɪᴛᴇ, ᴀᴍᴇɴ.",
-        "ɴᴏᴜs sᴄᴇʟʟᴏɴs ᴄᴇᴛᴛᴇ ᴘᴀʀᴏʟᴇ, ᴀᴍᴇɴ.",
-        "ᴀᴍᴇɴ ᴇᴛ ᴀᴍᴇɴ."
+        "Au nom surpuissant et sacré de Jésus. Amen.",
+        "Que Sa volonté souveraine s'accomplisse dans le secret. Amen.",
+        "Nous scellons cette sainte parole dans l'éternité. Amen.",
+        "Que l'univers en soit témoin. Amen et Amen."
       ];
 
       // Piocher un élément au hasard dans chaque catégorie
@@ -78,12 +78,13 @@ module.exports = {
       const rAmen = amens[Math.floor(Math.random() * amens.length)];
 
       // Construction de la prière unique
-      const priereGeneree = `*${rIntro}* ${targetTag} *ᴇɴ ᴄᴇ ᴊᴏᴜʀ. ${rAction} ${rDesir}. ${rAmen}* 🙏🏾🕊️`;
+      const priereGeneree = `*${rIntro} ${targetTag} ${rAction} cette vie, ${rDesir}. ${rAmen}*`;
 
       await sock.sendMessage(msg.key.remoteJid, {
         text: `╭╼━≪• *ᴏʀᴀɪsᴏɴ_sᴀɪɴᴛᴇ* •≫━╾╮\n` +
-              `┃ *ᴘᴏᴜʀ* : ${targetTag}\n` +
+              `┃ *ғᴏᴄᴜs* : ${targetTag}\n` +
               `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
+              `*Spiritual Connection Established...*\n\n` +
               `${priereGeneree}\n\n` +
               `*_❤️ ᴊᴇsᴜs ᴛᴀɪᴍᴇ ᴇᴛ ᴛᴇ ʙᴇ́ɴɪssᴇ ❤️_*\n` +
               `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`,
