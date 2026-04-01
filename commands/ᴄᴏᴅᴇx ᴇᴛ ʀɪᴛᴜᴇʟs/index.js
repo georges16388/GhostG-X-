@@ -20,7 +20,7 @@ function toSmallCaps(text) {
 
 module.exports = {
   name: 'grimoire', 
-  aliases: ['commands', 'menu', 'arcanes', 'index', 'm', 'help'],
+  aliases: ['commands', 'menu', 'arcanes', 'index', 'm'],
   category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
   description: 'Affiche l\'ensemble des rituels et commandes disponibles',
   usage: '.grimoire',
