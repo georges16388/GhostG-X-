@@ -15,12 +15,12 @@ function toSmallCaps(text) {
 }
 
 module.exports = {
-  name: 'help',
+  name: 'ʜᴇʟᴘ',
   aliases: ['h', 'aide', 'l'],
   category: '☬ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
-  description: 'Affiche les détails et l\'utilisation d\'une commande spécifique',
-  usage: '.help <commande>',
-  
+  description: '**ᴀꜰꜰɪᴄʜᴇ ʟᴇꜱ ᴅᴇ́ᴛᴀɪʟꜱ ᴇᴛ ʟ\'ᴜᴛɪʟɪꜱᴀᴛɪᴏɴ ᴅ\'ᴜɴᴇ ᴄᴏᴍᴍᴀɴᴅᴇ ꜱᴘᴇ́ᴄɪꜰɪQᴜᴇ**',
+  usage: 'ʜᴇʟᴘ',
+
   async execute(sock, msg, args, extra) {
     try {
       const prefix = config.prefix || '.';
@@ -66,7 +66,7 @@ module.exports = {
                         `👉🏾 \`${prefix}help <nom_du_sort>\`\n\n` +
                         `🌐 *ʟɪᴇɴs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ :*\n` +
                         `• *ᴄʜᴀɪ̂ɴᴇ* : https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c\n` +
-                        `• *ᴍᴀɪ̂ᴛʀᴇ* : https:// wa.me/22651622652\n\n` +
+                        `• *ᴍᴀɪ̂ᴛʀᴇ* : https://wa.me/22651622652\n\n` +
                         `_ᴍᴇʀᴄɪ sᴇɪɢɴᴇᴜʀ ᴘᴏᴜʀ ᴛᴀ ɢʀᴀᴄᴇ_\n` +
                         `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
 
