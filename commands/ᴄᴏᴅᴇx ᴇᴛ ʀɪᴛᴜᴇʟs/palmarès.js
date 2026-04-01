@@ -1,5 +1,3 @@
-
-
 const { getStats } = require('../../utils/groupstats');
 // On importe ton fichier de config à la racine pour le préfixe
 const config = require('../../config.js'); 
@@ -9,7 +7,7 @@ module.exports = {
     // Ajout de 'groupstats', 'stats', 'leaderboard', 'gstats', 'msgs' et 'palmares' en texte brut !
     aliases: ['stats', 'leaderboard', 'gstats', 'topmembers', 'msgs', 'messagestats', 'groupstats', 'palmarès', 'palmares'],
     category: '☬ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
-    description: "Show today's group chat statistics",
+    description: "Affiche les statistiques de discussion du groupe pour la journée",
     usage: '.ᴘᴀʟᴍᴀʀᴇ̀s',
     groupOnly: true,
 
@@ -21,17 +19,20 @@ module.exports = {
             const from = extra.from;
             const stats = getStats(from);
 
-            if (!stats)
+            // Vérification si des statistiques existent et s'il y a des utilisateurs enregistrés
+            if (!stats || !stats.users || Object.keys(stats.users).length === 0) {
                 return extra.reply(`📊 *ᴀᴜᴄᴜɴᴇ ᴀᴄᴛɪᴠɪᴛᴇ́ ɴ'ᴀ ᴇ́ᴛᴇ́ ᴇɴʀᴇɢɪsᴛʀᴇ́ᴇ ᴀᴜᴊᴏᴜʀᴅ'ʜᴜɪ.* \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+            }
 
             const { total, users } = stats;
 
-            // top members
+            // Top 5 des membres les plus actifs
             const sortedUsers = Object.entries(users)
                 .sort((a, b) => b[1] - a[1])
                 .slice(0, 5);
 
-            let topText = sortedUsers.length
+            // Correction de la condition pour vérifier si le tableau n'est pas vide
+            let topText = sortedUsers.length > 0
                 ? sortedUsers.map(([id, count], i) => `  ${i + 1}. @${id.split('@')[0]} — *${count} msgs*`).join('\n')
                 : '  ᴀᴜᴄᴜɴ ɪɴᴅɪᴠɪᴅᴜ ᴀᴄᴛɪғ ᴘᴏᴜʀ ʟᴇ ᴍᴏᴍᴇɴᴛ.';
 
