@@ -1,5 +1,5 @@
 const config = require('../../config');
-
+const prefix = config.prefix || '.';
 module.exports = {
   name: 'ᴀɴᴛɪᴅᴇʟᴇᴛᴇ',
   aliases: ['antisuppression', 'revive'],
