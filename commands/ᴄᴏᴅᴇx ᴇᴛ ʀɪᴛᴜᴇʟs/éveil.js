@@ -1,10 +1,11 @@
 /**
- * Uptime Command - Display bot uptime since it was started
+ * Eveil - Display bot uptime since it was started
+ * GhostG-X Edition
  */
 
 const config = require('../../config.js');
 
-// Fonction pour le style Small Caps
+// Fonction pour le style Small Caps (Cohérence visuelle du sanctuaire)
 function toSmallCaps(text) {
   const normal = "abcdefghijklmnopqrstuvwxyz0123456789";
   const smallCaps = "ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ0123456789";
@@ -25,7 +26,7 @@ function toSmallCaps(text) {
  */
 function formatUptime(seconds) {
   if (seconds <= 0) {
-    return toSmallCaps('0 seconde');
+    return `0 ${toSmallCaps('seconde')}`;
   }
 
   const days = Math.floor(seconds / 86400);
@@ -52,26 +53,29 @@ function formatUptime(seconds) {
 }
 
 module.exports = {
-  name: 'ᴇᴠᴇɪʟ',
-  aliases: ['runtime', 'uptime', 'alive', 'éveil', 'up', 'eveil'],
-  category: '☬ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
-  description: '**ᴀꜰꜰɪᴄʜᴇ ʟᴇ ᴛᴇᴍᴘꜱ ᴅᴇᴘᴜɪꜱ ʟᴇQᴜᴇʟ ʟᴇ ʙᴏᴛ ᴇꜱᴛ ᴇ́ᴠᴇɪʟʟᴇ́**',
-  usage: 'ᴇᴠᴇɪʟ',
+  name: 'eveil',
+  aliases: ['runtime', 'uptime', 'alive', 'éveil', 'up'],
+  category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
+  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀғғɪᴄʜᴇ ʟᴇ ᴛᴇᴍᴘs ᴅᴇᴘᴜɪs ʟᴇǫᴜᴇʟ ʟᴇ ʙᴏᴛ ᴇsᴛ ᴇᴠᴇɪʟʟᴇ**',
+  usage: `${config.prefix || '.'}eveil`,
+  groupOnly: false,
+  adminOnly: false,
+  botAdminNeeded: false,
 
   async execute(sock, msg, args, extra) {
-    try {
-      const prefix = config.prefix || '.';
+    const { reply } = extra;
 
-      // Get process uptime in seconds
+    try {
+      // Récupération de l'uptime du processus en secondes
       const uptimeSeconds = process.uptime();
       const uptime = formatUptime(uptimeSeconds);
 
-      // Get bot info
-      const botName = config.botName || 'ɢʜᴏsᴛɢ-𝐗';
+      // Informations d'identité du bot
+      const botName = config.botName || 'ɢʜᴏsᴛɢ 𝐗';
       const botVersion = '1.0.0';
 
-      // Build response message
-      let message = 
+      // Construction du message d'éveil
+      const message = 
           `╭╼━≪• *⏳ ᴇɢʀᴇ́ɢᴏʀᴇ ᴅ'ᴇ́ᴠᴇɪʟ* •≫━╾╮\n` +
           `┃\n` +
           `┃ 🤖 *${toSmallCaps('nom')} :* ${toSmallCaps(botName)}\n` +
@@ -80,20 +84,20 @@ module.exports = {
           `┃\n` +
           `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
           `_❤️ ᴊᴇsᴜs ᴛᴀɪᴍᴇ ᴇᴛ ᴛᴇ ʙᴇ́ɴɪssᴇ_ ❤️\n` +
-          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`;
 
-      await extra.reply(message);
+      await reply(message);
 
     } catch (error) {
       console.error('Error in uptime command:', error);
-      await extra.reply(
+      await reply(
         `╭╼━≪• *❌ ᴇᴄʜᴇᴄ ᴅᴇ ʟᴀ sᴏɴᴅᴇ* •≫━╾╮\n` +
         `┃\n` +
         `┃ 🥀 *${toSmallCaps('impossible de lire le temps deveil')}*\n` +
         `┃ ⚠️ *${toSmallCaps('erreur')} :* ${error.message}\n` +
         `┃\n` +
         `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
-        `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+        `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`
       );
     }
   }
