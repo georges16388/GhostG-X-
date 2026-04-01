@@ -12,7 +12,7 @@ module.exports = {
   name: 'neon',
   aliases: [],
   category: '‎✎ ғᴏʀɢᴇ ᴅᴇ ᴛᴇxᴛᴇ',
-  description: '**ᴄʀᴇ́ᴇ ᴜɴ ᴇғғᴇᴛ ᴅᴇ ᴛᴇxᴛᴇ sᴛʏʟᴇ ɴᴇᴏɴ**',
+  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴄʀᴇ́ᴇ ᴜɴ ᴇғғᴇᴛ ᴅᴇ ᴛᴇxᴛᴇ sᴛʏʟᴇ ɴᴇᴏɴ**',
   usage: `${prefix}neon <ᴛᴇxᴛᴇ>`,
 
   async execute(sock, msg, args) {
