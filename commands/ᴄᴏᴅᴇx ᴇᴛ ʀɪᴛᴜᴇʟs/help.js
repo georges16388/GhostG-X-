@@ -17,7 +17,7 @@ function toSmallCaps(text) {
 module.exports = {
   name: 'help',
   aliases: ['h', 'aide', 'l'],
-  category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
+  category: '☬ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
   description: 'Affiche les détails et l\'utilisation d\'une commande spécifique',
   usage: '.help <commande>',
   
