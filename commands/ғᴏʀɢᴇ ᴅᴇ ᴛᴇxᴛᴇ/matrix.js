@@ -12,7 +12,7 @@ module.exports = {
   name: 'matrix',
   aliases: [],
   category: '‎✎ ғᴏʀɢᴇ ᴅᴇ ᴛᴇxᴛᴇ',
-  description: '**ᴄʀᴇ́ᴇ ᴜɴ ᴇғғᴇᴛ ᴅᴇ ᴛᴇxᴛᴇ sᴛʏʟᴇ ᴍᴀᴛʀɪx**',
+  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴄʀᴇ́ᴇ ᴜɴ ᴇғғᴇᴛ ᴅᴇ ᴛᴇxᴛᴇ sᴛʏʟᴇ ᴍᴀᴛʀɪx**',
   usage: `${prefix}matrix <ᴛᴇxᴛᴇ>`,
 
   async execute(sock, msg, args) {
