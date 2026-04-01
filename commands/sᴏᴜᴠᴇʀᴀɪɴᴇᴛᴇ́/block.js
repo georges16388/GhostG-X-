@@ -1,6 +1,6 @@
 /**
- * Block Command - GhostG-X Edition
- * Bannit et condamne une âme dans le sanctuaire
+ * Unblock Command - GhostG-X Edition
+ * Débloque une âme dans le sanctuaire
  */
 
 const config = require('../../config'); // Importation de la configuration
@@ -9,12 +9,12 @@ const config = require('../../config'); // Importation de la configuration
 const prefix = config.prefix || '.';
 
 module.exports = {
-  name: 'ᴄᴏɴᴅᴀᴍɴᴇʀ',
-  aliases: ['condamner', 'block', 'ban', 'sceller'],
+  name: 'ᴅᴇʙᴀɴɴɪssᴇᴍᴇɴᴛ',
+  aliases: ['debannissement', 'unblock', 'debloquer', 'deban','libérer', 'lib'],
   category: '♛ sᴏᴜᴠᴇʀᴀɪɴᴇᴛᴇ́',
   ownerOnly: true, // Géré par ton handler
-  description: '*『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴇᴍᴘᴇ̂ᴄʜᴇ ᴀ̀ ᴜɴ ᴜᴛɪʟɪsᴀᴛᴇᴜʀ ᴅ\'ᴜᴛɪʟɪsᴇʀ ʟᴇ ʙᴏᴛ*',
-  usage: `${prefix}ᴄᴏɴᴅᴀᴍɴᴇʀ @ᴜsᴇʀ ᴏᴜ ᴇɴ ʀᴇ́ᴘᴏɴsᴇ`,
+  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ʀᴇᴠᴏǫᴜᴇ ʟᴇ ʙᴀɴɴɪssᴇᴍᴇɴᴛ ᴅ\'ᴜɴᴇ ᴀ̂ᴍᴇ**',
+  usage: `${prefix}ᴅᴇʙᴀɴɴɪssᴇᴍᴇɴᴛ @ᴜsᴇʀ ᴏᴜ ᴇɴ ʀᴇ́ᴘᴏɴsᴇ`,
 
   async execute(sock, msg, args, extra) {
     const { reply, isOwner } = extra;
@@ -35,21 +35,21 @@ module.exports = {
       } else if (ctx?.participant) {
         target = ctx.participant;
       } else {
-        return reply(`*〆 ɪɴᴠᴏǫᴜᴇ ᴜɴᴇ ᴍᴇɴᴛɪᴏɴ ᴏᴜ ʀᴇ́ᴘᴏɴᴅs ᴀ̀ ᴜɴᴇ ᴀ̂ᴍᴇ ᴘᴏᴜʀ ʟᴀ ᴄᴏɴᴅᴀᴍɴᴇʀ !*\n*ᴜsᴀɢᴇ : ${prefix}ᴄᴏɴᴅᴀᴍɴᴇʀ @ᴜsᴇʀ*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+        return reply(`*〆 ɪɴᴠᴏǫᴜᴇ ᴜɴᴇ ᴍᴇɴᴛɪᴏɴ ᴏᴜ ʀᴇ́ᴘᴏɴᴅs ᴀ̀ ᴜɴᴇ ᴀ̂ᴍᴇ ᴘᴏᴜʀ ʟᴀ ᴅᴇ́ʙᴀɴɴɪʀ !*\n*ᴜsᴀɢᴇ : ${prefix}ᴅᴇʙᴀɴɴɪssᴇᴍᴇɴᴛ @ᴜsᴇʀ*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
       }
 
-      // Application du blocage au niveau de l'instance WhatsApp
-      await sock.updateBlockStatus(target, 'block');
+      // Rituel de déblocage via Baileys
+      await sock.updateBlockStatus(target, 'unblock');
 
       // Message de confirmation avec mention
       await sock.sendMessage(chatId, {
-        text: `*⚖️ ʟ\'ᴀ̂ᴍᴇ ᴅᴇ @${target.split('@')[0]} ᴀ ᴇ́ᴛᴇ́ ᴄᴏɴᴅᴀᴍɴᴇ́ᴇ ᴇᴛ ʙᴀɴɴɪᴇ ᴅᴇs ᴀʀᴄᴀɴᴇs !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`,
+        text: `*✅ ʟ\'ᴀ̂ᴍᴇ ᴅᴇ @${target.split('@')[0]} ᴀ ᴇ́ᴛᴇ́ ʟɪʙᴇ́ʀᴇ́ᴇ ᴅᴇs ᴀʀᴄᴀɴᴇs !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`,
         mentions: [target]
       }, { quoted: msg });
 
     } catch (error) {
-      console.error('[block cmd] error:', error);
-      await reply(`*〆 ʟᴀ sᴇɴᴛᴇɴᴄᴇ ᴀ ᴇ́ᴄʜᴏᴜᴇ́ : ${error.message}*`);
+      console.error('[unblock cmd] error:', error);
+      await reply(`*〆 ʟ\'ɪɴᴠᴏᴄᴀᴛɪᴏɴ ᴀ ᴇ́ᴄʜᴏᴜᴇ́ : ${error.message}*`);
     }
   }
 };
