@@ -116,7 +116,7 @@ module.exports = {
   aliases: ['update', 'maj'],
   category: '♛ sᴏᴜᴠᴇʀᴀɪɴᴇᴛᴇ́',
   ownerOnly: true, // Géré par ton handler
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴍɪsᴇ ᴀ̀ ᴊᴏᴜʀ ᴅᴇᴘᴜɪs ᴜɴ ᴢɪᴘ ᴇɴ ᴘʀᴇ́sᴇʀᴠᴀɴᴛ ʟᴇ .ᴇɴᴠ**',
+  description: `**『 ɢʜᴏsᴛɢ-𝐗 』➪ sᴇ ᴍᴇᴛ ᴀ̀ ᴊᴏᴜʀ ᴅᴇᴘᴜɪs ʟᴇ ʀᴇᴘᴏ ᴅᴇ ʟ'ᴏʀᴀᴄʟᴇ`,
   usage: `${prefix}ᴍɪsᴇ_ᴀ_ᴊᴏᴜʀ [ʟɪᴇɴ_ᴢɪᴘ]`,
 
   async execute(sock, msg, args, extra) {
