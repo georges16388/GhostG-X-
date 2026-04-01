@@ -1,6 +1,6 @@
 /**
  * Mode Command - GhostG-X Edition
- * Toggle bot between private and public mode
+ * Toggle bot between private and public mode (.env Synced)
  */
 
 const config = require('../../config');
@@ -8,26 +8,30 @@ const fs = require('fs');
 const path = require('path');
 
 // Extraction du préfixe pour l'usage
-const prefix = config.prefix || '.';
+const prefix = config.prefix;
 
 module.exports = {
   name: 'ᴅᴏᴍᴀɪɴᴇ',
   aliases: ['domaine', 'botmode', 'privatemode', 'publicmode', 'mode'],
   category: '♛ sᴏᴜᴠᴇʀᴀɪɴᴇᴛᴇ́',
-  ownerOnly: true, // Sécurité : Toi seul peux l'utiliser
+  ownerOnly: true, // Sécurité : Géré par ton handler
   description: `**『 ɢʜᴏsᴛɢ-𝐗 』➪ ʙᴀsᴄᴜʟᴇ ʟ'ᴏʀᴀᴄʟᴇ ᴇɴᴛʀᴇ ʟᴇ ᴍᴏᴅᴇ ᴘʀɪᴠᴇ́ ᴇᴛ ᴘᴜʙʟɪᴄ**`,
   usage: `${prefix}ᴅᴏᴍᴀɪɴᴇ <ᴘʀɪᴠᴇ/ᴘᴜʙʟɪᴄ>`,
 
   async execute(sock, msg, args, extra) {
-    const { reply, isOwner } = extra;
-
-    // Sécurité supplémentaire si le handler n'utilise pas 'ownerOnly'
-    if (!isOwner) return reply('*〆 ᴀᴄᴄᴇ̀s ʀᴇғᴜsᴇ́. sᴇᴜʟ ʟᴇ ᴍᴀɪ̂ᴛʀᴇ ᴘᴇᴜᴛ sᴄᴇʟʟᴇʀ ʟᴇ ᴅᴏᴍᴀɪɴᴇ.*');
+    const { reply } = extra;
+    const envPath = path.join(process.cwd(), '.env');
 
     try {
+      // 1️⃣ Lecture du fichier .env pour connaître le statut physique actuel
+      let envContent = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf8') : '';
+      
+      // On vérifie si le mode SELF_MODE est sur true
+      const isCurrentlyPrivate = /^SELF_MODE=true/m.test(envContent);
+
       if (!args[0]) {
-        const currentMode = config.selfMode ? 'ᴘʀɪᴠᴇ́' : 'ᴘᴜʙʟɪᴄ';
-        const description = config.selfMode 
+        const currentMode = isCurrentlyPrivate ? 'ᴘʀɪᴠᴇ́' : 'ᴘᴜʙʟɪᴄ';
+        const description = isCurrentlyPrivate 
           ? `*sᴇᴜʟ ʟᴇ ᴄᴏᴍᴍᴀɴᴅᴇᴜʀ ᴅᴇ ʟ'ᴏʀᴀᴄʟᴇ ᴘᴇᴜᴛ ɪɴᴠᴏǫᴜᴇʀ ʟᴇs ᴀʀᴄᴀɴᴇs*`
           : '*ᴛᴏᴜᴛᴇs ʟᴇs ᴀ̂ᴍᴇs ᴘᴇᴜᴠᴇɴᴛ ɪɴᴠᴏǫᴜᴇʀ ʟᴇs ᴀʀᴄᴀɴᴇs*';
 
@@ -45,26 +49,44 @@ module.exports = {
 
       const mode = args[0].toLowerCase();
 
+      // Cas PRIVÉ
       if (mode === 'private' || mode === 'priv' || mode === 'privé' || mode === 'prive') {
-        if (config.selfMode) {
+        if (isCurrentlyPrivate) {
           return reply(`*🔒 ʟ'ᴏʀᴀᴄʟᴇ ᴇsᴛ ᴅᴇ́ᴊᴀ̀ sᴄᴇʟʟᴇ́ ᴇɴ ᴍᴏᴅᴇ ᴘʀɪᴠᴇ́.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
         }
 
-        // Update config
-        updateConfig('selfMode', true);
-        config.selfMode = true; // Update runtime config
-        return reply(`*🔒 ʟ'ᴏʀᴀᴄʟᴇ ᴇsᴛ ᴅᴇ́sᴏʀᴍᴀɪs ᴘʀɪᴠᴇ́.*\n*sᴇᴜʟ ʟᴇ sᴜᴘʀᴇ̂ᴍᴇ ᴄʀᴇ́ᴀᴛᴇᴜʀ ᴀ ʟᴇ ᴘᴏᴜᴠᴏɪʀ.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+        // Modification chirurgicale dans le .env
+        if (envContent.match(/^SELF_MODE=/m)) {
+          envContent = envContent.replace(/^SELF_MODE=.*/m, `SELF_MODE=true`);
+        } else {
+          envContent += `\nSELF_MODE=true`;
+        }
+        fs.writeFileSync(envPath, envContent.trim() + '\n', 'utf8');
+
+        // Application immédiate en mémoire vive
+        config.selfMode = true;
+
+        return reply(`*🔒 ʟ'ᴏʀᴀᴄʟᴇ ᴇsᴛ ᴅᴇ́sᴏʀᴍᴀɪs ᴘʀɪᴠᴇ́.*\n*sᴇᴜʟ ʟᴇ sᴜᴘʀᴇ̂ᴍᴇ ᴄʀᴇ́ᴀᴛᴇᴜʀ ᴀ ʟᴇ ᴘᴏᴜᴠᴏɪʀ.\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
       }
 
+      // Cas PUBLIC
       if (mode === 'public' || mode === 'pub') {
-        if (!config.selfMode) {
+        if (!isCurrentlyPrivate) {
           return reply(`*🌐 ʟ'ᴏʀᴀᴄʟᴇ ᴇsᴛ ᴅᴇ́ᴊᴀ̀ ᴏᴜᴠᴇʀᴛ ᴇɴ ᴍᴏᴅᴇ ᴘᴜʙʟɪᴄ.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
         }
 
-        // Update config
-        updateConfig('selfMode', false);
-        config.selfMode = false; // Update runtime config
-        return reply(`*🌐 ʟ'ᴏʀᴀᴄʟᴇ ᴇsᴛ ᴅᴇ́sᴏʀᴍᴀɪs ᴘᴜʙʟɪᴄ.*\n*ʟᴇs ᴘᴏʀᴛᴇs sᴏɴᴛ ᴏᴜᴠᴇʀᴛᴇs ᴀ̀ ᴛᴏᴜᴛᴇs ʟᴇs ᴀ̂ᴍᴇs.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+        // Modification chirurgicale dans le .env
+        if (envContent.match(/^SELF_MODE=/m)) {
+          envContent = envContent.replace(/^SELF_MODE=.*/m, `SELF_MODE=false`);
+        } else {
+          envContent += `\nSELF_MODE=false`;
+        }
+        fs.writeFileSync(envPath, envContent.trim() + '\n', 'utf8');
+
+        // Application immédiate en mémoire vive
+        config.selfMode = false;
+
+        return reply(`*🌐 ʟ'ᴏʀᴀᴄʟᴇ ᴇsᴛ ᴅᴇ́sᴏʀᴍᴀɪs ᴘᴜʙʟɪᴄ.*\n*ʟᴇs ᴘᴏʀᴛᴇs sᴏɴᴛ ᴏᴜᴠᴇʀᴛᴇs ᴀ̀ ᴛᴏᴜᴛᴇs ʟᴇs ᴀ̂ᴍᴇs.\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
       }
 
       return reply(`*〆 ᴍᴏᴅᴇ ɪɴᴠᴀʟɪᴅᴇ ! ᴜᴛɪʟɪsᴇ : ${prefix}ᴅᴏᴍᴀɪɴᴇ <ᴘʀɪᴠᴇ/ᴘᴜʙʟɪᴄ>*`);
@@ -75,22 +97,3 @@ module.exports = {
     }
   }
 };
-
-function updateConfig(key, value) {
-  try {
-    // On remonte de 2 dossiers car cette commande est dans /commands/Souverainete/
-    const configPath = path.join(__dirname, '../../config.js');
-    let configContent = fs.readFileSync(configPath, 'utf8');
-
-    // Update the value
-    const regex = new RegExp(`(${key}:\\s*)(true|false)`, 'g');
-    configContent = configContent.replace(regex, `$1${value}`);
-
-    fs.writeFileSync(configPath, configContent, 'utf8');
-
-    // Reload config
-    delete require.cache[require.resolve('../../config.js')];
-  } catch (error) {
-    console.error('Error saving config:', error);
-  }
-}
