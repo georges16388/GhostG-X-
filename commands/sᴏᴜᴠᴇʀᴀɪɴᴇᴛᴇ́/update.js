@@ -18,6 +18,9 @@ try {
   config = {};
 }
 
+// Extraction du préfixe pour l'usage
+const prefix = config.prefix || '.';
+
 const MAX_REDIRECTS = 5;
 
 function run(cmd) {
@@ -62,7 +65,7 @@ function copyRecursive(src, dest, ignore = [], relative = '', outList = []) {
   for (const entry of fs.readdirSync(src)) {
     // 🛡️ PROTECTION CRUCIALE : Si le fichier est dans la liste d'ignore, on passe.
     if (ignore.includes(entry)) continue;
-    
+
     const s = path.join(src, entry);
     const d = path.join(dest, entry);
     const stat = fs.lstatSync(s);
@@ -100,7 +103,7 @@ async function updateViaZip(zipUrl) {
     'config.js',
     '.env' // <--- TON FICHIER ENV EST ICI, IL EST PROTÉGÉ
   ];
-  
+
   const copied = [];
   copyRecursive(srcRoot, process.cwd(), ignore, '', copied);
 
@@ -112,14 +115,15 @@ module.exports = {
   name: 'ᴍɪsᴇ_ᴀ_ᴊᴏᴜʀ',
   aliases: ['update', 'maj'],
   category: '♛ sᴏᴜᴠᴇʀᴀɪɴᴇᴛᴇ́',
-  description: 'ᴍɪsᴇ ᴀ̀ ᴊᴏᴜʀ ᴅᴇᴘᴜɪs ᴜɴ ᴢɪᴘ ᴇɴ ᴘʀᴇ́sᴇʀᴠᴀɴᴛ ʟᴇ .ᴇɴᴠ',
-  usage: '.ᴍɪsᴇ_ᴀ_ᴊᴏᴜʀ [ʟɪᴇɴ_ᴢɪᴘ]',
-  ownerOnly: true,
+  ownerOnly: true, // Géré par ton handler
+  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴍɪsᴇ ᴀ̀ ᴊᴏᴜʀ ᴅᴇᴘᴜɪs ᴜɴ ᴢɪᴘ ᴇɴ ᴘʀᴇ́sᴇʀᴠᴀɴᴛ ʟᴇ .ᴇɴᴠ**',
+  usage: `${prefix}ᴍɪsᴇ_ᴀ_ᴊᴏᴜʀ [ʟɪᴇɴ_ᴢɪᴘ]`,
 
   async execute(sock, msg, args, extra) {
     const { isOwner, reply, from } = extra;
 
-    if (!isOwner) return reply('*〆 ᴛᴜ ɴ\'ᴀs ᴘᴀs ʟ\'ᴀᴜᴛᴏʀɪsᴀᴛɪᴏɴ sᴜᴘʀᴇ̂ᴍᴇ.*');
+    // Sécurité supplémentaire si le handler n'utilise pas 'ownerOnly'
+    if (!isOwner) return reply('*〆 ᴛᴜ ɴ\'ᴀs ᴘᴀs ʟ\'ᴀᴜᴛᴏʀɪsᴀᴛɪᴏɴ sᴜᴘʀᴇ̂ᴍᴇ ᴘᴏᴜʀ ɪɴᴠᴏǫᴜᴇʀ ᴄᴇᴛᴛᴇ ᴘᴜɪssᴀɴᴄᴇ.*');
 
     // Récupération de l'URL (Arguments > Config > Env)
     const zipUrl = (args[0] || config.updateZipUrl || process.env.UPDATE_ZIP_URL || '').trim();
@@ -129,17 +133,18 @@ module.exports = {
     }
 
     try {
-      await reply('*🔄 ᴀsᴘɪʀᴀᴛɪᴏɴ ᴅᴇs ɴᴏᴜᴠᴇᴀᴜx ᴀʀᴄᴀɴᴇs...*');
+      await reply('*🔮 ʟ\'ᴏʀᴀᴄʟᴇ ᴘʀᴏᴄᴇ̀ᴅᴇ ᴀ̀ ʟ\'ᴀsᴘɪʀᴀᴛɪᴏɴ ᴅᴇs ɴᴏᴜᴠᴇᴀᴜx ᴀʀᴄᴀɴᴇs... ᴘᴀᴛɪᴇɴᴛᴇ.*');
 
       const { copiedFiles } = await updateViaZip(zipUrl);
 
-      const summary = `*✅ ᴍɪsᴇ ᴀ̀ ᴊᴏᴜʀ ᴀᴄᴄᴏᴍᴘʟɪᴇ.*\n*📦 ғɪᴄʜɪᴇʀs ᴍɪs ᴀ̀ ᴊᴏᴜʀ : ${copiedFiles.length}*\n*🛡️ ᴛᴏɴ sᴇssɪᴏɴ_ɪᴅ ᴇᴛ ᴛᴏɴ .ᴇɴᴠ ᴏɴᴛ ᴇ́ᴛᴇ́ ᴘʀᴇ́sᴇʀᴠᴇ́s.*`;
+      const summary = `*✅ ᴍɪsᴇ ᴀ̀ ᴊᴏᴜʀ ᴀᴄᴄᴏᴍᴘʟɪᴇ ᴀᴠᴇᴄ sᴜᴄᴄᴇ̀s !*\n*📦 ғɪᴄʜɪᴇʀs ᴍɪs ᴀ̀ ᴊᴏᴜʀ : ${copiedFiles.length}*\n*🛡️ ᴛᴏɴ sᴇssɪᴏɴ_ɪᴅ, ᴛᴏɴ ᴄᴏɴғɪɢ.ᴊs ᴇᴛ ᴛᴏɴ .ᴇɴᴠ ᴏɴᴛ ᴇ́ᴛᴇ́ ᴘʀᴇ́sᴇʀᴠᴇ́s.*`;
 
-      await sock.sendMessage(from, { text: `${summary}\n\n*ʀᴇ́ɪɴᴄᴀʀɴᴀᴛɪᴏɴ ᴇɴ ᴄᴏᴜʀs...*` }, { quoted: msg });
+      await sock.sendMessage(from, { text: `${summary}\n\n*🔄 ʀᴇ́ɪɴᴄᴀʀɴᴀᴛɪᴏɴ (ʀᴇᴅᴇ́ᴍᴀʀʀᴀɢᴇ) ᴇɴ ᴄᴏᴜʀs...*` }, { quoted: msg });
 
+      // Petite pause pour laisser le temps au message de partir avant de tuer le processus
       setTimeout(() => process.exit(0), 1000);
     } catch (error) {
-      await reply(`*〆 ᴇ́ᴄʜᴇᴄ :* ${error.message}`);
+      await reply(`*〆 ʟ\'ɪɴᴠᴏᴄᴀᴛɪᴏɴ ᴀ ᴇ́ᴄʜᴏᴜᴇ́ : ${error.message}*`);
     }
   }
 };
