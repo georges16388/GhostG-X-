@@ -1,5 +1,5 @@
 /**
- * Set Goodbye - Customize goodbye message
+ * Set Welcome - Customize welcome message
  * GhostG-X Edition
  */
 
@@ -23,13 +23,13 @@ function toSmallCaps(text) {
 const prefix = config.prefix || '.';
 
 module.exports = {
-  name: 'motsadieu',
-  aliases: ['goodbyetext', 'setgoodbye', 'traceadieu'],
+  name: 'inscription',
+  aliases: ['welcometext', 'setwelcome'],
   category: '‎⛨ ɢᴀʀᴅɪᴇɴs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴘᴇʀsᴏɴɴᴀʟɪsᴇ ʟᴇ ᴍᴇssᴀɢᴇ ᴅ\'ᴀᴅɪᴇᴜ ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ**',
-  usage: `${prefix}motsadieu <message>`, // 💡 Dynamique avec ton préfixe actuel
+  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴘᴇʀsᴏɴɴᴀʟɪsᴇ ʟᴇ ᴍᴇssᴀɢᴇ ᴅ\'ᴀᴄᴄᴜᴇɪʟ ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ**',
+  usage: `${prefix}inscription <message>`, // 💡 Dynamique avec ton préfixe actuel
   groupOnly: true,
-  adminOnly: true, // 🔐 Sécurisé pour éviter que n'importe qui le modifie
+  adminOnly: true, // 🔐 Sécurisé pour éviter les dérives de membres
   botAdminNeeded: false,
 
   async execute(sock, msg, args, extra) {
@@ -57,35 +57,35 @@ module.exports = {
         const groupSettings = db.getGroupSettings(from);
 
         return reply(
-          `╭╼━≪• *ᴍᴇssᴀɢᴇ ᴅ'ᴀᴅɪᴇᴜx* •≫━╾╮\n` +
+          `╭╼━≪• *ᴍᴇssᴀɢᴇ ᴅ'ᴀᴄᴄᴜᴇɪʟ* •≫━╾╮\n` +
           `╰━━━━━━━━━━━━━━━╯\n\n` +
           `📝 *ᴍᴇssᴀɢᴇ ᴀᴄᴛᴜᴇʟ :*\n` +
-          `${groupSettings.goodbyeMessage || 'ᴀᴜᴄᴜɴ'}\n\n` +
+          `${groupSettings.welcomeMessage || 'ᴀᴜᴄᴜɴ'}\n\n` +
           `🔮 *ɪɴᴄᴀɴᴛᴀᴛɪᴏɴ :*\n` +
-          `  ${prefix}motsadieu <message>\n\n` +
-          `💡 *${toSmallCaps('astuce')} :* ${toSmallCaps('utilisez')} \`@user\` ${toSmallCaps('pour mentionner l individu qui quitte le sanctuaire')}.\n\n` +
+          `  ${prefix}inscription <message>\n\n` +
+          `💡 *${toSmallCaps('astuce')} :* ${toSmallCaps('utilisez')} \`@user\` ${toSmallCaps('pour mentionner l individu qui rejoint le sanctuaire')}.\n\n` +
           `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`
         );
       }
 
-      const goodbyeMessage = args.join(' ');
+      const welcomeMessage = args.join(' ');
 
-      if (goodbyeMessage.length > 500) {
-        return reply(`*❌ ${toSmallCaps('le message d adieux est trop long')} ! (ᴍᴀxɪᴍᴜᴍ 𝟻𝟶𝟶 ᴄᴀʀᴀᴄᴛᴇʀᴇs).* \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+      if (welcomeMessage.length > 500) {
+        return reply(`*❌ ${toSmallCaps('le message d accueil est trop long')} ! (ᴍᴀxɪᴍᴜᴍ 𝟻𝟶𝟶 ᴄᴀʀᴀᴄᴛᴇʀᴇs).* \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
       }
 
-      db.updateGroupSettings(from, { goodbyeMessage });
+      db.updateGroupSettings(from, { welcomeMessage });
 
       await sock.sendMessage(from, {
-        text: `*✅ ${toSmallCaps('message d adieux mis a jour')} !*\n\n` +
+        text: `*✅ ${toSmallCaps('message d accueil mis a jour')} !*\n\n` +
               `🔮 *ᴀᴘᴇʀᴄ̧ᴜ :*\n` +
-              `${goodbyeMessage.replace('@user', '@' + senderNumber)}\n\n` +
+              `${welcomeMessage.replace('@user', '@' + senderNumber)}\n\n` +
               `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`,
         mentions: [senderJid]
       }, { quoted: msg });
 
     } catch (error) {
-      console.error('Set Goodbye Error:', error);
+      console.error('Set Welcome Error:', error);
       await reply(`*❌ ${toSmallCaps('l invocation a echoue')} : ${error.message}*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
     }
   }
