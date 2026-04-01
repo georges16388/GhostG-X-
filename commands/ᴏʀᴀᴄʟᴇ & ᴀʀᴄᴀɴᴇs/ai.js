@@ -22,7 +22,7 @@ function toSmallCaps(text) {
 module.exports = {
   name: 'oracle',
   aliases: ['gpt', 'chatgpt', 'ask', 'ai', 'ᴏʀᴀᴄʟᴇ'],
-  category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
+  category: '⍟ ᴏʀᴀᴄʟᴇ & ᴀʀᴄᴀɴᴇs',
   description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴄʜᴀᴛ ᴡɪᴛʜ ᴀɪ (ᴄʜᴀᴛɢᴘᴛ-sᴛʏʟᴇ)**',
   usage: `${config.prefix || '.'}oracle [question]`,
   groupOnly: false,
