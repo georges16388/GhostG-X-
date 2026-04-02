@@ -427,10 +427,8 @@ const handleMessage = async (sock, msg) => {
         return;
       }
 
-      if (input.includes("qui t'a fait") || input.includes("createur") || input.includes("ton pere")) ||
-input.includes("développeur")) ||
-input.includes("dev")) ||
-input.includes("truth devices")){
+      // 🔥 CORRECTION DE LA LIGNE D'ERREUR ICI 🔥
+      if (input.includes("qui t'a fait") || input.includes("createur") || input.includes("ton pere") || input.includes("développeur") || input.includes("dev") || input.includes("truth devices")) {
         await extraNLP.reply(`👑 *ᴊᴇ sᴜɪs ʟ'ᴏᴇᴜᴠʀᴇ sᴜᴘʀᴇ̂ᴍᴇ ᴅᴇ ᴛʀᴜᴛʜ ᴅᴇᴠɪᴄᴇs*`);
         return;
       }
@@ -531,14 +529,14 @@ input.includes("truth devices")){
         }
       }
     }
-    
-    // N'oublie pas de fermer ton try...catch principal à la toute fin du fichier !
+
+    // !! ATTENTION : IL DOIT Y AVOIR TON CODE POUR EXÉCUTER LES COMMANDES NORMALES ICI EN DESSOUS !!
+
   } catch (error) {
     console.error('Handler error:', error);
   }
 };
 
-    
 
     // Anti-tagall Protection
     if (isGroup) {
