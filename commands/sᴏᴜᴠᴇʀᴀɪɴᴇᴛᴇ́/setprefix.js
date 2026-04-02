@@ -13,7 +13,7 @@ module.exports = {
   name: 'sɪɢɴᴇ_ᴄᴏᴍᴍᴀɴᴅᴇ',
   aliases: ['signe_commande', 'setprefix', 'prefix', 'prefixe'],
   category: '♛ sᴏᴜᴠᴇʀᴀɪɴᴇᴛᴇ́',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴛʀᴀɴsᴍᴜᴛᴇ ʟᴇ sɪɢɴᴇ ᴅ\'ɪɴᴠᴏᴄᴀᴛɪᴏɴ ᴅᴇs ᴄᴏᴍᴍᴀɴᴅᴇs**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴛʀᴀɴsᴍᴜᴛᴇ ʟᴇ sɪɢɴᴇ ᴅ\'ɪɴᴠᴏᴄᴀᴛɪᴏɴ ᴅᴇs ᴄᴏᴍᴍᴀɴᴅᴇs',
   usage: `${prefix}sɪɢɴᴇ_ᴄᴏᴍᴍᴀɴᴅᴇ <ɴᴏᴜᴠᴇᴀᴜ ᴘʀᴇ́ғɪxᴇ>`,
   ownerOnly: true, // Géré par ton handler pour les privilèges suprêmes
 
