@@ -37,7 +37,7 @@ module.exports = {
   name: 'pinterest',
   aliases: ['illusions_pinterest', 'pin', 'pindl', 'pinterestdl', 'illusion_pinterest'],
   category: '‎⌘ ᴇ́ᴄʜᴏs ᴅᴜ ᴍᴏɴᴅᴇ',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀsᴘɪʀᴇ ᴇᴛ ᴛᴇʟᴇᴄʜᴀʀɢᴇ ᴅᴇs ɪᴍᴀɢᴇs/ᴠɪᴅᴇᴏs ᴘɪɴᴛᴇʀᴇsᴛ**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀsᴘɪʀᴇ ᴇᴛ ᴛᴇʟᴇᴄʜᴀʀɢᴇ ᴅᴇs ɪᴍᴀɢᴇs/ᴠɪᴅᴇᴏs ᴘɪɴᴛᴇʀᴇsᴛ',
   usage: `${config.prefix || '.'}pinterest [lien pinterest]`,
   groupOnly: false,
   adminOnly: false,
@@ -59,11 +59,10 @@ module.exports = {
 
       if (!text) {
         return reply(
-          `╭╼━≪• *⚠️ ᴇᴄʜᴇᴄ ᴅᴇ ʟɪɴᴠᴏᴄᴀᴛɪᴏɴ* •≫━╾╮\n` +
-          `┃ 🔮 *${toSmallCaps('indique un lien pinterest')}*\n` +
-          `┃ *${toSmallCaps('pour aspirer le media')} !*\n` +
-          `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
-          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+          `*⚠️ ${toSmallCaps('echec de l\'invocation')}*\n\n` +
+          `*┃* 🔮 *${toSmallCaps('indique un lien pinterest')}*\n` +
+          `*┃* *${toSmallCaps('pour aspirer le media')} !*\n\n` +
+          `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
         );
       }
 
@@ -73,7 +72,7 @@ module.exports = {
       if (!urlMatch) urlMatch = text.match(/pin\.it\/[^\s]+/i);
 
       if (!urlMatch) {
-        return reply(`*❌ ${toSmallCaps('murmure un lien pinterest valide')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+        return reply(`*❌ ${toSmallCaps('murmure un lien pinterest valide')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       const pinterestUrl = urlMatch[0];
@@ -98,15 +97,15 @@ module.exports = {
         console.error('Pinterest API Error:', error);
         if (error.response) {
           const status = error.response.status;
-          if (status === 400) return reply(`*❌ ${toSmallCaps('lien pinterest invalide. verifie lurl soumise')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
-          if (status === 429) return reply(`*❌ ${toSmallCaps('limitation des arcanes atteinte. reessaie plus tard')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
-          if (status === 500) return reply(`*❌ ${toSmallCaps('le serveur est instable. reessaie plus tard')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+          if (status === 400) return reply(`*❌ ${toSmallCaps('lien pinterest invalide. verifie lurl soumise')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
+          if (status === 429) return reply(`*❌ ${toSmallCaps('limitation des arcanes atteinte. reessaie plus tard')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
+          if (status === 500) return reply(`*❌ ${toSmallCaps('le serveur est instable. reessaie plus tard')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
         }
-        return reply(`*❌ ${toSmallCaps('loracle a echoue a sonder ce lien pinterest')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+        return reply(`*❌ ${toSmallCaps('loracle a echoue a sonder ce lien pinterest')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       if (!response.data || !response.data.status || !response.data.result) {
-        return reply(`*❌ ${toSmallCaps('reponse de serveur invalide. le pin est peut-etre prive')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+        return reply(`*❌ ${toSmallCaps('reponse de serveur invalide. le pin est peut-etre prive')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       const pinData = response.data.result;
@@ -117,24 +116,25 @@ module.exports = {
       const author = pinData.author || 'Inconnu';
 
       if (!imageUrl) {
-        return reply(`*❌ ${toSmallCaps('aucun media trouve dans les donnees de serveur')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+        return reply(`*❌ ${toSmallCaps('aucun media trouve dans les donnees de serveur')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       const botName = toSmallCaps(config.botName || 'ɢʜᴏsᴛɢ-x');
       const sourceDomain = getDomain(pinterestUrl);
 
-      // Construction de la légende selon le style choisi (Serré sans ligne vide)
-      let caption = `╭╼━≪• *🎬 ᴀsᴘɪʀᴀᴛɪᴏɴ ʀᴇ́ᴜssɪᴇ* •≫━╾╮\n` +
-                    `┃ 🔮 *${toSmallCaps('extrait par')} :* ${botName}\n` +
-                    `┃ 🔗 *${toSmallCaps('source')} :* ${sourceDomain}\n` +
-                    `┃ 🔖 *${toSmallCaps('titre')} :* ${toSmallCaps(title)}\n`;
-      
+      // Construction de la légende
+      let caption = `*╭╼━━━≪• 🎬 ᴀsᴘɪʀᴀᴛɪᴏɴ ʀᴇ́ᴜssɪᴇ •≫━━━╾╮*\n` +
+                    `*┃* 🔮 *${toSmallCaps('extrait par')} :* ${botName}\n` +
+                    `*┃* 🔗 *${toSmallCaps('source')} :* ${sourceDomain}\n` +
+                    `*┃* 🔖 *${toSmallCaps('titre')} :* ${toSmallCaps(title)}\n`;
+
       if (author && author !== 'Inconnu') {
-        caption += `┃ 👤 *${toSmallCaps('auteur')} :* ${toSmallCaps(author)}\n`;
+        caption += `*┃* 👤 *${toSmallCaps('auteur')} :* ${toSmallCaps(author)}\n\n`;
+      } else {
+        caption += `\n`;
       }
-      
-      caption += `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
-                 `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+
+      caption += `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
 
       // Envoi du média principal
       if (isVideo) {
@@ -158,7 +158,7 @@ module.exports = {
           }, { quoted: msg });
         } catch (videoError) {
           console.error('Video download/send error:', videoError.message);
-          return reply(`*❌ ${toSmallCaps('lenvoi de lillusion video a echoue. le lien a peut-etre expire')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+          return reply(`*❌ ${toSmallCaps('lenvoi de lillusion video a echoue. le lien a peut-etre expire')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
         }
       } else {
         await sock.sendMessage(chatId, {
@@ -169,7 +169,7 @@ module.exports = {
 
     } catch (error) {
       console.error('Error in pinterest command:', error);
-      return reply(`*❌ ${toSmallCaps('linvocation a echoue')} : ${error.message || 'ᴇʀʀᴇᴜʀ ɪɴᴄᴏɴɴᴜᴇ'}*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+      return reply(`*❌ ${toSmallCaps('linvocation a echoue')} : ${error.message || 'ᴇʀʀᴇᴜʀ ɪɴᴄᴏɴɴᴜᴇ'}*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
     }
   },
 };
