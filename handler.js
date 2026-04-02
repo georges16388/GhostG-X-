@@ -629,7 +629,11 @@ if (groupSettings.autosticker && !isCommand) {
     console.log(`Executing command: ${commandName} from ${sender}`);
 
     await command.execute(sock, msg, args, {
-      from, sender, isGroup, groupMetadata,
+      from, 
+      sender, 
+      isGroup, 
+      groupMetadata,
+      senderHash, // 🎯 LA TRICHE MAGIQUE EST TRANSMISE ICI !
       isOwner: isMe, 
       isAdmin: isMe || await isAdmin(sock, sender, from, groupMetadata), 
       isBotAdmin: await isBotAdmin(sock, from, groupMetadata),
@@ -647,7 +651,9 @@ if (groupSettings.autosticker && !isCommand) {
     } catch (e) {}
   }
 };
+}
 
+//groupes
 const handleGroupUpdate = async (sock, update) => {
   try {
     const { id, participants, action } = update;
