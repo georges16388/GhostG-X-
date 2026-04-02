@@ -13,7 +13,7 @@ module.exports = {
   name: 'add',
   aliases: ['ajouter', 'inviter', 'a'],
   category: '‎⛨ ɢᴀʀᴅɪᴇɴs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀᴊᴏᴜᴛᴇ ᴜɴ ᴍᴇᴍʙʀᴇ ᴀᴜ ɢʀᴏᴜᴘᴇ ᴏᴜ ʟᴜɪ ᴇɴᴠᴏʏᴇʀ ᴜɴᴇ ɪɴᴠɪᴛᴀᴛɪᴏɴ ᴘʀɪᴠᴇ́ᴇ s\'ɪʟ ᴇsᴛ ʙʟᴏǫᴜᴇ́**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀᴊᴏᴜᴛᴇ ᴜɴ ᴍᴇᴍʙʀᴇ ᴀᴜ ɢʀᴏᴜᴘᴇ ᴏᴜ ʟᴜɪ ᴇɴᴠᴏʏᴇʀ ᴜɴᴇ ɪɴᴠɪᴛᴀᴛɪᴏɴ ᴘʀɪᴠᴇ́ᴇ s\'ɪʟ ᴇsᴛ ʙʟᴏǫᴜᴇ́',
   usage: `${prefix}add 226XXXXXXXX`,
   groupOnly: true,
   adminOnly: true,
@@ -28,13 +28,11 @@ module.exports = {
       // 1. Vérification si un argument (numéro) a été fourni
       if (!targetNumber) {
         return reply(
-          `╭╼━≪• *ɪɴᴠᴏᴄᴀᴛɪᴏɴ_ᴅᴇ_ᴍᴇᴍʙʀᴇ* •≫━╾╮\n` +
-          `┃ *ᴇ́ᴛᴀᴛ* : ᴇ́ᴄʜᴇᴄ ❌\n` +
-          `╰━━━━━━━━━━━━━━━╯\n\n` +
-          `*🔮 ɪɴᴄᴀɴᴛᴀᴛɪᴏɴ :*\n` +
-          `*ᴠᴇᴜɪʟʟᴇᴢ ʀᴇɴsᴇɪɢɴᴇʀ ʟᴇ ɴᴜᴍᴇ́ʀᴏ ᴀ̀ ᴀᴊᴏᴜᴛᴇʀ.*\n\n` +
+          `*⚠️ ᴇᴄʜᴇᴄ ᴅᴇ ʟɪɴᴠᴏᴄᴀᴛɪᴏɴ*\n\n` +
+          `*┃* 🔮 *ɪɴᴄᴀɴᴛᴀᴛɪᴏɴ :*\n` +
+          `*┃* *ᴠᴇᴜɪʟʟᴇᴢ ʀᴇɴsᴇɪɢɴᴇʀ ʟᴇ ɴᴜᴍᴇ́ʀᴏ ᴀ̀ ᴀᴊᴏᴜᴛᴇʀ.*\n\n` +
           `  ${prefix}add 226XXXXXXXX\n\n` +
-          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+          `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
         );
       }
 
@@ -42,7 +40,7 @@ module.exports = {
       let cleanedNumber = targetNumber.replace(/[^0-9]/g, '');
       const targetJid = `${cleanedNumber}@s.whatsapp.net`;
 
-      await reply(`⏳ *ᴛᴇɴᴛᴀᴛɪᴠᴇ ᴅ'ᴀsᴘɪʀᴀᴛɪᴏɴ ᴅᴇ ʟ'ᴀ̂ᴍᴇ...*`);
+      await reply(`⏳ *ᴛᴇɴᴛᴀᴛɪᴠᴇ ᴅ'ᴀsᴘɪʀᴀᴛɪᴏɴ ᴅ'ᴀ̂ᴍᴇ...*`);
 
       // 3. Vérification si l'utilisateur est déjà dans le groupe
       const freshMetadata = await sock.groupMetadata(extra.from);
@@ -51,7 +49,7 @@ module.exports = {
       );
 
       if (isAlreadyInGroup) {
-        return reply(`❌ *ᴄᴇᴛ ɪɴᴅɪᴠɪᴅᴜ ғᴀɪᴛ ᴅᴇ́ᴊᴀ̀ ᴘᴀʀᴛɪᴇ ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ !* \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+        return reply(`❌ *ᴄᴇᴛ ɪɴᴅɪᴠɪᴅᴜ ғᴀɪᴛ ᴅᴇ́ᴊᴀ̀ ᴘᴀʀᴛɪᴇ ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       // 4. Exécution de l'ajout
@@ -61,7 +59,7 @@ module.exports = {
       // CAS 1 : Succès total
       if (status === '200') {
         return await sock.sendMessage(extra.from, {
-          text: `🎯 *@${cleanedNumber}* ᴀ ᴇ́ᴛᴇ́ ᴀsᴘɪʀᴇ́ ᴅᴀɴs ʟᴇ sᴀɴᴄᴛᴜᴀɪʀᴇ ᴀᴠᴇᴄ sᴜᴄᴄᴇ̀s !\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`,
+          text: `🎯 *@${cleanedNumber}* ᴀ ᴇ́ᴛᴇ́ ᴀsᴘɪʀᴇ́ ᴅᴀɴs ʟᴇ sᴀɴᴄᴛᴜᴀɪʀᴇ ᴀᴠᴇᴄ sᴜᴄᴄᴇ̀s !\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`,
           mentions: [targetJid]
         }, { quoted: msg });
       } 
@@ -82,21 +80,20 @@ module.exports = {
 
         // On construit le message stylisé pour les DM de la cible
         const pvMessage = 
-          `╭╼━≪• *ɪɴᴠᴏᴛᴀᴛɪᴏɴ_ᴀᴜ_sᴀɴᴄᴛᴜᴀɪʀᴇ* •≫━╾╮\n` +
-          `┃ *ɢʀᴏᴜᴘᴇ* : ${groupName}\n` +
-          `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
-          `*🔮 sᴀʟᴜᴛᴀᴛɪᴏɴs, ᴇɴᴛɪᴛᴇ́.* \n` +
-          `*ᴜɴ ɢᴀʀᴅɪᴇɴ ᴀ sᴏᴜʜᴀɪᴛᴇ́ ᴛ'ᴀᴊᴏᴜᴛᴇʀ ᴀᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ, ᴍᴀɪs ᴛᴇs ʙᴀʀʀɪᴇ̀ʀᴇs ᴅᴇ sᴇ́ᴄᴜʀɪᴛᴇ́ ʟ'ᴏɴᴛ ᴇᴍᴘᴇ̂ᴄʜᴇ́.*\n\n` +
-          `*ᴛᴜ ᴇs ᴄᴏʀᴅɪᴀʟᴇᴍᴇɴᴛ ɪɴᴠɪᴛᴇ́ ᴀ̀ ɴᴏᴜs ʀᴇᴊᴏɪɴᴅʀᴇ ᴠɪᴀ ᴄᴇ ᴘᴏʀᴛᴀɪʟ :*\n\n` +
+          `*╭╼━━━≪• ɪɴᴠɪᴛᴀᴛɪᴏɴ ᴀᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ •≫━━━╾╮*\n` +
+          `*┃* 🔮 *ɢʀᴏᴜᴘᴇ* : ${groupName}\n\n` +
+          `*┃* *sᴀʟᴜᴛᴀᴛɪᴏɴs, ᴇɴᴛɪᴛᴇ́.*\n` +
+          `*┃* *ᴜɴ ɢᴀʀᴅɪᴇɴ ᴀ sᴏᴜʜᴀɪᴛᴇ́ ᴛ'ᴀᴊᴏᴜᴛᴇʀ ᴀᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ, ᴍᴀɪs ᴛᴇs ʙᴀʀʀɪᴇ̀ʀᴇs ᴅᴇ sᴇ́ᴄᴜʀɪᴛᴇ́ ʟ'ᴏɴᴛ ᴇᴍᴘᴇ̂ᴄʜᴇ́.*\n` +
+          `*┃* *ᴛᴜ ᴇs ᴄᴏʀᴅɪᴀʟᴇᴍᴇɴᴛ ɪɴᴠɪᴛᴇ́ ᴀ̀ ɴᴏᴜs ʀᴇᴊᴏɪɴᴅʀᴇ ᴠɪᴀ ᴄᴇ ᴘᴏʀᴛᴀɪʟ :*\n\n` +
           `🔗 ${inviteLink}\n\n` +
-          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+          `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
 
         try {
           // Le bot envoie le message en Inbox à la personne
           await sock.sendMessage(targetJid, { text: pvMessage });
 
           // Le bot prévient le groupe que l'invitation a été envoyée
-          return reply(`🛡️ *ᴄᴇᴛᴛᴇ ᴇɴᴛɪᴛᴇ́ ᴀ sᴇ́ᴄᴜʀɪsᴇ́ sᴇs ᴘᴀʀᴀᴍᴇ̀ᴛʀᴇs. ᴜɴᴇ ɪɴᴠɪᴛᴀᴛɪᴏɴ sᴛʏʟɪsᴇ́ᴇ ʟᴜɪ ᴀ ᴇ́ᴛᴇ́ ᴇɴᴠᴏʏᴇ́ᴇ ᴇɴ ᴘʀɪᴠᴇ́ !* \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+          return reply(`🛡️ *ᴄᴇᴛᴛᴇ ᴇɴᴛɪᴛᴇ́ ᴀ sᴇ́ᴄᴜʀɪsᴇ́ sᴇs ᴘᴀʀᴀᴍᴇ̀ᴛʀᴇs. ᴜɴᴇ ɪɴᴠɪᴛᴀᴛɪᴏɴ sᴛʏʟɪsᴇ́ᴇ ʟᴜɪ ᴀ ᴇ́ᴛᴇ́ ᴇɴᴠᴏʏᴇ́ᴇ ᴇɴ ᴘʀɪᴠᴇ́ !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
         } catch (pvError) {
           console.error("Erreur d'envoi PV :", pvError);
           return reply(`❌ *ɪᴍᴘᴏssɪʙʟᴇ ᴅ'ᴇɴᴠᴏʏᴇʀ ʟ'ɪɴᴠɪᴛᴀᴛɪᴏɴ ᴇɴ ᴘʀɪᴠᴇ́ ᴀ̀ ᴄᴇᴛ ᴜᴛɪʟɪsᴀᴛᴇᴜʀ.*`);
@@ -107,7 +104,7 @@ module.exports = {
       return reply(`❌ *ᴇ́ᴄʜᴇᴄ ᴅᴇ ʟ'ᴀsᴘɪʀᴀᴛɪᴏɴ. ʟᴇ ɴᴜᴍᴇ́ʀᴏ ᴇsᴛ ᴘᴇᴜᴛ-ᴇ̂ᴛᴇ ɪɴᴠᴀʟɪᴅᴇ (sᴛᴀᴛᴜs ${status}).*`);
 
     } catch (error) {
-      await reply(`❌ *ᴇʀʀᴇᴜʀ :* ${error.message} \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+      await reply(`❌ *ᴇʀʀᴇᴜʀ :* ${error.message}\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
     }
   }
 };
