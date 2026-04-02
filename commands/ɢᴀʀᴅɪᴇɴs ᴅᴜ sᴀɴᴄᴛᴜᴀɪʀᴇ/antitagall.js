@@ -20,12 +20,14 @@ function toSmallCaps(text) {
     return index !== -1 ? smallCaps[index] : c;
   }).join('');
 }
+
 const prefix = config.prefix || '.';
+
 module.exports = {
   name: 'antigroupmention',
   aliases: ['antitagall'],
   category: '‎⛨ ɢᴀʀᴅɪᴇɴs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴄᴏɴғɪɢᴜʀᴇ ʟᴀ ᴘʀᴏᴛᴇᴄᴛɪᴏɴ ᴄᴏɴᴛʀᴇ ʟᴇs ᴍᴇɴᴛɪᴏɴs ɢʟᴏʙᴀʟᴇs (ᴅᴇʟᴇᴛᴇ/ᴋɪᴄᴋ)**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴄᴏɴғɪɢᴜʀᴇ ʟᴀ ᴘʀᴏᴛᴇᴄᴛɪᴏɴ ᴄᴏɴᴛʀᴇ ʟᴇs ᴍᴇɴᴛɪᴏɴs ɢʟᴏʙᴀʟᴇs (ᴅᴇʟᴇᴛᴇ/ᴋɪᴄᴋ)',
   usage: `${prefix}antigroupmention <on/off/set/get>`,
   groupOnly: true,
   adminOnly: true,
@@ -48,7 +50,7 @@ module.exports = {
 
       // Si l'utilisateur n'est pas admin et n'est pas le Suprême Owner
       if (!extra.isAdmin && !isMe) {
-        return reply(`*❌ ${toSmallCaps('cette incantation est reservee aux administrateurs du sanctuaire')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+        return reply(`*❌ ${toSmallCaps('cette incantation est reservee aux administrateurs du sanctuaire')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       if (!args[0]) {
@@ -57,17 +59,18 @@ module.exports = {
         const action = (settings.antigroupmentionAction || 'delete').toUpperCase();
 
         return reply(
-          `╭╼━≪• *sᴛᴀᴛᴜᴛ ʙᴏᴜᴄʟɪᴇʀ_ᴍᴇɴᴛɪᴏɴs* •≫━╾╮\n` +
-          `┃ 🔮 *ᴇ́ᴛᴀᴛ* : [ ${status} ]\n` +
-          `┃ ⚖️ *sᴇɴᴛᴇɴᴄᴇ* : [ ${action} ]\n` +
-          `╰━━━━━━━━━━━━━━━╯\n\n` +
-          `*🔮 ɪɴᴄᴀɴᴛᴀᴛɪᴏɴs ᴅɪsᴘᴏɴɪʙʟᴇs :*\n` +
-          `*ᴄᴇᴛ ᴀʀᴄᴀɴᴇ ᴅᴇ́ᴛᴇᴄᴛᴇ ᴇᴛ ᴘᴜʀɢᴇ ʟᴇs ᴍᴇɴᴛɪᴏɴs ɢʟᴏʙᴀʟᴇs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ.*\n\n` +
+          `*╭╼━━━≪• sᴛᴀᴛᴜᴛ ʙᴏᴜᴄʟɪᴇʀ_ᴍᴇɴᴛɪᴏɴs •≫━━━╾╮*\n` +
+          `*┃* 🛡️ *${toSmallCaps('etat')} :* ${status}\n` +
+          `*┃* ⚖️ *${toSmallCaps('sentence')} :* ${action}\n\n` +
+          `*┃* 🔮 *${toSmallCaps('incantations disponibles')} :*\n` +
+          `*┃* *${toSmallCaps('cet arcane detecte et purge les mentions')}*\n` +
+          `*┃* *${toSmallCaps('globales du sanctuaire')}.*\n\n` +
           `  ${prefix}antigroupmention on\n` +
           `  ${prefix}antigroupmention off\n` +
           `  ${prefix}antigroupmention set delete | kick\n` +
           `  ${prefix}antigroupmention get\n\n` +
-          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`
+          `♚ ${toSmallCaps('jesus est desormais maitre de ce sanctuaire')} ♚\n\n` +
+          `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
         );
       }
 
@@ -75,32 +78,32 @@ module.exports = {
 
       if (opt === 'on') {
         if (database.getGroupSettings(extra.from).antigroupmention) {
-          return reply(`*⚠️ ${toSmallCaps('le bouclier mentions est deja actif')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+          return reply(`*⚠️ ${toSmallCaps('le bouclier mentions est deja actif')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
         }
         database.updateGroupSettings(extra.from, { antigroupmention: true });
-        return reply(`*✅ ${toSmallCaps('le bouclier mentions a ete eveille')} (ON).*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+        return reply(`*✅ ${toSmallCaps('le bouclier mentions a ete eveille')} (ᴏɴ).*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       if (opt === 'off') {
         database.updateGroupSettings(extra.from, { antigroupmention: false });
-        return reply(`*❌ ${toSmallCaps('le bouclier mentions a ete desactive')} (OFF).*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+        return reply(`*❌ ${toSmallCaps('le bouclier mentions a ete desactive')} (ᴏғғ).*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       if (opt === 'set') {
         if (args.length < 2) {
-          return reply(`*❓ ${toSmallCaps('veuillez specifier une sentence')} : \`${prefix}antigroupmention set delete | kick\`*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+          return reply(`*❓ ${toSmallCaps('veuillez specifier une sentence')} :* \`${prefix}antigroupmention set delete | kick\`\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
         }
 
         const setAction = args[1].toLowerCase();
         if (!['delete', 'kick'].includes(setAction)) {
-          return reply(`*❓ ${toSmallCaps('sentence invalide. choisissez entre delete ou kick')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+          return reply(`*❓ ${toSmallCaps('sentence invalide. choisissez entre delete ou kick')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
         }
 
         database.updateGroupSettings(extra.from, { 
           antigroupmentionAction: setAction,
           antigroupmention: true // Activation automatique lors du choix de la sentence
         });
-        return reply(`*⚖️ ${toSmallCaps('la sentence du bouclier mentions est placee sur')} : ${setAction.toUpperCase()}*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+        return reply(`*⚖️ ${toSmallCaps('la sentence du bouclier mentions est placee sur')} : ${setAction.toUpperCase()}*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       if (opt === 'get') {
@@ -109,19 +112,18 @@ module.exports = {
         const action = (settings.antigroupmentionAction || 'delete').toUpperCase();
 
         return reply(
-          `╭╼━≪• *sᴛᴀᴛᴜᴛ ʙᴏᴜᴄʟɪᴇʀ_ᴍᴇɴᴛɪᴏɴs* •≫━╾╮\n` +
-          `┃ 🔮 *ᴇ́ᴛᴀᴛ* : [ ${status} ]\n` +
-          `┃ ⚖️ *sᴇɴᴛᴇɴᴄᴇ* : [ ${action} ]\n` +
-          `╰━━━━━━━━━━━━━━━╯\n\n` +
-          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`
+          `*╭╼━━━≪• sᴛᴀᴛᴜᴛ ʙᴏᴜᴄʟɪᴇʀ_ᴍᴇɴᴛɪᴏɴs •≫━━━╾╮*\n` +
+          `*┃* 🛡️ *${toSmallCaps('etat')} :* ${status}\n` +
+          `*┃* ⚖️ *${toSmallCaps('sentence')} :* ${action}\n\n` +
+          `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
         );
       }
 
-      return reply(`*❓ ${toSmallCaps('utilise')} \`${prefix}antigroupmention\` ${toSmallCaps('pour voir les options')}.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+      return reply(`*❓ ${toSmallCaps('utilise')} \`${prefix}antigroupmention\` ${toSmallCaps('pour voir les options')}.*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
 
     } catch (error) {
       console.error('AntiGroupMention command error:', error);
-      await reply(`*❌ ${toSmallCaps('l invocation a echoue')} : ${error.message}*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+      await reply(`*❌ ${toSmallCaps('l invocation a echoue')} : ${error.message}*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
     }
   }
 };
