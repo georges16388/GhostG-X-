@@ -1,6 +1,6 @@
 /**
  * WhatsApp Channel Info Command - GhostG-X Edition
- * Extrait les informations d'un canal WhatsApp à partir de son lien
+ * Extrait les informations d'un canal WhatsApp et affiche sa vraie Newsletter native
  */
 
 const config = require('../../config.js');
@@ -12,7 +12,7 @@ module.exports = {
   name: 'ɪɴғᴏs_ᴄᴀɴᴀʟ',
   aliases: ['newsletter', 'channel', 'canal', 'channelid'],
   category: '♛ sᴏᴜᴠᴇʀᴀɪɴᴇᴛᴇ́',
-  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ɢᴇ́ɴᴇ̀ʀᴇ ᴜɴᴇ ɴᴇᴡsʟᴇᴛᴛᴇʀ ᴅᴇᴘᴜɪs ʟᴇ ʟɪᴇɴ ᴅ\'ᴜɴᴇ ᴄʜᴀɪ̂ɴᴇ ᴡʜᴀᴛsᴀᴘᴘ',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀғғɪᴄʜᴇ ʟᴀ ɴᴇᴡsʟᴇᴛᴛᴇʀ ᴅᴇᴘᴜɪs ʟᴇ ʟɪᴇɴ ᴅ\'ᴜɴᴇ ᴄʜᴀɪ̂ɴᴇ ᴡʜᴀᴛsᴀᴘᴘ',
   usage: `${prefix}ɪɴғᴏs_ᴄᴀɴᴀʟ <ʟɪᴇɴ_ᴄᴀɴᴀʟ>`,
 
   async execute(sock, msg, args, extra) {
@@ -24,7 +24,7 @@ module.exports = {
 
       // Extraction propre du lien de canal s'il est noyé dans du texte
       const linkMatch = text.match(/https:\/\/whatsapp\.com\/channel\/([A-Za-z0-9]+)/);
-      
+
       if (!linkMatch) {
         return await reply(`*〆 ɪɴᴠᴏ́ǫᴜᴇ ᴜɴ ʟɪᴇɴ ᴅᴇ ᴄᴀɴᴀʟ ᴠᴀʟɪᴅᴇ !*\n\n*ᴇxᴇᴍᴘʟᴇ : _${prefix}ɪɴғᴏs_ᴄᴀɴᴀʟ https://whatsapp.com/channel/xxxxxxxxx_*`);
       }
@@ -34,36 +34,47 @@ module.exports = {
 
       await reply('*📡 ɪɴᴛᴇʀʀᴏɢᴀᴛɪᴏɴ ᴅᴇs ᴀʀᴄᴀɴᴇs ᴅᴜ ᴄᴀɴᴀʟ ᴇɴ ᴄᴏᴜʀs...*');
 
-      // 🛡️ MÉTHODE NATIVE BAILEYS : Plus besoin d'API externe instable !
+      // 🛡️ MÉTHODE NATIVE BAILEYS : Récupération des données réelles du canal
       const data = await sock.newsletterMetadata("invite", inviteCode);
 
       if (!data) {
         throw new Error('Impossible de lire les données de ce canal.');
       }
 
-      // Construction du message style "Newsletter" du sanctuaire
-      const newsletterText = 
-        `*╭╼━━━≪• ɪɴғᴏs ᴅᴜ ᴄᴀɴᴀʟ •≫━━━╾╮*\n\n` +
-        `*📢 ɴᴏᴍ :* ${data.name || 'ɪɴᴄᴏɴɴᴜ'}\n` +
-        `*👥 ᴀʙᴏɴɴᴇ́s :* ${data.subscribers || 'ᴄᴀᴄʜᴇ́'}\n` +
-        `*🔗 ʟɪᴇɴ :* ${channelLink}\n\n` +
-        `*📝 ᴅᴇsᴄʀɪᴘᴛɪᴏɴ :*\n${data.description || 'ᴀᴜᴄᴜɴᴇ ᴅᴇsᴄʀɪᴘᴛɪᴏɴ'}\n\n` +
+      // Formatage ID JID de la newsletter (obligatoire pour générer le widget)
+      const newsletterJid = data.id || `${inviteCode}@newsletter`;
+
+      // 🚀 GÉNÉRATION DU VRAI WIDGET NEWSLETTER NATIF
+      await sock.sendMessage(chatId, {
+        contacts: {
+          displayName: data.name || 'Canal WhatsApp',
+          contacts: [{
+            vcard: `BEGIN:VCARD\nVERSION:3.0\nFN:${data.name || 'Canal'}\nEND:VCARD`
+          }]
+        },
+        // Injection du contexte natif de la chaîne
+        contextInfo: {
+          mentionedJid: [msg.sender],
+          forwardingScore: 1,
+          isForwarded: true,
+          forwardedNewsletterMessageInfo: {
+            newsletterJid: newsletterJid,
+            serverMessageId: 1,
+            newsletterName: data.name || 'Canal WhatsApp'
+          }
+        }
+      }, { quoted: msg });
+
+      // Envoi d'un petit récapitulatif textuel stylisé en dessous pour compléter le tout
+      const recapText = 
+        `*╭╼━━━≪• sᴏᴜᴠᴇʀᴀɪɴᴇᴛᴇ́ •≫━━━╾╮*\n\n` +
+        `*📢 ᴄᴀɴᴀʟ :* ${data.name || 'ɪɴᴄᴏɴɴᴜ'}\n` +
+        `*🆔 ᴊɪᴅ :* ${newsletterJid}\n` +
+        `*👥 ᴀʙᴏɴɴᴇ́s :* ${data.subscribers || 'ᴄᴀᴄʜᴇ́'}\n\n` +
         `*╰━━━━━━━━━━━━━━━━━━━━━━━╯*\n\n` +
         `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
 
-      // Si Baileys trouve l'URL de la photo de profil du canal
-      const profilePic = data.picture || data.preview;
-
-      if (profilePic) {
-        // Envoi de l'image avec la légende
-        await sock.sendMessage(chatId, {
-          image: { url: profilePic },
-          caption: newsletterText
-        }, { quoted: msg });
-      } else {
-        // Sinon, on envoie simplement le texte
-        await reply(newsletterText);
-      }
+      await sock.sendMessage(chatId, { text: recapText }, { quoted: msg });
 
     } catch (error) {
       console.error('Error in channel command:', error);
