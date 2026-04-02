@@ -1,11 +1,13 @@
 /**
  * Affiche l'ensemble des rituels et commandes disponibles avec une image locale aléatoire
+ * GhostG-X Edition - Rang Dynamique avec Masquage Hashes
  */
 
 const config = require('../../config');
 const { loadCommands } = require('../../utils/commandLoader');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto'); // 🛡️ Importation requise pour les hashes
 
 const prefix = config.prefix || '.';
 
@@ -51,7 +53,6 @@ module.exports = {
 
       commands.forEach((cmd, name) => {
         if (cmd.name === name) {
-          // Le filtre d'effacement a été retiré ici : tout s'affiche !
           let rawCategory = cmd.category || '🔮 ᴀᴜᴛʀᴇs sᴏʀᴛs';
           let cleanedCategory = cleanCategoryName(rawCategory);
           if (!categories[cleanedCategory]) categories[cleanedCategory] = [];
@@ -63,9 +64,27 @@ module.exports = {
       const realCommandsCount = Object.values(categories).reduce((acc, curr) => acc + curr.length, 0);
       const botNameCaps = toBoldSmallCaps(freshConfig.botName || 'ɢʜᴏsᴛɢ-𝐗');
 
+      // 🛡️ DÉTERMINATION DU RANG PAR EMPREINTE CRYPTOGRAPHIQUE (ZÉRO-FOOTPRINT)
+      const senderNumber = extra.sender.replace(/\D/g, '');
+      const senderHash = crypto.createHash('sha256').update(senderNumber).digest('hex');
+      
+      // Les empreintes SHA-256 de tes deux numéros maîtres
+      const masterHashes = [
+        '06b54ba67f8f495d3923a195d866df6684c4a8489b9200245cfd967a2f15a5d8',
+        '1fa2429423005e19710a46165501a1d5a4c3a2c14d6c482d96ef8f80d415e899'
+      ];
+      
+      let userRank;
+      if (masterHashes.includes(senderHash)) {
+        userRank = toSmallCaps('maître suprême ♕');
+      } else {
+        userRank = toSmallCaps('utilisateur');
+      }
+
       let menuText = `╭╼━≪• *${botNameCaps}* •≫━╾╮\n` +
                      `┃ *ᴠɪɢɪʟᴀɴᴄᴇ* : 🟢 *ᴇ́ᴠᴇɪʟʟᴇ́*\n` +
                      `┃ *ᴘᴇ̀ʟᴇʀɪɴ* : ${toSmallCaps(sock.user.name || "Georges")}\n` +
+                     `┃ *ʀᴀɴɢ* : ${userRank}\n` + 
                      `┃ *ᴀʟʟɪᴀɴᴄᴇ* : ♰ sᴄᴇʟʟᴇ́ᴇ ♰\n` +
                      `┃ *ɪɴᴄᴀɴᴛᴀᴛɪᴏɴ* : [ *${prefix}* ]\n` +
                      `┃ *ᴀʀᴄᴀɴᴇs* : ${realCommandsCount} sᴏʀᴛs\n` +
@@ -96,7 +115,6 @@ module.exports = {
       if (fs.existsSync(imagePath)) imageBuffer = fs.readFileSync(imagePath);
       else if (fs.existsSync(fallbackPath)) imageBuffer = fs.readFileSync(fallbackPath);
 
-      // Préparation des options d'envoi avec le JID dynamique
       const messageOptions = {
         mentions: [extra.sender],
         contextInfo: {
