@@ -3,6 +3,8 @@
  * Bannit et condamne une âme dans le sanctuaire
  */
 
+const fs = require('fs');
+const path = require('path');
 const config = require('../../config'); // Importation de la configuration
 
 // Extraction du préfixe pour l'usage
@@ -13,12 +15,13 @@ module.exports = {
   aliases: ['condamner','ban', 'sceller'],
   category: '♛ sᴏᴜᴠᴇʀᴀɪɴᴇᴛᴇ́',
   ownerOnly: true, // Géré par ton handler
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴇᴍᴘᴇ̂ᴄʜᴇ ᴀ̀ ᴜɴ ᴜᴛɪʟɪsᴀᴛᴇᴜʀ ᴅ\'ᴜᴛɪʟɪsᴇʀ ʟ\'ᴏʀᴀᴄʟᴇ**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴇᴍᴘᴇ̂ᴄʜᴇ ᴀ̀ ᴜɴ ᴜᴛɪʟɪsᴀᴛᴇᴜʀ ᴅ\'ᴜᴛɪʟɪsᴇʀ ʟ\'ᴏʀᴀᴄʟᴇ',
   usage: `${prefix}ᴄᴏɴᴅᴀᴍɴᴇʀ @ᴜsᴇʀ ᴏᴜ ᴇɴ ʀᴇ́ᴘᴏɴsᴇ`,
 
   async execute(sock, msg, args, extra) {
     const { reply, isOwner } = extra;
     const chatId = msg.key.remoteJid;
+    const isGroup = chatId.endsWith('@g.us');
 
     // Sécurité supplémentaire si le handler n'utilise pas 'ownerOnly'
     if (!isOwner) return reply('*〆 ᴀᴄᴄᴇ̀s ʀᴇғᴜsᴇ́. sᴇᴜʟ ʟᴇ ᴍᴀɪ̂ᴛʀᴇ ᴘᴇᴜᴛ ᴍᴀɴɪᴇʀ ʟᴀ ᴊᴜsᴛɪᴄᴇ.*');
@@ -35,21 +38,53 @@ module.exports = {
       } 
       // 2. Extraction de la cible via réponse à un message (quoted)
       else if (ctx && ctx.quotedMessage) {
-        // En groupe, l'auteur du message cité est dans ctx.participant
-        // En DM privé, c'est l'interlocuteur lui-même (remoteJid)
-        target = ctx.participant || ctx.remoteJid;
+        target = ctx.participant || (isGroup ? null : chatId);
+        
+        if (!target) {
+            return reply(`*〆 ɪᴍᴘᴏssɪʙʟᴇ ᴅᴇ ᴄɪʙʟᴇʀ ᴄᴇᴛᴛᴇ ᴀ̂ᴍᴇ.*`);
+        }
       } 
       // Si aucune cible n'est trouvée
       else {
         return reply(`*〆 ɪɴᴠᴏǫᴜᴇ ᴜɴᴇ ᴍᴇɴᴛɪᴏɴ ᴏᴜ ʀᴇ́ᴘᴏɴᴅs ᴀ̀ ᴜɴᴇ ᴀ̂ᴍᴇ ᴘᴏᴜʀ ʟᴀ ᴄᴏɴᴅᴀᴍɴᴇʀ !*\n*ᴜsᴀɢᴇ : ${prefix}ᴄᴏɴᴅᴀᴍɴᴇʀ @ᴜsᴇʀ*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
-      // Application du blocage au niveau de l'instance WhatsApp
-      await sock.updateBlockStatus(target, 'block');
+      // Interdiction de se bannir soi-même ou le Suprême
+      const cleanTarget = target.replace(/\D/g, '');
+      if (cleanTarget === '22651622652' || target === sock.user.id.split(':')[0] + '@s.whatsapp.net') {
+        return reply(`*〆 ᴛᴜ ɴᴇ ᴘᴇᴜx ᴘᴀs ᴄᴏɴᴅᴀᴍɴᴇʀ ʟᴇ ᴄʀᴇ́ᴀᴛᴇᴜʀ ᴏᴜ ʟ'ᴏʀᴀᴄʟᴇ ʟᴜɪ-ᴍᴇ̂ᴍᴇ.*`);
+      }
+
+      const envPath = path.join(process.cwd(), '.env');
+      let envContent = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf8') : '';
+      
+      let bannedList = [];
+      const bannedMatch = envContent.match(/^BANNED_USERS=(.*)$/m);
+      
+      if (bannedMatch) {
+        bannedList = bannedMatch[1].split(',').filter(j => j.trim() !== '');
+      }
+
+      // Si l'utilisateur est déjà condamné
+      if (bannedList.includes(target)) {
+        return reply(`*⚖️ ᴄᴇᴛᴛᴇ ᴀ̂ᴍᴇ ᴇsᴛ ᴅᴇ́ᴊᴀ̀ sᴄᴇʟʟᴇ́ᴇ ᴇᴛ ᴄᴏɴᴅᴀᴍɴᴇ́ᴇ.*`);
+      }
+
+      // Ajout à la liste et réécriture du .env
+      bannedList.push(target);
+      const newBannedString = bannedList.join(',');
+
+      if (envContent.match(/^BANNED_USERS=/m)) {
+        envContent = envContent.replace(/^BANNED_USERS=.*/m, `BANNED_USERS=${newBannedString}`);
+      } else {
+        envContent += `\nBANNED_USERS=${newBannedString}`;
+      }
+      
+      fs.writeFileSync(envPath, envContent.trim() + '\n', 'utf8');
 
       // Message de confirmation avec mention
       await sock.sendMessage(chatId, {
-        text: `*⚖️ ʟ\'ᴀ̂ᴍᴇ ᴅᴇ @${target.split('@')[0]} ᴀ ᴇ́ᴛᴇ́ ᴄᴏɴᴅᴀᴍɴᴇ́ᴇ ᴇᴛ ʙᴀɴɴɪᴇ ᴅᴇs ᴀʀᴄᴀɴᴇs !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`,
+        text: `*⚖️ ʟ\'ᴀ̂ᴍᴇ ᴅᴇ @${target.split('@')[0]} ᴀ ᴇ́ᴛᴇ́ ᴄᴏɴᴅᴀᴍɴᴇ́ᴇ ᴇᴛ sᴄᴇʟʟᴇ́ᴇ ᴅᴀɴs ʟᴇs ᴀʀᴄᴀɴᴇs !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`,
         mentions: [target]
       }, { quoted: msg });
 
