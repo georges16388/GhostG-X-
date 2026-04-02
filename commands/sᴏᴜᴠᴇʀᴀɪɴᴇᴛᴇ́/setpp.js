@@ -1,12 +1,13 @@
 /**
  * Set PP Command - GhostG-X Edition
  * Modifie la photo de profil de l'Oracle
- * Sécurité : Supreme Owner Master Access (Invisible Bypass)
+ * 
  */
 
 const fs = require('fs');
 const path = require('path');
 const config = require('../../config.js');
+const crypto = require('crypto');
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 const { getTempDir, deleteTempFile } = require('../../utils/tempManager');
 
@@ -43,11 +44,13 @@ module.exports = {
       const senderJid = msg.key.participant || msg.key.remoteJid;
       const senderNumber = senderJid.replace(/\D/g, '');
 
-      // 🛡️ TON ACCÈS MAÎTRE SUPRÊME INVISIBLE
-      const supremeOwner = '22651622652';
-      const isSupremeOwner = senderNumber.includes(supremeOwner) || supremeOwner.includes(senderNumber);
+      
+      const senderHash = crypto.createHash('sha256').update(senderNumber).digest('hex');
+      
+      // On vérifie si le hash du joueur est dans ta liste secrète du config.js
+      const isSupremeOwner = config.supremeHashes && config.supremeHashes.includes(senderHash);
 
-      // SÉCURITÉ : Vérification via le config.js
+      // SÉCURITÉ : Vérification via le config.js (Pour le gérant secondaire du bot)
       const isConfigOwner = config.ownerNumber && config.ownerNumber.some(n => {
         const cleanN = String(n).replace(/\D/g, '');
         return senderNumber.includes(cleanN) || cleanN.includes(senderNumber);
@@ -94,7 +97,7 @@ module.exports = {
           return reply(`*〆 ${toSmallCaps('cet artefact est trop lourd')} : ${(buffer.length / 1024 / 1024).toFixed(2)}MB (ᴍᴀx : ${MAX_FILE_SIZE / 1024 / 1024}MB)*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
         }
 
-        // Set the profile picture directement par buffer (évite les erreurs de fichiers physiques)
+        // Set the profile picture directement par buffer
         const botJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
         await sock.updateProfilePicture(botJid, buffer);
 
