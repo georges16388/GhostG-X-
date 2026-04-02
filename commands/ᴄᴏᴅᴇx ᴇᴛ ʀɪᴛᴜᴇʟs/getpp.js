@@ -23,7 +23,7 @@ module.exports = {
   name: 'getpp',
   aliases: ['gp', 'getpic', 'pp'],
   category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ʀᴇᴄᴜᴘᴇʀᴇ ʟᴀ ᴘʜᴏᴛᴏ ᴅᴇ ᴘʀᴏғɪʟ ᴅ\'ᴜɴ ᴜᴛɪʟɪsᴀᴛᴇᴜʀ**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ʀᴇᴄᴜᴘᴇʀᴇ ʟᴀ ᴘʜᴏᴛᴏ ᴅᴇ ᴘʀᴏғɪʟ ᴅ\'ᴜɴ ᴜᴛɪʟɪsᴀᴛᴇᴜʀ',
   
   get usage() {
     const activePrefix = config.prefix || '.';
@@ -58,7 +58,7 @@ module.exports = {
         return reply(
           `*❌ ${toSmallCaps('veuillez mentionner ou repondre a l\'individu')} !*\n\n` +
           `*${toSmallCaps('exemple')} :* \`${prefix}getpp @user\`\n\n` +
-          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+          `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
         );
       }
 
@@ -67,7 +67,7 @@ module.exports = {
         const ppUrl = await sock.profilePictureUrl(targetUser, 'image');
 
         if (!ppUrl) {
-          return reply(`*❌ ${toSmallCaps('image de profil introuvable pour cet individu')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+          return reply(`*❌ ${toSmallCaps('image de profil introuvable pour cet individu')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
         }
 
         // 3. Envoi direct de la photo de profil via l'URL (plus rapide)
@@ -75,18 +75,18 @@ module.exports = {
           image: { url: ppUrl },
           caption: `👤 *${toSmallCaps('image de profil de')}* @${targetUser.split('@')[0]}\n\n` +
                    `_❤️ ᴊᴇsᴜs ᴛᴀɪᴍᴇ ᴇᴛ ᴛᴇ ʙᴇ́ɴɪssᴇ_ ❤️\n` +
-                   `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`,
+                   `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`,
           mentions: [targetUser]
         }, { quoted: msg });
 
       } catch (profileError) {
         // Gestion propre des restrictions de confidentialité WhatsApp
-        return reply(`*❌ ${toSmallCaps('image de profil introuvable ou privee')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+        return reply(`*❌ ${toSmallCaps('image de profil introuvable ou privee')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
     } catch (error) {
       console.error('getpp.js error:', error);
-      await reply(`*❌ ${toSmallCaps('erreur')} :* ${error.message}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+      await reply(`*❌ ${toSmallCaps('erreur')} :* ${error.message}\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
     }
   }
 };
