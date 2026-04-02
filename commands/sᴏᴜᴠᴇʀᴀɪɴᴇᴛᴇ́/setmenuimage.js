@@ -16,7 +16,7 @@ module.exports = {
   aliases: ['illustration_grimoire', 'setmenuimage', 'setmenuimg', 'changemenuimage'],
   category: '♛ sᴏᴜᴠᴇʀᴀɪɴᴇᴛᴇ́',
   ownerOnly: true,
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴛʀᴀɴsᴍᴜᴛᴇ ʟ\'ɪʟʟᴜsᴛʀᴀᴛɪᴏɴ ᴘʀɪɴᴄɪᴘᴀʟᴇ ᴅᴜ ᴍᴇɴᴜ ᴀ̀ ᴘᴀʀᴛɪʀ ᴅ\'ᴜɴᴇ ɪᴍᴀɢᴇ ᴏᴜ sᴛɪᴄᴋᴇʀ**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴛʀᴀɴsᴍᴜᴛᴇ ʟ\'ɪʟʟᴜsᴛʀᴀᴛɪᴏɴ ᴘʀɪɴᴄɪᴘᴀʟᴇ ᴅᴜ ᴍᴇɴᴜ ᴀ̀ ᴘᴀʀᴛɪʀ ᴅ\'ᴜɴᴇ ɪᴍᴀɢᴇ ᴏᴜ sᴛɪᴄᴋᴇʀ',
   usage: `${prefix}ɪʟʟᴜsᴛʀᴀᴛɪᴏɴ_ɢʀɪᴍᴏɪʀᴇ (ᴇɴ ʀᴇ́ᴘᴏɴsᴇ ᴀ̀ ᴜɴᴇ ɪᴍᴀɢᴇ/sᴛɪᴄᴋᴇʀ)`,
 
   async execute(sock, msg, args, extra) {
@@ -90,7 +90,7 @@ module.exports = {
         }
       }
 
-      await reply('*✅ ʟ\'ɪʟʟᴜsᴛʀᴀᴛɪᴏɴ ᴅᴜ ᴍᴇɴᴜ ᴀ ᴇ́ᴛᴇ́ ᴛʀᴀɴsᴍᴜᴛᴇ́ᴇ ᴀᴠᴇᴄ sᴜᴄᴄᴇ̀s sᴜʀ ᴛᴏᴜs ʟᴇs ᴀʀᴄᴀɴᴇs !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*');
+      await reply('*✅ ʟ\'ɪʟʟᴜsᴛʀᴀᴛɪᴏɴ ᴅᴜ ᴍᴇɴᴜ ᴀ ᴇ́ᴛᴇ́ ᴛʀᴀɴsᴍᴜᴛᴇ́ᴇ ᴀᴠᴇᴄ sᴜᴄᴄᴇ̀s sᴜʀ ᴛᴏᴜs ʟᴇs ᴀʀᴄᴀɴᴇs !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*');
 
     } catch (error) {
       console.error('SetMenuImage command error:', error);
