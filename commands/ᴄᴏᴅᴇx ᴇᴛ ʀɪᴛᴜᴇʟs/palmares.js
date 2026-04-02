@@ -22,10 +22,9 @@ function toSmallCaps(text) {
 
 module.exports = {
     name: 'palmares',
-    // Ajout de 'groupstats', 'stats', 'leaderboard', 'gstats', 'msgs' en texte brut pour assurer la réactivité !
     aliases: ['stats', 'leaderboard', 'gstats', 'topmembers', 'msgs', 'messagestats', 'groupstats', 'palmarès'],
     category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
-    description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀғғɪᴄʜᴇ ʟᴇs sᴛᴀᴛɪsᴛɪǫᴜᴇs ᴅᴇ ᴅɪsᴄᴜssɪᴏɴ ᴅᴜ ɢʀᴏᴜᴘᴇ ᴘᴏᴜʀ ʟᴀ ᴊᴏᴜʀɴᴇᴇ**',
+    description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀғғɪᴄʜᴇ ʟᴇs sᴛᴀᴛɪsᴛɪǫᴜᴇs ᴅᴇ ᴅɪsᴄᴜssɪᴏɴ ᴅᴜ ɢʀᴏᴜᴘᴇ ᴘᴏᴜʀ ʟᴀ ᴊᴏᴜʀɴᴇᴇ',
     usage: `${config.prefix || '.'}palmares`,
     groupOnly: true,
     adminOnly: false,
@@ -41,7 +40,7 @@ module.exports = {
 
             // Vérification si des statistiques existent et s'il y a des utilisateurs enregistrés
             if (!stats || !stats.users || Object.keys(stats.users).length === 0) {
-                return reply(`📊 *${toSmallCaps('aucune activite n\'a ete enregistree aujourd\'hui')}.* \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+                return reply(`📊 *${toSmallCaps('aucune activite n\'a ete enregistree aujourd\'hui')}.*\n\n_👑 ${toSmallCaps('jesus est roi')}_\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
             }
 
             const { total, users } = stats;
@@ -53,17 +52,16 @@ module.exports = {
 
             // Formulation du texte pour le top 5
             let topText = sortedUsers.length > 0
-                ? sortedUsers.map(([id, count], i) => `  ${i + 1}. @${id.split('@')[0]} — *${count} msgs*`).join('\n')
-                : `  ${toSmallCaps('aucun individu actif pour le moment')}.`;
+                ? sortedUsers.map(([id, count], i) => `*┃* ${i + 1}. @${id.split('@')[0]} — *${count} msgs*`).join('\n')
+                : `*┃* ${toSmallCaps('aucun individu actif pour le moment')}.`;
 
-            const text = `╭╼━━━━━━━━━━━━━━━╾╮\n` +
-                         `┃     📊 *ᴘᴀʟᴍᴀʀᴇ̀s ᴅᴜ ᴊᴏᴜʀ* ┃\n` +
-                         `╰╼━━━━━━━━━━━━━━━╾╯\n\n` +
-                         `📌 *${toSmallCaps('total des messages')} :* ${total}\n\n` +
-                         `👥 *${toSmallCaps('les scribes les plus actifs')} :*\n` +
+            const text = `*╭╼━━━≪• ᴘᴀʟᴍᴀʀᴇ̀s ᴅᴜ ᴊᴏᴜʀ •≫━━━╾╮*\n` +
+                         `*┃* 📌 *${toSmallCaps('total des messages')} :* ${total}\n\n` +
+                         `*👥 ${toSmallCaps('les scribes les plus actifs')} :*\n` +
                          `${topText}\n\n` +
                          `*💡 ${toSmallCaps('tapez')} \`${prefix}rang\` ${toSmallCaps('pour voir vos statistiques personnelles')}.*\n\n` +
-                         `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+                         `_👑 ${toSmallCaps('jesus est roi')}_\n\n` +
+                         `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
 
             await sock.sendMessage(from, {
                 text,
@@ -72,7 +70,7 @@ module.exports = {
 
         } catch (err) {
             console.error('[groupstats cmd] error:', err);
-            await reply(`*❌ ${toSmallCaps('erreur lors du chargement des statistiques')}.* \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+            await reply(`*❌ ${toSmallCaps('erreur lors du chargement des statistiques')}.*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
         }
     }
 };
