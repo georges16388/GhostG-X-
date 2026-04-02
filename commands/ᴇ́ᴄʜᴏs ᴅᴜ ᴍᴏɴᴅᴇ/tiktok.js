@@ -39,7 +39,7 @@ module.exports = {
   name: 'tiktok',
   aliases: ['illusions_tiktok', 'tt', 'ttdl', 'tiktokdl', 'illusion_tiktok'],
   category: '‎⌘ ᴇ́ᴄʜᴏs ᴅᴜ ᴍᴏɴᴅᴇ',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀsᴘɪʀᴇ ᴇᴛ ᴛᴇʟᴇᴄʜᴀʀɢᴇ ᴅᴇs ᴠɪᴅᴇᴏs ᴛɪᴋᴛᴏᴋ**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀsᴘɪʀᴇ ᴇᴛ ᴛᴇʟᴇᴄʜᴀʀɢᴇ ᴅᴇs ᴠɪᴅᴇᴏs ᴛɪᴋᴛᴏᴋ',
   usage: `${config.prefix || '.'}tiktok [lien tiktok]`,
   groupOnly: false,
   adminOnly: false,
@@ -59,11 +59,10 @@ module.exports = {
 
       if (!text) {
         return reply(
-          `╭╼━≪• *⚠️ ᴇᴄʜᴇᴄ ᴅᴇ ʟɪɴᴠᴏᴄᴀᴛɪᴏɴ* •≫━╾╮\n` +
-          `┃ 🔮 *${toSmallCaps('indique un lien tiktok')}*\n` +
-          `┃ *${toSmallCaps('pour aspirer le media')} !*\n` +
-          `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
-          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+          `*⚠️ ${toSmallCaps('echec de l\'invocation')}*\n\n` +
+          `*┃* 🔮 *${toSmallCaps('indique un lien tiktok')}*\n` +
+          `*┃* *${toSmallCaps('pour aspirer le media')} !*\n\n` +
+          `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
         );
       }
 
@@ -79,7 +78,7 @@ module.exports = {
       const isValidUrl = tiktokPatterns.some(pattern => pattern.test(text));
 
       if (!isValidUrl) {
-        return reply(`*❌ ${toSmallCaps('ce lien nest pas une illusion tiktok valide')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+        return reply(`*❌ ${toSmallCaps('ce lien nest pas une illusion tiktok valide')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       // Réaction avec l'orbe de téléchargement
@@ -128,16 +127,17 @@ module.exports = {
                 const mediaUrl = media.url;
                 const isVideo = /\.(mp4|mov|avi|mkv|webm)$/i.test(mediaUrl) || media.type === 'video';
 
-                let mediaCaption = `╭╼━≪• *🎬 ᴀsᴘɪʀᴀᴛɪᴏɴ ʀᴇ́ᴜssɪᴇ* •≫━╾╮\n` +
-                                   `┃ 🔮 *${toSmallCaps('extrait par')} :* ${botName}\n` +
-                                   `┃ 🔗 *${toSmallCaps('source')} :* ${sourceDomain}\n`;
+                let mediaCaption = `*╭╼━━━≪• 🎬 ᴀsᴘɪʀᴀᴛɪᴏɴ ʀᴇ́ᴜssɪᴇ •≫━━━╾╮*\n` +
+                                   `*┃* 🔮 *${toSmallCaps('extrait par')} :* ${botName}\n` +
+                                   `*┃* 🔗 *${toSmallCaps('source')} :* ${sourceDomain}\n`;
 
                 if (downloadData.title) {
-                  mediaCaption += `┃ 🔖 *${toSmallCaps('titre')} :* ${toSmallCaps(downloadData.title)}\n`;
+                  mediaCaption += `*┃* 🔖 *${toSmallCaps('titre')} :* ${toSmallCaps(downloadData.title)}\n\n`;
+                } else {
+                  mediaCaption += `\n`;
                 }
 
-                mediaCaption += `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
-                                 `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+                mediaCaption += `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
 
                 if (isVideo) {
                   await sock.sendMessage(chatId, {
@@ -161,16 +161,17 @@ module.exports = {
 
         // Finalisation et envoi de l'extrait vidéo trouvé par l'API 1 ou 2
         if (videoUrl) {
-          let caption = `╭╼━≪• *🎬 ᴀsᴘɪʀᴀᴛɪᴏɴ ʀᴇ́ᴜssɪᴇ* •≫━╾╮\n` +
-                        `┃ 🔮 *${toSmallCaps('extrait par')} :* ${botName}\n` +
-                        `┃ 🔗 *${toSmallCaps('source')} :* ${sourceDomain}\n`;
+          let caption = `*╭╼━━━≪• 🎬 ᴀsᴘɪʀᴀᴛɪᴏɴ ʀᴇ́ᴜssɪᴇ •≫━━━╾╮*\n` +
+                        `*┃* 🔮 *${toSmallCaps('extrait par')} :* ${botName}\n` +
+                        `*┃* 🔗 *${toSmallCaps('source')} :* ${sourceDomain}\n`;
 
           if (title) {
-            caption += `┃ 🔖 *${toSmallCaps('titre')} :* ${toSmallCaps(title)}\n`;
+            caption += `*┃* 🔖 *${toSmallCaps('titre')} :* ${toSmallCaps(title)}\n\n`;
+          } else {
+            caption += `\n`;
           }
 
-          caption += `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
-                     `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+          caption += `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
 
           try {
             const videoResponse = await axios.get(videoUrl, {
@@ -195,7 +196,7 @@ module.exports = {
             return;
           } catch (downloadError) {
             console.error(`Failed to download video: ${downloadError.message}`);
-            
+
             // Repli vers l'envoi par URL directe
             try {
               await sock.sendMessage(chatId, {
@@ -211,15 +212,15 @@ module.exports = {
         }
 
         // Si aucun système n'a fonctionné
-        return reply(`*❌ ${toSmallCaps('toutes les sources dinvocation ont echoue pour cette illusion')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+        return reply(`*❌ ${toSmallCaps('toutes les sources dinvocation ont echoue pour cette illusion')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
 
       } catch (error) {
         console.error('Error in TikTok download:', error);
-        await reply(`*❌ ${toSmallCaps('loracle a echoue a sonder ce lien tiktok')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+        await reply(`*❌ ${toSmallCaps('loracle a echoue a sonder ce lien tiktok')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
     } catch (error) {
       console.error('Error in TikTok command:', error);
-      await reply(`*❌ ${toSmallCaps('une singularite est survenue lors du traitement')}...*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+      await reply(`*❌ ${toSmallCaps('une singularite est survenue lors du traitement')}...*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
     }
   }
 };
