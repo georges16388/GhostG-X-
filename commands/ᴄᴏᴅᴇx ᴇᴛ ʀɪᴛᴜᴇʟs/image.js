@@ -5,6 +5,8 @@
 
 const { downloadMediaMessage } = require('@whiskeysockets/baileys');
 const config = require('../../config.js');
+const fs = require('fs');
+const path = require('path');
 
 // Fonction pour le style Small Caps (Cohérence visuelle du sanctuaire)
 function toSmallCaps(text) {
@@ -24,10 +26,13 @@ module.exports = {
   name: 'image',
   aliases: ['toimg', 'stickertoimg', 'sticker2img', 'svideo', 'simage', 'img', 'tovideo', 'tovideo+'],
   category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴄᴏɴᴠᴇʀᴛɪᴛ ᴜɴ sᴛɪᴄᴋᴇʀ ᴇɴ ɪᴍᴀɢᴇ (ᴘɴɢ) ᴏᴜ ᴇɴ ᴠɪᴅᴇᴏ**',
-  // Séparation visuelle nette dans l'usage pour guider l'utilisateur
-  usage: `${config.prefix || '.'}image [reponse sticker fixe]\n` +
-         `${config.prefix || '.'}tovideo [reponse sticker anime]`,
+  description: 'ᴄᴏɴᴠᴇʀᴛɪᴛ ᴜɴ sᴛɪᴄᴋᴇʀ ᴇɴ ɪᴍᴀɢᴇ (ᴘɴɢ) ᴏᴜ ᴇɴ ᴠɪᴅᴇᴏ',
+  
+  get usage() {
+    const activePrefix = config.prefix || '.';
+    return `${activePrefix}image [reponse sticker fixe]\n` +
+           `${activePrefix}tovideo [reponse sticker anime]`;
+  },
   groupOnly: false,
   adminOnly: false,
   botAdminNeeded: false,
@@ -60,6 +65,8 @@ module.exports = {
         return await reply(notStickerMessage);
       }
 
+      await sock.sendPresenceUpdate('composing', chatId);
+
       // 3. Téléchargement du média WebP d'origine
       const stickerBuffer = await downloadMediaMessage(
         targetMessage,
@@ -77,17 +84,19 @@ module.exports = {
 
       if (isAnimated) {
         // --- TRANSFORMATION EN VIDÉO (Animated Sticker) ---
-        const { webp2mp4 } = require('../../utils/webp2mp4'); // Ton utilitaire de conversion
-        const mp4Buffer = await webp2mp4(stickerBuffer);
+        const { webp2mp4 } = require('../../utils/webp2mp4'); 
+        
+        // On crée un fichier temporaire pour que l'API wep2mp4 l'accepte à coup sûr
+        const tempWebp = path.join(__dirname, `../../temp_${Date.now()}.webp`);
+        fs.writeFileSync(tempWebp, stickerBuffer);
+
+        const mp4Buffer = await webp2mp4(tempWebp);
+        
+        // Nettoyage du fichier temporaire
+        if (fs.existsSync(tempWebp)) fs.unlinkSync(tempWebp);
 
         if (!mp4Buffer || mp4Buffer.length === 0) {
           throw new Error('Le buffer MP4 est vide ou nul');
-        }
-
-        // Vérification de la taille du fichier (Limite WhatsApp 16MB)
-        const maxSize = 16 * 1024 * 1024; // 16MB
-        if (mp4Buffer.length > maxSize) {
-          throw new Error(`Fichier MP4 trop lourd : ${(mp4Buffer.length / 1024 / 1024).toFixed(2)}MB`);
         }
 
         // Envoi sous forme de vidéo/GIF cyclique
@@ -99,8 +108,12 @@ module.exports = {
 
       } else {
         // --- TRANSFORMATION EN IMAGE (Static Sticker) ---
-        const { webp2png } = require('../../utils/webp2mp4'); // Ton utilitaire de conversion WebP/PNG
-        const imageBuffer = await webp2png(stickerBuffer);
+        // Utilisation de SHARP pour une conversion instantanée et sans API externe
+        const sharp = require('sharp');
+        
+        const imageBuffer = await sharp(stickerBuffer)
+          .png()
+          .toBuffer();
 
         // Envoi sous forme d'image
         await sock.sendMessage(chatId, {
