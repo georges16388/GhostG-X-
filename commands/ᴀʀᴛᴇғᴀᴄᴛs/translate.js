@@ -17,8 +17,8 @@ function toSmallCaps(text) {
 }
 
 module.exports = {
-  name: 'oracle',
-  aliases: ['oracles'], // ⚠️ Retrait des doublons tr, translate, etc.
+  name: 'translate',
+  aliases: ['tr', 'trans', 'trad', 'traduis', 'traduire'], 
   category: '⚒ ᴀʀᴛᴇғᴀᴄᴛs',
   description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴛʀᴀᴅᴜɪᴛ ᴅᴇs ᴛᴇxᴛᴇs ᴇᴛ ɪɴᴄᴀɴᴛᴀᴛɪᴏɴs (ᴍᴏᴅᴇ ʙʀᴜᴛ)',
 
