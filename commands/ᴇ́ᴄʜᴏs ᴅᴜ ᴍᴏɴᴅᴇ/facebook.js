@@ -55,7 +55,7 @@ module.exports = {
           `┃ *${toSmallCaps('pour aspirer la video')} !*\n` +
           `┃ \n` +
           `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
-          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+          `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
         );
       }
 
@@ -100,8 +100,8 @@ module.exports = {
                       `┃ 📹 *${toSmallCaps('qualite')} :* ${data.hd ? 'ʜᴅ' : 'sᴅ'}\n` +
                       `┃ \n` +
                       `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
-                      `_❤️ ᴊᴇsᴜs ᴛᴀɪᴍᴇ ᴇᴛ ᴛᴇ ʙᴇ́ɴɪssᴇ_ ❤️\n` +
-                      `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ${botName.toUpperCase()}*`;
+                      `*_ᴊᴇsᴜs ᴇsᴛ ᴍᴀɪᴛʀᴇ sᴜᴘʀᴇᴍᴇ ♛_*\n` +
+                      `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
 
         // Envoi de la vidéo (directement via l'URL pour économiser la RAM de ton serveur)
         try {
@@ -141,7 +141,7 @@ module.exports = {
           `┃ ⚠️ *${toSmallCaps('erreur')} :* ${error.message}\n` +
           `┃ \n` +
           `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
-          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+          `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
         );
       }
     } catch (error) {
