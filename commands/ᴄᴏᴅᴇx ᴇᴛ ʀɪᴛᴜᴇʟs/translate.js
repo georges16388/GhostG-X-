@@ -19,8 +19,8 @@ function toSmallCaps(text) {
 const prefix = config.prefix || '.';
 
 module.exports = {
-  name: 'translate',
-  aliases: ['tr', 'trans', 'trad', 'traduis', 'traduire'],
+  name: 'traduction',
+  aliases: [traduire],
   category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs', 
   description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ɪɴᴠᴏǫᴜᴇ ʟᴀ sᴀɢᴇssᴇ ᴅᴇs ʟᴀɴɢᴜᴇs ᴘᴏᴜʀ ᴛʀᴀᴅᴜɪʀᴇ ᴜɴ ᴍᴜʀᴍᴜʀᴇ',
   usage: `${prefix}tr [langue] [texte ou en reponse]`,
