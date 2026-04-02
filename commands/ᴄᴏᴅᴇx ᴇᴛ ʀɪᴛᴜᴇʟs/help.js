@@ -1,3 +1,4 @@
+
 /**
  * Help Command - Show detailed help for a specific command
  * GhostG-X Edition
@@ -24,7 +25,7 @@ module.exports = {
   name: 'help',
   aliases: ['h', 'aide', 'l'],
   category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀғғɪᴄʜᴇ ʟᴇs ᴅᴇᴛᴀɪʟs ᴇᴛ ʟ\'ᴜᴛɪʟɪsᴀᴛɪᴏɴ ᴅ\'ᴜɴᴇ ᴄᴏᴍᴍᴀɴᴅᴇ sᴘᴇᴄɪғɪǫᴜᴇ**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀғғɪᴄʜᴇ ʟᴇs ᴅᴇᴛᴀɪʟs ᴇᴛ ʟ\'ᴜᴛɪʟɪsᴀᴛɪᴏɴ ᴅ\'ᴜɴᴇ ᴄᴏᴍᴍᴀɴᴅᴇ sᴘᴇᴄɪғɪǫᴜᴇ',
   usage: `${config.prefix || '.'}help [nom du sort]`,
   groupOnly: false,
   adminOnly: false,
@@ -50,12 +51,12 @@ module.exports = {
           }
         });
 
-        // ❌ COMMANDE INTROUVABLE (Version customisée et stylisée)
+        // ❌ COMMANDE INTROUVABLE
         if (!targetCmd) {
           return await reply(
             `*❌ ${toSmallCaps('commande')} \`${args[0]}\` ${toSmallCaps('introuvable')}.*\n` +
             `*💡 ${toSmallCaps('tape')} \`${prefix}menu\` ${toSmallCaps('pour voir les commandes existantes')}.*\n\n` +
-            `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+            `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
           );
         }
 
@@ -63,41 +64,40 @@ module.exports = {
         let rawUsage = targetCmd.usage || '';
         let formattedUsage = rawUsage.replace(/\$\{prefix\}/g, prefix);
 
-        // 2. Construction du bloc d'aide (avec espaces après les bordures '┃ ')
-        let helpDetail = `╭╼━≪• *⚡ ${toSmallCaps('aide rituel')}* •≫━╾╮\n` +
-                         `┃ 🔮 *sᴏʀᴛ* : ${targetCmd.name}\n` +
-                         `┃ 🏷️ *ᴀʟɪᴀs* : ${targetCmd.aliases ? targetCmd.aliases.join(', ') : 'ᴀᴜᴄᴜɴ'}\n` +
-                         `┃ 🧩 *ᴄᴀᴛᴇɢᴏʀɪᴇ* : ${targetCmd.category || '🔮 ᴀᴜᴛʀᴇs sᴏʀᴛs'}\n`;
-        
+        // 2. Construction du bloc d'aide
+        let helpDetail = `*╭╼━━━≪• ⚡ ᴀɪᴅᴇ ʀɪᴛᴜᴇʟ •≫━━━╾╮*\n` +
+                         `*┃* 🔮 *${toSmallCaps('sort')} :* ${targetCmd.name}\n` +
+                         `*┃* 🏷️ *${toSmallCaps('alias')} :* ${targetCmd.aliases ? targetCmd.aliases.join(', ') : 'ᴀᴜᴄᴜɴ'}\n` +
+                         `*┃* 🧩 *${toSmallCaps('categorie')} :* ${targetCmd.category || '🔮 ᴀᴜᴛʀᴇs sᴏʀᴛs'}\n`;
+
         if (formattedUsage) {
           const usageLines = formattedUsage.split('\n');
-  const activePrefix = config.prefix || '.';
-          const indentedUsage = usageLines.map(line => `┃ [ ${activePrefix} ] 💡 *ᴜsᴀɢᴇ* : ${line}`).join('\n');
+          const indentedUsage = usageLines.map(line => `*┃* 💡 *${toSmallCaps('usage')} :* ${line}`).join('\n');
           helpDetail += indentedUsage + '\n';
         }
 
-        helpDetail += `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
-                      `📝 *ᴅᴇsᴄʀɪᴘᴛɪᴏɴ :*\n_${targetCmd.description || 'Aucune description disponible.'}_\n\n` +
-                      `_❤️ ᴊᴇsᴜs ᴛᴀɪᴍᴇ ᴇᴛ ᴛᴇ ʙᴇ́ɴɪssᴇ_ ❤️\n` +
-                      `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+        helpDetail += `*╰━━━━━━━━━━━━━━━━━━━━━━━╯*\n\n` +
+                      `*📝 ${toSmallCaps('description')} :*\n_${targetCmd.description.replace(/\*\*/g, '') || 'Aucune description disponible.'}_\n\n` +
+                      `_👑 ${toSmallCaps('jesus est roi')}_\n\n` +
+                      `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
 
         return await reply(helpDetail);
       }
 
       // --- CAS 2 : AIDE GÉNÉRALE ---
-      let generalHelp = `╭╼━≪• *ɢʜᴏsᴛɢ-x ᴍᴅ* •≫━╾╮\n` +
-                        `┃ *ᴜᴛɪʟɪsᴀᴛᴇᴜʀ* : @${senderId.split('@')[0]}\n` +
-                        `┃ *ᴘʀᴇғɪxᴇ* : [ ${prefix} ]\n` +
-                        `┃ *ᴠᴇʀsɪᴏɴ* : 1.0.0 (ᴍᴅ)\n` +
-                        `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
-                        `💡 *ᴀsᴛᴜᴄᴇ :*\n` +
-                        `ᴘᴏᴜʀ ᴄᴏᴍᴘʀᴇɴᴅʀᴇ ᴜɴ sᴏʀᴛ sᴘᴇ́ᴄɪғɪǫᴜᴇ, ᴛᴀᴘᴇ :\n` +
+      let generalHelp = `*╭╼━━━≪• ɢʜᴏsᴛɢ-x ᴍᴅ •≫━━━╾╮*\n` +
+                        `*┃* 👤 *${toSmallCaps('utilisateur')} :* @${senderId.split('@')[0]}\n` +
+                        `*┃* 🔗 *${toSmallCaps('prefixe')} :* [ ${prefix} ]\n` +
+                        `*┃* 🧬 *${toSmallCaps('version')} :* 1.0.0 (ᴍᴅ)\n` +
+                        `*╰━━━━━━━━━━━━━━━━━━━━━━━╯*\n\n` +
+                        `*💡 ${toSmallCaps('astuce')} :*\n` +
+                        `${toSmallCaps('pour comprendre un sort specifique, tape')} :\n` +
                         `👉🏾 \`${prefix}help <nom_du_sort>\`\n\n` +
-                        `🌐 *ʟɪᴇɴs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ :*\n` +
-                        `• *ᴄʜᴀɪɴᴇ* : https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c\n` +
-                        `• *ᴍᴀɪᴛʀᴇ* : https://wa.me/22651622652\n\n` +
-                        `_❤️ ᴊᴇsᴜs ᴛᴀɪᴍᴇ ᴇᴛ ᴛᴇ ʙᴇ́ɴɪssᴇ_ ❤️\n` +
-                        `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+                        `*🌐 ${toSmallCaps('liens du sanctuaire')} :*\n` +
+                        `*┃* 📢 *${toSmallCaps('chaine')} :* https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c\n` +
+                        `*┃* 🛡️ *${toSmallCaps('maitre')} :* https://wa.me/22651622652\n\n` +
+                        `_👑 ${toSmallCaps('jesus est roi')}_\n\n` +
+                        `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
 
       await sock.sendMessage(chatId, { 
         text: generalHelp,
@@ -106,7 +106,7 @@ module.exports = {
 
     } catch (err) {
       console.error('help.js error:', err);
-      await reply(`*❌ ${toSmallCaps('erreur dans le grimoire d\'aide')}.*`);
+      await reply(`*❌ ${toSmallCaps('erreur dans le grimoire d\'aide')}.*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
     }
   }
 };
