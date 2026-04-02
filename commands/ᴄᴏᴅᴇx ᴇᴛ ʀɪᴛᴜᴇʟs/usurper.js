@@ -26,7 +26,7 @@ module.exports = {
   name: 'usurper',
   aliases: ['steal', 'take', 't'],
   category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴠᴏʟᴇ ᴜɴ sᴛɪᴄᴋᴇʀ ᴇᴛ ᴍᴏᴅɪғɪᴇ ʟᴇ ɴᴏᴍ ᴅᴇ sᴏɴ ᴘᴀᴄᴋ**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴠᴏʟᴇ ᴜɴ sᴛɪᴄᴋᴇʀ ᴇᴛ ᴍᴏᴅɪғɪᴇ ʟᴇ ɴᴏᴍ ᴅᴇ sᴏɴ ᴘᴀᴄᴋ',
   usage: `${config.prefix || '.'}usurper [nom du pack ou en reponse]`,
   groupOnly: false,
   adminOnly: false,
@@ -53,7 +53,7 @@ module.exports = {
     const prefix = config.prefix || '.';
 
     if (!stickerMsg) {
-      return reply(`*⚠️ ${toSmallCaps('repondez a un sticker avec')} ${prefix}${toSmallCaps('usurper pour vous en emparer')}*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+      return reply(`*⚠️ ${toSmallCaps('repondez a un sticker avec')} ${prefix}${toSmallCaps('usurper pour vous en emparer')}*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
     }
 
     try {
@@ -66,7 +66,7 @@ module.exports = {
       );
 
       if (!mediaBuffer) {
-        return reply(`*⚠️ ${toSmallCaps('echec de l\'invocation : impossible de saisir le sticker. reessaie')}.*`);
+        return reply(`*⚠️ ${toSmallCaps('echec de l\'invocation')} : ${toSmallCaps('impossible de saisir le sticker. reessaie')}.*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       // Définition du nom du pack (Argument passé ou pseudo de l'auteur)
@@ -101,7 +101,7 @@ module.exports = {
 
     } catch (error) {
       console.error('Take command error:', error);
-      await reply(`*❌ ${toSmallCaps('echec du vol de sticker. veuillez reessayer')} : ${error.message}*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+      await reply(`*❌ ${toSmallCaps('echec du vol de sticker. veuillez reessayer')} : ${error.message}*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
     }
   },
 };
