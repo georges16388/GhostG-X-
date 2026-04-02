@@ -25,7 +25,7 @@ module.exports = {
   name: 'epreuve',
   aliases: ['dare', 'defi', 'defis', 'épreuve'],
   category: '♞ ᴄʜᴀᴏs & ᴅɪᴠᴇʀᴛɪssᴇᴍᴇɴᴛ',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴇxɪɢᴇ ᴜɴ ᴅᴇғɪ ᴏᴜ ᴜɴᴇ ᴇᴘʀᴇᴜᴠᴇ ᴀᴜᴛʜᴇɴᴛɪǫᴜᴇ ᴀ ᴜɴ ᴍᴇᴍʙʀᴇ**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴇxɪɢᴇ ᴜɴ ᴅᴇғɪ ᴏᴜ ᴜɴᴇ ᴇᴘʀᴇᴜᴠᴇ ᴀᴜᴛʜᴇɴᴛɪǫᴜᴇ ᴀ ᴜɴ ᴍᴇᴍʙʀᴇ',
   usage: `${prefix}epreuve [@user ou en reponse]`,
   groupOnly: false,
   adminOnly: false,
@@ -101,13 +101,13 @@ module.exports = {
       const randomDare = dares[Math.floor(Math.random() * dares.length)];
 
       await sock.sendMessage(from, {
-        text: `${randomDare}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`,
+        text: `${randomDare}\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`,
         mentions: [targetId]
       }, { quoted: msg });
 
     } catch (error) {
       console.error('Dare Error:', error);
-      await reply(`*❌ ${toSmallCaps('l\'invocation a echoue')} : ${error.message}*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+      await reply(`*❌ ${toSmallCaps('l\'invocation a echoue')} : ${error.message}*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
     }
   }
 };
