@@ -25,7 +25,7 @@ module.exports = {
   name: 'algebre',
   aliases: ['algebre', 'calc', 'calculate', 'calcul', 'math'],
   category: '⚒ ᴀʀᴛᴇғᴀᴄᴛs',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ʀᴇsᴏᴜᴛ ᴅᴇs ᴀʀᴄᴀɴᴇs ᴇᴛ ᴇxᴘʀᴇssɪᴏɴs ᴍᴀᴛʜᴇᴍᴀᴛɪǫᴜᴇs**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ʀᴇsᴏᴜᴛ ᴅᴇs ᴀʀᴄᴀɴᴇs ᴇᴛ ᴇxᴘʀᴇssɪᴏɴs ᴍᴀᴛʜᴇᴍᴀᴛɪǫᴜᴇs',
   usage: `${prefix}algebre <expression>`,
 
   async execute(sock, msg, args, extra) {
@@ -33,35 +33,35 @@ module.exports = {
 
     try {
       if (args.length === 0) {
-        return reply(`*〆 ${toSmallCaps('murmure une expression mathematique')} !*\n\n*ᴇxᴇᴍᴘʟᴇ :* \`${prefix}algebre 5 + 3 * 2\``);
+        return reply(`*⚠️ ${toSmallCaps('usage')} :* \`${prefix}algebre <${toSmallCaps('expression')}>\`\n\n*${toSmallCaps('exemple')} :* \`${prefix}algebre 5 + 3 * 2\`\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       const expression = args.join(' ');
 
       // Basic safety check
       if (!/^[0-9+\-*/(). ]+$/.test(expression)) {
-        return reply(`*〆 ${toSmallCaps('expression invalide')} ! ${toSmallCaps('seuls les chiffres et les operateurs')} (+, -, *, /, ()) ${toSmallCaps('sont autorises')}.*`);
+        return reply(`*❌ ${toSmallCaps('expression invalide')} ! ${toSmallCaps('seuls les chiffres et les operateurs')} (+, -, *, /, ()) ${toSmallCaps('sont autorises')}.*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       try {
         // eslint-disable-next-line no-eval
         const result = eval(expression);
 
-        let text = `╭╼━━━≪• *ᴀʀᴄᴀɴᴇs ᴍᴀᴛʜᴇ́ᴍᴀᴛɪǫᴜᴇs* •≫━━━╾╮\n`;
-        text += `┃ 📝 *ᴇxᴘʀᴇssɪᴏɴ :* ${expression}\n`;
-        text += `┃ ✅ *ʀᴇ́sᴜʟᴛᴀᴛ :* ${result}\n`;
-        text += `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n`;
+        let text = `*╭╼━━━≪• ᴀʀᴄᴀɴᴇs ᴍᴀᴛʜᴇ́ᴍᴀᴛɪǫᴜᴇs •≫━━━╾╮*\n`;
+        text += `*┃ 📝 ᴇxᴘʀᴇssɪᴏɴ : ${expression}*\n`;
+        text += `*┃ ✅ ʀᴇsᴜʟᴛᴀᴛ : ${result}*\n`;
+        text += `*╰━━━━━━━━━━━━━━━━━━━━━━━╯*\n\n`;
         text += `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
 
         await reply(text);
-        
+
       } catch (evalError) {
-        await reply(`*〆 ${toSmallCaps('l expression mathematique est incoherente')} !*`);
+        await reply(`*❌ ${toSmallCaps('l expression mathematique est incoherente')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
     } catch (error) {
       console.error('Algebre command error:', error);
-      await reply(`*〆 ${toSmallCaps('l invocation a echoue')} : ${error.message}*`);
+      await reply(`*❌ ${toSmallCaps('l\'invocation a echoue')} : ${error.message}*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
     }
   }
 };
