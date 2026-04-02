@@ -45,7 +45,7 @@ function findFile(dir, fileName) {
 module.exports = {
   name: 'reload',
   aliases: ['recoder', 'maj'],
-  category: '👑 ᴏᴠᴇʀʟᴏʀᴅ ᴄᴏɴᴛʀᴏʟ',
+  category: '♕ ᴏᴠᴇʀʟᴏʀᴅ ᴄᴏɴᴛʀᴏʟ',
   description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ʀᴇᴄʜᴀʀɢᴇ ᴜɴᴇ ᴄᴏᴍᴍᴀɴᴅᴇ sᴀɴs ᴄᴏᴜᴘᴇʀ ʟᴇ ʙᴏᴛ',
   usage: '.reload <nom_de_la_commande>',
   groupOnly: false,
