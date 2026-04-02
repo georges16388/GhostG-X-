@@ -24,11 +24,17 @@ module.exports = {
     try {
       // 1️⃣ Lecture du fichier .env pour connaître le statut physique actuel
       let envContent = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf8') : '';
-      
-      const isCurrentlyOn = /^AUTOREACT=true/m.test(envContent);
-      const currentMode = config.autoReactMode || 'bot';
 
-      const opt = args.join(' ').toLowerCase();
+      const isCurrentlyOn = /^AUTOREACT=true/m.test(envContent);
+      
+      // Récupération sécurisée du mode actuel depuis le .env
+      let currentMode = 'bot';
+      const modeMatch = envContent.match(/^AUTOREACT_MODE=(.*)$/m);
+      if (modeMatch) {
+        currentMode = modeMatch[1].trim();
+      }
+
+      const opt = args.join(' ').toLowerCase().trim();
 
       if (!args[0]) {
         return reply(
@@ -47,7 +53,7 @@ module.exports = {
         if (isCurrentlyOn) {
           return reply(`*🛡️ ʟᴇs ʀᴇ́ғʟᴇxᴇs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ sᴏɴᴛ ᴅᴇ́ᴊᴀ̀ ᴀᴄᴛɪᴠᴇ́s.*`);
         }
-        
+
         // Modification du fichier .env
         if (envContent.match(/^AUTOREACT=/m)) {
           envContent = envContent.replace(/^AUTOREACT=.*/m, `AUTOREACT=true`);
@@ -64,10 +70,10 @@ module.exports = {
 
       // Cas OFF : Désactivation
       if (opt === 'off') {
-        if (!isCurrentlyOn) {
+        if (!isCurrentlyOn && envContent.match(/^AUTOREACT=false/m)) {
           return reply(`*🔓 ʟᴇs ʀᴇ́ғʟᴇxᴇs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ sᴏɴᴛ ᴅᴇ́ᴊᴀ̀ ᴇ́ᴛᴇɪɴᴛs.*`);
         }
-        
+
         // Modification du fichier .env
         if (envContent.match(/^AUTOREACT=/m)) {
           envContent = envContent.replace(/^AUTOREACT=.*/m, `AUTOREACT=false`);
@@ -87,7 +93,15 @@ module.exports = {
         if (currentMode === 'bot') {
           return reply(`*🤖 ʟᴇ ᴍᴏᴅᴇ ᴇsᴛ ᴅᴇ́ᴊᴀ̀ ᴄᴏɴғɪɢᴜʀᴇ́ sᴜʀ : ʙᴏᴛ.*`);
         }
-        
+
+        // Écriture de la variable dans le .env
+        if (envContent.match(/^AUTOREACT_MODE=/m)) {
+          envContent = envContent.replace(/^AUTOREACT_MODE=.*/m, `AUTOREACT_MODE=bot`);
+        } else {
+          envContent += `\nAUTOREACT_MODE=bot`;
+        }
+        fs.writeFileSync(envPath, envContent.trim() + '\n', 'utf8');
+
         config.autoReactMode = 'bot';
         return reply(`*🤖 ᴍᴏᴅᴇ : ʀᴇ́ᴀᴄᴛɪᴏɴ ᴜɴɪǫᴜᴇᴍᴇɴᴛ ᴀᴜx ᴄᴏᴍᴍᴀɴᴅᴇs ᴅᴜ ʙᴏᴛ (⏳).*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
@@ -97,7 +111,15 @@ module.exports = {
         if (currentMode === 'all') {
           return reply(`*🌟 ʟᴇ ᴍᴏᴅᴇ ᴇsᴛ ᴅᴇ́ᴊᴀ̀ ᴄᴏɴғɪɢᴜʀᴇ́ sᴜʀ : ᴀʟʟ.*`);
         }
-        
+
+        // Écriture de la variable dans le .env
+        if (envContent.match(/^AUTOREACT_MODE=/m)) {
+          envContent = envContent.replace(/^AUTOREACT_MODE=.*/m, `AUTOREACT_MODE=all`);
+        } else {
+          envContent += `\nAUTOREACT_MODE=all`;
+        }
+        fs.writeFileSync(envPath, envContent.trim() + '\n', 'utf8');
+
         config.autoReactMode = 'all';
         return reply(`*🌟 ᴍᴏᴅᴇ : ʀᴇ́ᴀᴄᴛɪᴏɴ ᴀʟᴇ́ᴀᴛᴏɪʀᴇ ᴀ̀ ᴛᴏᴜs ʟᴇs ᴍᴇssᴀɢᴇs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ.*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
