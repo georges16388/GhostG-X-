@@ -25,7 +25,7 @@ module.exports = {
   name: 'tts',
   aliases: ['speak', 'say', 'murmure'],
   category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ɪɴᴠᴏǫᴜᴇ ᴜɴᴇ ᴠᴏɪx ᴘᴏᴜʀ ᴘʀᴏɴᴏɴᴄᴇʀ ᴠᴏs ᴍᴜʀᴍᴜʀᴇs (ᴛᴛs)**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ɪɴᴠᴏǫᴜᴇ ᴜɴᴇ ᴠᴏɪx ᴘᴏᴜʀ ᴘʀᴏɴᴏɴᴄᴇʀ ᴠᴏs ᴍᴜʀᴍᴜʀᴇs (ᴛᴛs)',
   usage: `${config.prefix || '.'}tts [texte ou en reponse]`,
   groupOnly: false,
   adminOnly: false,
@@ -54,17 +54,14 @@ module.exports = {
       // Validation si aucun texte n'est extrait
       if (!text || text.trim() === '') {
         return await reply(
-          `╭╼━≪• *⚠️ ᴇᴄʜᴇᴄ ᴅᴇ ʟɪɴᴠᴏᴄᴀᴛɪᴏɴ* •≫━╾╮\n` +
-          `┃\n` +
-          `┃ 🔮 *${toSmallCaps('indique un murmure a materialiser')} !*\n` +
-          `┃ 💡 *${toSmallCaps('exemple')} :* ${prefix}tts ${toSmallCaps('bonjour le sanctuaire')}\n` +
-          `┃\n` +
-          `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
-          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`
+          `*⚠️ ${toSmallCaps('echec de l\'invocation')}*\n\n` +
+          `*┃* 🔮 *${toSmallCaps('indique un murmure a materialiser')} !*\n` +
+          `*┃* 💡 *${toSmallCaps('exemple')} :* \`${prefix}tts ${toSmallCaps('bonjour le sanctuaire')}\`\n\n` +
+          `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
         ); 
       }
 
-      // Message d'attente d'invocation (Optionnel : tu peux le retirer si tu préfères que ce soit instantané)
+      // Message d'attente d'invocation
       await reply(`*🔮 ${toSmallCaps('materialisation de la voix en cours')}...*`);
 
       // Appel à ton utilitaire API
@@ -91,13 +88,10 @@ module.exports = {
     } catch (error) {
       console.error('TTS command error:', error);
       await reply(
-        `╭╼━≪• *❌ ᴇᴄʜᴇᴄ ᴅᴇ ʟɪʟʟᴜsɪᴏɴ* •≫━╾╮\n` +
-        `┃\n` +
-        `┃ 🥀 *${toSmallCaps('limpossible s est produit')}...*\n` +
-        `┃ ⚠️ *${toSmallCaps('erreur')} :* ${error.message}\n` +
-        `┃\n` +
-        `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
-        `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`
+        `*❌ ${toSmallCaps('echec de l\'illusion')}*\n\n` +
+        `*┃* 🥀 *${toSmallCaps('limpossible s est produit')}...*\n` +
+        `*┃* ⚠️ *${toSmallCaps('erreur')} :* ${error.message}\n\n` +
+        `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
       );
     }
   }
