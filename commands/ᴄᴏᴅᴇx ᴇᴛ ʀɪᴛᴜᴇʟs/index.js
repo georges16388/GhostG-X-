@@ -9,6 +9,17 @@ const path = require('path');
 
 const prefix = config.prefix || '.';
 
+// Fonction pour le style Small Caps classique
+function toSmallCaps(text) {
+  const normal = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  const smallCaps = "ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ0123456789";
+  return text.split('').map(c => {
+    const index = normal.indexOf(c);
+    return index !== -1 ? smallCaps[index] : c;
+  }).join('');
+}
+
+// Fonction pour le style Gras Small Caps
 function toBoldSmallCaps(text) {
   const normal = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
   const boldSmallCaps = "ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ0123456789";
@@ -26,7 +37,7 @@ module.exports = {
   name: 'ɢʀɪᴍᴏɪʀᴇ', 
   aliases: ['commands', 'menu', 'arcanes', 'index', 'm'],
   category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀꜰꜰɪᴄʜᴇ ʟ\'ᴇɴꜱᴇᴍʙʟᴇ ᴅᴇꜱ ʀɪᴛᴜᴇʟꜱ ᴇᴛ ᴄᴏᴍᴍᴀɴᴅᴇꜱ ᴅɪꜱᴘᴏɴɪʙʟᴇꜱ**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀꜰꜰɪᴄʜᴇ ʟ\'ᴇɴꜱᴇᴍʙʟᴇ ᴅᴇꜱ ʀɪᴛᴜᴇʟꜱ ᴇᴛ ᴄᴏᴍᴍᴀɴᴅᴇꜱ ᴅɪꜱᴘᴏɴɪʙʟᴇꜱ',
   usage: `${prefix}ɢʀɪᴍᴏɪʀᴇ`,
 
   async execute(sock, msg, args, extra) {
@@ -40,14 +51,16 @@ module.exports = {
 
       commands.forEach((cmd, name) => {
         if (cmd.name === name) {
+          // Le filtre d'effacement a été retiré ici : tout s'affiche !
           let rawCategory = cmd.category || '🔮 ᴀᴜᴛʀᴇs sᴏʀᴛs';
           let cleanedCategory = cleanCategoryName(rawCategory);
           if (!categories[cleanedCategory]) categories[cleanedCategory] = [];
           categories[cleanedCategory].push(cmd);
         }
       });
-// Calcule le vrai nombre de sorts uniques sans compter les alias
-      const realCommandsCount = new Set(commands.values()).size;
+
+      // Calcule le vrai nombre de sorts uniques sans compter les alias
+      const realCommandsCount = Object.values(categories).reduce((acc, curr) => acc + curr.length, 0);
       const botNameCaps = toBoldSmallCaps(freshConfig.botName || 'ɢʜᴏsᴛɢ-𝐗');
 
       let menuText = `╭╼━≪• *${botNameCaps}* •≫━╾╮\n` +
@@ -78,7 +91,7 @@ module.exports = {
       const randomNumber = Math.floor(Math.random() * 7) + 1;
       const imagePath = path.join(__dirname, `../../utils/bot_image_${randomNumber}.jpg`);
       const fallbackPath = path.join(__dirname, '../../utils/bot_image.jpg');
-      
+
       let imageBuffer;
       if (fs.existsSync(imagePath)) imageBuffer = fs.readFileSync(imagePath);
       else if (fs.existsSync(fallbackPath)) imageBuffer = fs.readFileSync(fallbackPath);
@@ -90,7 +103,6 @@ module.exports = {
           forwardingScore: 1,
           isForwarded: true,
           forwardedNewsletterMessageInfo: {
-            // C'est ici que l'Oracle applique ton sᴇᴀᴜ_ᴄᴀɴᴀʟ dynamique !
             newsletterJid: freshConfig.newsletterJid || '120363425540434745@newsletter',
             newsletterName: freshConfig.botName || 'ɢʜᴏsᴛɢ-𝐗',
             serverMessageId: -1
