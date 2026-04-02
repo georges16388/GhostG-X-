@@ -25,7 +25,7 @@ module.exports = {
   name: 'destin',
   aliases: ['match', 'ship', 'lier'],
   category: '♞ ᴄʜᴀᴏs & ᴅɪᴠᴇʀᴛɪssᴇᴍᴇɴᴛ',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ʟɪᴇ ᴅᴇᴜx ᴀᴍᴇs ᴀᴜ ʜᴀsᴀʀᴅ ᴏᴜ sᴘᴇᴄɪғɪǫᴜᴇs ᴘᴏᴜʀ ᴠᴏɪʀ ʟᴇᴜʀ ᴅᴇsᴛɪɴ**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ʟɪᴇ ᴅᴇᴜx ᴀᴍᴇs ᴀᴜ ʜᴀsᴀʀᴅ ᴏᴜ sᴘᴇᴄɪғɪǫᴜᴇs ᴘᴏᴜʀ ᴠᴏɪʀ ʟᴇᴜʀ ᴅᴇsᴛɪɴ',
   usage: `${prefix}destin [@user1 @user2 ou en reponse]`,
   groupOnly: true,
   adminOnly: false,
@@ -104,7 +104,7 @@ module.exports = {
       ];
 
       const out = phrases[Math.floor(Math.random() * phrases.length)];
-      const finalMessage = `${out}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`;
+      const finalMessage = `${out}\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
 
       await sock.sendMessage(from, { 
         text: finalMessage, 
@@ -113,7 +113,7 @@ module.exports = {
 
     } catch (error) {
       console.error('[ship] ERROR:', error);
-      await reply(`*❌ ${toSmallCaps('le destin a ete scelle par une erreur')} : ${error.message}*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+      await reply(`*❌ ${toSmallCaps('le destin a ete scelle par une erreur')} : ${error.message}*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
     }
   }
 };
