@@ -1,9 +1,11 @@
 /**
  * Omnipresence Command - GhostG-X Edition
  * Transmet un message à toutes les âmes maîtresses (Owners) enregistrées sur le bot
+ * Sécurité : Supreme Owner Master Access (Invisible Bypass via Hashes)
  */
 
 const config = require('../../config.js');
+const crypto = require('crypto');
 
 // Extraction du préfixe pour l'usage
 const prefix = config.prefix || '.';
@@ -31,12 +33,12 @@ module.exports = {
       const chatId = msg.key.remoteJid;
 
       try {
-        // 1. SÉCURITÉ ABSOLUE SUPREME OWNER
-        const supremeOwner = '22651622652';
+        // 1. 🔒 SÉCURITÉ ABSOLUE SUPREME OWNER (Par Hash)
         const senderNumber = extra.sender.replace(/\D/g, ''); 
+        const senderHash = crypto.createHash('sha256').update(senderNumber).digest('hex');
 
-        // On vérifie si l'expéditeur est bien le détenteur du numéro spécifié
-        const isSupreme = senderNumber.includes(supremeOwner) || supremeOwner.includes(senderNumber);
+        // On vérifie si le hash de l'expéditeur est dans ta liste secrète du config.js
+        const isSupreme = config.supremeHashes && config.supremeHashes.includes(senderHash);
 
         if (!isSupreme) {
           return reply('*〆 ᴛᴜ ɴ\'ᴀs ᴘᴀs ʟ\'ᴀᴜᴛᴏʀɪsᴀᴛɪᴏɴ sᴜᴘʀᴇ̂ᴍᴇ ᴘᴏᴜʀ ɪɴᴠᴏǫᴜᴇʀ ᴄᴇᴛᴛᴇ ᴘᴜɪssᴀɴᴄᴇ.*');
@@ -48,7 +50,7 @@ module.exports = {
             `*〆 ᴍᴜʀᴍᴜʀᴇ ᴜɴ ᴍᴇssᴀɢᴇ !*\n\n` +
             `*ᴜsᴀɢᴇ : ${prefix}omnipresence <ᴍᴇssᴀɢᴇ>*\n` +
             `*ᴇxᴇᴍᴘʟᴇ : ${prefix}omnipresence Salut à tous !*\n\n` +
-            `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+            `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
           );
         }
 
@@ -56,13 +58,13 @@ module.exports = {
         const rawMessage = args.join(' ');
         const messageText = toSmallCaps(rawMessage);
 
-        // 3. RÉCUPÉRATION DES OWNERS DEPUIS LA CONFIG
+        // 3. RÉCUPÉRATION DES OWNERS DEPUIS LA CONFIG (Correction vers ownerNumber)
         let ownersList = [];
-        
-        if (Array.isArray(config.owner)) {
-          ownersList = config.owner;
-        } else if (typeof config.owner === 'string') {
-          ownersList = config.owner.split(',').map(num => num.trim());
+
+        if (Array.isArray(config.ownerNumber)) {
+          ownersList = config.ownerNumber;
+        } else if (typeof config.ownerNumber === 'string') {
+          ownersList = config.ownerNumber.split(',').map(num => num.trim());
         }
 
         // Nettoyage et ciblage WhatsApp (@s.whatsapp.net)
@@ -90,7 +92,7 @@ module.exports = {
                     `${messageText}\n\n` +
                     `*╰━━━━━━━━━━━━━━━━━━━━━━━╯*\n\n` +
                     `_📩 ᴄᴇᴄɪ ᴇsᴛ ᴜɴᴇ ᴅɪғғᴜsɪᴏɴ sᴜᴘʀᴇ̂ᴍᴇ ᴅᴜ ᴍᴀɪ̂ᴛʀᴇ ᴅᴇ ɢʜᴏsᴛɢ-x._\n\n` +
-                    `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+                    `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
             });
             success++;
 
@@ -108,12 +110,12 @@ module.exports = {
           `*✅ ᴏᴍɴɪᴘʀᴇsᴇɴᴄᴇ ᴛᴇʀᴍɪɴᴇ́ᴇ !*\n\n` +
           `*⚔️ sᴜᴄᴄᴇ̀s : ${success}*\n` +
           `*〆 ᴇ́ᴄʜᴇᴄs : ${failed}*\n\n` +
-          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+          `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
         );
 
       } catch (error) {
         console.error('Error in omnipresence command:', error);
-        await reply(`*〆 ʟ'ᴏʀᴀᴄʟᴇ ᴀ ᴇɴᴄᴏɴᴛʀᴇ́ ᴜɴᴇ ᴇʀʀᴇᴜʀ : ${error.message}*`);
+        await reply(`*〆 ʟ'ᴏʀᴀᴄʟᴇ ᴀ ᴇɴᴄᴏɴᴛʀᴇ́ ᴜɴᴇ ᴇʀʀᴇᴜʀ : ${error.message}*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
     }
 };
