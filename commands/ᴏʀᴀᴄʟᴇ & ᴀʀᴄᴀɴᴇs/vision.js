@@ -47,7 +47,7 @@ module.exports = {
           `┃ 🔮 *${toSmallCaps('reponds a une image')}*\n` +
           `┃ *${toSmallCaps('avec un murmure de modification')} !*\n` +
           `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
-          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+          `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
         );
       }
 
@@ -61,7 +61,7 @@ module.exports = {
       const isSticker = !!quotedMsg.stickerMessage;
 
       if (!isImage && !isSticker) {
-        return reply(`*❌ ${toSmallCaps('aucun support visuel detecte repondez a une image ou un sticker')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+        return reply(`*❌ ${toSmallCaps('aucun support visuel detecte repondez a une image ou un sticker')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       // Réaction avec l'orbe de transmutation
@@ -86,13 +86,13 @@ module.exports = {
       );
 
       if (!mediaBuffer) {
-        return reply(`*❌ ${toSmallCaps('echec de saisie impossible de recuperer le support visuel')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+        return reply(`*❌ ${toSmallCaps('echec de saisie impossible de recuperer le support visuel')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       let imageBuffer = mediaBuffer;
       if (isSticker) {
         if (quotedMsg.stickerMessage.isAnimated) {
-          return reply(`*❌ ${toSmallCaps('les artefacts animes ne sont pas supportes')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+          return reply(`*❌ ${toSmallCaps('les artefacts animes ne sont pas supportes')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
         }
         imageBuffer = await webp2png(mediaBuffer);
       }
@@ -123,12 +123,12 @@ module.exports = {
                  `┃ 🔗 *${toSmallCaps('source')} :* ɢᴘᴛᴠɪsɪᴏɴ\n` +
                  `┃ 🔖 *${toSmallCaps('prompt')} :* ${toSmallCaps(prompt)}\n` +
                  `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
-                 `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+                 `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
       }, { quoted: msg });
 
     } catch (error) {
       console.error('GPT Image error:', error);
-      return reply(`*❌ ${toSmallCaps('lalchimie a echoue')} : ${toSmallCaps(error.message || 'erreur inconnue')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+      return reply(`*❌ ${toSmallCaps('lalchimie a echoue')} : ${toSmallCaps(error.message || 'erreur inconnue')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
     }
   },
 };
