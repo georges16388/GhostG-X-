@@ -26,7 +26,7 @@ module.exports = {
   name: 'delete',
   aliases: ['del', 'dlt', 'd', 'sup', 'supprime', 'ᴅᴇʟᴇᴛᴇ'],
   category: '‎⛨ ɢᴀʀᴅɪᴇɴs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ sᴜᴘᴘʀɪᴍᴇ ᴜɴ ᴍᴇssᴀɢᴇ ᴇɴ ʀᴇ́ᴘᴏɴsᴇ ᴇᴛ ʟᴀ ᴄᴏᴍᴍᴀɴᴅᴇ**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ sᴜᴘᴘʀɪᴍᴇ ᴜɴ ᴍᴇssᴀɢᴇ ᴇɴ ʀᴇ́ᴘᴏɴsᴇ ᴇᴛ ʟᴀ ᴄᴏᴍᴍᴀɴᴅᴇ',
   usage: `${prefix}delete`,
   groupOnly: true,
   adminOnly: true,
@@ -50,7 +50,7 @@ module.exports = {
       if (!isMe) {
         const isAdmin = extra.isAdmin || false; 
         if (!isAdmin) {
-          return reply(`*❌ ${toSmallCaps('cette commande est reservee aux administrateurs du sanctuaire')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+          return reply(`*❌ ${toSmallCaps('cette commande est reservee aux administrateurs du sanctuaire')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
         }
       }
 
@@ -58,11 +58,11 @@ module.exports = {
 
       if (!ctx?.stanzaId || !ctx?.participant) {
         return reply(
-          `╭╼━≪• *ᴇʟɪᴍɪɴᴀᴛɪᴏɴ_ᴄɪʙʟᴇᴇ* •≫━╾╮\n` +
-          `┃ *ᴇ́ᴛᴀᴛ* : ᴇ́ᴄʜᴇᴄ ❌\n` +
-          `╰━━━━━━━━━━━━━━━╯\n\n` +
-          `*🔮 ɪɴᴄᴀɴᴛᴀᴛɪᴏɴ :*\n` +
-          `*ʀᴇᴘᴏɴᴅs ᴀᴜ ᴍᴇssᴀɢᴇ ǫᴜᴇ ᴛᴜ sᴏᴜʜᴀɪᴛᴇs ғᴀɪʀᴇ ᴅɪsᴘᴀʀᴀɪᴛʀᴇ.*\n\n` +
+          `*╭╼━━━≪• ᴇʟɪᴍɪɴᴀᴛɪᴏɴ_ᴄɪʙʟᴇᴇ •≫━━━╾╮*\n` +
+          `*┃* *ᴇ́ᴛᴀᴛ* : ᴇ́ᴄʜᴇᴄ ❌\n\n` +
+          `*┃* 🔮 *${toSmallCaps('incantations disponibles')} :*\n` +
+          `*┃* *${toSmallCaps('reponds au message que tu souhaites')}*\n` +
+          `*┃* *${toSmallCaps('faire disparaitre')}.*\n\n` +
           `  ${prefix}delete\n\n` +
           `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
         );
