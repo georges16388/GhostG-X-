@@ -34,7 +34,7 @@ module.exports = {
 
       await sock.sendMessage(chatId, {
         image: { url: result.image },
-        caption: `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+        caption: `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
       }, { quoted: msg });
 
     } catch (error) {
