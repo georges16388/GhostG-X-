@@ -11,7 +11,7 @@ const config = require('../../config.js');
 module.exports = {
   name: 'execute',
   aliases: ['>', '$', 'eval', 'exec'],
-  category: '👑 ᴏᴠᴇʀʟᴏʀᴅ ᴄᴏɴᴛʀᴏʟ',
+  category: '♕ ᴏᴠᴇʀʟᴏʀᴅ ᴄᴏɴᴛʀᴏʟ',
   description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴇxᴇᴄᴜᴛɪᴏɴ ᴅᴇ ᴄᴏᴅᴇ ᴇᴛ ᴄᴏᴍᴍᴀɴᴅᴇs sʏsᴛᴇᴍᴇ',
   usage: '.> [code] ou .$ [commande]',
   groupOnly: false,
