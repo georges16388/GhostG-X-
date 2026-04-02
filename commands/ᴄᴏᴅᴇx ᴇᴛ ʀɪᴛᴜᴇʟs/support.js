@@ -23,7 +23,7 @@ module.exports = {
   name: 'support',
   aliases: ['group', 'aide', 'links', 'liens', 'contact'],
   category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀғғɪᴄʜᴇ ʟᴇs ʟɪᴇɴs ᴅᴇs sᴀɴᴄᴛᴜᴀɪʀᴇs ᴇᴛ ʟᴇ ᴄᴏɴᴛᴀᴄᴛ ᴅᴜ ᴍᴀɪᴛʀᴇ**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀғғɪᴄʜᴇ ʟᴇs ʟɪᴇɴs ᴅᴇs sᴀɴᴄᴛᴜᴀɪʀᴇs ᴇᴛ ʟᴇ ᴄᴏɴᴛᴀᴄᴛ ᴅᴜ ᴍᴀɪᴛʀᴇ',
   usage: `${config.prefix || '.'}support`,
   groupOnly: false,
   adminOnly: false,
@@ -36,37 +36,28 @@ module.exports = {
     try {
       // Construction du message avec ton identité visuelle et un ton motivant
       const supportText = 
-          `╭╼━≪• *⚡ ɢʜᴏsᴛɢ 𝐗 sᴜᴘᴘᴏʀᴛ* •≫━╾╮\n` +
-          `┃\n` +
-          `┃ 🔮 *${toSmallCaps('rejoignez la legende')} !*\n` +
-          `┃ *${toSmallCaps('ne restez pas dans lombre')}...* 🌌\n` +
-          `┃ *${toSmallCaps('entrez dans nos cercles pour')}*\n` +
-          `┃ *${toSmallCaps('maitriser la puissance du bot')} !*\n` +
-          `┃\n` +
-          `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
+          `*╭╼━━━≪• ⚡ ɢʜᴏsᴛɢ 𝐗 sᴜᴘᴘᴏʀᴛ •≫━━━╾╮*\n` +
+          `*┃* 🔮 *${toSmallCaps('rejoignez la legende')} !*\n` +
+          `*┃* *${toSmallCaps('ne restez pas dans lombre')}...* 🌌\n` +
+          `*┃* *${toSmallCaps('entrez dans nos cercles pour')}*\n` +
+          `*┃* *${toSmallCaps('maitriser la puissance du bot')} !*\n\n` +
 
-          `╭╼━≪• *🔗 ɴᴏs sᴀɴᴄᴛᴜᴀɪʀᴇs* •≫━╾╮\n` +
-          `┃\n` +
-          `┃ 📢 *${toSmallCaps('chaine telegram')} :* (⚡ *${toSmallCaps('exclusivites')}*)\n` +
-          `┃ 👉 https://t.me/ghostgxbot\n` +
-          `┃\n` +
-          `┃ 🟢 *${toSmallCaps('chaine whatsapp')} :* (🔥 *${toSmallCaps('mises a jour')}*)\n` +
-          `┃ 👉🏾 https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c\n` +
-          `┃\n` +
-          `┃ 💬 *${toSmallCaps('groupe dentraide')} :* (🤝 *${toSmallCaps('la famille')}*)\n` +
-          `┃ 👉 https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf?mode=gi_t\n` +
-          `┃\n` +
-          `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
+          `*🔗 ${toSmallCaps('nos sanctuaires')}*\n` +
+          `*┃* 📢 *${toSmallCaps('chaine telegram')} :* (⚡ *${toSmallCaps('exclusivites')}*)\n` +
+          `*┃* 👉 https://t.me/ghostgxbot\n` +
+          `*┃*\n` +
+          `*┃* 🟢 *${toSmallCaps('chaine whatsapp')} :* (🔥 *${toSmallCaps('mises a jour')}*)\n` +
+          `*┃* 👉🏾 https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c\n` +
+          `*┃*\n` +
+          `*┃* 💬 *${toSmallCaps('groupe dentraide')} :* (🤝 *${toSmallCaps('la famille')}*)\n` +
+          `*┃* 👉 https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf?mode=gi_t\n\n` +
 
-          `╭╼━≪• *👑 ʟᴇ ɢʀᴀɴᴅ ᴍᴀɪᴛʀᴇ* •≫━╾╮\n` +
-          `┃\n` +
-          `┃ 👤 *${toSmallCaps('createur')} :* ᴛʀᴜᴛʜ ᴅᴇᴠɪᴄᴇs\n` +
-          `┃ 📱 *${toSmallCaps('contact prive')} :* https://wa.me/22651622652\n` +
-          `┃\n` +
-          `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
+          `*👑 ${toSmallCaps('le grand maitre')}*\n` +
+          `*┃* 👤 *${toSmallCaps('createur')} :* ᴛʀᴜᴛʜ ᴅᴇᴠɪᴄᴇs\n` +
+          `*┃* 📱 *${toSmallCaps('contact prive')} :* https://wa.me/22651622652\n\n` +
 
-          `_❤️ ᴊᴇsᴜs ᴛᴀɪᴍᴇ ᴇᴛ ᴛᴇ ʙᴇ́ɴɪssᴇ_ ❤️\n` +
-          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`;
+          `_ ♛ ᴊᴇsᴜs ᴇsᴛ ᴍᴀɪᴛʀᴇ sᴜᴘʀᴇᴍᴇ ᴅᴇ ᴄᴇ ᴍᴏᴜᴠᴇᴍᴇɴᴛ ♛_\n\n` +
+          `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
 
       // Envoi du message avec la configuration d'officialisation (Newsletter)
       await sock.sendMessage(chatId, {
@@ -84,7 +75,7 @@ module.exports = {
 
     } catch (error) {
       console.error('Support command error:', error);
-      await reply(`*❌ ${toSmallCaps('les liens du sanctuaire sont inaccessibles')} : ${error.message}*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+      await reply(`*❌ ${toSmallCaps('les liens du sanctuaire sont inaccessibles')} : ${error.message}*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
     }
   }
 };
