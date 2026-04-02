@@ -25,7 +25,7 @@ module.exports = {
   name: 'jugement_g',
   aliases: ['gayrate', 'jugement', 'test', 'lovetest', 'taux'],
   category: '♞ ᴄʜᴀᴏs & ᴅɪᴠᴇʀᴛɪssᴇᴍᴇɴᴛ',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀғғɪᴄʜᴇ ᴜɴ ᴘᴏᴜʀᴄᴇɴᴛᴀɢᴇ ʟᴜᴅɪǫᴜᴇ ᴇᴛ ᴀʟᴇᴀᴛᴏɪʀᴇ ᴘᴏᴜʀ ᴜɴᴇ ᴄɪʙʟᴇ**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀғғɪᴄʜᴇ ᴜɴ ᴘᴏᴜʀᴄᴇɴᴛᴀɢᴇ ʟᴜᴅɪǫᴜᴇ ᴇᴛ ᴀʟᴇᴀᴛᴏɪʀᴇ ᴘᴏᴜʀ ᴜɴᴇ ᴄɪʙʟᴇ',
   usage: `${prefix}jugement_g [@user ou en reponse]`,
   groupOnly: false,
   adminOnly: false,
@@ -96,13 +96,13 @@ module.exports = {
       const out = messages[Math.floor(Math.random() * messages.length)];
 
       await sock.sendMessage(from, { 
-        text: `${out}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`, 
+        text: `${out}\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`, 
         mentions: [targetId] 
       }, { quoted: msg });
 
     } catch (error) {
       console.error('[gayrate] ERROR:', error);
-      await reply(`*❌ ${toSmallCaps('l\'invocation a echoue')} : ${error.message}*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+      await reply(`*❌ ${toSmallCaps('l\'invocation a echoue')} : ${error.message}*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
     }
   }
 };
