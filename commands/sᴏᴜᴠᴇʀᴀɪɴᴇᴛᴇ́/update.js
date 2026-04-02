@@ -47,7 +47,7 @@ async function extractZip(zipPath, outDir) {
     await run(cmd);
     return;
   }
-  
+
   // Sur Linux, on tente unzip puis 7z
   try { await run(`unzip -o '${zipPath}' -d '${outDir}'`); return; } catch {}
   try { await run(`7z x -y '${zipPath}' -o'${outDir}'`); return; } catch {}
@@ -95,7 +95,13 @@ async function updateViaZip(zipUrl) {
   const extractTo = path.join(tmpDir, 'update_extract');
 
   await downloadFile(zipUrl, zipPath);
-  if (fs.existsSync(extractTo)) fs.rmSync(extractTo, { recursive: true, force: true });
+  if (fs.existsSync(extractTo)) {
+    if (process.platform === 'win32') {
+      fs.rmSync(extractTo, { recursive: true, force: true });
+    } else {
+      await run(`rm -rf '${extractTo}'`);
+    }
+  }
   await extractZip(zipPath, extractTo);
 
   const entries = fs.readdirSync(extractTo);
@@ -130,8 +136,15 @@ async function updateViaZip(zipUrl) {
   const copied = [];
   copyRecursive(srcRoot, process.cwd(), ignore, '', copied);
 
-  // Nettoyage
-  try { fs.rmSync(extractTo, { recursive: true, force: true }); fs.rmSync(zipPath, { force: true }); } catch {}
+  // Nettoyage sécurisé
+  try { 
+    if (process.platform === 'win32') {
+      fs.rmSync(extractTo, { recursive: true, force: true });
+    } else {
+      await run(`rm -rf '${extractTo}'`);
+    }
+    fs.rmSync(zipPath, { force: true }); 
+  } catch {}
 
   // Installation auto des dépendances si nécessaire
   let npmSuccess = true;
@@ -152,7 +165,7 @@ module.exports = {
   aliases: ['update', 'maj'],
   category: '♛ sᴏᴜᴠᴇʀᴀɪɴᴇᴛᴇ́',
   ownerOnly: true,
-  description: `**『 ɢʜᴏsᴛɢ-𝐗 』➪ sᴇ ᴍᴇᴛ ᴀ̀ ᴊᴏᴜʀ ᴅᴇᴘᴜɪs ʟᴇ ʀᴇᴘᴏ ᴅᴇ ʟ'ᴏʀᴀᴄʟᴇ`,
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ sᴇ ᴍᴇᴛ ᴀ̀ ᴊᴏᴜʀ ᴅᴇᴘᴜɪs ʟᴇ ʀᴇᴘᴏ ᴅᴇ ʟ\'ᴏʀᴀᴄʟᴇ',
   usage: `${prefix}ᴍɪsᴇ_ᴀ_ᴊᴏᴜʀ [ʟɪᴇɴ_ᴢɪᴘ]`,
 
   async execute(sock, msg, args, extra) {
