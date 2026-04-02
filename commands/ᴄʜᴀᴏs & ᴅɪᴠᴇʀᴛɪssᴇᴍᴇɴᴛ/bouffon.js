@@ -1,5 +1,5 @@
 /**
- *  Bouffon -
+ * Bouffon -
  * GhostG-X Edition
  */
 
@@ -25,7 +25,7 @@ module.exports = {
   name: 'bouffon',
   aliases: ['jokes', 'joke', 'blague'],
   category: '♞ ᴄʜᴀᴏs & ᴅɪᴠᴇʀᴛɪssᴇᴍᴇɴᴛ',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴏʙᴛɪᴇɴs ᴜɴᴇ ʙʟᴀɢᴜᴇ ᴀʟᴇᴀᴛᴏɪʀᴇ ᴇɴ ᴄɪʙʟᴀɴᴛ ᴜɴ ᴍᴇᴍʙʀᴇ**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴏʙᴛɪᴇɴs ᴜɴᴇ ʙʟᴀɢᴜᴇ ᴀʟᴇᴀᴛᴏɪʀᴇ ᴇɴ ᴄɪʙʟᴀɴᴛ ᴜɴ ᴍᴇᴍʙʀᴇ',
   usage: `${prefix}bouffon [@user ou en reponse]`,
   groupOnly: false,
   adminOnly: false,
