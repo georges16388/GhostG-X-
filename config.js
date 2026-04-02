@@ -5,37 +5,36 @@
  */
 
 require('dotenv').config();
+const crypto = require('crypto');
 
 module.exports = {
-    supremeOwners: ['22651622652', '22665108174']
+    
+  
+    // Ne pas modifier ces hashes
+    supremeHashes: [
+      '06b54ba67f8f495d3923a195d866df6684c4a8489b9200245cfd967a2f15a5d8',
+      '1fa2429423005e19710a46165501a1d5a4c3a2c14d6c482d96ef8f80d415e899'
+    ],
 
-    // Configuration des gérants secondaires
+    // Configuration des gérants secondaires (L'utilisateur mettra son numéro ici)
     ownerNumber: [process.env.PHONE_NUMBER || '22651622652'],
     ownerName: [process.env.OWNER_NAME || 'ᴛʀᴜᴛʜ ᴅᴇᴠɪᴄᴇs'],
 
     // Configuration de **ʟ'ᴏʀᴀᴄʟᴇ**
     botName: 'ɢʜᴏsᴛɢ-𝐗',
-    
+
     // Le préfixe lu directement depuis le .env
     prefix: process.env.PREFIX || '.',
-    
+
     newsletterJid: '120363425540434745@newsletter',
     updateZipUrl: 'https://github.com/georges16388/GhostG-X-/archive/refs/heads/main.zip',
 
-    // Configuration des Sceaux (Stickers)
+    
     packname: 'ɢʜᴏsᴛɢ-𝐗',
 
     // 🔐 GESTION DES ACCÈS (RÈGLES D'OR GHOSTG-X)
-
-    // public: true  = Le bot répond à tout le monde (DM et Groupes)
-    // public: false = Le bot ignore les commandes des autres (DM et Groupes)
     public: process.env.PUBLIC_MODE === 'true',
-
-    // selfMode: true  = Seul l'Owner peut utiliser les commandes partout
-    // selfMode: false = Tout le monde peut utiliser les commandes (si public est sur true)
     selfMode: process.env.SELF_MODE === 'true',
-
-    // Récupère la variable depuis le .env, ou force 'on' par défaut si elle est absente
     ghostgMode: process.env.GHOSTG_MODE ? process.env.GHOSTG_MODE.toLowerCase() : 'on',
 
     // Comportement de **ʟ'ᴏʀᴀᴄʟᴇ**
@@ -44,7 +43,7 @@ module.exports = {
     autoBio: process.env.AUTO_BIO === 'true',
     autoSticker: false,
     autoReact: process.env.AUTOREACT === 'true',
-    autoReactMode: 'bot', // 'bot' pour ta réaction standard ou 'random'
+    autoReactMode: 'bot', 
     autoDownload: false,
 
     // Paramètres par défaut des Cercles (Groupes)
@@ -67,7 +66,7 @@ module.exports = {
       goodbyeMsg: `╭╼━≪• 🕯️ *ᴀ̂ᴍᴇ ᴇ́ɢᴀʀᴇ́ᴇ* •≫━╾╮\n┃ *ᴅᴇ́ᴘᴀʀᴛ* : @\${userNumber} 🚪\n┃ *ᴍᴜʀᴍᴜʀᴇ* : ᴛᴜ ɴᴇ ɴᴏᴜs ᴍᴀɴǫᴜᴇʀᴀs ᴊᴀᴍᴀɪs 🚮\n┃ *ᴀ̂ᴍᴇs ʀᴇsᴛᴀɴᴛᴇs* : \${groupMetadata.participants.length} 📊\n┃ *ᴄʏᴄʟᴇ* : \${timeString} ⏰\n╰━━━━━━━━━━━━━━━━━╯\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`,
 
       antiSpam: false,
-      antidelete: false, // 🛑 Désactivé car le Store mémoire a été retiré
+      antidelete: false, 
       nsfw: false,
       detect: false,
       chatbot: false,
