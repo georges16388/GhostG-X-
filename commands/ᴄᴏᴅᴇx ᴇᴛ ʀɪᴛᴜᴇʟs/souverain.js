@@ -23,7 +23,7 @@ module.exports = {
     name: 'souverain',
     aliases: ['owner', 'creator', 'dev', 'developpeur' ,'maitre', 'developper','architecte'],
     category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
-    description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ɪɴᴠᴏǫᴜᴇ ʟᴇs ɪɴғᴏʀᴍᴀᴛɪᴏɴs sᴀᴄʀᴇᴇs ᴅᴜ ɢʀᴀɴᴅ ᴀʀᴄʜɪᴛᴇᴄᴛᴇ**',
+    description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ɪɴᴠᴏǫᴜᴇ ʟᴇs ɪɴғᴏʀᴍᴀᴛɪᴏɴs sᴀᴄʀᴇᴇs ᴅᴜ ɢʀᴀɴᴅ ᴀʀᴄʜɪᴛᴇᴄᴛᴇ',
     usage: `${config.prefix || '.'}souverain`,
     ownerOnly: false,
     groupOnly: false,
