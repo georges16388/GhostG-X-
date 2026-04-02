@@ -74,7 +74,7 @@ module.exports = {
         await sock.sendMessage(extra.from, { 
           image: { url: ppUrl },
           caption: `👤 *${toSmallCaps('image de profil de')}* @${targetUser.split('@')[0]}\n\n` +
-                   `_❤️ ᴊᴇsᴜs ᴛᴀɪᴍᴇ ᴇᴛ ᴛᴇ ʙᴇ́ɴɪssᴇ_ ❤️\n` +
+                   `*_ᴊᴇsᴜs ᴇsᴛ ʀᴏɪ ♛_*\n\n` +
                    `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`,
           mentions: [targetUser]
         }, { quoted: msg });
