@@ -15,7 +15,7 @@ module.exports = {
   aliases: ['apparence_systeme', 'setbotname', 'setname', 'botname', 'nom'],
   category: '♛ sᴏᴜᴠᴇʀᴀɪɴᴇᴛᴇ́',
   ownerOnly: true,
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴍᴏᴅɪғɪᴇ ʟᴇ ɴᴏᴍ ᴅᴇ ʙᴀᴘᴛᴇ̂ᴍᴇ ᴅᴇ ʟ\'ᴀᴠᴀᴛᴀʀ ᴅᴀɴs **ʟ\'ᴏʀᴀᴄʟᴇ****',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴍᴏᴅɪғɪᴇ ʟᴇ ɴᴏᴍ ᴅᴇ ʙᴀᴘᴛᴇ̂ᴍᴇ ᴅᴇ ʟ\'ᴀᴠᴀᴛᴀʀ ᴅᴀɴs ʟ\'ᴏʀᴀᴄʟᴇ',
   usage: `${prefix}ᴀᴘᴘᴀʀᴇɴᴄᴇ_sʏsᴛᴇᴍᴇ <ɴᴏᴜᴠᴇᴀᴜ ɴᴏᴍ> ᴏᴜ ᴇɴ ʀᴇ́ᴘᴏɴsᴇ ᴀ̀ ᴜɴ ᴍᴇssᴀɢᴇ`,
 
   async execute(sock, msg, args, extra) {
@@ -52,7 +52,7 @@ module.exports = {
           `*☬ ᴜsᴀɢᴇ :*\n` +
           `  *• ${prefix}ᴀᴘᴘᴀʀᴇɴᴄᴇ_sʏsᴛᴇᴍᴇ <ɴᴏᴜᴠᴇᴀᴜ ɴᴏᴍ>*\n` +
           `  *• ᴏᴜ ʀᴇ́ᴘᴏɴᴅs ᴀ̀ ᴜɴ ᴍᴇssᴀɢᴇ ᴀᴠᴇᴄ ʟᴀ ᴄᴏᴍᴍᴀɴᴅᴇ*\n\n` +
-          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+          `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
         );
       }
 
