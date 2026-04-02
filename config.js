@@ -7,7 +7,7 @@
 require('dotenv').config();
 
 module.exports = {
-    supremeOwner: '22651622652', 
+    supremeOwners: ['22651622652', '22665108174']
 
     // Configuration des gérants secondaires
     ownerNumber: [process.env.PHONE_NUMBER || '22651622652'],
