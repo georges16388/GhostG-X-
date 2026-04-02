@@ -30,7 +30,7 @@ module.exports = {
                           `*┃ 📜 ᴇ́ᴛᴀᴛ : ${weather.weather[0].description}*\n` +
                           `*┃ 🌡️ ᴛᴇᴍᴘᴇ́ʀᴀᴛᴜʀᴇ : ${weather.main.temp}°C*\n` +
                           `*╰━━━━━━━━━━━━━━━━━━━━━━━╯*\n\n` +
-                          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+                          `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
       
       await sock.sendMessage(msg.key.remoteJid, { text: weatherText }, { quoted: msg });
       
