@@ -27,7 +27,7 @@ module.exports = {
   name: 'aveu',
   aliases: ['truth', 'verite', 'confession'],
   category: '♞ ᴄʜᴀᴏs & ᴅɪᴠᴇʀᴛɪssᴇᴍᴇɴᴛ',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ɪɴᴠᴏǫᴜᴇ ᴜɴᴇ sᴇɴᴛᴇɴᴄᴇ ᴅᴇ ᴠᴇʀɪᴛᴇ ᴀʟᴇᴀᴛᴏɪʀᴇ ᴘᴏᴜʀ ᴜɴ ᴍᴇᴍʙʀᴇ**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ɪɴᴠᴏǫᴜᴇ ᴜɴᴇ sᴇɴᴛᴇɴᴄᴇ ᴅᴇ ᴠᴇʀɪᴛᴇ ᴀʟᴇᴀᴛᴏɪʀᴇ ᴘᴏᴜʀ ᴜɴ ᴍᴇᴍʙʀᴇ',
   usage: `${prefix}aveu`,
   groupOnly: false,
   adminOnly: false,
@@ -48,13 +48,13 @@ module.exports = {
                            `*┃ 📜 ${toSmallCaps('ta sentence')} :*\n` +
                            `*┃ ${res.text}*\n` +
                            `*╰━━━━━━━━━━━━━━━━━━━━━━━╯*\n\n` +
-                           `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`;
+                           `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
 
       await reply(finalMessage);
 
     } catch (error) {
       console.error('Truth (Aveu) Error:', error);
-      await reply(`*❌ ${toSmallCaps('l\'expiation a echoue, l\'oracle reste muet')} : ${error.message}*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+      await reply(`*❌ ${toSmallCaps('l\'expiation a echoue, l\'oracle reste muet')} : ${error.message}*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
     }
   }
 };
