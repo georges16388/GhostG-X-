@@ -25,7 +25,7 @@ module.exports = {
   name: 'sɪʟᴇɴᴄᴇ',
   aliases: ['close', 'closegroup', 'mute', 'silence'],
   category: '‎⛨ ɢᴀʀᴅɪᴇɴs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ sᴄᴇʟʟᴇ ʟᴇ sᴀɴᴄᴛᴜᴀɪʀᴇ (sᴇᴜʟs ʟᴇs ᴀᴅᴍɪɴs ᴘᴀʀʟᴇɴᴛ)**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ sᴄᴇʟʟᴇ ʟᴇ sᴀɴᴄᴛᴜᴀɪʀᴇ (sᴇᴜʟs ʟᴇs ᴀᴅᴍɪɴs ᴘᴀʀʟᴇɴᴛ)',
   usage: `${prefix}sɪʟᴇɴᴄᴇ`, // 💡 Dynamique avec ton préfixe actuel
   groupOnly: true,
   adminOnly: true,
@@ -48,7 +48,7 @@ module.exports = {
 
       // Si l'utilisateur n'est pas admin et n'est pas listé comme Owner
       if (!extra.isAdmin && !isMe) {
-        return reply(`*❌ ${toSmallCaps('cette incantation est reservee aux administrateurs du sanctuaire')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+        return reply(`*❌ ${toSmallCaps('cette incantation est reservee aux administrateurs du sanctuaire')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       // Baileys commande pour fermer le groupe
@@ -56,13 +56,13 @@ module.exports = {
 
       const text = `🔒 *ʟᴇ sᴀɴᴄᴛᴜᴀɪʀᴇ ᴀ ᴇ́ᴛᴇ́ sᴄᴇʟʟᴇ́ !*\n\n` +
                    `*🔮 ${toSmallCaps('seuls les gardiens du sanctuaire peuvent desormais s\'exprimer')}.* \n\n` +
-                   `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`;
+                   `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
 
       await reply(text);
 
     } catch (error) {
       console.error('Mute Command Error:', error);
-      await reply(`*❌ ${toSmallCaps('l invocation a echoue')} : ${error.message}*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+      await reply(`*❌ ${toSmallCaps('l invocation a echoue')} : ${error.message}*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
     }
   }
 };
