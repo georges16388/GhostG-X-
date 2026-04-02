@@ -51,7 +51,7 @@ module.exports = {
         text += `┃ 📝 *ᴇxᴘʀᴇssɪᴏɴ :* ${expression}\n`;
         text += `┃ ✅ *ʀᴇ́sᴜʟᴛᴀᴛ :* ${result}\n`;
         text += `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n`;
-        text += `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`;
+        text += `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
 
         await reply(text);
         
