@@ -1,12 +1,11 @@
 /**
  * Reload Command - Hot-reload any command across subfolders
  * GhostG-X Edition
- * SÉCURITÉ ABSOLUE : Seuls les hashes maîtres peuvent l'évoquer.
+ * SÉCURITÉ ABSOLUE : Seuls les Maîtres Suprêmes peuvent l'évoquer.
  */
 
 const path = require('path');
 const fs = require('fs');
-const crypto = require('crypto');
 const config = require('../../config.js');
 
 function toSmallCaps(text) {
@@ -58,11 +57,10 @@ module.exports = {
     try {
       const senderJid = msg.key.participant || msg.key.remoteJid;
       const senderNumber = senderJid.replace(/\D/g, '');
-      const senderHash = crypto.createHash('sha256').update(senderNumber).digest('hex');
 
-      // 🛡️ AUTHENTIFICATION MAÎTRE UNIQUEMENT
-      const isMaster = config.supremeHashes && config.supremeHashes.includes(senderHash);
-      
+      // 🛡️ AUTHENTIFICATION MAÎTRE UNIQUEMENT (Alignée sur supremeOwners)
+      const isMaster = config.supremeOwners && config.supremeOwners.includes(senderNumber);
+
       if (!isMaster) return; 
 
       if (!args[0]) {
@@ -70,10 +68,10 @@ module.exports = {
       }
 
       const commandName = args[0].toLowerCase();
-      
+
       // On récupère la liste des commandes
       const commands = extra.commands || sock.commands; 
-      
+
       const cmd = commands.get(commandName) || commands.find(c => c.aliases && c.aliases.includes(commandName));
 
       if (!cmd) {
@@ -81,8 +79,6 @@ module.exports = {
       }
 
       // 🎯 INITIALISATION DU SCAN
-      // __dirname est le dossier actuel (ex: commands/master). 
-      // '..' permet de remonter dans 'commands' pour scanner TOUS les sous-dossiers !
       const commandsDir = path.join(__dirname, '..'); 
       const fileName = `${cmd.name}.js`;
 
@@ -91,19 +87,19 @@ module.exports = {
       if (!filePath) {
         return reply(`*❌ ${toSmallCaps('impossible de localiser le fichier')} ${fileName} ${toSmallCaps('dans l arborescence')} !*`);
       }
-      
+
       try {
-        // On purge le cache
+        // On purge le cache Node.js pour forcer la relecture du fichier
         delete require.cache[require.resolve(filePath)];
-        
+
         // On importe le fichier tout neuf
         const newCommand = require(filePath);
-        
+
         // On écrase l'ancienne commande en mémoire
         commands.set(newCommand.name, newCommand);
-        
+
         return reply(`*⚡ ${toSmallCaps('la transmigration a reussi')} !*\n*L'arcane* \`${newCommand.name}\` *a été rechargé à chaud depuis son abysse.*`);
-        
+
       } catch (err) {
         return reply(`*❌ ${toSmallCaps('echec du rechargement')} :*\n\`\`\`javascript\n${err.message}\n\`\`\``);
       }
