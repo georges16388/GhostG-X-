@@ -4,8 +4,8 @@
  * SÉCURITÉ ABSOLUE : Seuls les hashes maîtres peuvent l'évoquer.
  */
 
-const database = require('../database');
-const config = require('../config.js');
+const database = require('../../database');
+const config = require('../../config.js');
 const crypto = require('crypto');
 
 // Fonction pour le style Small Caps
