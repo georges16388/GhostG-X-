@@ -26,7 +26,7 @@ module.exports = {
   name: 'autosticker',
   aliases: ['autos', 'asticker', 'ᴀᴜᴛᴏsᴛɪᴄᴋᴇʀ'],
   category: '‎⛨ ɢᴀʀᴅɪᴇɴs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀᴄᴛɪᴠᴇ/ᴅᴇ́sᴀᴄᴛɪᴠᴇ ʟᴀ ᴍᴇ́ᴛᴀᴍᴏʀᴘʜᴏsᴇ ᴀᴜᴛᴏ-sᴛɪᴄᴋᴇʀ**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀᴄᴛɪᴠᴇ/ᴅᴇ́sᴀᴄᴛɪᴠᴇ ʟᴀ ᴍᴇ́ᴛᴀᴍᴏʀᴘʜᴏsᴇ ᴀᴜᴛᴏ-sᴛɪᴄᴋᴇʀ',
   usage: `${prefix}autosticker <on/off>`,
   groupOnly: true,
   adminOnly: true,
@@ -54,7 +54,7 @@ module.exports = {
       if (!isMe) {
         const isAdmin = extra.isAdmin || false; 
         if (!isAdmin) {
-          return reply(`*❌ ${toSmallCaps('cette commande est reservee aux administrateurs du sanctuaire')} !*`);
+          return reply(`*❌ ${toSmallCaps('cette commande est reservee aux administrateurs du sanctuaire')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
         }
       }
 
@@ -63,16 +63,16 @@ module.exports = {
       if (!args[0]) {
         const settings = database.getGroupSettings(chatId);
         const status = settings.autosticker ? '🛡️ ᴇ́ᴠᴇɪʟʟᴇ́ (ᴏɴ)' : '🔓 ᴇɴᴅᴏʀᴍɪ (ᴏғғ)';
-        
+
         return reply(
-          `╭╼━≪• *sᴛᴀᴛᴜᴛ ᴀʀᴄᴀɴᴇ_sᴛɪᴄᴋᴇʀ* •≫━╾╮\n` +
-          `┃ *ᴇ́ᴛᴀᴛ* : ${status}\n` +
-          `╰━━━━━━━━━━━━━━━╯\n\n` +
-          `🔮 *ɪɴᴄᴀɴᴛᴀᴛɪᴏɴs ᴅɪsᴘᴏɴɪʙʟᴇs :*\n` +
-          `*ᴄᴇᴛ ᴀʀᴄᴀɴᴇ ᴍᴇ́ᴛᴀᴍᴏʀᴘʜᴏsᴇ ᴀᴜᴛᴏᴍᴀᴛɪǫᴜᴇᴍᴇɴᴛ ʟᴇs ɪᴍᴀɢᴇs ᴇᴛ ᴠɪᴅᴇ́ᴏs ᴇɴ sᴛɪᴄᴋᴇʀs.*\n\n` +
+          `*╭╼━━━≪• sᴛᴀᴛᴜᴛ ᴀʀᴄᴀɴᴇ_sᴛɪᴄᴋᴇʀ •≫━━━╾╮*\n` +
+          `*┃* *ᴇ́ᴛᴀᴛ* : ${status}\n\n` +
+          `*┃* 🔮 *${toSmallCaps('incantations disponibles')} :*\n` +
+          `*┃* *${toSmallCaps('cet arcane metamorphose automatiquement')}*\n` +
+          `*┃* *${toSmallCaps('les images et videos en stickers')}.*\n\n` +
           `  ${prefix}autosticker on\n` +
           `  ${prefix}autosticker off\n\n` +
-          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+          `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
         );
       }
 
@@ -82,28 +82,28 @@ module.exports = {
       // Activation
       if (opt === 'on' || opt === 'true') {
         if (currentSettings.autosticker) {
-          return reply(`*❌ ${toSmallCaps('l arcane sticker est deja actif dans ce sanctuaire')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+          return reply(`*❌ ${toSmallCaps('l arcane sticker est deja actif dans ce sanctuaire')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
         }
-        
+
         database.updateGroupSettings(chatId, { autosticker: true });
-        return reply(`*🛡️ ${toSmallCaps('l arcane sticker a ete eveille avec succes')} (ᴏɴ).*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+        return reply(`*🛡️ ${toSmallCaps('l arcane sticker a ete eveille avec succes')} (ᴏɴ).*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       // Désactivation
       if (opt === 'off' || opt === 'false') {
         if (!currentSettings.autosticker) {
-          return reply(`*❌ ${toSmallCaps('l arcane sticker est deja endormi')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+          return reply(`*❌ ${toSmallCaps('l arcane sticker est deja endormi')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
         }
-        
+
         database.updateGroupSettings(chatId, { autosticker: false });
-        return reply(`*🔓 ${toSmallCaps('la metamorphose de l arcane sticker a ete scellee')} (ᴏғғ).*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+        return reply(`*🔓 ${toSmallCaps('la metamorphose de l arcane sticker a ete scellee')} (ᴏғғ).*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       // Saisie incorrecte
-      return reply(`*💡 ${toSmallCaps('utilise')} \`${prefix}autosticker\` ${toSmallCaps('pour voir les options valides')}.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+      return reply(`*💡 ${toSmallCaps('utilise')} \`${prefix}autosticker\` ${toSmallCaps('pour voir les options valides')}.*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
 
     } catch (error) {
-      return reply(`❌ *${toSmallCaps('erreur')} :* ${error.message}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+      return reply(`❌ *${toSmallCaps('erreur')} :* ${error.message}\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
     }
   }
 };
