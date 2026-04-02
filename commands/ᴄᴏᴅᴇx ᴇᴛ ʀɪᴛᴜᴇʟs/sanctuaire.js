@@ -25,7 +25,7 @@ module.exports = {
     // Ajout de 'groupinfo', 'info', 'ginfo' et 'sanctuaire' en texte brut pour assurer la réactivité !
     aliases: ['info', 'ginfo', 'groupinfo'],
     category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
-    description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀғғɪᴄʜᴇ ʟᴇs ɪɴғᴏʀᴍᴀᴛɪᴏɴs ᴅᴜ ɢʀᴏᴜᴘᴇ ᴇᴛ ᴅᴇ sᴏɴ ᴄʀᴇᴀᴛᴇᴜʀ**',
+    description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀғғɪᴄʜᴇ ʟᴇs ɪɴғᴏʀᴍᴀᴛɪᴏɴs ᴅᴜ ɢʀᴏᴜᴘᴇ ᴇᴛ ᴅᴇ sᴏɴ ᴄʀᴇᴀᴛᴇᴜʀ',
     usage: `${config.prefix || '.'}sanctuaire`,
     groupOnly: true,
     adminOnly: false,
@@ -43,25 +43,24 @@ module.exports = {
         const creatorId = metadata.owner || metadata.id.split('-')[0] + '@s.whatsapp.net';
         const creatorTag = `@${creatorId.split('@')[0]}`;
 
-        let text = `╭╼━━━━━━━━━━━━━━━╾╮\n` +
-                   `┃    🔮 *ɪɴғᴏs sᴀɴᴄᴛᴜᴀɪʀᴇ* ┃\n` +
-                   `╰╼━━━━━━━━━━━━━━━╾╯\n\n` +
-                   `🏷️ *ɴᴏᴍ :* ${metadata.subject}\n` +
-                   `🆔 *ɪᴅ :* ${metadata.id}\n` +
-                   `👤 *ᴘʀᴏᴘʀɪᴇᴛᴀɪʀᴇ ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ :* ${creatorTag}\n` +
-                   `👥 *ɪɴᴅɪᴠɪᴅᴜs :* ${metadata.participants.length}\n` +
-                   `👑 *ɢᴀʀᴅɪᴇɴs :* ${admins.length}\n` +
-                   `📝 *ᴅᴇsᴄʀɪᴘᴛɪᴏɴ :* ${metadata.desc || toSmallCaps('aucune description')}\n` +
-                   `🔒 *ʀᴇsᴛʀɪᴇɴᴛ :* ${metadata.restrict ? 'ᴏᴜɪ' : 'ɴᴏɴ'}\n` +
-                   `📢 *ᴀɴɴᴏɴᴄᴇs sᴇᴜʟᴇs :* ${metadata.announce ? 'ᴏᴜɪ' : 'ɴᴏɴ'}\n` +
-                   `📅 *ᴄʀᴇᴀᴛɪᴏɴ :* ${new Date(metadata.creation * 1000).toLocaleDateString()}\n\n` +
-                   `👑 *ʟɪsᴛᴇ ᴅᴇs ɢᴀʀᴅɪᴇɴs :*\n`;
+        let text = `*╭╼━━━≪• 🔮 ɪɴғᴏs sᴀɴᴄᴛᴜᴀɪʀᴇ •≫━━━╾╮*\n` +
+                   `*┃* 🏷️ *${toSmallCaps('nom')} :* ${metadata.subject}\n` +
+                   `*┃* 🆔 *${toSmallCaps('id')} :* ${metadata.id}\n` +
+                   `*┃* 👤 *${toSmallCaps('proprietaire du sanctuaire')} :* ${creatorTag}\n` +
+                   `*┃* 👥 *${toSmallCaps('individus')} :* ${metadata.participants.length}\n` +
+                   `*┃* 👑 *${toSmallCaps('guardiens')} :* ${admins.length}\n` +
+                   `*┃* 📝 *${toSmallCaps('description')} :* ${metadata.desc || toSmallCaps('aucune description')}\n` +
+                   `*┃* 🔒 *${toSmallCaps('restreint')} :* ${metadata.restrict ? 'ᴏᴜɪ' : 'ɴᴏɴ'}\n` +
+                   `*┃* 📢 *${toSmallCaps('annonces seules')} :* ${metadata.announce ? 'ᴏᴜɪ' : 'ɴᴏɴ'}\n` +
+                   `*┃* 📅 *${toSmallCaps('creation')} :* ${new Date(metadata.creation * 1000).toLocaleDateString()}\n\n` +
+                   `*👑 ${toSmallCaps('liste des gardiens')} :*\n`;
 
         admins.forEach((admin, index) => {
-          text += `  ${index + 1}. @${admin.id.split('@')[0]}\n`;
+          text += `*┃* ${index + 1}. @${admin.id.split('@')[0]}\n`;
         });
 
-        text += `\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`;
+        text += `\n_♛ ᴊᴇsᴜs ᴇsᴛ ʀᴏɪ ᴅᴇ ᴄᴇ sᴀɴᴄᴛᴜᴀɪʀᴇ ♛_\n\n` +
+                `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
 
         // Fusion des admins et du créateur dans le tableau des mentions
         const allMentions = admins.map(a => a.id);
@@ -76,7 +75,7 @@ module.exports = {
 
       } catch (error) {
         console.error('Sanctuaire command error:', error);
-        await reply(`*❌ ${toSmallCaps('erreur')} :* ${error.message} \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+        await reply(`*❌ ${toSmallCaps('erreur')} :* ${error.message}\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
     }
 };
