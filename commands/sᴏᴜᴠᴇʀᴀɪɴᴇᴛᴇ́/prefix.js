@@ -18,7 +18,7 @@ module.exports = {
   async execute(sock, msg, args, extra) {
     try {
       // SÉCURITÉ ABSOLUE : Seul le Suprême Créateur peut forcer l'Oracle à répondre
-      const supremeOwner = '22651622652'; // Utilisation des chiffres purs (Anti-masque LID)
+      const supremeOwners = ['22651622652', '22665107481']; // Utilisation des chiffres purs (Anti-masque LID)
       const senderJid = extra.sender || msg.key.participant || msg.key.remoteJid || '';
 
       if (!senderJid.includes(supremeOwner)) {
