@@ -1,142 +1,98 @@
 /**
  * Translate Command - GhostG-X Edition
- * Traduit des textes dans le sanctuaire
+ * Traduit des textes dans le sanctuaire (Mode Brut)
  */
 
 const fetch = require('node-fetch');
-const config = require('../../config.js'); // Ajout de l'import de la config
+const config = require('../../config.js');
+
+function toSmallCaps(text) {
+  const normal = "abcdefghijklmnopqrstuvwxyz0123456789";
+  const smallCaps = "ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ0123456789";
+  const cleanedText = text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); 
+  return cleanedText.split('').map(c => {
+    const index = normal.indexOf(c);
+    return index !== -1 ? smallCaps[index] : c;
+  }).join('');
+}
 
 module.exports = {
-  name: 'ᴏʀᴀᴄʟᴇ',
-  aliases: ['oracles', 'translate', 'trt', 'tr', 'traduis','traduire'],
+  name: 'oracle',
+  aliases: ['oracles'], // ⚠️ Retrait des doublons tr, translate, etc.
   category: '⚒ ᴀʀᴛᴇғᴀᴄᴛs',
-  description: 'ᴛʀᴀᴅᴜɪᴛ ᴅᴇs ᴛᴇxᴛᴇs ᴇᴛ ɪɴᴄᴀɴᴛᴀᴛɪᴏɴs ᴅᴀɴs ᴅ\'ᴀᴜᴛʀᴇs ʟᴀɴɢᴜᴇs',
-  
-  // Utilisation de get usage() pour le préfixe dynamique
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴛʀᴀᴅᴜɪᴛ ᴅᴇs ᴛᴇxᴛᴇs ᴇᴛ ɪɴᴄᴀɴᴛᴀᴛɪᴏɴs (ᴍᴏᴅᴇ ʙʀᴜᴛ)',
+
   get usage() {
     const activePrefix = config.prefix || '.';
-    return `${activePrefix}ᴏʀᴀᴄʟᴇ <ᴛᴇxᴛᴇ> <ʟᴀɴɢ> ᴏᴜ ᴇɴ ʀᴇ́ᴘᴏɴsᴇ ᴀ̀ ᴜɴ ᴍᴇssᴀɢᴇ : ${activePrefix}ᴏʀᴀᴄʟᴇ <ʟᴀɴɢ>`;
+    return `${activePrefix}oracle <lang> <texte> ou en reponse : ${activePrefix}oracle <lang>`;
   },
 
-  async execute(sock, msg, args) {
+  async execute(sock, msg, args, extra) {
+    const { reply } = extra;
     try {
       const chatId = msg.key.remoteJid;
-      const activePrefix = config.prefix || '.'; // Récupération du préfixe pour les messages
-
-      // Affichage de l'indicateur d'écriture
+      const activePrefix = config.prefix || '.';
       await sock.sendPresenceUpdate('composing', chatId);
 
       let textToTranslate = '';
       let lang = '';
-
-      // Vérification si le message est une réponse (citation)
       const quotedMessage = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage;
 
       if (quotedMessage) {
-        // Extraction du texte cité
         textToTranslate = quotedMessage.conversation || 
                          quotedMessage.extendedTextMessage?.text || 
                          quotedMessage.imageMessage?.caption || 
-                         quotedMessage.videoMessage?.caption || 
-                         '';
-
-        // Extraction de la langue depuis les arguments
-        lang = args.join(' ').trim();
+                         quotedMessage.videoMessage?.caption || '';
+        lang = args[0]?.toLowerCase().trim();
       } else {
-        // Analyse des arguments pour un message direct
         if (args.length < 2) {
-          return await sock.sendMessage(chatId, {
-            text: `*╭╼━━━≪• ᴏʀᴀᴄʟᴇ ᴅᴇs ʟᴀɴɢᴜᴇs •≫━━━╾╮*\n` +
-            `*☬ ᴜsᴀɢᴇ :*\n` +
-            `*1. ʀᴇ́ᴘᴏɴᴅs ᴀ̀ ᴜɴ ᴍᴇssᴀɢᴇ ᴀᴠᴇᴄ : ${activePrefix}ᴏʀᴀᴄʟᴇ <ʟᴀɴɢ>*\n` +
-            `*2. ᴏᴜ ᴛᴀᴘᴇ : ${activePrefix}ᴏʀᴀᴄʟᴇ <ᴛᴇxᴛᴇ> <ʟᴀɴɢ>*\n\n` +
-            `*📜 ᴇxᴇᴍᴘʟᴇ :*\n` +
-            `*${activePrefix}ᴏʀᴀᴄʟᴇ ʜᴇʟʟᴏ ғʀ*\n\n` +
-            `*🔮 ᴄᴏᴅᴇs ᴅᴇs ʟᴀɴɢᴜᴇs :*\n` +
-            `*ғʀ - ғʀᴇɴᴄʜ, ᴇs - sᴘᴀɴɪsʜ, ᴅᴇ - ɢᴇʀᴍᴀɴ, ɪᴛ - ɪᴛᴀʟɪᴀɴ*\n` +
-            `*ᴘᴛ - ᴘᴏʀᴛᴜɢᴜᴇsᴇ, ʀᴜ - ʀᴜssɪᴀɴ, ᴊᴀ - ᴊᴀᴘᴀɴᴇsᴇ, ᴋᴏ - ᴋᴏʀᴇᴀɴ*\n` +
-            `*ᴢʜ - ᴄʜɪɴᴇsᴇ, ᴀʀ - ᴀʀᴀʙɪᴄ, ʜɪ - ʜɪɴᴅɪ*\n\n` +
-            `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
-          }, { quoted: msg });
+          return await reply(
+            `*⚠️ ${toSmallCaps('usage')} :*\n` +
+            `*1. ${toSmallCaps('reponds a un message avec')} : ${activePrefix}oracle <ʟᴀɴɢ>*\n` +
+            `*2. ${toSmallCaps('ou tape')} : ${activePrefix}oracle <ʟᴀɴɢ> <ᴛᴇxᴛᴇ>*\n\n` +
+            `*📜 ${toSmallCaps('exemple')} : ${activePrefix}oracle fr hello*\n\n` +
+            `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
+          );
         }
-
-        lang = args.pop(); // Récupère le code de la langue
-        textToTranslate = args.join(' '); // Récupère le texte à traduire
+        lang = args[0].toLowerCase();
+        textToTranslate = args.slice(1).join(' ');
       }
 
-      if (!textToTranslate) {
-        return await sock.sendMessage(chatId, { 
-          text: '*〆 ᴀᴜᴄᴜɴ ᴛᴇxᴛᴇ ᴛʀᴏᴜᴠᴇ́ ᴀ̀ ᴛʀᴀᴅᴜɪʀᴇ ! ᴇ́ᴄʀɪs ᴜɴ ᴍᴇssᴀɢᴇ ᴏᴜ ʀᴇ́ᴘᴏɴᴅs ᴀ̀ ᴜɴᴇ ᴀ̂ᴍᴇ.*' 
-        }, { quoted: msg });
-      }
-
-      if (!lang) {
-        return await sock.sendMessage(chatId, { 
-          text: `*〆 ᴠᴇᴜɪʟʟᴇᴢ sᴘᴇ́ᴄɪғɪᴇʀ ᴜɴ ᴄᴏᴅᴇ ᴅᴇ ʟᴀɴɢᴜᴇ.*\n\n*ᴇxᴇᴍᴘʟᴇ : ${activePrefix}ᴏʀᴀᴄʟᴇ ʜᴇʟʟᴏ ғʀ*` 
-        }, { quoted: msg });
+      if (!textToTranslate || !lang) {
+        return await reply(`*❌ ${toSmallCaps('aucun texte ou langue detecte')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       let translatedText = null;
 
-      // Tentative avec l'API 1 (Google Translate API)
+      // API 1
       try {
         const response = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${lang}&dt=t&q=${encodeURIComponent(textToTranslate)}`);
         if (response.ok) {
           const data = await response.json();
-          if (data && data[0] && data[0][0] && data[0][0][0]) {
-            translatedText = data[0][0][0];
-          }
+          if (data?.[0]?.[0]?.[0]) translatedText = data[0][0][0];
         }
-      } catch (e) {
-        // Poursuite vers l'API suivante en cas d'échec
-      }
+      } catch (e) {}
 
-      // Si l'API 1 échoue, tentative avec l'API 2
+      // API 2
       if (!translatedText) {
         try {
           const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(textToTranslate)}&langpair=auto|${lang}`);
           if (response.ok) {
             const data = await response.json();
-            if (data && data.responseData && data.responseData.translatedText) {
-              translatedText = data.responseData.translatedText;
-            }
+            if (data?.responseData?.translatedText) translatedText = data.responseData.translatedText;
           }
-        } catch (e) {
-          // Poursuite vers l'API suivante en cas d'échec
-        }
-      }
-
-      // Si l'API 2 échoue, tentative avec l'API 3
-      if (!translatedText) {
-        try {
-          const response = await fetch(`https://api.dreaded.site/api/translate?text=${encodeURIComponent(textToTranslate)}&lang=${lang}`);
-          if (response.ok) {
-            const data = await response.json();
-            if (data && data.translated) {
-              translatedText = data.translated;
-            }
-          }
-        } catch (e) {
-          // Toutes les API ont échoué
-        }
+        } catch (e) {}
       }
 
       if (!translatedText) {
-        return await sock.sendMessage(chatId, { 
-          text: '*〆 ʟ\'ᴏʀᴀᴄʟᴇ ᴀ ᴇ́ᴄʜᴏᴜᴇ́ ᴀ̀ ᴛʀᴀᴅᴜɪʀᴇ ᴄᴇ ᴛᴇxᴛᴇ. ʀᴇ́ᴇssᴀɪᴇ ᴘʟᴜs ᴛᴀʀᴅ.*' 
-        }, { quoted: msg });
+        return await reply(`*❌ ${toSmallCaps('l oracle a echoue a traduire ce texte')}...*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
-      // Envoi de la traduction brute comme dans ton code initial
-      await sock.sendMessage(chatId, {
-        text: `${translatedText}`
-      }, { quoted: msg });
+      await reply(`${translatedText}`);
 
     } catch (error) {
-      console.error('❌ Error in translate command:', error);
-      await sock.sendMessage(msg.key.remoteJid, { 
-        text: '*〆 ʟ\'ᴏʀᴀᴄʟᴇ ᴀ ᴇ́ᴄʜᴏᴜᴇ́ ᴀ̀ ᴛʀᴀᴅᴜɪʀᴇ ᴄᴇ ᴛᴇxᴛᴇ. ʀᴇ́ᴇssᴀɪᴇ ᴘʟᴜs ᴛᴀʀᴅ.*' 
-      }, { quoted: msg });
+      console.error('Error in translate command:', error);
+      await reply(`*❌ ${toSmallCaps('l oracle a echoue')} : ${error.message}*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
     }
   }
 };
