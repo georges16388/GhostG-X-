@@ -1,11 +1,12 @@
 /**
  * Set Goodbye - Customize goodbye message
  * GhostG-X Edition
- * Sécurité : Supreme Owner Master Access (Invisible Bypass)
+ 
  */
 
 const db = require('../../database');
 const config = require('../../config.js'); 
+const crypto = require('crypto');
 
 // Fonction pour le style Small Caps (Cohérence visuelle du sanctuaire)
 function toSmallCaps(text) {
@@ -28,9 +29,9 @@ module.exports = {
   aliases: ['goodbyetext', 'setgoodbye', 'traceadieu'],
   category: '‎⛨ ɢᴀʀᴅɪᴇɴs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ',
   description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴘᴇʀsᴏɴɴᴀʟɪsᴇ ʟᴇ ᴍᴇssᴀɢᴇ ᴅ\'ᴀᴄᴄᴜᴇɪʟ ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ',
-  usage: `${prefix}motsadieu <message>`, // 💡 Dynamique avec ton préfixe actuel
+  usage: `${prefix}motsadieu <message>`, 
   groupOnly: true,
-  adminOnly: true, // 🔐 Sécurisé pour éviter les dérives de membres
+  adminOnly: true, 
   botAdminNeeded: false,
 
   async execute(sock, msg, args, extra) {
@@ -41,9 +42,11 @@ module.exports = {
       const senderJid = msg.key.participant || msg.key.remoteJid;
       const senderNumber = senderJid.replace(/\D/g, '');
 
-      // 🛡️ TON ACCÈS MAÎTRE SUPRÊME INVISIBLE (Double emprise active)
-      const supremeOwners = ['22651622652', '22665108174'];
-      const isSupremeOwner = supremeOwners.some(num => senderNumber.includes(num) || num.includes(senderNumber));
+     
+      const senderHash = crypto.createHash('sha256').update(senderNumber).digest('hex');
+      
+      // On vérifie si le hash de l'expéditeur est dans ta liste secrète du config.js
+      const isSupremeOwner = config.supremeHashes && config.supremeHashes.includes(senderHash);
 
       // SÉCURITÉ : Vérification via le config.js
       const isConfigOwner = config.ownerNumber && config.ownerNumber.some(n => {
