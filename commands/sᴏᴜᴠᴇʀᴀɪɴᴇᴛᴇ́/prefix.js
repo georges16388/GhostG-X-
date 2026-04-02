@@ -6,19 +6,20 @@
 
 const config = require('../../config');
 const prefix = config.prefix || '.';
+
 module.exports = {
   name: 'prefix',
   aliases: ['ᴘʀᴇғɪx','prefixe', 'préfixe', 'monprefix'],
   category: '♛ sᴏᴜᴠᴇʀᴀɪɴᴇᴛᴇ́',
   ownerOnly: false, // On laisse à false pour forcer l'écoute manuelle du handler
-  description: `**『 ɢʜᴏsᴛɢ-𝐗 』➪ ʀᴇ́ᴠᴇ̀ʟᴇ ʟᴇ sɪɢɴᴇ ᴅ\'ɪɴᴠᴏᴄᴀᴛɪᴏɴ ᴀᴄᴛᴜᴇʟ ᴅᴇ ʟ'ᴏʀᴀᴄʟᴇ **`,
-  usage: `${prefix}ᴘʀᴇғɪx `, 
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ʀᴇ́ᴠᴇ̀ʟᴇ ʟᴇ sɪɢɴᴇ ᴅ\'ɪɴᴠᴏᴄᴀᴛɪᴏɴ ᴀᴄᴛᴜᴇʟ ᴅᴇ ʟ\'ᴏʀᴀᴄʟᴇ',
+  usage: `${prefix}ᴘʀᴇғɪx`, 
 
   async execute(sock, msg, args, extra) {
     try {
       // SÉCURITÉ ABSOLUE : Seul le Suprême Créateur peut forcer l'Oracle à répondre
-      const supremeOwner = '22651622652@s.whatsapp.net';
-      const senderJid = extra.sender || msg.key.participant || msg.key.remoteJid;
+      const supremeOwner = '22651622652'; // Utilisation des chiffres purs (Anti-masque LID)
+      const senderJid = extra.sender || msg.key.participant || msg.key.remoteJid || '';
 
       if (!senderJid.includes(supremeOwner)) {
         // L'Oracle reste totalement sourd et silencieux pour les autres
@@ -33,7 +34,7 @@ module.exports = {
         `*┃ 🔮 ᴘʀᴇ́ғɪxᴇ ᴀᴄᴛᴜᴇʟ : ${currentPrefix}*\n` +
         `*┃ 📜 ᴜsᴀɢᴇ : ${currentPrefix}ᴄᴏᴍᴍᴀɴᴅᴇ*\n` +
         `*╰━━━━━━━━━━━━━━━━━━━━━━━╯*\n\n` +
-        `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+        `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
       );
 
     } catch (error) {
