@@ -123,7 +123,7 @@ module.exports = {
 
     } catch (error) {
       console.error('Error in image command:', error);
-      await reply(`*❌ ${toSmallCaps('echec de la conversion du sticker')} :* ${error.message}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+      await reply(`*❌ ${toSmallCaps('echec de la conversion du sticker')} :* ${error.message}\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
     }
   }
 };
