@@ -35,7 +35,7 @@ module.exports = {
                 `🔮 *ɪɴᴄᴀɴᴛᴀᴛɪᴏɴs :*\n` +
                 `  ${prefix}accueil on / off\n\n` +
                 `💡 *ᴀsᴛᴜᴄᴇ :* ᴜᴛɪʟɪsᴇᴢ \`${prefix}́accueil <ᴍᴇssᴀɢᴇ>\` ᴘᴏᴜʀ ᴘᴇʀsᴏɴɴᴀʟɪsᴇʀ ʟᴇ ᴛᴇxᴛᴇ ᴅ'ᴇɴᴛʀᴇ́ᴇ.\n\n` +
-                `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+                `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
         }, { quoted: msg });
       }
       
@@ -48,14 +48,14 @@ module.exports = {
           `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
         : `❌ *ʀɪᴛᴜᴇʟs ᴅ'ᴀᴄᴄᴜᴇɪʟ ᴅᴇ́sᴀᴄᴛɪᴠᴇ́s !*\n\n` +
           `ʟᴇ ɢʜᴏsᴛɢ-x ɴᴇ sᴀʟᴜᴇʀᴀ ᴘʟᴜs ʟᴇs ɴᴏᴜᴠᴇᴀᴜx ᴀʀʀɪᴠᴀɴᴛs.\n\n` +
-          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+          `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
 
       await sock.sendMessage(groupId, { text }, { quoted: msg });
       
     } catch (error) {
       console.error('Welcome Error:', error);
       await sock.sendMessage(msg.key.remoteJid, {
-        text: `❌ *ᴇʀʀᴇᴜʀ :* ${error.message}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+        text: `❌ *ᴇʀʀᴇᴜʀ :* ${error.message}\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
       }, { quoted: msg });
     }
   }
