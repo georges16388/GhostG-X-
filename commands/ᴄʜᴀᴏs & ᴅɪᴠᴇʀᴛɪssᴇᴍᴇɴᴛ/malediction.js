@@ -23,9 +23,9 @@ const prefix = config.prefix || '.';
 
 module.exports = {
   name: 'malediction',
-  aliases: ['insultme', 'burn', 'insult', 'insulter', 'malédiction', 'malédiction'],
+  aliases: ['insulte', 'insultelui', 'burn', 'insult', 'insulter', 'malédiction', 'malédiction'],
   category: '♞ ᴄʜᴀᴏs & ᴅɪᴠᴇʀᴛɪssᴇᴍᴇɴᴛ',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ʟᴀɴᴄᴇ ᴜɴᴇ ᴍᴀʟᴇᴅɪᴄᴛɪᴏɴ ᴏᴜ ᴜɴᴇ ᴘᴜɴᴄʜʟɪɴᴇ ʀɪᴅɪᴄᴜʟᴇ ᴀ ᴜɴ ᴍᴇᴍʙʀᴇ**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ʟᴀɴᴄᴇ ᴜɴᴇ ᴍᴀʟᴇᴅɪᴄᴛɪᴏɴ ᴏᴜ ᴜɴᴇ ᴘᴜɴᴄʜʟɪɴᴇ ʀɪᴅɪᴄᴜʟᴇ ᴀ ᴜɴ ᴍᴇᴍʙʀᴇ',
   usage: `${prefix}malediction [@user ou en reponse]`,
   groupOnly: false,
   adminOnly: false,
