@@ -45,7 +45,7 @@ module.exports = {
       }).join('');
 
       // 3. Envoi du message converti
-      await reply(`*🔮 ʀᴇ́sᴜʟᴛᴀᴛ ᴅᴇ ʟᴀ ᴛʀᴀɴsᴍᴜᴛᴀᴛɪᴏɴ :*\n\n${convertedText}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+      await reply(`*🔮 ʀᴇ́sᴜʟᴛᴀᴛ ᴅᴇ ʟᴀ ᴛʀᴀɴsᴍᴜᴛᴀᴛɪᴏɴ :*\n\n${convertedText}\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
 
     } catch (error) {
       console.error('[smallcaps] ERROR:', error);
