@@ -33,7 +33,7 @@ module.exports = {
   name: 'quete_fresque',
   aliases: ['memes', 'sm', 'smeme', 'memesearch', 'gifsearch', 'gif'],
   category: '♞ ᴄʜᴀᴏs & ᴅɪᴠᴇʀᴛɪssᴇᴍᴇɴᴛ',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴇxᴛᴘʟᴏʀᴇ ᴇᴛ ʀᴇᴄᴜᴘᴇʀᴇ ᴅᴇs ᴍᴇᴍᴇs ᴅᴀɴs ʟᴇs ᴀʀᴄʜɪᴠᴇs**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴇxᴛᴘʟᴏʀᴇ ᴇᴛ ʀᴇᴄᴜᴘᴇʀᴇ ᴅᴇs ᴍᴇᴍᴇs ᴅᴀɴs ʟᴇs ᴀʀᴄʜɪᴠᴇs',
   usage: `${prefix}quete_fresque <invocation>`,
   groupOnly: false,
   adminOnly: false,
@@ -45,12 +45,13 @@ module.exports = {
 
     try {
       const query = args.join(' ').trim();
+      const defaultCredit = `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
 
       if (!query) {
         return reply(
           `*🔮 ${toSmallCaps('usage')} :* \`${prefix}quete_fresque <${toSmallCaps('recherche')}>\`\n\n` +
           `*ᴇxᴇᴍᴘʟᴇ :* \`${prefix}quete_fresque hello\`\n\n` +
-          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`
+          `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
         );
       }
 
@@ -122,20 +123,22 @@ module.exports = {
             throw new Error(`MP4 file too large: ${(mp4Buffer.length / 1024 / 1024).toFixed(2)}MB`);
           }
 
-          // Send MP4 as video with gifPlayback
+          // Send MP4 as video with gifPlayback and caption
           await sock.sendMessage(from, {
             video: mp4Buffer,
             mimetype: 'video/mp4',
-            gifPlayback: true
+            gifPlayback: true,
+            caption: defaultCredit // 💥 Ajout de la caption ici
           }, { quoted: msg });
 
         } catch (convertError) {
-          // Fallback: try sending original GIF as document
+          // Fallback: try sending original GIF as document with caption
           try {
             await sock.sendMessage(from, {
               document: mediaBuffer,
               mimetype: 'image/gif',
-              fileName: `meme_${query.replace(/\s+/g, '_')}.gif`
+              fileName: `meme_${query.replace(/\s+/g, '_')}.gif`,
+              caption: defaultCredit // 💥 Ajout de la caption ici
             }, { quoted: msg });
           } catch (docError) {
             throw new Error(`Failed to send meme: ${convertError.message}`);
@@ -153,7 +156,8 @@ module.exports = {
 
         await sock.sendMessage(from, {
           video: mediaBuffer,
-          mimetype: 'video/mp4'
+          mimetype: 'video/mp4',
+          caption: defaultCredit // 💥 Ajout de la caption ici
         }, { quoted: msg });
       } else {
         // Check size for image
@@ -162,13 +166,14 @@ module.exports = {
         }
 
         await sock.sendMessage(from, {
-          image: mediaBuffer
+          image: mediaBuffer,
+          caption: defaultCredit // 💥 Ajout de la caption ici
         }, { quoted: msg });
       }
 
     } catch (error) {
       console.error('Meme search error:', error);
-      await reply(`*❌ ${toSmallCaps('l invocation a echoue')} : ${error.message}*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+      await reply(`*❌ ${toSmallCaps('l invocation a echoue')} : ${error.message}*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
     }
   }
 };
