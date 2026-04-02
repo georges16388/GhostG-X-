@@ -64,7 +64,7 @@ module.exports = {
           `*🔮 ɪɴᴄᴀɴᴛᴀᴛɪᴏɴ :*\n` +
           `*ʀᴇᴘᴏɴᴅs ᴀᴜ ᴍᴇssᴀɢᴇ ǫᴜᴇ ᴛᴜ sᴏᴜʜᴀɪᴛᴇs ғᴀɪʀᴇ ᴅɪsᴘᴀʀᴀɪᴛʀᴇ.*\n\n` +
           `  ${prefix}delete\n\n` +
-          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+          `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
         );
       }
 
@@ -90,7 +90,7 @@ module.exports = {
 
     } catch (error) {
       console.error('Delete command error:', error);
-      return reply(`❌ *${toSmallCaps('erreur')} :* ${error.message}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+      return reply(`❌ *${toSmallCaps('erreur')} :* ${error.message}\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
     }
   }
 };
