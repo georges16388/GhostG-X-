@@ -11,7 +11,7 @@ module.exports = {
 
     // Configuration des gérants secondaires
     ownerNumber: [process.env.PHONE_NUMBER || '22651622652'],
-    ownerName: ['ᴛʀᴜᴛʜ ᴅᴇᴠɪᴄᴇs'],
+    ownerName: [process.env.OWNER_NAME || 'ᴛʀᴜᴛʜ ᴅᴇᴠɪᴄᴇs'],
 
     // Configuration de **ʟ'ᴏʀᴀᴄʟᴇ**
     botName: 'ɢʜᴏsᴛɢ-𝐗',
