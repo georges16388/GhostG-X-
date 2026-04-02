@@ -343,7 +343,6 @@ const handleMessage = async (sock, msg) => {
     const isCommand = body.trim().startsWith(config.prefix || '.');
 
     // 🎯 ─── SYSTÈME DE RÉPONSE AUTO (SOUVERAINETÉ) ───
-    const database = require('./database'); // Vérifie bien que le chemin vers database.js est le bon !
     const botNumber = sock.user.id.split(':')[0]; 
     const isMentioned = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.includes(`${botNumber}@s.whatsapp.net`);
 
