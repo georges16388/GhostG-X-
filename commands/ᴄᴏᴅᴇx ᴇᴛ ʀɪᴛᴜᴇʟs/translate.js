@@ -20,7 +20,7 @@ const prefix = config.prefix || '.';
 
 module.exports = {
   name: 'traduction',
-  aliases: [traduire],
+  aliases: ['traduire'],
   category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs', 
   description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ɪɴᴠᴏǫᴜᴇ ʟᴀ sᴀɢᴇssᴇ ᴅᴇs ʟᴀɴɢᴜᴇs ᴘᴏᴜʀ ᴛʀᴀᴅᴜɪʀᴇ ᴜɴ ᴍᴜʀᴍᴜʀᴇ',
   usage: `${prefix}tr [langue] [texte ou en reponse]`,
