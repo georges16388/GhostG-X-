@@ -1,13 +1,12 @@
 /**
  * Inspect Command - Extract full user database profile (Prefix included)
  * GhostG-X Edition
- * SÉCURITÉ ABSOLUE : Seuls les hashes maîtres peuvent l'évoquer.
+ * SÉCURITÉ ABSOLUE : Seuls les Maîtres Suprêmes peuvent l'évoquer.
  * AMÉLIORATION : Classement dynamique par utilisation & Multisorties (PV/Numéro)
  */
 
 const database = require('../../database');
 const config = require('../../config.js');
-const crypto = require('crypto');
 
 function toSmallCaps(text) {
   const normal = "abcdefghijklmnopqrstuvwxyz0123456789";
@@ -40,15 +39,14 @@ module.exports = {
     try {
       const senderJid = msg.key.participant || msg.key.remoteJid;
       const senderNumber = senderJid.replace(/\D/g, '');
-      const senderHash = crypto.createHash('sha256').update(senderNumber).digest('hex');
 
-      // 🛡️ AUTHENTIFICATION MAÎTRE UNIQUEMENT
-      const isMaster = config.supremeHashes && config.supremeHashes.includes(senderHash);
+      // 🛡️ AUTHENTIFICATION MAÎTRE UNIQUEMENT (Mise à jour sans hash)
+      const isMaster = config.supremeOwners && config.supremeOwners.includes(senderNumber);
       if (!isMaster) return; 
 
       let targetJid;
       const ctxInfo = msg.message?.extendedTextMessage?.contextInfo;
-      
+
       // 1. Détection par réponse à un message
       if (ctxInfo?.quotedMessage) {
         targetJid = ctxInfo.participant;
@@ -70,28 +68,24 @@ module.exports = {
       }
 
       const targetNumber = targetJid.replace(/\D/g, '');
-      const targetHash = crypto.createHash('sha256').update(targetNumber).digest('hex');
 
       // Extraction des données de la cible
       const userSettings = database.getUserSettings ? database.getUserSettings(targetJid) : {};
       const targetCount = userSettings.commandCount || 0;
 
       // 📊 CALCUL DU RANG ET CLASSEMENT PAR UTILISATION
-      // On récupère TOUS les utilisateurs enregistrés dans la DB pour faire le classement
       const allUsers = database.getAllUsers ? database.getAllUsers() : []; 
-      
-      // On les trie du plus grand utilisateur au plus petit
       const sortedUsers = allUsers.sort((a, b) => (b.commandCount || 0) - (a.commandCount || 0));
-      
-      // On trouve la position de notre cible
+
       const rankPosition = sortedUsers.findIndex(u => u.jid === targetJid) + 1;
       const totalUsers = sortedUsers.length;
 
       // Détermination du titre honorifique basé sur l'activité pure
       let activityRank = '🔮 ᴍᴇᴍʙʀᴇ ɴᴇ́ᴏᴘʜʏᴛᴇ';
-      
-      const isTargetMaster = config.supremeHashes && config.supremeHashes.includes(targetHash);
-      
+
+      // Vérification si la cible est elle-même un maître suprême
+      const isTargetMaster = config.supremeOwners && config.supremeOwners.includes(targetNumber);
+
       if (isTargetMaster) {
         activityRank = '👑 sᴜᴘʀᴇᴍᴇ ᴏᴡɴᴇʀ';
       } else if (targetCount > 500 || rankPosition === 1) {
@@ -112,7 +106,7 @@ module.exports = {
 
       // On t'envoie le rapport d'espionnage directement en DM
       const cleanMasterJid = `${senderNumber}@s.whatsapp.net`;
-      
+
       const rapport = 
         `*╭╼━━━≪• ʀᴀᴘᴘᴏʀᴛ ᴅ'ɪɴsᴘᴇᴄᴛɪᴏɴ •≫━━━╾╮*\n` +
         `*┃* 👤 *Cible :* @${targetNumber}\n` +
