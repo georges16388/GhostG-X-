@@ -66,7 +66,7 @@ module.exports = {
       await sock.sendMessage(chatId, {
         audio: { url: selectedAudioUrl },
         mimetype: 'audio/mpeg',
-        ptt: true
+        ptt: false
       }, { quoted: msg });
 
       // 3. Envoi du message textuel d'accompagnement
