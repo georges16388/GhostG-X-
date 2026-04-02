@@ -25,7 +25,7 @@ module.exports = {
   name: 'ssweb',
   aliases: ['screenshot', 'ss', 'webss', 'capture'],
   category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴘʀᴇɴᴅ ᴜɴᴇ ᴄᴀᴘᴛᴜʀᴇ ᴅ\'ᴇᴄʀᴀɴ ᴅ\'ᴜɴ sᴀɴᴄᴛᴜᴀɪʀᴇ ᴡᴇʙ**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴘʀᴇɴᴅ ᴜɴᴇ ᴄᴀᴘᴛᴜʀᴇ ᴅ\'ᴇᴄʀᴀɴ ᴅ\'ᴜɴ sᴀɴᴄᴛᴜᴀɪʀᴇ ᴡᴇʙ',
   usage: `${config.prefix || '.'}ssweb [lien du site]`,
   groupOnly: false,
   adminOnly: false,
@@ -38,13 +38,10 @@ module.exports = {
     try {
       if (args.length === 0) {
         return reply(
-          `╭╼━≪• *⚠️ ᴇᴄʜᴇᴄ ᴅᴇ ʟɪɴᴠᴏᴄᴀᴛɪᴏɴ* •≫━╾╮\n` +
-          `┃\n` +
-          `┃ 🔮 *${toSmallCaps('indique ladresse dun sanctuaire web')} !*\n` +
-          `┃ 💡 *${toSmallCaps('exemple')} :* .ssweb google.com\n` +
-          `┃\n` +
-          `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
-          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`
+          `*⚠️ ${toSmallCaps('echec de l\'invocation')}*\n\n` +
+          `*┃* 🔮 *${toSmallCaps('indique ladresse dun sanctuaire web')} !*\n` +
+          `*┃* 💡 *${toSmallCaps('exemple')} :* \`.ssweb google.com\`\n\n` +
+          `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
         );
       }
 
@@ -64,7 +61,7 @@ module.exports = {
       const screenshotResult = await APIs.screenshotWebsite(url);
 
       let screenshotBuffer;
-      
+
       // Sécurité si l'API renvoie un lien au lieu d'un Buffer directement
       if (typeof screenshotResult === 'string' && screenshotResult.startsWith('http')) {
         const response = await axios.get(screenshotResult, { responseType: 'arraybuffer' });
@@ -74,12 +71,10 @@ module.exports = {
       }
 
       const captionText = 
-          `╭╼━≪• *🖼️ ᴠɪsɪᴏɴ ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ* •≫━╾╮\n` +
-          `┃\n` +
-          `┃ 🌐 *${toSmallCaps('source')} :* ${url}\n` +
-          `┃\n` +
-          `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
-          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`;
+          `*╭╼━━━≪• 🖼️ ᴠɪsɪᴏɴ ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ •≫━━━╾╮*\n` +
+          `*┃* 🌐 *${toSmallCaps('source')} :* ${url}\n\n` +
+          `*♛ ${toSmallCaps('jesus est roi de ce sanctuaire web')} ♛*\n\n` +
+          `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
 
       // Envoi de l'image de capture
       await sock.sendMessage(chatId, {
@@ -89,7 +84,7 @@ module.exports = {
 
     } catch (error) {
       console.error('SSWeb command error:', error);
-      await reply(`*❌ ${toSmallCaps('erreur')} :* ${toSmallCaps('impossible de capturer ce sanctuaire')} (${error.message})\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+      await reply(`*❌ ${toSmallCaps('erreur')} :* ${toSmallCaps('impossible de capturer ce sanctuaire')} (${error.message})\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
     }
   }
 };
