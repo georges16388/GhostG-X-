@@ -43,6 +43,11 @@ module.exports = {
         });
 
       try {
+        // AJOUT : Message de confirmation avant PM2
+        await sock.sendMessage(from, { 
+          text: '*🔮 ᴘᴍ2 ʀᴇᴍᴏɴᴛᴇ ʟᴇs ᴀʀᴄᴀɴᴇs... ʀᴇᴅᴇ́ᴍᴀʀʀᴀɢᴇ ɪᴍᴍɪɴᴇɴᴛ !*' 
+        }, { quoted: msg });
+
         await run('pm2 restart all');
         return;
       } catch (e) {
@@ -51,6 +56,12 @@ module.exports = {
 
       // 🔥 DEUXIÈME SÉCURITÉ : On attend 2 secondes (2000 ms) pour laisser le temps 
       // au bot d'envoyer les paquets de lecture à WhatsApp avant de couper le moteur !
+      
+      // AJOUT : Message de confirmation avant process.exit
+      await sock.sendMessage(from, { 
+        text: '*🔮 ᴀssᴏᴜᴘɪssᴇᴍᴇɴᴛ ᴇᴛ ʀᴇ́ᴠᴇɪʟ ᴅᴜ sʏsᴛᴇ̀ᴍᴇ ᴅᴀɴs 2 sᴇᴄᴏɴᴅᴇs...*' 
+      }, { quoted: msg });
+
       setTimeout(() => {
         process.exit(0);
       }, 2000);
