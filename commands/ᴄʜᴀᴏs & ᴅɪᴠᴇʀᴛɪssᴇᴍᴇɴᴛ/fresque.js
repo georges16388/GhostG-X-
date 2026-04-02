@@ -27,7 +27,7 @@ module.exports = {
   name: 'fresque',
   aliases: ['memes', 'meme'],
   category: '♞ ᴄʜᴀᴏs & ᴅɪᴠᴇʀᴛɪssᴇᴍᴇɴᴛ',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴇxᴘʟᴏʀᴇ ʟᴀ ᴍᴀᴛʀɪᴄᴇ ᴇᴛ ʀᴇᴄᴜᴘᴇʀᴇ ᴜɴᴇ ғʀᴇsǫᴜᴇ (ᴍᴇᴍᴇ) ᴀʟᴇᴀᴛᴏɪʀᴇ**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴇxᴘʟᴏʀᴇ ʟᴀ ᴍᴀᴛʀɪᴄᴇ ᴇᴛ ʀᴇᴄᴜᴘᴇʀᴇ ᴜɴᴇ ғʀᴇsǫᴜᴇ (ᴍᴇᴍᴇ) ᴀʟᴇᴀᴛᴏɪʀᴇ',
   usage: `${prefix}fresque`,
   groupOnly: false,
   adminOnly: false,
@@ -52,7 +52,7 @@ module.exports = {
                       `🌐 ${toSmallCaps('dimension')} : ʀ/${subFormatted}\n` +
                       `👤 ${toSmallCaps('createur')} : ${authorFormatted}\n` +
                       `⚡ ${toSmallCaps('flux d\'energie')} : ${meme.ups}\n\n` +
-                      `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`;
+                      `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
 
       await sock.sendMessage(from, {
         image: Buffer.from(imageBuffer.data),
@@ -61,7 +61,7 @@ module.exports = {
 
     } catch (error) {
       console.error('Meme Error:', error);
-      await reply(`*❌ ${toSmallCaps('l\'extraction de la fresque a echoue')} : ${error.message}*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+      await reply(`*❌ ${toSmallCaps('l\'extraction de la fresque a echoue')} : ${error.message}*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
     }
   }
 };
