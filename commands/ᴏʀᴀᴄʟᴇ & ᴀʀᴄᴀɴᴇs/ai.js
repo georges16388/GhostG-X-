@@ -49,7 +49,7 @@ module.exports = {
 
       // Réaction avec l'orbe de réflexion
       await sock.sendMessage(chatId, {
-        react: { text: '🤔', key: msg.key }
+        react: { text: '🙂‍↔️', key: msg.key }
       });
 
       const response = await APIs.chatAI(question);
