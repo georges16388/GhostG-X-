@@ -22,10 +22,9 @@ function toSmallCaps(text) {
 
 module.exports = {
     name: 'rang',
-    // Ajout de 'myactivity', 'mystats', 'mymsgs', 'rank' en texte brut pour assurer la réactivité !
     aliases: ['mystats', 'mymsgs', 'rank', 'myactivity'],
     category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
-    description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀғғɪᴄʜᴇ ᴠᴏs sᴛᴀᴛɪsᴛɪǫᴜᴇs ᴅ\'ᴀᴄᴛɪᴠɪᴛᴇ ᴅᴜ ᴊᴏᴜʀ**',
+    description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀғғɪᴄʜᴇ ᴠᴏs sᴛᴀᴛɪsᴛɪǫᴜᴇs ᴅ\'ᴀᴄᴛɪᴠɪᴛᴇ ᴅᴜ ᴊᴏᴜʀ',
     usage: `${config.prefix || '.'}rang`,
     groupOnly: true,
     adminOnly: false,
@@ -41,12 +40,12 @@ module.exports = {
 
             // Si aucune donnée ou aucun message aujourd'hui pour cet utilisateur
             if (!stats || !stats.users || !stats.users[sender]) {
-                return reply(`📊 *${toSmallCaps('vous n\'avez encore envoye aucun message aujourd\'hui')} !* \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+                return reply(`📊 *${toSmallCaps('vous n\'avez encore envoye aucun message aujourd\'hui')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
             }
 
             const userCount = stats.users[sender];
             const totalMessages = stats.total;
-            
+
             // Calcul de la part d'activité en pourcentage
             const percentage = ((userCount / totalMessages) * 100).toFixed(1);
 
@@ -56,15 +55,13 @@ module.exports = {
 
             const rank = sortedUsers.findIndex(([id]) => id === sender) + 1;
 
-            const text = `╭╼━━━━━━━━━━━━━━━╾╮\n` +
-                         `┃      📊 *ᴠᴏᴛʀᴇ ᴀᴄᴛɪᴠɪᴛᴇ́* ┃\n` +
-                         `╰╼━━━━━━━━━━━━━━━╾╯\n\n` +
-                         `👤 *ɪɴᴅɪᴠɪᴅᴜ :* @${sender.split('@')[0]}\n` +
-                         `📝 *ᴍᴇssᴀɢᴇs ᴇɴᴠᴏʏᴇ́s :* ${userCount}\n` +
-                         `📈 *ᴘᴀʀᴛ ᴅ\'ᴀᴄᴛɪᴠɪᴛᴇ́ :* ${percentage}%\n` +
-                         `🏆 *ʀᴀɴɢ :* #${rank} sur ${sortedUsers.length}\n\n` +
-                         `*ᴄᴏɴᴛɪɴᴜᴇᴢ ᴀ̀ ᴇ́ᴄʀɪʀᴇ ʟ\'ʜɪsᴛᴏɪʀᴇ ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ !* 💬\n\n` +
-                         `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+            const text = `*╭╼━━━≪• 📊 ᴠᴏᴛʀᴇ ᴀᴄᴛɪᴠɪᴛᴇ •≫━━━╾╮*\n` +
+                         `*┃* 👤 *${toSmallCaps('individu')} :* @${sender.split('@')[0]}\n` +
+                         `*┃* 📝 *${toSmallCaps('messages envoyes')} :* ${userCount}\n` +
+                         `*┃* 📈 *${toSmallCaps('part d\'activite')} :* ${percentage}%\n` +
+                         `*┃* 🏆 *${toSmallCaps('rang')} :* #${rank} sur ${sortedUsers.length}\n\n` +
+                         `*${toSmallCaps('continuez a ecrire l\'histoire du sanctuaire')} !* 💬\n\n` +
+                         `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
 
             await sock.sendMessage(from, {
                 text,
@@ -73,7 +70,7 @@ module.exports = {
 
         } catch (err) {
             console.error('[myactivity cmd] error:', err);
-            await reply(`*❌ ${toSmallCaps('erreur lors du chargement de vos statistiques')}.* \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+            await reply(`*❌ ${toSmallCaps('erreur lors du chargement de vos statistiques')}.*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
         }
     }
 };
