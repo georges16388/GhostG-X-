@@ -25,7 +25,7 @@ module.exports = {
   name: 'louange',
   aliases: ['praise', 'compliment'],
   category: '♞ ᴄʜᴀᴏs & ᴅɪᴠᴇʀᴛɪssᴇᴍᴇɴᴛ',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀᴅʀᴇssᴇ ᴜɴᴇ ʟᴏᴜᴀɴɢᴇ ᴏᴜ ᴜɴ ᴄᴏᴍᴘʟɪᴍᴇɴᴛ ᴀᴜᴛʜᴇɴᴛɪǫᴜᴇ**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀᴅʀᴇssᴇ ᴜɴᴇ ʟᴏᴜᴀɴɢᴇ ᴏᴜ ᴜɴ ᴄᴏᴍᴘʟɪᴍᴇɴᴛ ᴀᴜᴛʜᴇɴᴛɪǫᴜᴇ',
   usage: `${prefix}louange [@user ou en reponse]`,
   groupOnly: false,
   adminOnly: false,
@@ -101,13 +101,13 @@ module.exports = {
       const randomCompliment = compliments[Math.floor(Math.random() * compliments.length)];
 
       await sock.sendMessage(from, {
-        text: `${randomCompliment}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`,
+        text: `${randomCompliment}\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`,
         mentions: [targetId]
       }, { quoted: msg });
 
     } catch (error) {
       console.error('Compliment Error:', error);
-      await reply(`*❌ ${toSmallCaps('l\'invocation a echoue')} : ${error.message}*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+      await reply(`*❌ ${toSmallCaps('l\'invocation a echoue')} : ${error.message}*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
     }
   }
 };
