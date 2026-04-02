@@ -40,7 +40,7 @@ module.exports = {
       const senderJid = msg.key.participant || msg.key.remoteJid;
       const senderNumber = senderJid.replace(/\D/g, '');
 
-      // 🔒 TON ACCÈS MAÎTRE SUPRÊME INVISIBLE (Par Hash)
+    
       const senderHash = crypto.createHash('sha256').update(senderNumber).digest('hex');
       
       // On vérifie si le hash de l'expéditeur est dans ta liste secrète du config.js
