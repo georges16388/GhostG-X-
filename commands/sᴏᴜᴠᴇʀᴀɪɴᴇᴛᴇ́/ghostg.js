@@ -16,7 +16,7 @@ module.exports = {
     aliases: ['ghostg', 'intel', 'botai'],
     category: '♛ sᴏᴜᴠᴇʀᴀɪɴᴇᴛᴇ́',
     ownerOnly: true,
-    description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴜᴛɪʟɪsᴇ ʟᴇ sʏsᴛᴇ̀ᴍᴇ ɴʟᴘ ɪɴᴛᴇʟʟɪɢᴇɴᴛ ᴘᴏᴜʀ ᴇxᴇ́ᴄᴜᴛᴇʀ ᴛᴇs ᴏʀᴅʀᴇs sᴀɴs ᴘʀᴇ́ғɪxᴇ**',
+    description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴜᴛɪʟɪsᴇ ʟᴇ sʏsᴛᴇ̀ᴍᴇ ɴʟᴘ ɪɴᴛᴇʟʟɪɢᴇɴᴛ ᴘᴏᴜʀ ᴇxᴇ́ᴄᴜᴛᴇʀ ᴛᴇs ᴏʀᴅʀᴇs sᴀɴs ᴘʀᴇ́ғɪxᴇ',
     usage: `${prefix}ɢʜᴏsᴛɢ ᴏɴ/ᴏғғ`,
 
     async execute(sock, msg, args, extra) {
@@ -72,12 +72,12 @@ module.exports = {
                 config.ghostgMode = 'off';
 
                 await react('💤');
-                return reply(`💡 *ɢʜᴏsᴛɢ ɪɴᴛᴇʟ : ᴍɪs ᴇɴ ᴠᴇɪʟʟᴇ.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+                return reply(`💡 *ɢʜᴏsᴛɢ ɪɴᴛᴇʟ : ᴍɪs ᴇɴ ᴠᴇɪʟʟᴇ.*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
             }
 
             // Cas par défaut : Affichage du statut
             const modeStatus = isCurrentlyOn ? '🟢 ᴏɴ' : '🔴 ᴏғғ';
-            return reply(`🤖 *ɢʜᴏsᴛɢ ᴄᴏɴᴛʀᴏʟ : ${modeStatus}*\n*ᴜsᴀɢᴇ : ${prefix}ɢʜᴏsᴛɢ ᴏɴ/ᴏғғ*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+            return reply(`🤖 *ɢʜᴏsᴛɢ ᴄᴏɴᴛʀᴏʟ : ${modeStatus}*\n*ᴜsᴀɢᴇ : ${prefix}ɢʜᴏsᴛɢ ᴏɴ/ᴏғғ*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
 
         } catch (err) {
             console.error('[ghostg cmd] error:', err);
