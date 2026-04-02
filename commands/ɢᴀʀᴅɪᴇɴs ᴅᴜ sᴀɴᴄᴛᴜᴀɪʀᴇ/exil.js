@@ -27,7 +27,7 @@ module.exports = {
   name: 'kick',
   aliases: ['remove', 'bye', 'k', 'exil', 'ᴋɪᴄᴋ'],
   category: '‎⛨ ɢᴀʀᴅɪᴇɴs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴇxᴘᴜʟsᴇ ʟᴇs ᴍᴇᴍʙʀᴇs ᴍᴇɴᴛɪᴏɴɴᴇ́s ᴏᴜ ᴇɴ ʀᴇ́ᴘᴏɴsᴇ**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴇxᴘᴜʟsᴇ ʟᴇs ᴍᴇᴍʙʀᴇs ᴍᴇɴᴛɪᴏɴɴᴇ́s ᴏᴜ ᴇɴ ʀᴇ́ᴘᴏɴsᴇ',
   usage: `${prefix}kick @user`,
   groupOnly: true,
   adminOnly: true,
@@ -51,14 +51,14 @@ module.exports = {
       if (!isMe) {
         const isAdmin = extra.isAdmin || false; 
         if (!isAdmin) {
-          return reply(`*❌ ${toSmallCaps('cette commande est reservee aux administrateurs du sanctuaire')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+          return reply(`*❌ ${toSmallCaps('cette commande est reservee aux administrateurs du sanctuaire')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
         }
       }
 
       const chatId = msg.key.remoteJid;
       const ctx = msg.message?.extendedTextMessage?.contextInfo;
       const mentioned = ctx?.mentionedJid || [];
-      
+
       // 🔮 Accumulation des cibles (Multi-Kick)
       let usersToKick = [];
 
@@ -66,7 +66,7 @@ module.exports = {
       if (mentioned && mentioned.length > 0) {
         usersToKick = [...mentioned];
       }
-      
+
       // 2. On ajoute aussi la personne citée en réponse (si elle n'est pas déjà dans la liste)
       if (ctx?.participant && ctx.stanzaId && ctx.quotedMessage) {
         if (!usersToKick.includes(ctx.participant)) {
@@ -79,13 +79,13 @@ module.exports = {
 
       if (usersToKick.length === 0) {
         return reply(
-          `╭╼━≪• *ʙᴀɴɴɪssᴇᴍᴇɴᴛ_ᴀʀᴄᴀɴɪǫᴜᴇ* •≫━╾╮\n` +
-          `┃ *ᴇ́ᴛᴀᴛ* : ᴇ́ᴄʜᴇᴄ ❌\n` +
-          `╰━━━━━━━━━━━━━━━╯\n\n` +
-          `*🔮 ɪɴᴄᴀɴᴛᴀᴛɪᴏɴ :*\n` +
-          `*ᴠᴇᴜɪʟʟᴇᴢ ᴍᴇɴᴛɪᴏɴɴᴇʀ ᴏᴜ ʀᴇᴘᴏɴᴅʀᴇ ᴀ̀ ʟ'ᴜᴛɪʟɪsᴀᴛᴇᴜʀ ǫᴜᴇ ᴠᴏᴜs sᴏᴜʜᴀɪᴛᴇᴢ ʙᴀɴɴɪʀ.*\n\n` +
+          `*╭╼━━━≪• ʙᴀɴɴɪssᴇᴍᴇɴᴛ_ᴀʀᴄᴀɴɪǫᴜᴇ •≫━━━╾╮*\n` +
+          `*┃* *ᴇ́ᴛᴀᴛ* : ᴇ́ᴄʜᴇᴄ ❌\n\n` +
+          `*┃* 🔮 *${toSmallCaps('incantations disponibles')} :*\n` +
+          `*┃* *${toSmallCaps('veuillez mentionner ou repondre a')}*\n` +
+          `*┃* *${toSmallCaps('l utilisateur que vous souhaitez bannir')}.*\n\n` +
           `  ${prefix}kick @user1 @user2\n\n` +
-          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+          `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
         );
       }
 
@@ -149,7 +149,7 @@ module.exports = {
       });
 
       if (isTryingToKickBot) {
-        return reply(`*❌ ${toSmallCaps('l arcane ne peut pas s auto bannir du sanctuaire')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+        return reply(`*❌ ${toSmallCaps('l arcane ne peut pas s auto bannir du sanctuaire')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       await reply(`*☬ ɪɴᴠᴏᴄᴀᴛɪᴏɴ : ᴇxɪʟ ᴅᴇ ${usersToKick.length} ᴀ̂ᴍᴇ(s) ᴇɴ ᴄᴏᴜʀs...*`);
@@ -160,18 +160,18 @@ module.exports = {
       const usernames = usersToKick.map((jid) => `@${jid.split('@')[0]}`);
 
       await sock.sendMessage(chatId, {
-        text: `╭╼━≪• *ʙᴀɴɴɪssᴇᴍᴇɴᴛ_ᴀʀᴄᴀɴɪǫᴜᴇ* •≫━╾╮\n` +
-              `┃ *ᴇ́ᴛᴀᴛ* : ᴛᴇʀᴍɪɴᴇ́ ✅\n` +
-              `┃ *ᴄɪʙʟᴇs* : ${usernames.join(', ')}\n` +
-              `╰━━━━━━━━━━━━━━━╯\n\n` +
-              `*ʟ'ᴀʀᴄᴀɴᴇ ᴀ ᴇxᴘᴜʟsᴇ ʟᴇs ᴀᴍᴇs ɪɴᴅᴇsɪʀᴀʙʟᴇs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ ᴀᴠᴇᴄ sᴜᴄᴄᴇs.*\n\n` +
-              `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`,
+        text: `*╭╼━━━≪• ʙᴀɴɴɪssᴇᴍᴇɴᴛ_ᴀʀᴄᴀɴɪǫᴜᴇ •≫━━━╾╮*\n` +
+              `*┃* *ᴇ́ᴛᴀᴛ* : ᴛᴇʀᴍɪɴᴇ́ ✅\n` +
+              `*┃* *ᴄɪʙʟᴇs* : ${usernames.join(', ')}\n\n` +
+              `*┃* *ʟ'ᴀʀᴄᴀɴᴇ ᴀ ᴇxᴘᴜʟsᴇ ʟᴇs ᴀᴍᴇs ɪɴᴅᴇsɪʀᴀʙʟᴇs*\n` +
+              `*┃* *ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ ᴀᴠᴇᴄ sᴜᴄᴄᴇs.*\n\n` +
+              `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`,
         mentions: usersToKick
       }, { quoted: msg });
 
     } catch (error) {
       console.error('Kick command error:', error);
-      return reply(`*❌ ${toSmallCaps('echec du bannissement assure toi que je sois bien administrateur du groupe')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+      return reply(`*❌ ${toSmallCaps('echec du bannissement assure toi que je sois bien administrateur du groupe')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
     }
   }
 };
