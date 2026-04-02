@@ -29,7 +29,6 @@ module.exports = {
       const isMaster = config.supremeHashes && config.supremeHashes.includes(senderHash);
       
       if (!isMaster) {
-        // On ne répond même pas pour ne pas griller l'existence de la commande
         return; 
       }
 
