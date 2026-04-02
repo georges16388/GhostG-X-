@@ -25,7 +25,7 @@ module.exports = {
   name: 'approveall',
   aliases: ['acceptall', 'approuvertout', 'ᴀᴘᴘʀᴏᴠᴇᴀʟʟ'],
   category: '‎⛨ ɢᴀʀᴅɪᴇɴs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀᴘᴘʀᴏᴜᴠᴇ ᴛᴏᴜᴛᴇs ʟᴇs ᴅᴇᴍᴀɴᴅᴇs ᴅ\'ᴀᴅʜᴇ́sɪᴏɴ ᴇɴ ᴀᴛᴛᴇɴᴛᴇ**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀᴘᴘʀᴏᴜᴠᴇ ᴛᴏᴜᴛᴇs ʟᴇs ᴅᴇᴍᴀɴᴅᴇs ᴅ\'ᴀᴅʜᴇ́sɪᴏɴ ᴇɴ ᴀᴛᴛᴇɴᴛᴇ',
   usage: `${prefix}approveall`,
   groupOnly: true,
   adminOnly: true,
@@ -33,7 +33,7 @@ module.exports = {
 
   async execute(sock, msg, args, extra) {
     const { reply } = extra;
-    
+
     try {
       const senderJid = msg.key.participant || msg.key.remoteJid;
       const senderNumber = senderJid.replace(/\D/g, '');
@@ -50,7 +50,7 @@ module.exports = {
       if (!isMe) {
         const isAdmins = extra.isAdmins || false; 
         if (!isAdmins) {
-          return reply(`*❌ ${toSmallCaps('cette commande est reservee aux administrateurs du sanctuaire')} !*`);
+          return reply(`*❌ ${toSmallCaps('cette commande est reservee aux administrateurs du sanctuaire')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
         }
       }
 
@@ -62,7 +62,7 @@ module.exports = {
       const pendingList = await sock.groupRequestParticipantsList(chatId);
 
       if (!pendingList || pendingList.length === 0) {
-        return reply(`❌ *${toSmallCaps('aucune demande d adhesion en attente dans le sanctuaire')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+        return reply(`❌ *${toSmallCaps('aucune demande d adhesion en attente dans le sanctuaire')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       const totalRequests = pendingList.length;
@@ -75,11 +75,11 @@ module.exports = {
 
       // Succès
       await sock.sendMessage(chatId, {
-        text: `📈 *${totalRequests} ᴀ̂ᴍᴇs ᴏɴᴛ ᴇ́ᴛᴇ́ ᴀᴘᴘʀᴏᴜᴠᴇ́ᴇs ᴇᴛ ɪɴᴛᴇ́ɢʀᴇ́ᴇs ᴀᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`,
+        text: `📈 *${totalRequests} ᴀ̂ᴍᴇs ᴏɴᴛ ᴇ́ᴛᴇ́ ᴀᴘᴘʀᴏᴜᴠᴇ́ᴇs ᴇᴛ ɪɴᴛᴇ́ɢʀᴇ́ᴇs ᴀᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`,
       }, { quoted: msg });
 
     } catch (error) {
-      await reply(`❌ *ᴇʀʀᴇᴜʀ :* ${error.message}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+      await reply(`❌ *ᴇʀʀᴇᴜʀ :* ${error.message}\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
     }
   }
 };
