@@ -43,11 +43,12 @@ module.exports = {
       // Traduction directe en français pour le sanctuaire
       const res = await translate(question, { to: 'fr' });
 
-      // Construction du message stylisé aux arcanes de GhostG-X
-      const finalMessage = `*╭╼━━━≪• ʟ'ᴀᴜᴅɪᴇɴᴄᴇ ᴅᴇ ʟ'ᴀᴠᴇᴜ •≫━━━╾╮*\n` +
-                           `*┃ 📜 ${toSmallCaps('ta sentence')} :*\n` +
-                           `*┃ ${res.text}*\n` +
-                           `*╰━━━━━━━━━━━━━━━━━━━━━━━╯*\n\n` +
+      // Application du style Small Caps Gras sur la question traduite
+      const styledQuestion = toSmallCaps(res.text);
+
+      // Construction du message identique au format "Bouffon"
+      const finalMessage = `*${toSmallCaps('ta sentence')} :*\n\n` +
+                           `*${styledQuestion}*\n\n` +
                            `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
 
       await reply(finalMessage);
