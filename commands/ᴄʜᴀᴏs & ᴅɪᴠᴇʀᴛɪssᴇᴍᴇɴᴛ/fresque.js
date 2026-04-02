@@ -49,9 +49,9 @@ module.exports = {
       const authorFormatted = toSmallCaps(meme.author);
 
       const caption = `🎭 *${meme.title.toUpperCase()}*\n\n` +
-                      `🌐 ${toSmallCaps('dimension')} : ʀ/${subFormatted}\n` +
-                      `👤 ${toSmallCaps('createur')} : ${authorFormatted}\n` +
-                      `⚡ ${toSmallCaps('flux d\'energie')} : ${meme.ups}\n\n` +
+                      `🌐 *${toSmallCaps('dimension')} : ʀ/${subFormatted}*\n` +
+                      `👤 ${toSmallCaps('createur')} : ${authorFormatted}*\n` +
+                      `⚡ ${toSmallCaps('flux d\'energie')} : ${meme.ups}*\n\n` +
                       `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
 
       await sock.sendMessage(from, {
