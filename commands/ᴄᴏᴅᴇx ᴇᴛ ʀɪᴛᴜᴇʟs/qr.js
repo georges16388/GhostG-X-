@@ -24,7 +24,7 @@ module.exports = {
   name: 'reflet',
   aliases: ['qrcode', 'qr'],
   category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ɢᴇɴᴇʀᴇ ᴜɴ sᴄᴇᴀᴜ ǫʀ ᴀ ᴘᴀʀᴛɪʀ ᴅ\'ᴜɴ ᴛᴇxᴛᴇ**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ɢᴇɴᴇʀᴇ ᴜɴ sᴄᴇᴀᴜ ǫʀ ᴀ ᴘᴀʀᴛɪʀ ᴅ\'ᴜɴ ᴛᴇxᴛᴇ',
   usage: `${config.prefix || '.'}reflet [texte]`,
   groupOnly: false,
   adminOnly: false,
@@ -39,13 +39,10 @@ module.exports = {
       // 1. Validation de l'argument
       if (args.length === 0) {
         return reply(
-          `╭╼━≪• *⚠️ ᴇᴄʜᴇᴄ ᴅᴇ ʟɪɴᴠᴏᴄᴀᴛɪᴏɴ* •≫━╾╮\n` +
-          `┃\n` +
-          `┃ 🔮 *${toSmallCaps('indique le texte a materialiser')} !*\n` +
-          `┃ 💡 *${toSmallCaps('exemple')} :* ${prefix}reflet ${toSmallCaps('truth devices')}\n` +
-          `┃\n` +
-          `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
-          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+          `*⚠️ ${toSmallCaps('echec de l\'invocation')}*\n\n` +
+          `*┃* 🔮 *${toSmallCaps('indique le texte a materialiser')} !*\n` +
+          `*┃* 💡 *${toSmallCaps('exemple')} :* \`${prefix}reflet ${toSmallCaps('truth devices')}\`\n\n` +
+          `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
         );
       }
 
@@ -61,12 +58,14 @@ module.exports = {
       // 3. Envoi du sceau généré
       await sock.sendMessage(extra.from, {
         image: qrBuffer,
-        caption: `✅ *sᴄᴇᴀᴜ ǫʀ ᴍᴀᴛᴇ́ʀɪᴀʟɪsᴇ́*\n\n📝 *ᴄɪʙʟᴇ :* ${text}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+        caption: `*╭╼━━━≪• ✅ sᴄᴇᴀᴜ ǫʀ ᴍᴀᴛᴇʀɪᴀʟɪsᴇ •≫━━━╾╮*\n` +
+                 `*┃* 📝 *${toSmallCaps('cible')} :* ${text}\n\n` +
+                 `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
       }, { quoted: msg });
 
     } catch (error) {
       console.error('QR Code Command Error:', error);
-      await reply(`*❌ ${toSmallCaps('erreur')} :* ${toSmallCaps('le sceau n\'a pas pu etre forge')} (${error.message})\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+      await reply(`*❌ ${toSmallCaps('erreur')} :* ${toSmallCaps('le sceau n\'a pas pu etre forge')} (${error.message})\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
     }
   }
 };
