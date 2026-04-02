@@ -52,8 +52,8 @@ module.exports = {
             `*┃* 🧩 *${toSmallCaps('flux')} :* ᴀᴄᴛɪғ ᴇᴛ sᴛᴀʙʟᴇ\n` +
             `*┃*\n` +
             `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
-            `_❤️ ᴊᴇsᴜs ᴛᴀɪᴍᴇ ᴇᴛ ᴛᴇ ʙᴇ́ɴɪssᴇ_ ❤️\n` +
-            `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+            `*_ᴊᴇsᴜs ᴇsᴛ ᴍᴀɪᴛʀᴇ sᴜᴘʀᴇᴍᴇ ♛_*\n` +
+            `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
 
         // Sécurité pour récupérer proprement la clé du message envoyé pour l'édition
         const messageKey = sent?.key || sent;
