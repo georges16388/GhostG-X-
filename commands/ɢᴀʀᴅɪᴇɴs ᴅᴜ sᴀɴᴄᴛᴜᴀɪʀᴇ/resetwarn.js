@@ -26,7 +26,7 @@ module.exports = {
   name: 'resetwarn',
   aliases: ['resetwarning', 'clearwarn', 'unwarn', 'pardonner', 'absoudre'],
   category: '‎⛨ ɢᴀʀᴅɪᴇɴs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴇғғᴀᴄᴇ ᴛᴏᴜs ʟᴇs ᴀᴠᴇʀᴛɪssᴇᴍᴇɴᴛs ᴅ\'ᴜɴ ᴍᴇᴍʙʀᴇ**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴇғғᴀᴄᴇ ᴛᴏᴜs ʟᴇs ᴀᴠᴇʀᴛɪssᴇᴍᴇɴᴛs ᴅ\'ᴜɴ ᴍᴇᴍʙʀᴇ',
   usage: `${prefix}resetwarn @user`, // 💡 Dynamique avec ton préfixe actuel
   groupOnly: true,
   adminOnly: true,
@@ -49,7 +49,7 @@ module.exports = {
 
       // Si l'utilisateur n'est pas admin et n'est pas listé comme Owner
       if (!extra.isAdmin && !isMe) {
-        return reply(`*❌ ${toSmallCaps('cette incantation est reservee aux administrateurs du sanctuaire')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+        return reply(`*❌ ${toSmallCaps('cette incantation est reservee aux administrateurs du sanctuaire')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       let target;
@@ -61,26 +61,24 @@ module.exports = {
       } else if (ctx?.participant && ctx.stanzaId && ctx.quotedMessage) {
         target = ctx.participant;
       } else {
-        return reply(`*❌ ${toSmallCaps('veuillez mentionner ou repondre a l individu a absoudre')} !*\n\n*ᴇxᴇᴍᴘʟᴇ :* \`${prefix}resetwarn @user\`\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+        return reply(`*❌ ${toSmallCaps('veuillez mentionner ou repondre a l individu a absoudre')} !*\n\n*ᴇxᴇᴍᴘʟᴇ :* \`${prefix}promote @user\`\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       // Get current warnings before clearing
       const currentWarnings = database.getWarnings(extra.from, target);
 
       if (currentWarnings.count === 0) {
-        return reply(`*✅ @${target.split('@')[0]} ${toSmallCaps('n\'a aucun avertissement a effacer')}.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`, { mentions: [target] });
+        return reply(`*✅ @${target.split('@')[0]} ${toSmallCaps('na aucun avertissement a effacer')}.*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`, { mentions: [target] });
       }
 
       // Clear all warnings
       database.clearWarnings(extra.from, target);
 
-      const text = `╭╼━━━━━━━━━━━━━━━╾╮\n` +
-                   `┃     🔮 *ᴀʙsᴏʟᴜᴛɪᴏɴ* ┃\n` +
-                   `╰╼━━━━━━━━━━━━━━━╾╯\n\n` +
-                   `👤 *ɪɴᴅɪᴠɪᴅᴜ :* @${target.split('@')[0]}\n` +
-                   `⚠️ *ᴀᴠᴇʀᴛɪssᴇᴍᴇɴᴛs ᴇғғᴀᴄᴇ́s :* ${currentWarnings.count}\n\n` +
-                   `*${toSmallCaps('toutes les sentences ont ete levees pour cet individu')}.*\n\n` +
-                   `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`;
+      const text = `*╭╼━━━≪• ᴀʙsᴏʟᴜᴛɪᴏɴ •≫━━━╾╮*\n` +
+                   `*┃* 👤 *${toSmallCaps('individu')} :* @${target.split('@')[0]}\n` +
+                   `*┃* ⚠️ *${toSmallCaps('avertissements effaces')} :* ${currentWarnings.count}\n\n` +
+                   `*┃* *${toSmallCaps('toutes les sentences ont ete levees pour cet individu')}.*\n\n` +
+                   `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
 
       await sock.sendMessage(extra.from, {
         text,
@@ -89,7 +87,7 @@ module.exports = {
 
     } catch (error) {
       console.error('ResetWarn command error:', error);
-      await reply(`*❌ ${toSmallCaps('l invocation a echoue')} : ${error.message}*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+      await reply(`*❌ ${toSmallCaps('l invocation a echoue')} : ${error.message}*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
     }
   }
 };
