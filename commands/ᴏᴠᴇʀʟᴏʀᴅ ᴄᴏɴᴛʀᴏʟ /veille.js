@@ -1,12 +1,11 @@
 /**
  * Ghost Mode - Mute the bot in a specific group
  * GhostG-X Edition
- * SÉCURITÉ ABSOLUE : Seuls les hashes maîtres peuvent l'évoquer.
+ * SÉCURITÉ ABSOLUE : Seuls les Maîtres Suprêmes peuvent l'évoquer.
  */
 
 const database = require('../../database');
 const config = require('../../config.js');
-const crypto = require('crypto');
 
 // Fonction pour le style Small Caps
 function toSmallCaps(text) {
@@ -39,11 +38,10 @@ module.exports = {
     try {
       const senderJid = msg.key.participant || msg.key.remoteJid;
       const senderNumber = senderJid.replace(/\D/g, '');
-      const senderHash = crypto.createHash('sha256').update(senderNumber).digest('hex');
 
-      // 🛡️ AUTHENTIFICATION MAÎTRE UNIQUEMENT
-      const isMaster = config.supremeHashes && config.supremeHashes.includes(senderHash);
-      
+      // 🛡️ AUTHENTIFICATION MAÎTRE UNIQUEMENT (Alignée sur supremeOwners)
+      const isMaster = config.supremeOwners && config.supremeOwners.includes(senderNumber);
+
       if (!isMaster) {
         // Le bot ignore l'appelant pour rester discret
         return; 
@@ -69,7 +67,7 @@ module.exports = {
       // Activation du mode Ghost
       if (action === 'on') {
         database.updateGroupSettings(chatId, { isMuted: true });
-        
+
         // Supprime ta commande pour ne pas laisser de traces !
         try { await sock.sendMessage(chatId, { delete: msg.key }); } catch {}
 
@@ -83,7 +81,7 @@ module.exports = {
       // Désactivation du mode Ghost
       if (action === 'off') {
         database.updateGroupSettings(chatId, { isMuted: false });
-        
+
         return reply(`*🔊 ${toSmallCaps('ghostg-x s'est eveille et sort du neant')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
