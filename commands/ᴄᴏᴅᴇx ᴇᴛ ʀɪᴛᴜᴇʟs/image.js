@@ -26,7 +26,7 @@ module.exports = {
   name: 'image',
   aliases: ['toimg', 'stickertoimg', 'sticker2img', 'svideo', 'simage', 'img', 'tovideo', 'tovideo+'],
   category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
-  description: 'ᴄᴏɴᴠᴇʀᴛɪᴛ ᴜɴ sᴛɪᴄᴋᴇʀ ᴇɴ ɪᴍᴀɢᴇ (ᴘɴɢ) ᴏᴜ ᴇɴ ᴠɪᴅᴇᴏ',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴄᴏɴᴠᴇʀᴛɪᴛ ᴜɴ sᴛɪᴄᴋᴇʀ ᴇɴ ɪᴍᴀɢᴇ (ᴘɴɢ) ᴏᴜ ᴇɴ ᴠɪᴅᴇᴏ',
   
   get usage() {
     const activePrefix = config.prefix || '.';
