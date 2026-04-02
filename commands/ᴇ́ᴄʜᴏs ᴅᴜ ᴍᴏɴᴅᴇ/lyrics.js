@@ -81,7 +81,7 @@ module.exports = {
           `┃ 🔮 *${toSmallCaps('indique un lien instagram')}*\n` +
           `┃ *${toSmallCaps('pour aspirer le media')} !*\n` +
           `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
-          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+          `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
         );
       }
 
@@ -97,7 +97,7 @@ module.exports = {
       const isValidUrl = instagramPatterns.some(pattern => pattern.test(text));
 
       if (!isValidUrl) {
-        return reply(`*❌ ${toSmallCaps('ce lien nest pas une illusion instagram valide')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+        return reply(`*❌ ${toSmallCaps('ce lien nest pas une illusion instagram valide')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       // Réaction avec l'orbe de téléchargement
@@ -108,7 +108,7 @@ module.exports = {
       const downloadData = await igdl(text);
 
       if (!downloadData || !downloadData.data || downloadData.data.length === 0) {
-        return reply(`*❌ ${toSmallCaps('aucun media trouve. le post est peut-etre prive')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+        return reply(`*❌ ${toSmallCaps('aucun media trouve. le post est peut-etre prive')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       const mediaData = downloadData.data;
@@ -116,7 +116,7 @@ module.exports = {
       const mediaToDownload = uniqueMedia.slice(0, 20);
 
       if (mediaToDownload.length === 0) {
-        return reply(`*❌ ${toSmallCaps('aucun media valide a telecharger')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+        return reply(`*❌ ${toSmallCaps('aucun media valide a telecharger')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       const botName = toSmallCaps(config.botName || 'ɢʜᴏsᴛɢ-x');
@@ -138,7 +138,7 @@ module.exports = {
                           `┃ 🔗 *${toSmallCaps('source')} :* ${sourceDomain}\n` +
                           `┃ 📊 *${toSmallCaps('statut')} :* ᴀᴄᴛɪғ\n` +
                           `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
-                          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+                          `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
 
           if (isVideo) {
             await sock.sendMessage(chatId, {
@@ -163,7 +163,7 @@ module.exports = {
       }
     } catch (error) {
       console.error('Error in Instagram command:', error);
-      await reply(`*❌ ${toSmallCaps('une singularite est survenue lors du traitement')}.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+      await reply(`*❌ ${toSmallCaps('une singularite est survenue lors du traitement')}.*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
     }
   }
 };
