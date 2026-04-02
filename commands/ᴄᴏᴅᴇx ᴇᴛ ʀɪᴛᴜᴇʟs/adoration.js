@@ -44,8 +44,8 @@ module.exports = {
       // Définition du chemin vers le dossier utils
       const audioDir = path.join(__dirname, '../../utils');
       
-      // Génération d'un nombre aléatoire entre 1 et 15
-      const randomNum = Math.floor(Math.random() * 15) + 1;
+      // Génération d'un nombre aléatoire entre 1 et 10
+      const randomNum = Math.floor(Math.random() * 10) + 1;
       const audioFileName = `adoration${randomNum}.mp3`;
       const audioPath = path.join(audioDir, audioFileName);
 
