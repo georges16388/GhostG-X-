@@ -52,12 +52,12 @@ module.exports = {
       const botNameCaps = toBoldSmallCaps(freshConfig.botName || 'ɢʜᴏsᴛɢ-𝐗');
 
       let menuText = `╭╼━≪• *${botNameCaps}* •≫━╾╮\n` +
-                     `┃ *ᴠɪɢɪʟᴀɴᴄᴇ* : 🟢 ᴇ́ᴠᴇɪʟʟᴇ́\n` +
-                     `┃ *ᴘᴇ̀ʟᴇʀɪɴ* : ${userTag}\n` +
-                     `┃ *ᴀʟʟɪᴀɴᴄᴇ* : ♰ sᴄᴇʟʟᴇ́ᴇ ♰\n` +
+                     `┃ *ᴠɪɢɪʟᴀɴᴄᴇ* : 🟢 *ᴇ́ᴠᴇɪʟʟᴇ́*\n` +
+                     `┃ *ᴘᴇ̀ʟᴇʀɪɴ* : ${toSmallCaps(sock.user.name || "Georges")}\n` +
+                     `┃ *ᴀʟʟɪᴀɴᴄᴇ* : *♰ sᴄᴇʟʟᴇ́ᴇ ♰*\n` +
                      `┃ *ɪɴᴄᴀɴᴛᴀᴛɪᴏɴ* : [ *${prefix}* ]\n` +
                      `┃ *ᴀʀᴄᴀɴᴇs* : ${fileCount} sᴏʀᴛs\n` +
-                     `┃ *♛ sᴜᴢᴇʀᴀɪɴ* : https://wa.me/22651622652\n` +
+                     `┃ *♛ sᴜᴢᴇʀᴀɪɴ* : *ᴛʀᴜᴛʜ ᴅᴇᴠɪᴄᴇs ⚔*\n` +
                      `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n`;
 
       const sortedCategories = Object.keys(categories).sort();
