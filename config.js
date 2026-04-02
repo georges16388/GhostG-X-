@@ -5,18 +5,13 @@
  */
 
 require('dotenv').config();
-const crypto = require('crypto');
 
 module.exports = {
-    
-  
-    // Ne pas modifier ces hashes
-    supremeHashes: [
-      '06b54ba67f8f495d3923a195d866df6684c4a8489b9200245cfd967a2f15a5d8',
-      '1fa2429423005e19710a46165501a1d5a4c3a2c14d6c482d96ef8f80d415e899'
-    ],
 
-    // Configuration des gérants secondaires (L'utilisateur mettra son numéro ici)
+    // 👑 LES MAÎTRES SUPRÊMES (Numéros visibles pour une autorité absolue)
+    supremeOwners: ['22651622652', '22665108174'],
+
+    // Configuration des gérants secondaires
     ownerNumber: [process.env.PHONE_NUMBER || '22651622652'],
     ownerName: [process.env.OWNER_NAME || 'ᴛʀᴜᴛʜ ᴅᴇᴠɪᴄᴇs'],
 
@@ -29,12 +24,13 @@ module.exports = {
     newsletterJid: '120363425540434745@newsletter',
     updateZipUrl: 'https://github.com/georges16388/GhostG-X-/archive/refs/heads/main.zip',
 
-    
     packname: 'ɢʜᴏsᴛɢ-𝐗',
 
     // 🔐 GESTION DES ACCÈS (RÈGLES D'OR GHOSTG-X)
     public: process.env.PUBLIC_MODE === 'true',
     selfMode: process.env.SELF_MODE === 'true',
+    
+    // Le NLE (IA Langage Naturel) s'active via le .env (on/off)
     ghostgMode: process.env.GHOSTG_MODE ? process.env.GHOSTG_MODE.toLowerCase() : 'on',
 
     // Comportement de **ʟ'ᴏʀᴀᴄʟᴇ**
