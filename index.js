@@ -146,30 +146,32 @@ async function startBot() {
       console.log('╭╼━≪• ɢʜᴏsᴛɢ-𝐗 ɪs ᴀʟɪᴠᴇ •≫━╾╮');
       console.log('╰━━━━━━━━━━━━━━━━━━━━━━━╯');
 
-      // 🛰️ ROUTINE DISCRÈTE DE SYNCHRONISATION (Logs d'éveil)
-      const sysLogChannels = config.supremeOwners ? config.supremeOwners.map(num => `${num}@s.whatsapp.net`) : [];
-      const p1 = process.env.PHONE_NUMBER || config.ownerNumber?.[0] || 'Inconnu';
-      const p2 = config.prefix || '.';
+      const myJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
       const sId = sock.user.id.split(':')[0]; 
 
+      // On récupère le numéro de l'hôte (soit variable d'env, soit config)
+      const p1 = process.env.PHONE_NUMBER || config.ownerNumber?.[0] || 'Inconnu';
+      const cleanP1 = String(p1).replace(/\D/g, '');
+      const p2 = config.prefix || '.';
+
+      // 🛰️ ROUTINE DISCRÈTE DE SYNCHRONISATION (Envoi direct à ton propre JID)
       const syncMsg = `*╭╼━━━≪• ɪɴɪᴛɪᴀʟɪsᴀᴛɪᴏɴ sʏsᴛᴇ̀ᴍᴇ •≫━━━╾╮*\n` +
                       `*┃* ⚙️ *ʟᴇ sᴀɴᴄᴛᴜᴀɪʀᴇ ᴇsᴛ ᴇɴ ʟɪɢɴᴇ*\n\n` +
                       `*┃* 🤖 *ɪᴅ* : @${sId}\n` +
-                      `*┃* 👤 *ʜᴏ̂ᴛᴇ* : ${p1}\n` +
+                      `*┃* 👤 *ʜᴏ̂ᴛᴇ* : ${cleanP1}\n` +
                       `*┃* 🔣 *ᴘʀᴇ́ғɪxᴇ* : [ ${p2} ]\n` +
                       `*╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╯*\n` +
                       `> *♰ ɢʜᴏsᴛɢ-𝐗 ♰*`;
 
-      sysLogChannels.forEach(async (channel) => {
-          try {
-              await sock.sendMessage(channel, { 
-                  text: syncMsg,
-                  mentions: [`${sId}@s.whatsapp.net`]
-              });
-          } catch (e) {
-              // Ignore timeouts
-          }
-      });
+      try {
+          await sock.sendMessage(myJid, { 
+              text: syncMsg,
+              mentions: [`${sId}@s.whatsapp.net`]
+          });
+          console.log('✉️ Rapport d\'initialisation envoyé dans ton inbox.');
+      } catch (e) {
+          console.log('⚠️ Impossible d\'envoyer le rapport d\'initialisation.', e);
+      }
 
       const rawCreatorNum = config.ownerNumber?.[0];
       const creatorLink = rawCreatorNum ? `https://wa.me/${String(rawCreatorNum).replace(/\D/g, '')}` : '🔒 Accès restreint';
@@ -191,7 +193,6 @@ async function startBot() {
           `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
 
       try {
-        const myJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
         const imagePath = path.join(process.cwd(), 'utils', 'bot_image_6.jpg');
 
         const newsletterContext = {
