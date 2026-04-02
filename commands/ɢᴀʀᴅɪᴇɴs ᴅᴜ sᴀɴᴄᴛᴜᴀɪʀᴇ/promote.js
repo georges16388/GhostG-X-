@@ -1,7 +1,6 @@
 /**
  * Promote Command - Make member admin
  * GhostG-X Edition
- * Sécurité : Supreme Owner Master Access (Invisible Bypass)
  */
 
 const { findParticipant } = require('../../utils/jidHelpers');
@@ -27,7 +26,7 @@ module.exports = {
   name: 'promote',
   aliases: ['makeadmin', 'elever', 'prom'],
   category: '‎⛨ ɢᴀʀᴅɪᴇɴs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴇʟᴇᴠᴇ ᴜɴ ᴍᴇᴍʙʀᴇ ᴀᴜ ʀᴀɴɢ ᴅᴇ ɢᴀʀᴅɪᴇɴ (ᴀᴅᴍɪɴ)**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴇʟᴇᴠᴇ ᴜɴ ᴍᴇᴍʙʀᴇ ᴀᴜ ʀᴀɴɢ ᴅᴇ ɢᴀʀᴅɪᴇɴ (ᴀᴅᴍɪɴ)',
   usage: `${prefix}promote @user`, // 💡 Dynamique avec ton préfixe actuel
   groupOnly: true,
   adminOnly: true,
@@ -40,8 +39,6 @@ module.exports = {
       const senderJid = msg.key.participant || msg.key.remoteJid;
       const senderNumber = senderJid.replace(/\D/g, '');
 
-      
-
       const isConfigOwner = config.ownerNumber && config.ownerNumber.some(n => {
         const cleanN = String(n).replace(/\D/g, '');
         return senderNumber.includes(cleanN) || cleanN.includes(senderNumber);
@@ -49,9 +46,8 @@ module.exports = {
 
       const isMe = msg.key.fromMe || isConfigOwner;
 
-     
       if (!extra.isAdmin && !isMe) {
-        return reply(`*❌ ${toSmallCaps('cette incantation est reservee aux administrateurs du sanctuaire')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+        return reply(`*❌ ${toSmallCaps('cette incantation est reservee aux administrateurs du sanctuaire')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       let target;
@@ -63,7 +59,7 @@ module.exports = {
       } else if (ctx?.participant) { // Gère la réponse à un message
         target = ctx.participant;
       } else {
-        return reply(`*❌ ${toSmallCaps('veuillez mentionner ou repondre a l individu a promouvoir')} !*\n\n*ᴇxᴇᴍᴘʟᴇ :* \`${prefix}promote @user\`\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+        return reply(`*❌ ${toSmallCaps('veuillez mentionner ou repondre a l individu a promouvoir')} !*\n\n*ᴇxᴇᴍᴘʟᴇ :* \`${prefix}promote @user\`\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       // Fetch FRESH group metadata to avoid stale cache
@@ -73,25 +69,25 @@ module.exports = {
       const foundParticipant = findParticipant(freshMetadata.participants, target);
 
       if (!foundParticipant) {
-        return reply(`*❌ ${toSmallCaps('cet individu ne fait pas partie du sanctuaire')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+        return reply(`*❌ ${toSmallCaps('cet individu ne fait pas partie du sanctuaire')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       // Check if already admin using fresh data
       if (foundParticipant.admin === 'admin' || foundParticipant.admin === 'superadmin') {
-        return reply(`*❌ ${toSmallCaps('cet individu est deja un gardien (administrateur)')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+        return reply(`*❌ ${toSmallCaps('cet individu est deja un gardien (administrateur)')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       await sock.groupParticipantsUpdate(extra.from, [target], 'promote');
 
       // Notification d'élévation stylisée
       await sock.sendMessage(extra.from, {
-        text: `📈 *@${target.split('@')[0]} ${toSmallCaps('a ete eleve au rang de gardien du sanctuaire')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`,
+        text: `📈 *@${target.split('@')[0]} ${toSmallCaps('a ete eleve au rang de gardien du sanctuaire')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`,
         mentions: [target]
       }, { quoted: msg });
 
     } catch (error) {
       console.error('Promote Command Error:', error);
-      await reply(`*❌ ${toSmallCaps('l invocation a echoue')} : ${error.message}*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+      await reply(`*❌ ${toSmallCaps('l invocation a echoue')} : ${error.message}*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
     }
   }
 };
