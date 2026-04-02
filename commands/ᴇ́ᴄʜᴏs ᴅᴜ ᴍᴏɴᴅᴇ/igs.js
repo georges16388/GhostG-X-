@@ -213,6 +213,7 @@ async function fetchBufferFromUrl(url) {
   }
   throw lastError;
 }
+
 // Main command handler
 async function igsCommand(sock, msg, args, extra, crop = false) {
   const { reply } = extra;
@@ -226,9 +227,9 @@ async function igsCommand(sock, msg, args, extra, crop = false) {
       return reply(
         `*❌ ${toSmallCaps('veuillez specifier un lien instagram')} !*\n\n` +
         `*${toSmallCaps('usage')} :*\n` +
-        `\`${prefix}igs <url>\` (${toSmallCaps('ajustement auto')})\n` +
-        `\`${prefix}igsc <url>\` (${toSmallCaps('decoupe carree')})\n\n` +
-        `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+        `*┃* \`${prefix}igs <url>\` (${toSmallCaps('ajustement auto')})\n` +
+        `*┃* \`${prefix}igsc <url>\` (${toSmallCaps('decoupe carree')})\n\n` +
+        `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
       );
     }
 
@@ -236,14 +237,14 @@ async function igsCommand(sock, msg, args, extra, crop = false) {
 
     const downloadData = await igdl(urlMatch[0]).catch(() => null);
     if (!downloadData || !downloadData.data) {
-      return reply(`*❌ ${toSmallCaps('echec de la recuperation du media instagram')}.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+      return reply(`*❌ ${toSmallCaps('echec de la recuperation du media instagram')}.*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
     }
 
     const mediaData = downloadData.data || [];
     const items = mediaData.filter(m => m && pickMediaUrl(m)).slice(0, 10);
 
     if (items.length === 0) {
-      return reply(`*❌ ${toSmallCaps('aucun media trouve sur ce lien')}.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+      return reply(`*❌ ${toSmallCaps('aucun media trouve sur ce lien')}.*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
     }
 
     const seenHashes = new Set();
@@ -274,7 +275,7 @@ async function igsCommand(sock, msg, args, extra, crop = false) {
     }
   } catch (err) {
     console.error('Error in igs command:', err);
-    await reply(`*❌ ${toSmallCaps('echec de la creation du sticker depuis instagram')}.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+    await reply(`*❌ ${toSmallCaps('echec de la creation du sticker depuis instagram')}.*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
   }
 }
 
@@ -282,7 +283,7 @@ module.exports = {
   name: 'igs',
   aliases: ['igsticker', 'sceau_ig', 'igsc'],
   category: '‎⌘ ᴇ́ᴄʜᴏs ᴅᴜ ᴍᴏɴᴅᴇ',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴛʀᴀɴsᴍᴜᴛᴇ ᴜɴᴇ ᴘᴜʙʟɪᴄᴀᴛɪᴏɴ/ʀᴇᴇʟ ɪɴsᴛᴀɢʀᴀᴍ ᴇɴ sᴛɪᴄᴋᴇʀ**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴛʀᴀɴsᴍᴜᴛᴇ ᴜɴᴇ ᴘᴜʙʟɪᴄᴀᴛɪᴏɴ/ʀᴇᴇʟ ɪɴsᴛᴀɢʀᴀᴍ ᴇɴ sᴛɪᴄᴋᴇʀ',
   usage: `${config.prefix || '.'}igs [url instagram]`,
   groupOnly: false,
   adminOnly: false,
