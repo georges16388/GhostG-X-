@@ -54,7 +54,7 @@ module.exports = {
   name: 'instagram',
   aliases: ['illusions_instagram', 'ig', 'insta', 'igdl', 'reels', 'illusion_instagram'],
   category: '‎⌘ ᴇ́ᴄʜᴏs ᴅᴜ ᴍᴏɴᴅᴇ',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀsᴘɪʀᴇ ᴇᴛ ᴛᴇʟᴇᴄʜᴀʀɢᴇ ᴅᴇs ᴘʜᴏᴛᴏs/ᴠɪᴅᴇᴏs/ʀᴇᴇʟs ɪɴsᴛᴀɢʀᴀᴍ**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀsᴘɪʀᴇ ᴇᴛ ᴛᴇʟᴇᴄʜᴀʀɢᴇ ᴅᴇs ᴘʜᴏᴛᴏs/ᴠɪᴅᴇᴏs/ʀᴇᴇʟs ɪɴsᴛᴀɢʀᴀᴍ',
   usage: `${config.prefix || '.'}instagram [lien instagram]`,
   groupOnly: false,
   adminOnly: false,
