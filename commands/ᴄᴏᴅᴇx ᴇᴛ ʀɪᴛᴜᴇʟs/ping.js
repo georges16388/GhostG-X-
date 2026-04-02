@@ -24,7 +24,7 @@ module.exports = {
     name: 'vitesse',
     aliases: ['ping', 'p', 'flux', 'latence'],
     category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
-    description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴍᴇsᴜʀᴇ ʟᴀ ᴠɪᴛᴇsssᴇ ᴅᴇ ʀᴇᴀᴄᴛɪᴏɴ ᴅᴇ ʟ\'ᴇɴᴛɪᴛᴇ**',
+    description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴍᴇsᴜʀᴇ ʟᴀ ᴠɪᴛᴇsssᴇ ᴅᴇ ʀᴇᴀᴄᴛɪᴏɴ ᴅᴇ ʟ\'ᴇɴᴛɪᴛᴇ',
     usage: `${config.prefix || '.'}vitesse`,
     groupOnly: false,
     adminOnly: false,
