@@ -1,10 +1,8 @@
 /**
  * Adoration - GhostG-X Edition
- * Diffuse un cantique d'adoration aléatoire depuis les archives
+ * Diffuse un cantique d'adoration aléatoire depuis les archives (Zéro-Footprint)
  */
 
-const fs = require('fs');
-const path = require('path');
 const config = require('../../config');
 
 // Fonction pour le style Small Caps (Cohérence visuelle du sanctuaire)
@@ -41,30 +39,37 @@ module.exports = {
         react: { text: '✝️', key: msg.key }
       });
 
-      // Définition du chemin vers le dossier utils
-      const audioDir = path.join(__dirname, '../../utils');
-      
-      // Génération d'un nombre aléatoire entre 1 et 10
-      const randomNum = Math.floor(Math.random() * 10) + 1;
-      const audioFileName = `adoration${randomNum}.mp3`;
-      const audioPath = path.join(audioDir, audioFileName);
+      // 1. Dictionnaire des cantiques hébergés sur Catbox
+      const adorationLinks = {
+        1: "https://files.catbox.moe/2rmu2h.mp3",
+        2: "https://files.catbox.moe/jvwqui.mp3",
+        3: "https://files.catbox.moe/99kb9g.mp3",
+        4: "https://files.catbox.moe/ow2tyh.mp3",
+        5: "https://files.catbox.moe/vorx59.mp3",
+        6: "https://files.catbox.moe/msoi1h.mp3",
+        7: "https://files.catbox.moe/4pya7m.mp3",
+        8: "https://files.catbox.moe/l82me4.mp3",
+        9: "https://files.catbox.moe/567ocl.mp3",
+        10: "https://files.catbox.moe/qo1g64.mp3",
+        11: "https://files.catbox.moe/99kb9g.mp3",
+        12: "https://files.catbox.moe/ow2tyh.mp3",
+        13: "https://files.catbox.moe/gzyxt5.mp3",
+        14: "https://files.catbox.moe/msoi1h.mp3",
+        15: "https://files.catbox.moe/ow2tyh.mp3"
+      };
 
-      // Vérification si le fichier existe bien avant l'envoi
-      if (!fs.existsSync(audioPath)) {
-        return reply(`*❌ ${toSmallCaps('le cantique')} ${audioFileName} ${toSmallCaps('est introuvable dans le codex')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
-      }
+      // Génération d'un nombre aléatoire entre 1 et 15
+      const randomNum = Math.floor(Math.random() * 15) + 1;
+      const selectedAudioUrl = adorationLinks[randomNum];
 
-      const audioBuffer = fs.readFileSync(audioPath);
-
-      // Envoi du fichier audio (ptt: false pour l'envoyer en tant que fichier audio et non message vocal)
+      // 2. Envoi du fichier audio (ptt: true pour l'envoyer comme un message vocal)
       await sock.sendMessage(chatId, {
-        audio: audioBuffer,
+        audio: { url: selectedAudioUrl },
         mimetype: 'audio/mpeg',
-        fileName: `${audioFileName}`,
         ptt: true
       }, { quoted: msg });
 
-      // Envoi du message textuel d'accompagnement
+      // 3. Envoi du message textuel d'accompagnement
       await reply(`*♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
 
     } catch (error) {
