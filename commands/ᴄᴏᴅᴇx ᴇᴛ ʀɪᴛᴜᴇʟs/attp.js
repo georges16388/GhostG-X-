@@ -27,7 +27,7 @@ module.exports = {
   name: 'effet',
   aliases: ['ttp', 'attp', 'effet'],
   category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴄʀᴇᴇ ᴜɴ sᴛɪᴄᴋᴇʀ ᴀɴɪᴍᴇ ᴀ ᴘᴀʀᴛɪʀ ᴅ\'ᴜɴ ᴛᴇxᴛᴇ**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴄʀᴇᴇ ᴜɴ sᴛɪᴄᴋᴇʀ ᴀɴɪᴍᴇ ᴀ ᴘᴀʀᴛɪʀ ᴅ\'ᴜɴ ᴛᴇxᴛᴇ',
   
   // 1. On utilise un getter pour un usage 100% dynamique
   get usage() {
@@ -49,8 +49,8 @@ module.exports = {
       if (args.length === 0) {
         return reply(
           `*❌ ${toSmallCaps('veuillez specifier un texte')} !*\n\n` +
-          `*${toSmallCaps('exemple')} :* \`${prefix}effet Bonjour\`\n\n` +
-          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+          `*${toSmallCaps('exemple')} :* \`${prefix}effet Jésus t'aime\`\n\n` +
+          `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
         );
       }
 
@@ -61,7 +61,7 @@ module.exports = {
       text = text.split('').map(char => normalMap[char] || char).join('');
 
       if (text.length > 50) {
-        return reply(`*❌ ${toSmallCaps('le texte est trop long')} ! (ᴍᴀxɪᴍᴜᴍ 𝟻𝟶 ᴄᴀʀᴀᴄᴛᴇʀᴇs).* \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+        return reply(`*❌ ${toSmallCaps('le texte est trop long')} ! (ᴍᴀxɪᴍᴜᴍ 𝟻𝟶 ᴄᴀʀᴀᴄᴛᴇʀᴇs).* \n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       // Message d'attente stylisé
@@ -69,16 +69,16 @@ module.exports = {
 
       try {
         const mp4Buffer = await renderBlinkingVideoWithFfmpeg(text);
-        const webpBuffer = await writeExifVid(mp4Buffer, { packname: config.packname || 'GhostG-X' });
+        const webpBuffer = await writeExifVid(mp4Buffer, { packname: config.packname || 'ᴛʀᴜᴛʜ ᴅᴇᴠɪᴄᴇs' });
 
         await sock.sendMessage(extra.from, { sticker: webpBuffer }, { quoted: msg });
       } catch (error) {
         console.error('Error generating attp sticker:', error);
-        await reply(`*❌ ${toSmallCaps('echec de la generation du sticker')}.* \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+        await reply(`*❌ ${toSmallCaps('echec de la generation du sticker')}.* \n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
     } catch (error) {
       console.error('ATTP command error:', error);
-      await reply(`*❌ ${toSmallCaps('une erreur est survenue lors de la creation du sticker')}.* \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+      await reply(`*❌ ${toSmallCaps('une erreur est survenue lors de la creation du sticker')}.* \n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
     }
   }
 };
