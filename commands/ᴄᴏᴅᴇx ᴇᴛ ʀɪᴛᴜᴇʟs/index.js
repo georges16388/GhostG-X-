@@ -72,8 +72,8 @@ module.exports = {
         }
       });
 
-      menuText += `*_♰ ǫᴜᴇ ʟᴀ ʟᴜᴍɪᴇ̀ʀᴇ ᴅɪssɪᴘᴇ ᴛᴇs ᴛᴇ́ɴᴇ̀ʙʀᴇs ♰_*\n` +
-                  `> *sᴄᴇʟʟᴇ́ ᴘᴀʀ ʟᴇs ᴀʀᴄᴀɴᴇs ᴅᴇ ${botNameCaps}*`;
+      menuText += `*_♰ ǫᴜᴇ ʟᴀ ʟᴜᴍɪᴇ̀ʀᴇ ᴅᴜ sᴀɪɴᴛ-ᴇsᴘʀɪᴛ ʙʀɪsᴇ ᴇᴛ ᴅɪssɪᴘᴇ ᴛᴏᴜᴛᴇ ᴛᴇ́ɴᴇ̀ʙʀᴇ ♰_*\n` +
+                  `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
 
       const randomNumber = Math.floor(Math.random() * 7) + 1;
       const imagePath = path.join(__dirname, `../../utils/bot_image_${randomNumber}.jpg`);
