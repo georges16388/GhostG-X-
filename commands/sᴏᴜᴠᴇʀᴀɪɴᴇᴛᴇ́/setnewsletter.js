@@ -15,7 +15,7 @@ module.exports = {
   aliases: ['sceau_canal', 'setnewsletter', 'setnl', 'setchannel'],
   category: '♛ sᴏᴜᴠᴇʀᴀɪɴᴇᴛᴇ́',
   ownerOnly: true,
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ʟɪᴇ ʟᴇ ᴊɪᴅ ᴅᴜ ᴄᴀɴᴀʟ ᴘᴏᴜʀ ʟᴇ ᴛʀᴀɴsғᴇʀᴛ ᴅᴇs ᴍᴇɴᴜs**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ʟɪᴇ ʟᴇ ᴊɪᴅ ᴅᴜ ᴄᴀɴᴀʟ ᴘᴏᴜʀ ʟᴇ ᴛʀᴀɴsғᴇʀᴛ ᴅᴇs ᴍᴇɴᴜs',
   usage: `${prefix}sᴄᴇᴀᴜ_ᴄᴀɴᴀʟ <ᴊɪᴅ ᴅᴜ ᴄᴀɴᴀʟ>`,
 
   async execute(sock, msg, args, extra) {
@@ -28,10 +28,12 @@ module.exports = {
 
       let newsletterJid = '';
 
-      // Lecture du JID
+      // 1. Lecture directe si la commande est lancée DEPUIS un canal
       if (msg.key.remoteJid && msg.key.remoteJid.endsWith('@newsletter')) {
         newsletterJid = msg.key.remoteJid;
-      } else if (msg.message?.extendedTextMessage?.contextInfo?.quotedMessage) {
+      } 
+      // 2. Lecture si on cite un message provenant d'un canal
+      else if (msg.message?.extendedTextMessage?.contextInfo?.quotedMessage) {
         const contextInfo = msg.message.extendedTextMessage.contextInfo;
         const findNewsletterJid = (obj, depth = 0) => {
           if (depth > 5 || !obj || typeof obj !== 'object') return null;
@@ -46,11 +48,13 @@ module.exports = {
           return null;
         };
         newsletterJid = findNewsletterJid(contextInfo);
-      } else if (args[0]) {
+      } 
+      // 3. Lecture via l'argument fourni
+      else if (args[0]) {
         newsletterJid = args[0].trim();
       }
 
-      // Si aucun JID n'est fourni, on affiche le statut
+      // Si aucun JID n'est fourni ou trouvé, on affiche le statut
       if (!newsletterJid) {
         const currentJid = config.newsletterJid || 'ɴᴏɴ ᴅᴇ́ғɪɴɪ';
         return reply(
@@ -67,28 +71,33 @@ module.exports = {
         return reply('*〆 sᴛʀᴜᴄᴛᴜʀᴇ ᴅᴇ ᴊɪᴅ ɪɴᴠᴀʟɪᴅᴇ !*');
       }
 
-      // Écriture physique dans le fichier config.js
-      const configPath = path.join(__dirname, '../../config.js');
+      // 💥 ÉCRITURE SÉCURISÉE DANS LE FICHIER CONFIG.JS
+      const configPath = path.join(process.cwd(), 'config.js');
       let configContent = fs.readFileSync(configPath, 'utf8');
 
       if (configContent.includes('newsletterJid:')) {
+        // Remplacement de la valeur existante
         configContent = configContent.replace(
-          /newsletterJid:\s*['"]([^'"]+)['"]/,
+          /newsletterJid:\s*['"][^'"]*['"]/,
           `newsletterJid: '${newsletterJid}'`
         );
       } else {
+        // Insertion propre juste avant la fin du module.exports
         configContent = configContent.replace(
-          /(sessionName:\s*['"][^'"]+['"],)/,
-          `$1\n    newsletterJid: '${newsletterJid}',`
+          /(\};?\s*$)/,
+          `  newsletterJid: '${newsletterJid}',\n$1`
         );
       }
 
       fs.writeFileSync(configPath, configContent, 'utf8');
+      
+      // Mise à jour immédiate en mémoire vive
       config.newsletterJid = newsletterJid;
 
       await reply(
         `*✅ sᴄᴇᴀᴜ ᴅᴜ ᴄᴀɴᴀʟ ᴀʟɪɢɴᴇ́ !*\n` +
         `*📰 ᴊɪᴅ ʟɪᴇ́ : \`${newsletterJid}\`*\n\n` +
+        `*💡 ʟ'ᴏʀᴀᴄʟᴇ ᴜᴛɪʟɪsᴇʀᴀ ᴅᴇsᴏʀᴍᴀɪs ᴄᴇ ᴄᴀɴᴀʟ ᴘᴏᴜʀ ʟᴇ ᴍᴇɴᴜ.*\n\n` +
         `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
       );
 
