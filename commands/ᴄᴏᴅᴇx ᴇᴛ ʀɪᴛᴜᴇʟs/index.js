@@ -46,19 +46,18 @@ module.exports = {
           categories[cleanedCategory].push(cmd);
         }
       });
-
-      const fileCount = commands.size;
-      const userTag = `@${extra.sender.split('@')[0]}`;
+// Calcule le vrai nombre de sorts uniques sans compter les alias
+      const realCommandsCount = new Set(commands.values()).size;
       const botNameCaps = toBoldSmallCaps(freshConfig.botName || 'ɢʜᴏsᴛɢ-𝐗');
 
       let menuText = `╭╼━≪• *${botNameCaps}* •≫━╾╮\n` +
                      `┃ *ᴠɪɢɪʟᴀɴᴄᴇ* : 🟢 *ᴇ́ᴠᴇɪʟʟᴇ́*\n` +
                      `┃ *ᴘᴇ̀ʟᴇʀɪɴ* : ${toSmallCaps(sock.user.name || "Georges")}\n` +
-                     `┃ *ᴀʟʟɪᴀɴᴄᴇ* : *♰ sᴄᴇʟʟᴇ́ᴇ ♰*\n` +
+                     `┃ *ᴀʟʟɪᴀɴᴄᴇ* : ♰ sᴄᴇʟʟᴇ́ᴇ ♰\n` +
                      `┃ *ɪɴᴄᴀɴᴛᴀᴛɪᴏɴ* : [ *${prefix}* ]\n` +
-                     `┃ *ᴀʀᴄᴀɴᴇs* : ${fileCount} sᴏʀᴛs\n` +
+                     `┃ *ᴀʀᴄᴀɴᴇs* : ${realCommandsCount} sᴏʀᴛs\n` +
                      `┃ *♛ sᴜᴢᴇʀᴀɪɴ* : *ᴛʀᴜᴛʜ ᴅᴇᴠɪᴄᴇs ⚔*\n` +
-                     `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n`;
+                     `*╰━━━━━━━━━━━━━━━━━━━━━━━╯*\n\n`;
 
       const sortedCategories = Object.keys(categories).sort();
       sortedCategories.forEach(catKey => {
