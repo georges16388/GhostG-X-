@@ -86,8 +86,8 @@ module.exports = {
               `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
               `*Spiritual Connection Established...*\n\n` +
               `${priereGeneree}\n\n` +
-              `*_❤️ ᴊᴇsᴜs ᴛᴀɪᴍᴇ ᴇᴛ ᴛᴇ ʙᴇ́ɴɪssᴇ ❤️_*\n` +
-              `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`,
+              `*_ᴊᴇsᴜs ᴇsᴛ ᴍᴀɪᴛʀᴇ sᴜᴘʀᴇᴍᴇ ♛_*\n` +
+              `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`,
         mentions: [targetId]
       }, { quoted: msg });
 
