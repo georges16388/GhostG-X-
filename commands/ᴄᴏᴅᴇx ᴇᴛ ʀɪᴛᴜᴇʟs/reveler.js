@@ -24,7 +24,7 @@ module.exports = {
   name: 'reveler',
   aliases: ['readvo', 'read', 'vv', 'readviewonce', 'vv2'],
   category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴅᴇᴠᴏɪʟᴇ ʟᴇs ᴍᴇssᴀɢᴇs ᴀ ᴠᴜᴇ ᴜɴɪǫᴜᴇ (ɪᴍᴀɢᴇs/ᴠɪᴅᴇᴏs/ᴀᴜᴅɪᴏ)**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴅᴇᴠᴏɪʟᴇ ʟᴇs ᴍᴇssᴀɢᴇs ᴀ ᴠᴜᴇ ᴜɴɪǫᴜᴇ (ɪᴍᴀɢᴇs/ᴠɪᴅᴇᴏs/ᴀᴜᴅɪᴏ)',
   usage: `${config.prefix || '.'}reveler (repondre a un message a vue unique)`,
   groupOnly: false,
   adminOnly: false,
@@ -34,14 +34,32 @@ module.exports = {
     try {
       const chatId = msg.key.remoteJid;
 
-      // Extraction propre du texte pour détecter précisément la commande utilisée
+      // 💥 EXTRACTION STRICTE DU PREMIER MOT (Gère avec ou sans préfixe)
       const bodyText = msg.message?.conversation || 
                        msg.message?.extendedTextMessage?.text || 
                        msg.body || 
                        '';
 
       const prefix = config.prefix || '.';
-      const isVV2 = bodyText.trim().toLowerCase().startsWith(`${prefix}vv2`);
+      const cleanBody = bodyText.trim().toLowerCase();
+      
+      // On vérifie si le message commence par le préfixe
+      const hasPrefix = cleanBody.startsWith(prefix);
+      
+      // On extrait le premier mot propre
+      let firstWord = '';
+      if (hasPrefix) {
+        // Si préfixe : on enlève le préfixe et on prend le mot qui suit (ex: ".vv2" -> "vv2")
+        const match = cleanBody.slice(prefix.length).match(/^(\w+)/);
+        firstWord = match ? match[1] : '';
+      } else {
+        // Sans préfixe : on prend directement le premier mot entier (ex: "vv2" -> "vv2")
+        const match = cleanBody.match(/^(\w+)/);
+        firstWord = match ? match[1] : '';
+      }
+      
+      // La distinction est maintenant STRICTE et s'adapte aux deux modes
+      const isVV2 = (firstWord === 'vv2');
 
       // Essayer de récupérer contextInfo depuis différents types de messages
       const ctx = msg.message?.extendedTextMessage?.contextInfo
@@ -53,7 +71,7 @@ module.exports = {
       if (!ctx?.quotedMessage) {
         return await sock.sendMessage(
           chatId,
-          { text: `*⚠️ ${toSmallCaps('invocation incomplete : repondez a un message a vue unique pour le devoiler')}.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*` },
+          { text: `*⚠️ ${toSmallCaps('repondez a un message a vue unique pour le devoiler')}.*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*` },
           { quoted: msg }
         );
       }
@@ -73,7 +91,7 @@ module.exports = {
       if (!hasViewOnce) {
         return await sock.sendMessage(
           chatId,
-          { text: `*⚠️ ${toSmallCaps('ce message ne possede pas le sceau de la vue unique')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*` },
+          { text: `*⚠️ ${toSmallCaps('ce message ne possede pas le sceau de la vue unique')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*` },
           { quoted: msg }
         );
       }
@@ -104,7 +122,7 @@ module.exports = {
       if (!actualMsg || !mtype) {
         return await sock.sendMessage(
           chatId,
-          { text: `*⚠️ ${toSmallCaps('type de sceau non supporte par le sanctuaire')}.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*` },
+          { text: `*⚠️ ${toSmallCaps('type de sceau non supporte par le sanctuaire')}.*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*` },
           { quoted: msg }
         );
       }
@@ -130,27 +148,24 @@ module.exports = {
           buffer = Buffer.concat([buffer, chunk]);
         }
 
-        const caption = actualMsg[mtype]?.caption || '';
-
-        // 3. Récupérer le JID de l'owner (Fallback vers tes données de profil si config vide)
+        // 3. Récupérer le JID de l'owner
         const ownerNumber = config.owner || config.ownerNumber || config.OWNER || '22651622652';
         const cleanNumber = ownerNumber.toString().replace(/[^0-9]/g, '');
         const ownerJid = `${cleanNumber}@s.whatsapp.net`;
 
         // 4. Envoyer en inbox owner
-        const murmureText = `*〆 ${toSmallCaps('murmure decode')} :* ${caption}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`;
-        const defaultCredit = `\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`;
+        const defaultCredit = `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
 
         if (/video/.test(mtype)) {
           await sock.sendMessage(ownerJid, {
             video: buffer,
-            caption: caption ? murmureText : defaultCredit,
+            caption: defaultCredit,
             mimetype: 'video/mp4'
           });
         } else if (/image/.test(mtype)) {
           await sock.sendMessage(ownerJid, {
             image: buffer,
-            caption: caption ? murmureText : defaultCredit,
+            caption: defaultCredit,
             mimetype: 'image/jpeg'
           });
         } else if (/audio/.test(mtype)) {
@@ -161,32 +176,24 @@ module.exports = {
           });
         }
 
-        return; // Fin du mode vv2, on arrête l'exécution ici.
+        return; // Fin du mode vv2
       }
 
       // ── MODE VV (classique) ──
-      await sock.sendMessage(
-        chatId,
-        { text: `*☬ ${toSmallCaps('dissipation de l\'illusion en cours')}...*` },
-        { quoted: msg }
-      );
-
       const mediaStream = await downloadContentFromMessage(actualMsg[mtype], downloadType);
       let buffer = Buffer.from([]);
       for await (const chunk of mediaStream) {
         buffer = Buffer.concat([buffer, chunk]);
       }
 
-      const caption = actualMsg[mtype]?.caption || '';
-      const murmureText = `*〆 ${toSmallCaps('murmure decode')} :* ${caption}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`;
-      const defaultCredit = `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`;
+      const defaultCredit = `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
 
       if (/video/.test(mtype)) {
         await sock.sendMessage(
           chatId,
           {
             video: buffer,
-            caption: caption ? murmureText : defaultCredit,
+            caption: defaultCredit,
             mimetype: 'video/mp4'
           },
           { quoted: msg }
@@ -196,7 +203,7 @@ module.exports = {
           chatId,
           {
             image: buffer,
-            caption: caption ? murmureText : defaultCredit,
+            caption: defaultCredit,
             mimetype: 'image/jpeg'
           },
           { quoted: msg }
@@ -218,7 +225,7 @@ module.exports = {
       await sock.sendMessage(
         msg.key.remoteJid,
         {
-          text: `*❌ ${toSmallCaps('l\'illusion a resiste, echec de la revelation')}.*\n*${toSmallCaps('erreur')} : ${error.message}*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`
+          text: `*❌ ${toSmallCaps('echec de la revelation')}.*\n*${toSmallCaps('erreur')} : ${error.message}*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
         },
         { quoted: msg }
       );
