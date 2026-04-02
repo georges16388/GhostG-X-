@@ -47,7 +47,7 @@ module.exports = {
   name: 'song',
   aliases: ['play', 'music', 'yta', 'cantique_youtube'],
   category: '‎⌘ ᴇ́ᴄʜᴏs ᴅᴜ ᴍᴏɴᴅᴇ',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴅᴏᴡɴʟᴏᴀᴅ ᴀᴜᴅɪᴏ ғʀᴏᴍ ʏᴏᴜᴛᴜʙᴇ**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴅᴏᴡɴʟᴏᴀᴅ ᴀᴜᴅɪᴏ ғʀᴏᴍ ʏᴏᴜᴛᴜʙᴇ',
   usage: `${config.prefix || '.'}song [nom ou lien youtube]`,
   groupOnly: false,
   adminOnly: false,
@@ -62,11 +62,10 @@ module.exports = {
 
       if (!text) {
         return await sock.sendMessage(chatId, { 
-          text: `╭╼━≪• *⚠️ ᴇᴄʜᴇᴄ ᴅᴇ ʟɪɴᴠᴏᴄᴀᴛɪᴏɴ* •≫━╾╮\n` +
-                `┃ 🔮 *${toSmallCaps('indique un nom ou un lien')}*\n` +
-                `┃ *${toSmallCaps('pour aspirer le media')} !*\n` +
-                `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
-                `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+          text: `*⚠️ ${toSmallCaps('echec de l\'invocation')}*\n\n` +
+                `*┃* 🔮 *${toSmallCaps('indique un nom ou un lien')}*\n` +
+                `*┃* *${toSmallCaps('pour aspirer le media')} !*\n\n` +
+                `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
         }, { quoted: msg });
       }
 
@@ -77,7 +76,7 @@ module.exports = {
       } else {
         const search = await yts(text);
         if (!search || !search.videos.length) {
-          return await reply(`*❌ ${toSmallCaps('aucun resultat trouve dans les archives')}.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+          return await reply(`*❌ ${toSmallCaps('aucun resultat trouve dans les archives')}.*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
         }
         video = search.videos[0];
       }
@@ -88,13 +87,12 @@ module.exports = {
       // Information de l'utilisateur avec l'esthétique du sanctuaire sans ligne vide
       await sock.sendMessage(chatId, {
         image: { url: video.thumbnail || 'https://cdn-icons-png.flaticon.com/512/1384/1384060.png' },
-        caption: `╭╼━≪• *🎬 ᴀsᴘɪʀᴀᴛɪᴏɴ ʀᴇ́ᴜssɪᴇ* •≫━╾╮\n` +
-                 `┃ 🔮 *${toSmallCaps('extrait par')} :* ${botName}\n` +
-                 `┃ 🔗 *${toSmallCaps('source')} :* ${sourceDomain}\n` +
-                 `┃ 🔖 *${toSmallCaps('titre')} :* ${toSmallCaps(video.title || 'Inconnu')}\n` +
-                 `┃ ⏱️ *${toSmallCaps('duree')} :* ${toSmallCaps(video.timestamp || 'Inconnue')}\n` +
-                 `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
-                 `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+        caption: `*╭╼━━━≪• 🎬 ᴀsᴘɪʀᴀᴛɪᴏɴ ʀᴇ́ᴜssɪᴇ •≫━━━╾╮*\n` +
+                 `*┃* 🔮 *${toSmallCaps('extrait par')} :* ${botName}\n` +
+                 `*┃* 🔗 *${toSmallCaps('source')} :* ${sourceDomain}\n` +
+                 `*┃* 🔖 *${toSmallCaps('titre')} :* ${toSmallCaps(video.title || 'Inconnu')}\n` +
+                 `*┃* ⏱️ *${toSmallCaps('duree')} :* ${toSmallCaps(video.timestamp || 'Inconnue')}\n\n` +
+                 `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
       }, { quoted: msg });
 
       // Réaction avec l'orbe de téléchargement
@@ -279,7 +277,7 @@ module.exports = {
         errorMessage = `*❌ ${toSmallCaps('toutes les sources d invocation ont echoue')} !*`;
       }
 
-      await reply(`${errorMessage}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+      await reply(`${errorMessage}\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
     }
   }
 };
