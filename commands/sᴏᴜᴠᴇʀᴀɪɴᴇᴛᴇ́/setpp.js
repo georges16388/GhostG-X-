@@ -33,7 +33,7 @@ module.exports = {
   name: 'empreinte_grimoire',
   aliases: ['setimage', 'setprofilepicture', 'setoraclepp', 'setoracledp', 'avatar'],
   category: '♛ sᴏᴜᴠᴇʀᴀɪɴᴇᴛᴇ́',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴛʀᴀɴsᴍᴜᴛᴇ ʟ\'ɪᴍᴀɢᴇ ᴅᴇ ᴘʀᴏғɪʟ ᴅᴜ ᴄᴏᴍᴍᴀɴᴅᴇᴜʀ ᴀ̀ ᴘᴀʀᴛɪʀ ᴅ\'ᴜɴᴇ ɪᴍᴀɢᴇ ᴏᴜ sᴛɪᴄᴋᴇʀ**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴛʀᴀɴsᴍᴜᴛᴇ ʟ\'ɪᴍᴀɢᴇ ᴅᴇ ᴘʀᴏғɪʟ ᴅᴜ ᴄᴏᴍᴍᴀɴᴅᴇᴜʀ ᴀ̀ ᴘᴀʀᴛɪʀ ᴅ\'ᴜɴᴇ ɪᴍᴀɢᴇ ᴏᴜ sᴛɪᴄᴋᴇʀ',
   usage: `${prefix}empreinte_grimoire`,
 
   async execute(sock, msg, args, extra) {
@@ -57,13 +57,13 @@ module.exports = {
 
       // Seul le cercle des maîtres peut manipuler l'empreinte de l'Oracle
       if (!isMe) {
-        return reply(`*❌ ${toSmallCaps('tu n\'as pas l\'autorisation supreme pour invoquer cette puissance')}.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+        return reply(`*❌ ${toSmallCaps('tu n\'as pas l\'autorisation supreme pour invoquer cette puissance')}.*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       // Check if message is a reply
       const quotedMessage = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage;
       if (!quotedMessage) {
-        return reply(`*⚠️ ${toSmallCaps('murmure cette commande en reponse a une image ou un sticker')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+        return reply(`*⚠️ ${toSmallCaps('murmure cette commande en reponse a une image ou un sticker')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       // Check if quoted message contains an image or sticker
@@ -71,20 +71,18 @@ module.exports = {
       const stickerMessage = quotedMessage.stickerMessage;
 
       if (!imageMessage && !stickerMessage) {
-        return reply(`*〆 ${toSmallCaps('l\'aura citee doit etre une image ou un sticker')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+        return reply(`*〆 ${toSmallCaps('l\'aura citee doit etre une image ou un sticker')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
-      // Use whichever message type is available
+      // Adaptation dynamique du type de média pour Baileys
       const mediaMessage = imageMessage || stickerMessage;
-
-      const tmpDir = getTempDir();
-      const imagePath = path.join(tmpDir, `profile_${Date.now()}.jpg`);
+      const mediaType = imageMessage ? 'image' : 'sticker';
 
       try {
         await reply(`*🔮 ${toSmallCaps('l\'oracle procede a l\'aspiration de l\'aura')}... ${toSmallCaps('patiente')}.*`);
 
-        // Download the media (image or sticker)
-        const stream = await downloadContentFromMessage(mediaMessage, 'image');
+        // Download the media
+        const stream = await downloadContentFromMessage(mediaMessage, mediaType);
         let buffer = Buffer.from([]);
 
         for await (const chunk of stream) {
@@ -93,26 +91,21 @@ module.exports = {
 
         // Check file size
         if (buffer.length > MAX_FILE_SIZE) {
-          return reply(`*〆 ${toSmallCaps('cet artefact est trop lourd')} : ${(buffer.length / 1024 / 1024).toFixed(2)}MB (ᴍᴀx : ${MAX_FILE_SIZE / 1024 / 1024}MB)*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+          return reply(`*〆 ${toSmallCaps('cet artefact est trop lourd')} : ${(buffer.length / 1024 / 1024).toFixed(2)}MB (ᴍᴀx : ${MAX_FILE_SIZE / 1024 / 1024}MB)*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
         }
 
-        // Save the image
-        fs.writeFileSync(imagePath, buffer);
+        // Set the profile picture directement par buffer (évite les erreurs de fichiers physiques)
+        const botJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
+        await sock.updateProfilePicture(botJid, buffer);
 
-        // Set the profile picture
-        await sock.updateProfilePicture(sock.user.id.split(':')[0] + '@s.whatsapp.net', { url: imagePath });
-
-        await reply(`*✅ ${toSmallCaps('l\'empreinte visuelle du sanctuaire a ete transmutee avec succes')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+        await reply(`*✅ ${toSmallCaps('l\'empreinte visuelle du sanctuaire a ete transmutee avec succes')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       } catch (error) {
-        console.error('setbotpp error:', error);
-        await reply(`*〆 ${toSmallCaps('l\'oracle a echoue a modifier l\'empreinte visuelle')}.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
-      } finally {
-        // Always cleanup temp file
-        deleteTempFile(imagePath);
+        console.error('setbotpp error inside:', error);
+        await reply(`*〆 ${toSmallCaps('l\'oracle a echoue a modifier l\'empreinte visuelle')}.*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
     } catch (error) {
-      console.error('setbotpp error:', error);
-      await reply(`*〆 ${toSmallCaps('l\'oracle a echoue a modifier l\'empreinte visuelle')}.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+      console.error('setbotpp global error:', error);
+      await reply(`*〆 ${toSmallCaps('l\'oracle a echoue a modifier l\'empreinte visuelle')}.*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
     }
   }
 };
