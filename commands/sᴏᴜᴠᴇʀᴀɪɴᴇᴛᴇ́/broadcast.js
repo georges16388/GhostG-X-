@@ -58,7 +58,7 @@ module.exports = {
         const rawMessage = args.join(' ');
         const messageText = toSmallCaps(rawMessage);
 
-        // 3. RÉCUPÉRATION DES OWNERS DEPUIS LA CONFIG (Correction vers ownerNumber)
+        // 3. RÉCUPÉRATION DES OWNERS DEPUIS LA CONFIG
         let ownersList = [];
 
         if (Array.isArray(config.ownerNumber)) {
@@ -67,7 +67,6 @@ module.exports = {
           ownersList = config.ownerNumber.split(',').map(num => num.trim());
         }
 
-        // Nettoyage et ciblage WhatsApp (@s.whatsapp.net)
         const targetJids = ownersList
           .map(num => num.replace(/\D/g, ''))
           .filter(num => num.length > 5)
@@ -81,23 +80,29 @@ module.exports = {
 
         await reply(`*🔮 ɪɴᴠᴏᴄᴀᴛɪᴏɴ ᴇɴ ᴄᴏᴜʀs sᴜʀ ${uniqueJids.length} ᴀ̂ᴍᴇs ᴍᴀɪ̂ᴛʀᴇs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ...*`);
 
+        const broadcastContent = {
+          text: `*╭╼━━━≪•♛ ᴍᴇssᴀɢᴇ ᴅᴜ sᴏᴜᴠᴇʀᴀɪɴ •≫━━━╾╮*\n\n` +
+                `${messageText}\n\n` +
+                `*╰━━━━━━━━━━━━━━━━━━━━━━━╯*\n\n` +
+                `_📩 ᴄᴇᴄɪ ᴇsᴛ ᴜɴᴇ ᴅɪғғᴜsɪᴏɴ sᴜᴘʀᴇ̂ᴍᴇ ᴅᴜ ᴍᴀɪ̂ᴛʀᴇ ᴅᴇ ɢʜᴏsᴛɢ-x._\n\n` +
+                `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
+        };
+
         let success = 0;
         let failed = 0;
 
-        // 4. DIFFUSION DU MESSAGE
+        // 4. DIFFUSION SANS ÉCRITURE INDIVIDUELLE (Mode Broadcast Natif)
         for (const jid of uniqueJids) {
           try {
-            await sock.sendMessage(jid, {
-              text: `*╭╼━━━≪•♛ ᴍᴇssᴀɢᴇ ᴅᴜ sᴏᴜᴠᴇʀᴀɪɴ •≫━━━╾╮*\n\n` +
-                    `${messageText}\n\n` +
-                    `*╰━━━━━━━━━━━━━━━━━━━━━━━╯*\n\n` +
-                    `_📩 ᴄᴇᴄɪ ᴇsᴛ ᴜɴᴇ ᴅɪғғᴜsɪᴏɴ sᴜᴘʀᴇ̂ᴍᴇ ᴅᴜ ᴍᴀɪ̂ᴛʀᴇ ᴅᴇ ɢʜᴏsᴛɢ-x._\n\n` +
-                    `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
+            // Utilisation du paramètre contextInfo pour forcer le statut de "Broadcast"
+            await sock.sendMessage(jid, broadcastContent, {
+              messageId: sock.generateMessageID(),
+              options: { broadcast: true } // Indique à Baileys de le traiter en dehors du flux normal
             });
             success++;
 
-            // Sécurité anti-spam : Pause aléatoire entre 2 et 3 secondes
-            const randomDelay = Math.floor(Math.random() * (3000 - 2000 + 1)) + 2000;
+            // Pause aléatoire anti-spam réduite puisqu'on n'ouvre pas les inbox de la même manière
+            const randomDelay = Math.floor(Math.random() * (1500 - 1000 + 1)) + 1000;
             await new Promise(resolve => setTimeout(resolve, randomDelay));
 
           } catch (e) {
