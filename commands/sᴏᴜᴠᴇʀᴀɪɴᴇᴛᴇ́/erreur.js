@@ -23,9 +23,9 @@ const prefix = config.prefix || '.';
 
 module.exports = {
   name: 'erreur',
-  aliases: ['er', 'error'],
+  aliases: ['er', 'e','error'],
   category: '♛ sᴏᴜᴠᴇʀᴀɪɴᴇᴛᴇ́',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ sᴜᴘᴘʀɪᴍᴇ ᴜɴ ᴅᴇ ᴛᴇs ᴘʀᴏᴘʀᴇs ᴍᴇssᴀɢᴇs ᴇɴ ʏ ʀᴇᴘᴏɴᴅᴀɴᴛ**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ sᴜᴘᴘʀɪᴍᴇ ᴜɴ ᴅᴇ ᴛᴇs ᴘʀᴏᴘʀᴇs ᴍᴇssᴀɢᴇs ᴇɴ ʏ ʀᴇᴘᴏɴᴅᴀɴᴛ',
   usage: `${prefix}erreur`,
 
   async execute(sock, msg, args, extra) {
@@ -60,7 +60,7 @@ module.exports = {
           `*🔮 ɪɴᴄᴀɴᴛᴀᴛɪᴏɴ :*\n` +
           `*${toSmallCaps('reponds a ton propre message que tu souhaites effacer')}.*\n\n` +
           `  ${prefix}erreur\n\n` +
-          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`
+          `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
         );
       }
 
