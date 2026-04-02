@@ -28,7 +28,7 @@ module.exports = {
   name: 'facebook',
   aliases: ['illusions_facebook', 'fb', 'fbdl', 'facebookdl', 'illusion_facebook'],
   category: '‎⌘ ᴇ́ᴄʜᴏs ᴅᴜ ᴍᴏɴᴅᴇ', 
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀsᴘɪʀᴇ ᴇᴛ ᴛᴇʟᴇᴄʜᴀʀɢᴇ ᴅᴇs ᴠɪᴅᴇᴏs ғᴀᴄᴇʙᴏᴏᴋ**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀsᴘɪʀᴇ ᴇᴛ ᴛᴇʟᴇᴄʜᴀʀɢᴇ ᴅᴇs ᴠɪᴅᴇᴏs ғᴀᴄᴇʙᴏᴏᴋ',
   usage: `${config.prefix || '.'}facebook [lien facebook]`,
   groupOnly: false,
   adminOnly: false,
