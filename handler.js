@@ -416,7 +416,7 @@ const handleMessage = async (sock, msg) => {
       };
 
       // --- 1. FONCTIONS DE CONVERSATION & ÉTAT ---
-      const salutRegex = /^(bonjour|salut|hey|ghostg|yo|wsh|tu es la|dispo)/i;
+      const salutRegex = /^(bonjour|salut|hey|ghostg|yo|wsh|tu es la|dispo|bro)/i;
       if (salutRegex.test(input)) {
         const responses = [
           `👋🏾 *ᴀ̀ ᴛᴇs ᴏʀᴅʀᴇs, ᴍᴏɴ ᴍᴀɪ̂ᴛʀᴇ. ʟᴇ sᴀɴᴄᴛᴜᴀɪʀᴇ ᴇsᴛ sᴏᴜs ᴄᴏɴᴛʀᴏ̂ʟᴇ.*`,
@@ -427,7 +427,10 @@ const handleMessage = async (sock, msg) => {
         return;
       }
 
-      if (input.includes("qui t'a fait") || input.includes("createur") || input.includes("ton pere")) {
+      if (input.includes("qui t'a fait") || input.includes("createur") || input.includes("ton pere")) ||
+input.includes("développeur")) ||
+input.includes("dev")) ||
+input.includes("truth devices")){
         await extraNLP.reply(`👑 *ᴊᴇ sᴜɪs ʟ'ᴏᴇᴜᴠʀᴇ sᴜᴘʀᴇ̂ᴍᴇ ᴅᴇ ᴛʀᴜᴛʜ ᴅᴇᴠɪᴄᴇs*`);
         return;
       }
@@ -735,7 +738,7 @@ const handleGroupUpdate = async (sock, update) => {
           `┃ 🚪 *${toSmallCaps('sanctuaire')} :* ${groupName.toUpperCase()}\n` +
           `┃\n` +
           `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
-          `>  *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+          `>  *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
 const profilePicUrl = await getProfilePic();
         try {
           const imageResponse = await axios.get(profilePicUrl, { responseType: 'arraybuffer' });
@@ -755,7 +758,7 @@ const profilePicUrl = await getProfilePic();
           `┃ ⏰ *${toSmallCaps('cycle')} :* ${timeString}\n` +
           `┃\n` +
           `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
-          `>  *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+          `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰**`;
 
         const profilePicUrl = await getProfilePic();
         try {
@@ -871,7 +874,7 @@ const initializeAntiCall = (sock) => {
           await sock.rejectCall(call.id, call.from);
           await sock.updateBlockStatus(call.from, 'block');
           await sock.sendMessage(call.from, {
-            text: `🔇 *${toSmallCaps("le sanctuaire n'accepte pas les appels. ton accès a été rompu")} (ʙʟᴏǫᴜᴇ́).*`
+            text: `🔇 *${toSmallCaps("le sanctuaire n'accepte pas les appels actuellement. ton accès a été rompu")} (ʙʟᴏǫᴜᴇ́).*`
           });
         }
       }
