@@ -5,7 +5,7 @@
  * Sécurité : Système d'authentification par empreintes
  */
 
-const crypto = require('crypto'); // 👈 Ajouté pour le système d'empreintes
+const crypto = require('crypto'); 
 const config = require('./config');
 const database = require('./database');
 const { loadCommands } = require('./utils/commandLoader');
@@ -342,7 +342,40 @@ const handleMessage = async (sock, msg) => {
                  msg.message?.imageMessage?.caption || msg.message?.videoMessage?.caption || '';
     const isCommand = body.trim().startsWith(config.prefix || '.');
 
-    // 🎯 ---------------- SYSTÈME AUTO-REACT ----------------
+    // 🎯 ─── SYSTÈME DE RÉPONSE AUTO (SOUVERAINETÉ) ───
+    const database = require('./database'); // Vérifie bien que le chemin vers database.js est le bon !
+    const botNumber = sock.user.id.split(':')[0]; 
+    const isMentioned = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.includes(`${botNumber}@s.whatsapp.net`);
+
+    if (isGroup) {
+      const groupSettings = database.getGroupSettings(from);
+      
+      if (groupSettings && groupSettings.autoReply?.active && isMentioned) {
+          const replyData = groupSettings.autoReply;
+          
+          // Simulation d'écriture pour donner l'effet humain
+          await sock.sendPresenceUpdate('composing', from);
+          
+          // Déclenchement de la réponse après le délai imparti !
+          setTimeout(async () => {
+              try {
+                  await sock.sendMessage(from, { 
+                      forward: { 
+                          key: { remoteJid: from }, 
+                          message: replyData.replyContent 
+                      }
+                  }, { quoted: msg });
+              } catch (err) {
+                  console.error('Erreur lors de la reponse automatique:', err);
+              } finally {
+                  // On stoppe la présence d'écriture quoi qu'il arrive
+                  await sock.sendPresenceUpdate('paused', from);
+              }
+          }, replyData.delay);
+      }
+    }
+
+    // 🎯 ─── SYSTÈME AUTO-REACT ───
     try {
       if (config.autoReact === true && msg.message && isCommand) {
         if (isSupremeOwner) {
@@ -371,38 +404,6 @@ const handleMessage = async (sock, msg) => {
       actualMessageTypes = allKeys.filter(key => !protocolMessages.includes(key));
     }
 
-    // Analyse de l'anti-lien & anti-mention groupe
-    if (isGroup) {
-      await handleAntilink(sock, msg, groupMetadata);
-      await handleAntigroupmention(sock, msg, groupMetadata);
-      addMessage(from, sender); 
-    }
-
-    if (!content || actualMessageTypes.length === 0) return;
-
-    // Button responses handler
-    const btn = content.buttonsResponseMessage || msg.message?.buttonsResponseMessage;
-    if (btn) {
-      const buttonId = btn.selectedButtonId;
-      const commandsToRoute = ['menu', 'ping', 'list'];
-      const matchedCmd = commandsToRoute.find(cmd => buttonId === `btn_${cmd === 'list' ? 'help' : cmd}`);
-
-      if (matchedCmd) {
-        const cmd = commands.get(matchedCmd);
-        if (cmd) {
-          await cmd.execute(sock, msg, [], {
-            from, sender, isGroup, groupMetadata,
-            isOwner: isMe, 
-            isAdmin: isMe || await isAdmin(sock, sender, from, groupMetadata), 
-            isBotAdmin: await isBotAdmin(sock, from, groupMetadata),
-            isMod: isMod(sender),
-            reply: (text) => sock.sendMessage(from, { text }, { quoted: msg }),
-            react: (emoji) => sock.sendMessage(from, { react: { text: emoji, key: msg.key } })
-          });
-        }
-        return;
-      }
-    }
 // 🧠 ---------------- GHOSTG-X SUPRÊME NLE (NATURAL LANGUAGE ENGINE) ----------------
     const input = body.toLowerCase().trim();
     const argsNLP = body.split(/\s+/);
