@@ -43,7 +43,7 @@ module.exports = {
           `*☬ ᴜsᴀɢᴇ :*\n` +
           `  *• ${prefix}ᴅᴏᴍᴀɪɴᴇ ᴘʀɪᴠᴇ - sᴇᴜʟ ʟᴇ ᴍᴀɪ̂ᴛʀᴇ ᴀ ʟᴇ ᴘᴏᴜᴠᴏɪʀ*\n` +
           `  *• ${prefix}ᴅᴏᴍᴀɪɴᴇ ᴘᴜʙʟɪᴄ - ʟᴇs ᴘᴏʀᴛᴇs sᴏɴᴛ ᴏᴜᴠᴇʀᴛᴇs*\n\n` +
-          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+          `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
         );
       }
 
@@ -52,7 +52,7 @@ module.exports = {
       // Cas PRIVÉ
       if (mode === 'private' || mode === 'priv' || mode === 'privé' || mode === 'prive') {
         if (isCurrentlyPrivate) {
-          return reply(`*🔒 ʟ'ᴏʀᴀᴄʟᴇ ᴇsᴛ ᴅᴇ́ᴊᴀ̀ sᴄᴇʟʟᴇ́ ᴇɴ ᴍᴏᴅᴇ ᴘʀɪᴠᴇ́.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+          return reply(`*🔒 ʟ'ᴏʀᴀᴄʟᴇ ᴇsᴛ ᴅᴇ́ᴊᴀ̀ sᴄᴇʟʟᴇ́ ᴇɴ ᴍᴏᴅᴇ ᴘʀɪᴠᴇ́.*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
         }
 
         // Modification chirurgicale dans le .env
@@ -66,13 +66,13 @@ module.exports = {
         // Application immédiate en mémoire vive
         config.selfMode = true;
 
-        return reply(`*🔒 ʟ'ᴏʀᴀᴄʟᴇ ᴇsᴛ ᴅᴇ́sᴏʀᴍᴀɪs ᴘʀɪᴠᴇ́.*\n*sᴇᴜʟ ʟᴇ sᴜᴘʀᴇ̂ᴍᴇ ᴄʀᴇ́ᴀᴛᴇᴜʀ ᴀ ʟᴇ ᴘᴏᴜᴠᴏɪʀ.\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+        return reply(`*🔒 ʟ'ᴏʀᴀᴄʟᴇ ᴇsᴛ ᴅᴇ́sᴏʀᴍᴀɪs ᴘʀɪᴠᴇ́.*\n*sᴇᴜʟ ʟᴇ sᴜᴘʀᴇ̂ᴍᴇ ᴄᴏᴍᴍᴀɴᴅᴇᴜʀ ᴀ ʟᴇ ᴘᴏᴜᴠᴏɪʀ.\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       // Cas PUBLIC
       if (mode === 'public' || mode === 'pub') {
         if (!isCurrentlyPrivate) {
-          return reply(`*🌐 ʟ'ᴏʀᴀᴄʟᴇ ᴇsᴛ ᴅᴇ́ᴊᴀ̀ ᴏᴜᴠᴇʀᴛ ᴇɴ ᴍᴏᴅᴇ ᴘᴜʙʟɪᴄ.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+          return reply(`*🌐 ʟ'ᴏʀᴀᴄʟᴇ ᴇsᴛ ᴅᴇ́ᴊᴀ̀ ᴏᴜᴠᴇʀᴛ ᴇɴ ᴍᴏᴅᴇ ᴘᴜʙʟɪᴄ.*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
         }
 
         // Modification chirurgicale dans le .env
@@ -86,7 +86,7 @@ module.exports = {
         // Application immédiate en mémoire vive
         config.selfMode = false;
 
-        return reply(`*🌐 ʟ'ᴏʀᴀᴄʟᴇ ᴇsᴛ ᴅᴇ́sᴏʀᴍᴀɪs ᴘᴜʙʟɪᴄ.*\n*ʟᴇs ᴘᴏʀᴛᴇs sᴏɴᴛ ᴏᴜᴠᴇʀᴛᴇs ᴀ̀ ᴛᴏᴜᴛᴇs ʟᴇs ᴀ̂ᴍᴇs.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+        return reply(`*🌐 ʟ'ᴏʀᴀᴄʟᴇ ᴇsᴛ ᴅᴇ́sᴏʀᴍᴀɪs ᴘᴜʙʟɪᴄ.*\n*ʟᴇs ᴘᴏʀᴛᴇs sᴏɴᴛ ᴏᴜᴠᴇʀᴛᴇs ᴀ̀ ᴛᴏᴜᴛᴇs ʟᴇs ᴀ̂ᴍᴇs.*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       return reply(`*〆 ᴍᴏᴅᴇ ɪɴᴠᴀʟɪᴅᴇ ! ᴜᴛɪʟɪsᴇ : ${prefix}ᴅᴏᴍᴀɪɴᴇ <ᴘʀɪᴠᴇ/ᴘᴜʙʟɪᴄ>*`);
