@@ -28,7 +28,7 @@ module.exports = {
   name: 'demote',
   aliases: ['removeadmin', 'dem', 'destituer', 'rabaisser', 'ᴅᴇᴍᴏᴛᴇ'],
   category: '‎⛨ ɢᴀʀᴅɪᴇɴs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ʀᴇᴛɪʀᴇ ʟᴇs ᴘʀɪᴠɪʟᴇ̀ɢᴇs ᴀᴅᴍɪɴ ᴅ\'ᴜɴ ᴍᴇᴍʙʀᴇ**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ʀᴇᴛɪʀᴇ ʟᴇs ᴘʀɪᴠɪʟᴇ̀ɢᴇs ᴀᴅᴍɪɴ ᴅ\'ᴜɴ ᴍᴇᴍʙʀᴇ',
   usage: `${prefix}demote @user | réponse`,
   groupOnly: true,
   adminOnly: true,
@@ -52,7 +52,7 @@ module.exports = {
       if (!isMe) {
         const isAdmin = extra.isAdmin || false; 
         if (!isAdmin) {
-          return reply(`*❌ ${toSmallCaps('cette commande est reservee aux administrateurs du sanctuaire')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+          return reply(`*❌ ${toSmallCaps('cette commande est reservee aux administrateurs du sanctuaire')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
         }
       }
 
@@ -71,7 +71,15 @@ module.exports = {
 
       // Si aucune cible n'est trouvée, on envoie l'aide
       if (!target) {
-        return reply(`❌ *${toSmallCaps('veuillez mentionner ou repondre a l individu a destituer')} !*\n\n${toSmallCaps('exemple')} : \`${prefix}demote @user\`\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+        return reply(
+          `*╭╼━━━≪• ᴅᴇsᴛɪᴛᴜᴛɪᴏɴ •≫━━━╾╮*\n` +
+          `*┃* *ᴇ́ᴛᴀᴛ* : ᴇ́ᴄʜᴇᴄ ❌\n\n` +
+          `*┃* 🔮 *${toSmallCaps('incantations disponibles')} :*\n` +
+          `*┃* *${toSmallCaps('veuillez mentionner ou repondre a')}*\n` +
+          `*┃* *${toSmallCaps('l individu a destituer')}.*\n\n` +
+          `  ${prefix}demote @user\n\n` +
+          `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
+        );
       }
 
       const chatId = msg.key.remoteJid;
@@ -81,12 +89,12 @@ module.exports = {
       const foundParticipant = findParticipant(freshMetadata.participants, target);
 
       if (!foundParticipant) {
-        return reply(`❌ *${toSmallCaps('cet individu ne fait pas partie du sanctuaire')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+        return reply(`❌ *${toSmallCaps('cet individu ne fait pas partie du sanctuaire')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       // Vérification des droits actuels
       if (foundParticipant.admin !== 'admin' && foundParticipant.admin !== 'superadmin') {
-        return reply(`❌ *${toSmallCaps('cet individu n est pas un gardien (administrateur)')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+        return reply(`❌ *${toSmallCaps('cet individu n est pas un gardien (administrateur)')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       // On applique la destitution
@@ -94,12 +102,12 @@ module.exports = {
 
       // Notification de succès
       await sock.sendMessage(chatId, {
-        text: `📉 *@${target.split('@')[0]} ${toSmallCaps('a ete destitue du rang de gardien du sanctuaire')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`,
+        text: `📉 *@${target.split('@')[0]} ${toSmallCaps('a ete destitue du rang de gardien du sanctuaire')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`,
         mentions: [target]
       }, { quoted: msg });
 
     } catch (error) {
-      return reply(`❌ *${toSmallCaps('erreur')} :* ${error.message}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+      return reply(`❌ *${toSmallCaps('erreur')} :* ${error.message}\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
     }
   }
 };
