@@ -25,7 +25,7 @@ module.exports = {
   name: 'charme',
   aliases: ['pickup', 'pickupline', 'flirt', 'drague'],
   category: '♞ ᴄʜᴀᴏs & ᴅɪᴠᴇʀᴛɪssᴇᴍᴇɴᴛ',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴏʙᴛɪᴇɴs ᴜɴᴇ ᴘʜʀᴀsᴇ ᴅ\'ᴀᴄᴄʀᴏᴄʜᴇ ᴇɴᴠᴏᴜᴛᴀɴᴛᴇ ᴘᴏᴜʀ sᴇᴅᴜɪʀᴇ**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴏʙᴛɪᴇɴs ᴜɴᴇ ᴘʜʀᴀsᴇ ᴅ\'ᴀᴄᴄʀᴏᴄʜᴇ ᴇɴᴠᴏᴜᴛᴀɴᴛᴇ ᴘᴏᴜʀ sᴇᴅᴜɪʀᴇ',
   usage: `${prefix}charme [@user ou en reponse]`,
   groupOnly: false,
   adminOnly: false,
@@ -101,13 +101,13 @@ module.exports = {
       const randomFlirt = flirts[Math.floor(Math.random() * flirts.length)];
 
       await sock.sendMessage(from, {
-        text: `${randomFlirt}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`,
+        text: `${randomFlirt}\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`,
         mentions: [targetId]
       }, { quoted: msg });
 
     } catch (error) {
       console.error('Flirt Error:', error);
-      await reply(`*❌ ${toSmallCaps('l\'invocation a echoue')} : ${error.message}*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+      await reply(`*❌ ${toSmallCaps('l\'invocation a echoue')} : ${error.message}*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
     }
   }
 };
