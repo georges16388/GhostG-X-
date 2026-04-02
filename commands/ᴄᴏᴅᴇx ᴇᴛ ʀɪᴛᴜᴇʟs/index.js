@@ -80,7 +80,7 @@ module.exports = {
                      `┃ *ᴀʟʟɪᴀɴᴄᴇ* : ♰ sᴄᴇʟʟᴇ́ᴇ ♰\n` +
                      `┃ *ɪɴᴄᴀɴᴛᴀᴛɪᴏɴ* : [ *${prefix}* ]\n` +
                      `┃ *ᴀʀᴄᴀɴᴇs* : ${realCommandsCount} sᴏʀᴛs\n` +
-                     `┃ *♛ sᴜᴢᴇʀᴀɪɴ* : *ᴛʀᴜᴛʜ ᴅᴇᴠɪᴄᴇs ⚔*\n` +
+                     `┃ *♛ sᴜᴢᴇʀᴀɪɴ* : ᴛʀᴜᴛʜ ᴅᴇᴠɪᴄᴇs ⚔\n` +
                      `*╰━━━━━━━━━━━━━━━━━━━━━━━╯*\n\n`;
 
       const sortedCategories = Object.keys(categories).sort();
