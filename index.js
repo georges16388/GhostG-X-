@@ -104,11 +104,13 @@ async function startBot() {
   });
 
   if (!sock.authState.creds.registered) {
+    // 🛡️ Correction 1 : On ne met pas ton numéro en secours ici pour éviter qu'il s'affiche chez l'utilisateur
     const rawNumber = process.env.PHONE_NUMBER || config.ownerNumber?.[0];
-    const cleanNumber = String(rawNumber).replace(/\D/g, '');
-    if (!cleanNumber) {
-      console.error('❌ Numéro introuvable.');
+    
+    if (!rawNumber) {
+      console.error('\n❌ ERREUR : Aucun numéro de téléphone trouvé dans le fichier config ou les variables d\'environnement.');
     } else {
+      const cleanNumber = String(rawNumber).replace(/\D/g, '');
       console.log(`\n⏳ Génération du code pairing pour : +${cleanNumber}...`);
       setTimeout(async () => {
         try {
@@ -170,8 +172,9 @@ async function startBot() {
           }
       });
 
-      // Remplacement du lien wa.me statique par le numéro du créateur dynamique du fichier config
-      const creatorLink = config.ownerNumber?.[0] ? `https://wa.me/${String(config.ownerNumber[0]).replace(/\D/g, '')}` : '🔒 Accès restreint';
+      // 🛡️ Correction 2 : On s'assure que le lien wa.me ne contient QUE des chiffres
+      const rawCreatorNum = config.ownerNumber?.[0];
+      const creatorLink = rawCreatorNum ? `https://wa.me/${String(rawCreatorNum).replace(/\D/g, '')}` : '🔒 Accès restreint';
 
       const bigWelcomeMessage = 
           `╭╼━≪• *ɢʜᴏsᴛɢ-𝐗 ɪs ᴀʟɪᴠᴇ* •≫━╾╮\n` +
