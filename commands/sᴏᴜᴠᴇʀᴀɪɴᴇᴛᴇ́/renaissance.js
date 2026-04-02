@@ -25,7 +25,7 @@ module.exports = {
         return reply('*〆 ᴛᴜ ɴ\'ᴀs ᴘᴀs ʟ\'ᴀᴜᴛᴏʀɪsᴀᴛɪᴏɴ sᴜᴘʀᴇ̂ᴍᴇ ᴘᴏᴜʀ ɪɴᴠᴏǫᴜᴇʀ ᴄᴇᴛᴛᴇ ᴘᴜɪssᴀɴᴄᴇ.*');
       }
 
-      await reply(`*🐦‍🔥 ɪɴɪᴛɪᴀʟɪsᴀᴛɪᴏɴ ᴅᴜ ʀɪᴛᴜᴇʟ ᴅᴇ ʀᴇɴᴀɪssᴀɴᴄᴇ...*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+      await reply(`*🐦‍🔥 ɪɴɪᴛɪᴀʟɪsᴀᴛɪᴏɴ ᴅᴜ ʀɪᴛᴜᴇʟ ᴅᴇ ʀᴇɴᴀɪssᴀɴᴄᴇ...*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
 
       // 🔥 LE FIX : On dit à WhatsApp qu'on a lu le message pour qu'il ne le renvoie pas au redémarrage
       try {
