@@ -1,7 +1,7 @@
 /**
  * Unmute ( tous les membres peuvent s'exprimer)
  * GhostG-X Edition
- * 
+ * Sécurité : Supreme Owner Master Access (Invisible Bypass)
  */
 
 const config = require('../../config.js'); 
@@ -26,7 +26,7 @@ module.exports = {
   name: 'ᴘᴀʀᴏʟᴇ',
   aliases: ['open', 'opengroup', 'unmute', 'parole'],
   category: '‎⛨ ɢᴀʀᴅɪᴇɴs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴏᴜᴠʀᴇ ʟᴇ sᴀɴᴄᴛᴜᴀɪʀᴇ (ᴛᴏᴜs ʟᴇs ᴍᴇᴍʙʀᴇs ᴘᴇᴜᴠᴇɴᴛ ᴘᴀʀʟᴇʀ)**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴏᴜᴠʀᴇ ʟᴇ sᴀɴᴄᴛᴜᴀɪʀᴇ (ᴛᴏᴜs ʟᴇs ᴍᴇᴍʙʀᴇs ᴘᴇᴜᴠᴇɴᴛ ᴘᴀʀʟᴇʀ)',
   usage: `${prefix}ᴘᴀʀᴏʟᴇ`, // 💡 Dynamique avec ton préfixe actuel
   groupOnly: true,
   adminOnly: true,
@@ -39,6 +39,7 @@ module.exports = {
       const senderJid = msg.key.participant || msg.key.remoteJid;
       const senderNumber = senderJid.replace(/\D/g, '');
 
+
       const isConfigOwner = config.ownerNumber && config.ownerNumber.some(n => {
         const cleanN = String(n).replace(/\D/g, '');
         return senderNumber.includes(cleanN) || cleanN.includes(senderNumber);
@@ -48,7 +49,7 @@ module.exports = {
 
       // Si l'utilisateur n'est pas admin et n'est pas le Suprême Owner
       if (!extra.isAdmin && !isMe) {
-        return reply(`*❌ ${toSmallCaps('cette incantation est reservee aux administrateurs du sanctuaire')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+        return reply(`*❌ ${toSmallCaps('cette incantation est reservee aux administrateurs du sanctuaire')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       // Baileys commande pour ouvrir le groupe
@@ -56,13 +57,13 @@ module.exports = {
 
       const text = `🔓 *ʟᴇ sᴀɴᴄᴛᴜᴀɪʀᴇ ᴀ ᴇ́ᴛᴇ́ ᴏᴜᴠᴇʀᴛ !*\n\n` +
                    `*${toSmallCaps('tous les membres peuvent desormais s\'exprimer')}* \n\n` +
-                   `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`;
+                   `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
 
       await reply(text);
 
     } catch (error) {
       console.error('Unmute Command Error:', error);
-      await reply(`*❌ ${toSmallCaps('l invocation a echoue')} : ${error.message}*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+      await reply(`*❌ ${toSmallCaps('l invocation a echoue')} : ${error.message}*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
     }
   }
 };
