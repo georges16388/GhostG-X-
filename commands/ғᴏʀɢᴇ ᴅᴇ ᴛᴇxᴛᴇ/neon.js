@@ -12,7 +12,7 @@ module.exports = {
   name: 'neon',
   aliases: [],
   category: '‎✎ ғᴏʀɢᴇ ᴅᴇ ᴛᴇxᴛᴇ',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴄʀᴇ́ᴇ ᴜɴ ᴇғғᴇᴛ ᴅᴇ ᴛᴇxᴛᴇ sᴛʏʟᴇ ɴᴇᴏɴ**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴄʀᴇ́ᴇ ᴜɴ ᴇғғᴇᴛ ᴅᴇ ᴛᴇxᴛᴇ sᴛʏʟᴇ ɴᴇᴏɴ',
   usage: `${prefix}neon <ᴛᴇxᴛᴇ>`,
 
   async execute(sock, msg, args) {
@@ -34,7 +34,7 @@ module.exports = {
 
       await sock.sendMessage(chatId, {
         image: { url: result.image },
-        caption: `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+        caption: `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
       }, { quoted: msg });
 
     } catch (error) {
