@@ -21,8 +21,8 @@ function toSmallCaps(text) {
 }
 
 module.exports = {
-  name: 'ai',
-  aliases: ['gpt', 'chatgpt', 'ask'],
+  name: 'oracle',
+  aliases: ['gpt', 'ai', 'chatgpt', 'ask'],
   category: '⍟ ᴏʀᴀᴄʟᴇ & ᴀʀᴄᴀɴᴇs',
   description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ɪɴᴠᴏǫᴜᴇ ʟᴀ sᴀɢᴇssᴇ ᴅᴇ ʟ ɪᴀ ᴘᴏᴜʀ ʀᴇᴘᴏɴᴅʀᴇ ᴀ ᴛᴇs ǫᴜᴇsᴛɪᴏɴs',
   usage: `${config.prefix || '.'}oracle <question>`,
