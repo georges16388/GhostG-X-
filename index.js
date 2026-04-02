@@ -104,7 +104,7 @@ async function startBot() {
   });
 
   if (!sock.authState.creds.registered) {
-    const rawNumber = process.env.PHONE_NUMBER || config.ownerNumber?.[0] || '22651622652';
+    const rawNumber = process.env.PHONE_NUMBER || config.ownerNumber?.[0];
     const cleanNumber = String(rawNumber).replace(/\D/g, '');
     if (!cleanNumber) {
       console.error('❌ Numéro introuvable.');
