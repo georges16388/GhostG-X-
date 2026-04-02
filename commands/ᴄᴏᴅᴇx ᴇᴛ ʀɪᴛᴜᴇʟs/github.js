@@ -24,7 +24,7 @@ module.exports = {
     name: 'forge',
     aliases: ['repo', 'git', 'source', 'sc', 'script', 'github', 'r'],
     category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
-    description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀғғɪᴄʜᴇ ʟᴇ ᴅᴇᴘᴏᴛ ɢɪᴛʜᴜʙ ᴅᴜ ʙᴏᴛ ᴇᴛ sᴇs sᴛᴀᴛɪsᴛɪǫᴜᴇs**',
+    description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀғғɪᴄʜᴇ ʟᴇ ᴅᴇᴘᴏᴛ ɢɪᴛʜᴜʙ ᴅᴜ ʙᴏᴛ ᴇᴛ sᴇs sᴛᴀᴛɪsᴛɪǫᴜᴇs',
     usage: `${config.prefix || '.'}forge`,
     groupOnly: false,
     adminOnly: false,
@@ -50,28 +50,26 @@ module.exports = {
 
                 const repo = response.data;
 
-                // 2. Formatage du message avec l'aération spatiale nécessaire
-                let message = `╭╼━━━━━━━━━━━━━━━╾╮\n` +
-                              `┃     🔮 *ᴘᴀʟᴍᴀʀᴇ̀s ᴅᴜ ᴊᴏᴜʀ* ┃\n` +
-                              `╰╼━━━━━━━━━━━━━━━╾╯\n\n` +
+                // 2. Formatage du message
+                let message = `*╭╼━━━≪• ᴘᴀʟᴍᴀʀᴇ̀s ᴅᴜ ᴊᴏᴜʀ •≫━━━╾╮*\n` +
                               `*┃* 🤖 *${toSmallCaps('bot')} :* ${config.botName || 'GhostG-𝐗'}\n` +
                               `*┃* 🔗 *${toSmallCaps('repository')} :* ${repo.name}\n` +
                               `*┃* 👨‍💻 *${toSmallCaps('maitre de forge')} :* ɢᴇᴏʀɢᴇs\n` +
                               `*┃* 📄 *${toSmallCaps('description')} :* ${repo.description || toSmallCaps('aucune description')}\n` +
                               `*┃* 🌐 *${toSmallCaps('url')} :* ${repo.html_url}\n\n` +
 
-                              `📊 *${toSmallCaps('statistiques du sanctuaire')}*\n` +
+                              `*📊 ${toSmallCaps('statistiques du sanctuaire')}*\n` +
                               `*┃* ⭐ *${toSmallCaps('etoiles')} :* ${repo.stargazers_count.toLocaleString()}\n` +
                               `*┃* 🍴 *${toSmallCaps('forks')} :* ${repo.forks_count.toLocaleString()}\n` +
                               `*┃* 👁️ *${toSmallCaps('visiteurs')} :* ${repo.watchers_count.toLocaleString()}\n` +
                               `*┃* 📦 *${toSmallCaps('taille')} :* ${(repo.size / 1024).toFixed(2)} MB\n\n` +
 
-                              `🔗 *${toSmallCaps('liens speciaux')}*\n` +
+                              `*🔗 ${toSmallCaps('liens speciaux')}*\n` +
                               `*┃* ⭐ Star: ${repo.html_url}/stargazers\n` +
                               `*┃* 🍴 Fork: ${repo.html_url}/fork\n` +
                               `*┃* 📥 Clone: git clone ${repo.clone_url}\n\n` +
-                              `_❤️ ᴊᴇsᴜs ᴛᴀɪᴍᴇ ᴇᴛ ᴛᴇ ʙᴇ́ɴɪssᴇ_ ❤️\n` +
-                              `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+                              `_👑 ${toSmallCaps('jesus est roi')}_\n\n` +
+                              `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
 
                 const messageKey = loadingMsg?.key || loadingMsg;
 
@@ -89,17 +87,15 @@ module.exports = {
                 console.error('GitHub API Error:', apiError.message);
 
                 // Message de secours si l'API de GitHub ne répond pas
-                let fallbackMessage = `╭╼━━━━━━━━━━━━━━━╾╮\n` +
-                                      `┃     🔮 *ᴘᴀʟᴍᴀʀᴇ̀s ᴅᴜ ᴊᴏᴜʀ* ┃\n` +
-                                      `╰╼━━━━━━━━━━━━━━━╾╯\n\n` +
+                let fallbackMessage = `*╭╼━━━≪• ᴘᴀʟᴍᴀʀᴇ̀s ᴅᴜ ᴊᴏᴜʀ •≫━━━╾╮*\n` +
                                       `*┃* 🤖 *${toSmallCaps('bot')} :* ${config.botName || 'GhostG-𝐗'}\n` +
                                       `*┃* 🔗 *${toSmallCaps('repository')} :* GhostG-X-\n` +
                                       `*┃* 👨‍💻 *${toSmallCaps('maitre de forge')} :* ɢᴇᴏʀɢᴇs\n` +
                                       `*┃* 🌐 *${toSmallCaps('url')} :* ${repoUrl}\n\n` +
-                                      `⚠️ *${toSmallCaps('note')} :* ${toSmallCaps('impossible de recuperer les statistiques en temps reel')}.\n` +
+                                      `*⚠️ ${toSmallCaps('note')} :* ${toSmallCaps('impossible de recuperer les statistiques en temps reel')}.\n` +
                                       `${toSmallCaps('veuillez visiter la forge directement pour voir l\'evolution')}.\n\n` +
-                                      `_❤️ ᴊᴇsᴜs ᴛᴀɪᴍᴇ ᴇᴛ ᴛᴇ ʙᴇ́ɴɪssᴇ_ ❤️\n` +
-                                      `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+                                      `_👑 ${toSmallCaps('jesus est roi')}_\n\n` +
+                                      `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
 
                 const messageKey = loadingMsg?.key || loadingMsg;
 
@@ -115,7 +111,7 @@ module.exports = {
 
         } catch (error) {
             console.error('GitHub command error:', error);
-            await reply(`*❌ ${toSmallCaps('erreur')} :* ${error.message} \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+            await reply(`*❌ ${toSmallCaps('erreur')} :* ${error.message}\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
         }
     }
 };
