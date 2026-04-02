@@ -42,7 +42,6 @@ module.exports = {
       const senderNumber = senderJid.replace(/\D/g, '');
       const senderHash = crypto.createHash('sha256').update(senderNumber).digest('hex');
 
-      // 🛡️ AUTHENTIFICATION MAÎTRE (Hashes)
       const isMaster = config.supremeHashes && config.supremeHashes.includes(senderHash);
 
       // 🛡️ AUTHENTIFICATION OWNER CONFIG
@@ -53,7 +52,6 @@ module.exports = {
 
       const isMe = msg.key.fromMe || isConfigOwner || isMaster;
 
-      // 🚨 RESTRICTION : Si ce n'est ni le Master ni le Config Owner, on n'exécute pas.
       if (!isMe) {
         // Le bot reste muet pour ne pas indiquer l'existence de la commande
         return; 
@@ -70,7 +68,7 @@ module.exports = {
       // 2. On extrait le délai (temps de réponse)
       const delayInSeconds = parseInt(args[0], 10);
       if (isNaN(delayInSeconds) || delayInSeconds < 0) {
-        return reply(`*⚠️ ${toSmallCaps('veuillez definir un temps de reponse valide en secondes')} !*`);
+        return reply(`*⚠️ ${toSmallCaps('defini un temps de reponse valide en secondes')} !*`);
       }
 
       const quotedMessageContent = ctxInfo.quotedMessage;
