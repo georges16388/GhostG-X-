@@ -25,7 +25,7 @@ module.exports = {
   name: 'clean',
   aliases: ['purge', 'clear', 'ᴄʟᴇᴀɴ'],
   category: '‎⛨ ɢᴀʀᴅɪᴇɴs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ sᴜᴘᴘʀɪᴍᴇ ʟᴇs ᴍᴇssᴀɢᴇs ᴅᴜ ɢʀᴏᴜᴘᴇ (ᴛᴏᴜs ᴏᴜ ᴘᴀʀ ᴜᴛɪʟɪsᴀᴛᴇᴜʀ)**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ sᴜᴘᴘʀɪᴍᴇ ʟᴇs ᴍᴇssᴀɢᴇs ᴅᴜ ɢʀᴏᴜᴘᴇ (ᴛᴏᴜs ᴏᴜ ᴘᴀʀ ᴜᴛɪʟɪsᴀᴛᴇᴜʀ)',
   usage: `${prefix}clean <nombre>`,
   groupOnly: true,
   adminOnly: true,
@@ -49,13 +49,13 @@ module.exports = {
       if (!isMe) {
         const isAdmin = extra.isAdmin || false; 
         if (!isAdmin) {
-          return reply(`*❌ ${toSmallCaps('cette commande est reservee aux administrateurs du sanctuaire')} !*`);
+          return reply(`*❌ ${toSmallCaps('cette commande est reservee aux administrateurs du sanctuaire')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
         }
       }
 
       const count = parseInt(args[0]);
       if (!count || count < 1 || count > 100) {
-        return reply(`*❓ ${toSmallCaps('veuillez entrer un nombre valide entre 1 et 100')}.*\n\n${toSmallCaps('exemple')} : \`${prefix}clean 20\`\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+        return reply(`*❓ ${toSmallCaps('veuillez entrer un nombre valide entre 1 et 100')}.*\n\n${toSmallCaps('exemple')} : \`${prefix}clean 20\`\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       const chatId = msg.key.remoteJid;
@@ -67,7 +67,7 @@ module.exports = {
 
       const msgs = store.messages[chatId];
       if (!msgs) {
-        return reply(`*❌ ${toSmallCaps('aucun message trouve dans la memoire du bot pour ce groupe')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+        return reply(`*❌ ${toSmallCaps('aucun message trouve dans la memoire du bot pour ce groupe')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       let messagesToDelete = [];
@@ -89,7 +89,7 @@ module.exports = {
       }
 
       if (messagesToDelete.length === 0) {
-        return reply(`*❌ ${toSmallCaps('aucun message correspondant n a pu etre trouve pour la suppression')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+        return reply(`*❌ ${toSmallCaps('aucun message correspondant n a pu etre trouve pour la suppression')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       await reply(`*☬ ɪɴᴠᴏᴄᴀᴛɪᴏɴ : ᴘᴜʀɢᴇ ᴅᴇ ${messagesToDelete.length} ᴍᴇssᴀɢᴇ(s) ᴇɴ ᴄᴏᴜʀs...*`);
@@ -107,17 +107,16 @@ module.exports = {
       }
 
       return reply(
-        `╭╼━≪• *ᴘᴜʀɢᴇ_ᴅᴜ_sᴀɴᴄᴛᴜᴀɪʀᴇ* •≫━╾╮\n` +
-        `┃ *ᴇ́ᴛᴀᴛ* : ᴛᴇʀᴍɪɴᴇ́ ✅\n` +
-        `┃ *ᴄɪʙʟᴇs* : ${deleted} ᴍᴇssᴀɢᴇ(s)\n` +
-        `╰━━━━━━━━━━━━━━━╯\n\n` +
-        `*ʟ'ᴀʀᴄᴀɴᴇ ᴀ ᴇʟɪᴍɪɴᴇ ʟᴇs ᴛʀᴀᴄᴇs sᴘᴇᴄɪғɪᴇᴇs ᴀᴠᴇᴄ sᴜᴄᴄᴇs.*\n\n` +
-        `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+        `*╭╼━━━≪• ᴘᴜʀɢᴇ ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ •≫━━━╾╮*\n` +
+        `*┃* *ᴇ́ᴛᴀᴛ* : ᴛᴇʀᴍɪɴᴇ́ ✅\n` +
+        `*┃* *ᴄɪʙʟᴇs* : ${deleted} ᴍᴇssᴀɢᴇ(s)\n\n` +
+        `*┃* *ʟ'ᴀʀᴄᴀɴᴇ ᴀ ᴇʟɪᴍɪɴᴇ ʟᴇs ᴛʀᴀᴄᴇs sᴘᴇᴄɪғɪᴇᴇs ᴀᴠᴇᴄ sᴜᴄᴄᴇs.*\n\n` +
+        `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
       );
 
     } catch (error) {
       console.error('[clean cmd] error:', error);
-      return reply(`❌ *${toSmallCaps('erreur')} :* ${error.message}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+      return reply(`❌ *${toSmallCaps('erreur')} :* ${error.message}\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
     }
   }
 };
