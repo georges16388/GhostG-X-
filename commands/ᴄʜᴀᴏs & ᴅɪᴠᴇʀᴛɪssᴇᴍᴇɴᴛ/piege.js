@@ -28,7 +28,7 @@ module.exports = {
   name: 'piege',
   aliases: ['bom', 'bombe', 'chaos', 'bomb', 'piege'],
   category: '♞ ᴄʜᴀᴏs & ᴅɪᴠᴇʀᴛɪssᴇᴍᴇɴᴛ',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴅᴇғɪᴇ ʟᴇ ᴅᴇsᴛɪɴ : ᴄʜᴏɪsɪs ʟᴇs ʙᴏɴs sᴄᴇᴀᴜx ᴇᴛ ᴇᴠɪᴛᴇ ʟᴀ ʙᴏᴍʙᴇ**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴅᴇғɪᴇ ʟᴇ ᴅᴇsᴛɪɴ : ᴄʜᴏɪsɪs ʟᴇs ʙᴏɴs sᴄᴇᴀᴜx ᴇᴛ ᴇᴠɪᴛᴇ ʟᴀ ʙᴏᴍʙᴇ',
   usage: `${prefix}piege`,
 
   async execute(sock, msg, args, extra) {
@@ -51,7 +51,7 @@ module.exports = {
           await reply(
             `*〆 ${toSmallCaps('tu as abandonne le defi')} !* 💣\n\n` +
             `*${toSmallCaps('la bombe etait dissimulee dans le sceau numero')} ${bombBox.number}.*\n\n` +
-            `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`, { quoted: game.msg }
+            `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`, { quoted: game.msg }
           );
           clearTimeout(game.timeoutId);
           gameState.delete(sender);
@@ -77,7 +77,7 @@ module.exports = {
           for (let i = 0; i < game.array.length; i += 3) {
             teks += game.array.slice(i, i + 3).map(v => v.emot).join('') + '\n';
           }
-          teks += `\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`;
+          teks += `\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
 
           await sock.sendMessage(from, { text: teks }, { quoted: game.msg });
           clearTimeout(game.timeoutId);
@@ -116,7 +116,7 @@ module.exports = {
         }
         teks += `\n*⏳ ${toSmallCaps('sablier')} : [ 3 ${toSmallCaps('minutes')} ]*\n` +
                 `*${toSmallCaps('tape suren pour abandonner')}.*\n\n` +
-                `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`;
+                `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
 
         await sock.sendMessage(from, { text: teks }, { quoted: game.msg });
         return;
@@ -142,7 +142,7 @@ module.exports = {
       }
       teks += `\n*⏳ ${toSmallCaps('temps disponible')} : [ 3 ${toSmallCaps('minutes')} ]*\n` +
               `*${toSmallCaps('evite la bombe ou tes points seront reduits')}.*\n\n` +
-              `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`;
+              `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
 
       const gameMsg = await sock.sendMessage(from, {
         text: teks,
@@ -163,7 +163,7 @@ module.exports = {
           const game = gameState.get(sender);
           const bombBox = game.array.find(v => v.emot === '💥');
           sock.sendMessage(from, {
-            text: `*⏳ ${toSmallCaps('le sablier est vide')} !*\n\n*${toSmallCaps('la bombe s\'est activee dans le sceau')} ${bombBox.number}.*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`
+            text: `*⏳ ${toSmallCaps('le sablier est vide')} !*\n\n*${toSmallCaps('la bombe s\'est activee dans le sceau')} ${bombBox.number}.*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
           }, { quoted: game.msg });
           gameState.delete(sender);
         }
