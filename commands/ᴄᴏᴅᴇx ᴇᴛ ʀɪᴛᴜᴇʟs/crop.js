@@ -54,7 +54,7 @@ module.exports = {
   name: 'crop',
   aliases: ['square', 'cropper', 'cisaille', 'cr','c'],
   category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴄᴏᴜᴘᴇ ᴜɴ sᴛɪᴄᴋᴇʀ/ɪᴍᴀɢᴇ/ᴠɪᴅᴇᴏ ᴇɴ ᴜɴ ᴘᴀʀғᴀɪᴛ sᴛɪᴄᴋᴇʀ ᴄᴀʀʀᴇ (ᴀɴɪᴍᴇ ᴘᴏᴜʀ ʟᴇs ᴠɪᴅᴇᴏs)**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴄᴏᴜᴘᴇ ᴜɴ sᴛɪᴄᴋᴇʀ/ɪᴍᴀɢᴇ/ᴠɪᴅᴇᴏ ᴇɴ ᴜɴ ᴘᴀʀғᴀɪᴛ sᴛɪᴄᴋᴇʀ ᴄᴀʀʀᴇ (ᴀɴɪᴍᴇ ᴘᴏᴜʀ ʟᴇs ᴠɪᴅᴇᴏs)',
   
   get usage() {
     const activePrefix = config.prefix || '.';
