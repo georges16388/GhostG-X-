@@ -25,7 +25,7 @@ function toSmallCaps(text) {
 module.exports = {
   name: 'muteghost',
   aliases: ['mutebot', 'veille'],
-  category: '👑 ᴏᴠᴇʀʟᴏʀᴅ ᴄᴏɴᴛʀᴏʟ',
+  category: '♕ ᴏᴠᴇʀʟᴏʀᴅ ᴄᴏɴᴛʀᴏʟ',
   description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴘʟᴏɴɢᴇ ʟᴇ ʙᴏᴛ ᴅᴀɴs ᴜɴ sɪʟᴇɴᴄᴇ ᴛᴏᴛᴀʟ sᴜʀ ᴄᴇ ᴄʜᴀᴛ',
   usage: '.ghost on/off',
   groupOnly: true,
