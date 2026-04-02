@@ -1,5 +1,6 @@
 /**
  * AI Chat Command - ChatGPT-style responses
+ * GhostG-X Edition
  */
 
 const APIs = require('../../utils/api');
@@ -21,10 +22,10 @@ function toSmallCaps(text) {
 
 module.exports = {
   name: 'oracle',
-  aliases: ['gpt', 'chatgpt', 'ask', 'ai', 'ᴏʀᴀᴄʟᴇ'],
+  aliases: ['gpt', 'chatgpt', 'ask', 'ai'],
   category: '⍟ ᴏʀᴀᴄʟᴇ & ᴀʀᴄᴀɴᴇs',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴄʜᴀᴛ ᴡɪᴛʜ ᴀɪ (ᴄʜᴀᴛɢᴘᴛ-sᴛʏʟᴇ)**',
-  usage: `${config.prefix || '.'}oracle [question]`,
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ɪɴᴠᴏǫᴜᴇ ʟᴀ sᴀɢᴇssᴇ ᴅᴇ ʟ ɪᴀ ᴘᴏᴜʀ ʀᴇᴘᴏɴᴅʀᴇ ᴀ ᴛᴇs ǫᴜᴇsᴛɪᴏɴs',
+  usage: `${config.prefix || '.'}oracle <question>`,
   groupOnly: false,
   adminOnly: false,
   botAdminNeeded: false,
@@ -38,11 +39,9 @@ module.exports = {
 
       if (args.length === 0) {
         return reply(
-          `╭╼━≪• *⚠️ ᴇᴄʜᴇᴄ ᴅᴇ ʟɪɴᴠᴏᴄᴀᴛɪᴏɴ* •≫━╾╮\n` +
-          `┃ 🔮 *${toSmallCaps('indique une question')}*\n` +
-          `┃ *${toSmallCaps('pour obtenir une reponse')} !*\n` +
-          `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
-          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+          `*⚠️ ${toSmallCaps('usage')} :* \`${prefix}oracle <${toSmallCaps('question')}>\`\n\n` +
+          `*${toSmallCaps('exemple')} :* \`${prefix}oracle ${toSmallCaps('qui est le createur de ghostg-x')} ?\`\n\n` +
+          `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
         );
       }
 
@@ -57,12 +56,12 @@ module.exports = {
 
       // Récupération de la réponse brute sans fioritures comme demandé
       const answer = response.response || response.msg || response.data?.msg || response;
-      
+
       await reply(answer);
 
     } catch (error) {
       console.error('AI Command Error:', error);
-      await reply(`*❌ ${toSmallCaps('loracle a echoue')} : ${toSmallCaps(error.message || 'erreur inconnue')}*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+      await reply(`*❌ ${toSmallCaps('loracle a echoue')} : ${toSmallCaps(error.message || 'erreur inconnue')}*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
     }
   }
 };
