@@ -15,7 +15,7 @@ module.exports = {
   category: '♛ sᴏᴜᴠᴇʀᴀɪɴᴇᴛᴇ́',
   groupOnly: true,
   ownerOnly: true, // Sécurité : Seul le créateur/owner peut faire quitter le bot d'un groupe !
-  description: `**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴛᴇ ғᴀɪᴛ ǫᴜɪᴛᴛᴇʀ ʟᴇ ɢʀᴏᴜᴘᴇ ᴀᴠᴇᴄ ᴜɴ ᴍᴇssᴀɢᴇ ᴅ'ᴀᴅɪᴇᴜ**`,
+  description: `『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴛᴇ ғᴀɪᴛ ǫᴜɪᴛᴛᴇʀ ʟᴇ ɢʀᴏᴜᴘᴇ ᴀᴠᴇᴄ ᴜɴ ᴍᴇssᴀɢᴇ ᴅ'ᴀᴅɪᴇᴜ`,
   usage: `${prefix}leave`,
 
   async execute(sock, msg, args, extra) {
@@ -33,7 +33,7 @@ module.exports = {
         `*🔮 ʟ\'ʜᴇᴜʀᴇ ᴇsᴛ ᴠᴇɴᴜᴇ.* \n` +
         `*ᴍᴇs sᴇʀᴠɪᴄᴇs ɴᴇ sᴏɴᴛ ᴘʟᴜs ʀᴇǫᴜɪs ᴇɴ ᴄᴇs ʟɪᴇᴜx. ᴊᴇ ʀᴇᴛᴏᴜʀɴᴇ ᴅᴀɴs ʟᴇs ᴏᴍʙʀᴇs...*\n\n` +
         `*ǫᴜᴇ ʟᴀ sᴀɢᴇssᴇ ɢᴜɪᴅᴇ ᴠᴏs ᴘᴀs.*\n\n` +
-        `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+        `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
 
       // 1. Envoi du message d'adieu dans le groupe
       await sock.sendMessage(from, { text: farewellMessage });
@@ -46,7 +46,7 @@ module.exports = {
 
     } catch (error) {
       console.error('Leave command error:', error);
-      await reply(`❌ *ᴇʀʀᴇᴜʀ : ɪᴍᴘᴏssɪʙʟᴇ ᴅᴇ ǫᴜɪᴛᴛᴇʀ ʟᴇ sᴀɴᴄᴛᴜᴀɪʀᴇ.* \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`);
+      await reply(`❌ *ᴇʀʀᴇᴜʀ : ɪᴍᴘᴏssɪʙʟᴇ ᴅᴇ ǫᴜɪᴛᴛᴇʀ ʟᴇ sᴀɴᴄᴛᴜᴀɪʀᴇ.* \n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
     }
   }
 };
