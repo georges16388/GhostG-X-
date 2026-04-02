@@ -35,7 +35,7 @@ module.exports = {
   name: 'sceau',
   aliases: ['s', 'stiker', 'stc', 'sticker'],
   category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴄᴏɴᴠᴇʀᴛɪᴛ ᴜɴᴇ ɪᴍᴀɢᴇ ᴏᴜ ᴜɴᴇ ᴠɪᴅᴇᴏ ᴇɴ sᴛɪᴄᴋᴇʀ (ᴀᴜᴛᴏ ᴄᴏᴍᴘʀᴇssɪᴏɴ)**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴄᴏɴᴠᴇʀᴛɪᴛ ᴜɴᴇ ɪᴍᴀɢᴇ ᴏᴜ ᴜɴᴇ ᴠɪᴅᴇᴏ ᴇɴ sᴛɪᴄᴋᴇʀ (ᴀᴜᴛᴏ ᴄᴏᴍᴘʀᴇssɪᴏɴ)',
   usage: `${config.prefix || '.'}sceau [reponse ou legende]`,
   groupOnly: false,
   adminOnly: false,
@@ -158,7 +158,7 @@ module.exports = {
 
     } catch (error) {
       console.error('Sticker command error:', error);
-      await reply(`*❌ ${toSmallCaps('echec de la creation : le sanctuaire a rencontre une erreur')}*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+      await reply(`*❌ ${toSmallCaps('echec de la creation : le sanctuaire a rencontre une erreur')}*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
     } finally {
       // Nettoyage systématique des fichiers temporaires
       tempFiles.forEach(file => deleteTempFile(file));
