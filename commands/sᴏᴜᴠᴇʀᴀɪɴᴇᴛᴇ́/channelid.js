@@ -3,7 +3,6 @@
  * Extrait les informations d'un canal WhatsApp à partir de son lien
  */
 
-const axios = require('axios');
 const config = require('../../config.js');
 
 // Extraction du préfixe pour l'usage
@@ -13,7 +12,7 @@ module.exports = {
   name: 'ɪɴғᴏs_ᴄᴀɴᴀʟ',
   aliases: ['newsletter', 'channel', 'canal', 'channelid'],
   category: '♛ sᴏᴜᴠᴇʀᴀɪɴᴇᴛᴇ́',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ɢᴇ́ɴᴇ̀ʀᴇ ᴜɴᴇ ɴᴇᴡsʟᴇᴛᴛᴇʀ ᴅᴇᴘᴜɪs ʟᴇ ʟɪᴇɴ ᴅ\'ᴜɴᴇ ᴄʜᴀɪ̂ɴᴇ ᴡʜᴀᴛsᴀᴘᴘ**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ɢᴇ́ɴᴇ̀ʀᴇ ᴜɴᴇ ɴᴇᴡsʟᴇᴛᴛᴇʀ ᴅᴇᴘᴜɪs ʟᴇ ʟɪᴇɴ ᴅ\'ᴜɴᴇ ᴄʜᴀɪ̂ɴᴇ ᴡʜᴀᴛsᴀᴘᴘ',
   usage: `${prefix}ɪɴғᴏs_ᴄᴀɴᴀʟ <ʟɪᴇɴ_ᴄᴀɴᴀʟ>`,
 
   async execute(sock, msg, args, extra) {
@@ -24,39 +23,41 @@ module.exports = {
       const text = args.join(' ');
 
       // Extraction propre du lien de canal s'il est noyé dans du texte
-      const linkMatch = text.match(/https:\/\/whatsapp\.com\/channel\/[A-Za-z0-9]+/);
-      const channelLink = linkMatch ? linkMatch[0] : null;
-
-      if (!channelLink) {
+      const linkMatch = text.match(/https:\/\/whatsapp\.com\/channel\/([A-Za-z0-9]+)/);
+      
+      if (!linkMatch) {
         return await reply(`*〆 ɪɴᴠᴏ́ǫᴜᴇ ᴜɴ ʟɪᴇɴ ᴅᴇ ᴄᴀɴᴀʟ ᴠᴀʟɪᴅᴇ !*\n\n*ᴇxᴇᴍᴘʟᴇ : _${prefix}ɪɴғᴏs_ᴄᴀɴᴀʟ https://whatsapp.com/channel/xxxxxxxxx_*`);
       }
 
+      const channelLink = linkMatch[0];
+      const inviteCode = linkMatch[1]; // Le code unique après /channel/
+
       await reply('*📡 ɪɴᴛᴇʀʀᴏɢᴀᴛɪᴏɴ ᴅᴇs ᴀʀᴄᴀɴᴇs ᴅᴜ ᴄᴀɴᴀʟ ᴇɴ ᴄᴏᴜʀs...*');
 
-      // Appel de l'API de secours pour récupérer les données du canal (nom, bio, photo, etc.)
-      const apiURL = `https://aemt.me/download/wa-channel?url=${encodeURIComponent(channelLink)}`;
-      const response = await axios.get(apiURL);
+      // 🛡️ MÉTHODE NATIVE BAILEYS : Plus besoin d'API externe instable !
+      const data = await sock.newsletterMetadata("invite", inviteCode);
 
-      if (!response.data || !response.data.status) {
+      if (!data) {
         throw new Error('Impossible de lire les données de ce canal.');
       }
-
-      const data = response.data.result;
 
       // Construction du message style "Newsletter" du sanctuaire
       const newsletterText = 
         `*╭╼━━━≪• ɪɴғᴏs ᴅᴜ ᴄᴀɴᴀʟ •≫━━━╾╮*\n\n` +
-        `*📢 ɴᴏᴍ :* ${data.title || 'ɪɴᴄᴏɴɴᴜ'}\n` +
+        `*📢 ɴᴏᴍ :* ${data.name || 'ɪɴᴄᴏɴɴᴜ'}\n` +
         `*👥 ᴀʙᴏɴɴᴇ́s :* ${data.subscribers || 'ᴄᴀᴄʜᴇ́'}\n` +
         `*🔗 ʟɪᴇɴ :* ${channelLink}\n\n` +
         `*📝 ᴅᴇsᴄʀɪᴘᴛɪᴏɴ :*\n${data.description || 'ᴀᴜᴄᴜɴᴇ ᴅᴇsᴄʀɪᴘᴛɪᴏɴ'}\n\n` +
         `*╰━━━━━━━━━━━━━━━━━━━━━━━╯*\n\n` +
-        `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+        `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
 
-      // Si l'API renvoie une photo de profil pour le canal, on l'envoie avec la légende
-      if (data.img) {
+      // Si Baileys trouve l'URL de la photo de profil du canal
+      const profilePic = data.picture || data.preview;
+
+      if (profilePic) {
+        // Envoi de l'image avec la légende
         await sock.sendMessage(chatId, {
-          image: { url: data.img },
+          image: { url: profilePic },
           caption: newsletterText
         }, { quoted: msg });
       } else {
