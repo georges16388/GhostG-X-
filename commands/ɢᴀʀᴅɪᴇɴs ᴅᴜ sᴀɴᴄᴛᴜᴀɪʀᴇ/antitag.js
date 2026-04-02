@@ -26,7 +26,7 @@ function toSmallCaps(text) {
 module.exports = {
   name: 'antitag',
   aliases: ['antimention', 'at'],
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴄᴏɴғɪɢᴜʀᴇ ʟᴀ ᴘʀᴏᴛᴇᴄᴛɪᴏɴ ᴀɴᴛɪ-ᴛᴀɢ (ᴛᴀɢᴀʟʟ/ʜɪᴅᴇᴛᴀɢ)**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴄᴏɴғɪɢᴜʀᴇ ʟᴀ ᴘʀᴏᴛᴇᴄᴛɪᴏɴ ᴀɴᴛɪ-ᴛᴀɢ (ᴛᴀɢᴀʟʟ/ʜɪᴅᴇᴛᴀɢ)',
   usage: `${prefix}antitag <on/off/set/get>`,
   category: '‎⛨ ɢᴀʀᴅɪᴇɴs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ',
   groupOnly: true,
@@ -50,7 +50,7 @@ module.exports = {
       if (!isMe) {
         const isAdmins = extra.isAdmins || false; 
         if (!isAdmins) {
-          return reply(`*❌ ${toSmallCaps('cette commande est reservee aux administrateurs du sanctuaire')} !*`);
+          return reply(`*❌ ${toSmallCaps('cette commande est reservee aux administrateurs du sanctuaire')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
         }
       }
 
@@ -60,17 +60,17 @@ module.exports = {
         const action = (settings.antitagAction || 'delete').toUpperCase();
 
         return reply(
-          `╭╼━≪• *sᴛᴀᴛᴜᴛ ʙᴏᴜᴄʟɪᴇʀ_ᴛᴀɢs* •≫━╾╮\n` +
-          `┃ *ᴇ́ᴛᴀᴛ* : ${status}\n` +
-          `┃ *sᴇɴᴛᴇɴᴄᴇ* : ${action}\n` +
-          `╰━━━━━━━━━━━━━━━╯\n\n` +
-          `🔮 *ɪɴᴄᴀɴᴛᴀᴛɪᴏɴs ᴅɪsᴘᴏɴɪʙʟᴇs :*\n` +
-          `*ᴄᴇᴛ ᴀʀᴄᴀɴᴇ ᴅᴇ́ᴛᴇᴄᴛᴇ ᴇᴛ ᴘᴜʀɢᴇ ʟᴇs ᴛᴀɢs ɪɴᴛᴇᴍᴘᴇsᴛɪғs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ.*\n\n` +
+          `*╭╼━━━≪• sᴛᴀᴛᴜᴛ ʙᴏᴜᴄʟɪᴇʀ_ᴛᴀɢs •≫━━━╾╮*\n` +
+          `*┃* 🛡️ *${toSmallCaps('etat')} :* ${status}\n` +
+          `*┃* ⚖️ *${toSmallCaps('sentence')} :* ${action}\n\n` +
+          `*┃* 🔮 *${toSmallCaps('incantations disponibles')} :*\n` +
+          `*┃* *${toSmallCaps('cet arcane detecte et purge les tags')}*\n` +
+          `*┃* *${toSmallCaps('intempestifs du sanctuaire')}.*\n\n` +
           `  ${prefix}antitag on\n` +
           `  ${prefix}antitag off\n` +
           `  ${prefix}antitag set delete | kick\n` +
           `  ${prefix}antitag get\n\n` +
-          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+          `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
         );
       }
 
@@ -78,32 +78,32 @@ module.exports = {
 
       if (opt === 'on') {
         if (database.getGroupSettings(extra.from).antitag) {
-          return reply(`*❌ ${toSmallCaps('le bouclier de tags est deja actif')} !*`);
+          return reply(`*❌ ${toSmallCaps('le bouclier de tags est deja actif')} !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
         }
         database.updateGroupSettings(extra.from, { antitag: true });
-        return reply(`*🛡️ ${toSmallCaps('bouclier de tags a ete eveille')} (ᴏɴ).*`);
+        return reply(`*🛡️ ${toSmallCaps('bouclier de tags a ete eveille')} (ᴏɴ).*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       if (opt === 'off') {
         database.updateGroupSettings(extra.from, { antitag: false });
-        return reply(`*🔓 ${toSmallCaps('le bouclier de tags a ete desactive')} (ᴏғғ).*`);
+        return reply(`*🔓 ${toSmallCaps('le bouclier de tags a ete desactive')} (ᴏғғ).*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       if (opt === 'set') {
         if (args.length < 2) {
-          return reply(`*❓ ${toSmallCaps('veuillez specifier une sentence')} :* \`${prefix}antitag set delete | kick\``);
+          return reply(`*❓ ${toSmallCaps('veuillez specifier une sentence')} :* \`${prefix}antitag set delete | kick\`\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
         }
 
         const setAction = args[1].toLowerCase();
         if (!['delete', 'kick'].includes(setAction)) {
-          return reply(`*❓ ${toSmallCaps('sentence invalide. choisissez entre delete ou kick')}.*`);
+          return reply(`*❓ ${toSmallCaps('sentence invalide. choisissez entre delete ou kick')}.*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
         }
 
         database.updateGroupSettings(extra.from, { 
           antitagAction: setAction,
           antitag: true // Auto-enable when setting action
         });
-        return reply(`*⚖️ ${toSmallCaps('la sentence du bouclier de tags est placee sur')} : ${setAction.toUpperCase()}*`);
+        return reply(`*⚖️ ${toSmallCaps('la sentence du bouclier de tags est placee sur')} : ${setAction.toUpperCase()}*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
       if (opt === 'get') {
@@ -112,19 +112,18 @@ module.exports = {
         const action = (settings.antitagAction || 'delete').toUpperCase();
 
         return reply(
-          `╭╼━≪• *sᴛᴀᴛᴜᴛ ʙᴏᴜᴄʟɪᴇʀ_ᴛᴀɢs* •≫━╾╮\n` +
-          `┃ *ᴇ́ᴛᴀᴛ* : ${status}\n` +
-          `┃ *sᴇɴᴛᴇɴᴄᴇ* : ${action}\n` +
-          `╰━━━━━━━━━━━━━━━╯\n\n` +
-          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+          `*╭╼━━━≪• sᴛᴀᴛᴜᴛ ʙᴏᴜᴄʟɪᴇʀ_ᴛᴀɢs •≫━━━╾╮*\n` +
+          `*┃* 🛡️ *${toSmallCaps('etat')} :* ${status}\n` +
+          `*┃* ⚖️ *${toSmallCaps('sentence')} :* ${action}\n\n` +
+          `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
         );
       }
 
-      return reply(`*💡 ${toSmallCaps('utilise')} \`${prefix}antitag\` ${toSmallCaps('pour voir les options')}.*`);
+      return reply(`*💡 ${toSmallCaps('utilise')} \`${prefix}antitag\` ${toSmallCaps('pour voir les options')}.*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
 
     } catch (error) {
       console.error('Anti-tag command error:', error);
-      await reply(`❌ *ᴇʀʀᴇᴜʀ :* ${error.message}`);
+      await reply(`❌ *ᴇʀʀᴇᴜʀ :* ${error.message}\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
     }
   }
 };
