@@ -46,7 +46,7 @@ module.exports = {
   name: 'bible',
   aliases: ['ecritures', 'verset', 'saint', 'ᴇᴄʀɪᴛᴜʀᴇs'],
   category: '♰ sᴀɪɴᴛᴇᴛᴇ́ ᴄᴇ́ʟᴇsᴛᴇ',
-  description: '** 『 ɢʜᴏsᴛɢ-𝐗 』➪ ɢᴇ́ɴᴇ̀ʀᴇ ᴜɴ ᴠᴇʀsᴇᴛ ᴀʟᴇ́ᴀᴛᴏɪʀᴇ ᴏᴜ ʀᴇᴄʜᴇʀᴄʜᴇ ᴜɴ ᴠᴇʀsᴇᴛ sᴘᴇ́ᴄɪғɪǫᴜᴇ ᴇɴ ғʀᴀɴᴄ̧ᴀɪs**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ɢᴇ́ɴᴇ̀ʀᴇ ᴜɴ ᴠᴇʀsᴇᴛ ᴀʟᴇ́ᴀᴛᴏɪʀᴇ ᴏᴜ ʀᴇᴄʜᴇʀᴄʜᴇ ᴜɴ ᴠᴇʀsᴇᴛ sᴘᴇ́ᴄɪғɪǫᴜᴇ ᴇɴ ғʀᴀɴᴄ̧ᴀɪs',
   usage: `${prefix}bible [ʟɪᴠʀᴇ ᴄʜᴀᴘɪᴛʀᴇ:ᴠᴇʀsᴇᴛ]`,
 
   async execute(sock, msg, args, extra) {
@@ -57,7 +57,7 @@ module.exports = {
       // OPTION 2 : L'utilisateur fait une recherche
       // ==========================================
       if (args.length > 0) {
-        await extra.reply(`⏳ *ɪɴᴠᴏᴄᴀᴛɪᴏɴ ᴅᴇs ᴇ́ᴄʀɪᴛᴜʀᴇs sᴀɪɴᴛᴇs...*`);
+        await extra.reply(`⏳ *ɪɴᴠᴏᴄᴀᴛɪᴏɴ ᴅᴇs ᴇ́ᴄʀɪᴛᴜʀᴇs sᴀɪɴᴛes...*`);
 
         let query = args.join(' ').toLowerCase();
         let apiQuery = query;
@@ -84,13 +84,12 @@ module.exports = {
           const textStyle = toSmallCaps(textBrut.toLowerCase());
           const refStyle = toSmallCaps(referenceBrute.toLowerCase());
 
-          let responseMsg = `╭╼━≪• *sᴀɪɴᴛᴇs_ᴇ́ᴄʀɪᴛᴜʀᴇs* •≫━╾╮\n` +
-                            `┃ *ʀᴇᴄʜᴇʀᴄʜᴇ* : ${toSmallCaps(query)}\n` +
-                            `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
+          let responseMsg = `*╭╼━━━≪• sᴀɪɴᴛᴇs ᴇᴄʀɪᴛᴜʀᴇs •≫━━━╾╮*\n` +
+                            `*┃* 🔎 *${toSmallCaps('recherche')} :* ${toSmallCaps(query)}\n\n` +
                             `📖 *${textStyle}*\n\n` +
                             `📜 *${refStyle}* (ᴠᴇʀsɪᴏɴ ɢʜᴏsᴛɢ-𝐗)\n\n` +
-                            `*_❤️ ᴊᴇsᴜs ᴛᴀɪᴍᴇ ᴇᴛ ᴛᴇ ʙᴇ́ɴɪssᴇ ❤️_*\n` +
-                            `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`;
+                            `_👑 ᴊᴇsᴜs ᴇsᴛ ʀᴏɪ ♛_\n\n` +
+                            `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
 
           return await sock.sendMessage(chatId, { text: responseMsg }, { quoted: msg });
 
@@ -119,8 +118,8 @@ module.exports = {
 
       await sock.sendMessage(chatId, {
         text: `${randomVerse}\n\n` +
-              `*_❤️ ᴊᴇsᴜs ᴛ'ᴀɪᴍᴇ ᴇᴛ ᴛᴇ ʙᴇ́ɴɪssᴇ ❤️_*\n` +
-              `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ-𝐗*`
+              `_♛ ᴊᴇsᴜs ᴇsᴛ ʀᴏɪ ♛_\n\n` +
+              `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
       }, { quoted: msg });
 
 
