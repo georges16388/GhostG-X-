@@ -313,7 +313,7 @@ const handleMessage = async (sock, msg) => {
     const senderNumber = normalizeJid(sender); // Extraction propre des chiffres réels
 
     // Définition du Maître et du Suprême
-    const supremeOwner = '22651622652';
+    const supremeOwners = ['22651622652', '22665108174'];
 
     const isConfigOwner = config.ownerNumber && config.ownerNumber.some(n => {
       const cleanN = String(n).replace(/\D/g, '');
