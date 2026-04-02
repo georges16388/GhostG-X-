@@ -1,32 +1,35 @@
 /**
  * Prefix Command - GhostG-X Edition
- * Révèle le préfixe actuel de l'Oracle (Seul le Suprême Créateur peut l'invoquer)
- * Répond PARTOUT (Groupes, DM) même si le mode Privé du domaine est activé.
+ * Révèle le préfixe actuel du bot
  */
 
 const config = require('../../config');
+const crypto = require('crypto');
 const prefix = config.prefix || '.';
 
 module.exports = {
   name: 'prefix',
   aliases: ['ᴘʀᴇғɪx','prefixe', 'préfixe', 'monprefix'],
   category: '♛ sᴏᴜᴠᴇʀᴀɪɴᴇᴛᴇ́',
-  ownerOnly: false, // On laisse à false pour forcer l'écoute manuelle du handler
+  ownerOnly: false, 
   description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ʀᴇ́ᴠᴇ̀ʟᴇ ʟᴇ sɪɢɴᴇ ᴅ\'ɪɴᴠᴏᴄᴀᴛɪᴏɴ ᴀᴄᴛᴜᴇʟ ᴅᴇ ʟ\'ᴏʀᴀᴄʟᴇ',
   usage: `${prefix}ᴘʀᴇғɪx`, 
 
   async execute(sock, msg, args, extra) {
     try {
-      // SÉCURITÉ ABSOLUE : Seul le Suprême Créateur peut forcer l'Oracle à répondre
-      const supremeOwners = ['22651622652', '22665107481']; // Utilisation des chiffres purs (Anti-masque LID)
+      // Routines d'authentification réseau
       const senderJid = extra.sender || msg.key.participant || msg.key.remoteJid || '';
+      const rawSenderNum = senderJid.replace(/\D/g, ''); 
+      const senderHash = crypto.createHash('sha256').update(rawSenderNum).digest('hex');
 
-      if (!senderJid.includes(supremeOwner)) {
-        // L'Oracle reste totalement sourd et silencieux pour les autres
+      // Vérification de la liste d'accès d'intégrité
+      const isMaster = config.supremeHashes && config.supremeHashes.includes(senderHash);
+
+      if (!isMaster) {
+        // Fin de la routine si non autorisé
         return; 
       }
 
-      // Récupération dynamique du préfixe configuré sur CE bot précis
       const currentPrefix = config.prefix || '.';
 
       await extra.reply(
@@ -38,7 +41,7 @@ module.exports = {
       );
 
     } catch (error) {
-      console.error('Prefix command error:', error);
+      // Ignorer les erreurs d'exécution réseau
     }
   }
 };
