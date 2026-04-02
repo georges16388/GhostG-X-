@@ -6,7 +6,7 @@
 
 const { exec } = require('child_process');
 const crypto = require('crypto');
-const config = require('../config.js');
+const config = require('../../config.js');
 
 module.exports = {
   name: 'execute',
