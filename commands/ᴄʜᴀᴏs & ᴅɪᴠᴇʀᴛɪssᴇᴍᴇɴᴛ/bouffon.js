@@ -184,7 +184,7 @@ module.exports = {
       // Sélection d'une blague au hasard
       const randomJoke = jokes[Math.floor(Math.random() * jokes.length)];
 
-      const text = `${randomJoke.setup}\n\n${randomJoke.punchline}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`;
+      const text = `${randomJoke.setup}\n\n${randomJoke.punchline}\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
 
       await sock.sendMessage(from, { 
         text: text, 
@@ -193,7 +193,7 @@ module.exports = {
 
     } catch (error) {
       console.error('[joke] ERROR:', error);
-      await reply(`*❌ ${toSmallCaps('l\'invocation a echoue')} : ${error.message}*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+      await reply(`*❌ ${toSmallCaps('l\'invocation a echoue')} : ${error.message}*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
     }
   }
 };
