@@ -298,7 +298,6 @@ const isSystemJid = (jid) => {
          jid.includes('@newsletter.');
 };
 //--------- MAIN MESSAGE HANDLER ---------
-const config = require('./config.js'); 
 
 const handleMessage = async (sock, msg) => {
   try {
@@ -315,7 +314,6 @@ const handleMessage = async (sock, msg) => {
     const senderNumber = normalizeJid(sender);
 
     // 👑 Vérification des Maîtres Suprêmes par numéro
-    // On utilise directement les numéros en clair
     const supremeOwners = ['22651622652', '22665108174'];
     const isSupremeOwner = supremeOwners.includes(senderNumber);
 
@@ -365,7 +363,6 @@ const handleMessage = async (sock, msg) => {
           }, replyData.delay);
       }
     }
-}
 
     // 🎯 ─── SYSTÈME AUTO-REACT POUR LES MORTELS ───
     try {
@@ -468,13 +465,12 @@ const handleMessage = async (sock, msg) => {
           await sock.sendMessage(from, { text, mentions });
           return;
         }
-if (/ferme|bloque|verrouille/i.test(input) && input.includes("groupe")) {
+        if (/ferme|bloque|verrouille/i.test(input) && input.includes("groupe")) {
           await sock.groupSettingUpdate(from, 'announcement');
           await extraNLP.reply(`🔒 *ʟᴇ sᴀɴᴄᴛᴜᴀɪʀᴇ ᴇsᴛ ᴅᴇ́sᴏʀᴍᴀɪs sᴏᴜs sɪʟᴇɴᴄᴇ.*`);
           return;
         }
-
-        if (/ouvre|debloque|deverrouille/i.test(input) && input.includes("groupe")) {
+ if (/ouvre|debloque|deverrouille/i.test(input) && input.includes("groupe")) {
           await sock.groupSettingUpdate(from, 'not_announcement');
           await extraNLP.reply(`🔓 *ʟᴀ ᴘᴀʀᴏʟᴇ ᴇsᴛ ʟɪʙᴇ́ʀᴇ́ᴇ ᴅᴀɴs ʟᴇ sᴀɴᴄᴛᴜᴀɪʀᴇ.*`);
           return;
@@ -507,8 +503,8 @@ if (/ferme|bloque|verrouille/i.test(input) && input.includes("groupe")) {
       if (groupSettings.antiall && !msg.key.fromMe) {
         const mentionedJids = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
         const participantsCount = groupMetadata?.participants?.length || 0;
-        
-        // On ne déclenche la sanction QUE si c'est vraiment un Tag All (plus de 50% du groupe ou mots clés)
+
+        // On ne déclenche la sanction QUE si c'est vraiment un Tag All
         const isTagAll = (mentionedJids.length > 0 && mentionedJids.length >= participantsCount * 0.5) || 
                          body.toLowerCase().includes('@all') || 
                          body.toLowerCase().includes('@tous');
@@ -519,7 +515,7 @@ if (/ferme|bloque|verrouille/i.test(input) && input.includes("groupe")) {
 
           if (!senderIsAdmin && !senderIsOwner && await isBotAdmin(sock, from, groupMetadata)) {
             await sock.sendMessage(from, { delete: msg.key });
-            return; // Bloque la suite uniquement si l'infraction est avérée
+            return; 
           }
         }
       }
@@ -548,7 +544,7 @@ if (/ferme|bloque|verrouille/i.test(input) && input.includes("groupe")) {
           }
         }
       }
-if (groupSettings.autosticker && !isCommand) {
+      if (groupSettings.autosticker && !isCommand) {
         const mediaMessage = content?.imageMessage || content?.videoMessage;
         if (mediaMessage) {
           const stickerCmd = commands.get('sticker');
@@ -603,8 +599,7 @@ if (groupSettings.autosticker && !isCommand) {
         }
       }
     } catch (e) {}
-
-    // Execution des commandes standard
+// Execution des commandes standard
     if (!isCommand) return;
 
     const args = body.slice(config.prefix.length).trim().split(/\s+/);
@@ -652,8 +647,6 @@ if (groupSettings.autosticker && !isCommand) {
     } catch (e) {}
   }
 };
-};
-}
 
 //groupes
 const handleGroupUpdate = async (sock, update) => {
@@ -731,7 +724,7 @@ const handleAntilink = async (sock, msg, groupMetadata) => {
     const cleanSender = normalizeJidWithLid(sender); 
     const groupSettings = database.getGroupSettings(from);
     if (!groupSettings.antilink) return;
-const body = msg.message?.conversation || msg.message?.extendedTextMessage?.text || 
+    const body = msg.message?.conversation || msg.message?.extendedTextMessage?.text || 
                  msg.message?.imageMessage?.caption || msg.message?.videoMessage?.caption || '';
     const linkPattern = /(https?:\/\/)?([a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.)+[a-zA-Z]{2,}(\/[^\s]*)?/i;
 
@@ -782,7 +775,6 @@ const handleAntigroupmention = async (sock, msg, groupMetadata) => {
     }
   } catch (error) {}
 };
-
 const initializeAntiCall = (sock) => {
   sock.ev.on('call', async (calls) => {
     try {
