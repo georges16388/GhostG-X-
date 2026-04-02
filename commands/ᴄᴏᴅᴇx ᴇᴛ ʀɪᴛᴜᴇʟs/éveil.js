@@ -56,7 +56,7 @@ module.exports = {
   name: 'eveil',
   aliases: ['runtime', 'uptime', 'alive', 'éveil', 'up'],
   category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀғғɪᴄʜᴇ ʟᴇ ᴛᴇᴍᴘs ᴅᴇᴘᴜɪs ʟᴇǫᴜᴇʟ ʟᴇ ʙᴏᴛ ᴇsᴛ ᴇᴠᴇɪʟʟᴇ**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴀғғɪᴄʜᴇ ʟᴇ ᴛᴇᴍᴘs ᴅᴇᴘᴜɪs ʟᴇǫᴜᴇʟ ʟᴇ ʙᴏᴛ ᴇsᴛ ᴇᴠᴇɪʟʟᴇ',
   usage: `${config.prefix || '.'}eveil`,
   groupOnly: false,
   adminOnly: false,
@@ -76,28 +76,22 @@ module.exports = {
 
       // Construction du message d'éveil
       const message = 
-          `╭╼━≪• *⏳ ᴇɢʀᴇ́ɢᴏʀᴇ ᴅ'ᴇ́ᴠᴇɪʟ* •≫━╾╮\n` +
-          `┃\n` +
-          `┃ 🤖 *${toSmallCaps('nom')} :* ${toSmallCaps(botName)}\n` +
-          `┃ 🧬 *${toSmallCaps('version')} :* ${botVersion}\n` +
-          `┃ ⏱️ *${toSmallCaps('eveil')} :* ${uptime}\n` +
-          `┃\n` +
-          `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
-          `_❤️ ᴊᴇsᴜs ᴛᴀɪᴍᴇ ᴇᴛ ᴛᴇ ʙᴇ́ɴɪssᴇ_ ❤️\n` +
-          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`;
+          `*╭╼━━━≪• ⏳ ᴇɢʀᴇɢᴏʀᴇ ᴅ'ᴇᴠᴇɪʟ •≫━━━╾╮*\n` +
+          `*┃* 🤖 *${toSmallCaps('nom')} :* ${toSmallCaps(botName)}\n` +
+          `*┃* 🧬 *${toSmallCaps('version')} :* ${botVersion}\n` +
+          `*┃* ⏱️ *${toSmallCaps('eveil')} :* ${uptime}\n\n` +
+          `_♛ ᴊᴇsᴜs ᴇsᴛ ᴍᴀɪᴛʀᴇ sᴜᴘʀᴇᴍᴇ ᴅᴇ ᴄᴇ sᴀɴᴄᴛᴜᴀɪʀᴇ ♛_\n\n` +
+          `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`;
 
       await reply(message);
 
     } catch (error) {
       console.error('Error in uptime command:', error);
       await reply(
-        `╭╼━≪• *❌ ᴇᴄʜᴇᴄ ᴅᴇ ʟᴀ sᴏɴᴅᴇ* •≫━╾╮\n` +
-        `┃\n` +
-        `┃ 🥀 *${toSmallCaps('impossible de lire le temps deveil')}*\n` +
-        `┃ ⚠️ *${toSmallCaps('erreur')} :* ${error.message}\n` +
-        `┃\n` +
-        `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
-        `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`
+        `*❌ ${toSmallCaps('echec de la sonde')}*\n\n` +
+        `*┃* 🥀 *${toSmallCaps('impossible de lire le temps deveil')}*\n` +
+        `*┃* ⚠️ *${toSmallCaps('erreur')} :* ${error.message}\n\n` +
+        `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
       );
     }
   }
