@@ -24,7 +24,7 @@ module.exports = {
   name: 'tovv',
   aliases: ['makevo', 'setviewonce', 'vo'],
   category: '☬ ᴄᴏᴅᴇx ᴇᴛ ʀɪᴛᴜᴇʟs',
-  description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴄᴏɴᴠᴇʀᴛɪᴛ ᴜɴ ᴍᴇᴅɪᴀ ɴᴏʀᴍᴀʟ ᴇɴ ᴍᴇssᴀɢᴇ ᴀ ᴠᴜᴇ ᴜɴɪǫᴜᴇ ᴇᴛ sᴜᴘᴘʀɪᴍᴇ ʟ\'ᴏʀɪɢɪɴᴀʟ**',
+  description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴄᴏɴᴠᴇʀᴛɪᴛ ᴜɴ ᴍᴇᴅɪᴀ ɴᴏʀᴍᴀʟ ᴇɴ ᴍᴇssᴀɢᴇ ᴀ ᴠᴜᴇ ᴜɴɪǫᴜᴇ ᴇᴛ sᴜᴘᴘʀɪᴍᴇ ʟ\'ᴏʀɪɢɪɴᴀʟ',
   usage: `${config.prefix || '.'}tovv (en reponse a une image ou une video)`,
   groupOnly: false,
   adminOnly: false,
@@ -44,13 +44,10 @@ module.exports = {
 
       if (!ctx?.quotedMessage) {
         return await reply(
-          `╭╼━≪• *⚠️ ᴇᴄʜᴇᴄ ᴅᴇ ʟɪɴᴠᴏᴄᴀᴛɪᴏɴ* •≫━╾╮\n` +
-          `┃\n` +
-          `┃ 🔮 *${toSmallCaps('repondez a une image ou une video')}*\n` +
-          `┃ *${toSmallCaps('pour lenfermer dans la vue unique')} !*\n` +
-          `┃\n` +
-          `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
-          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`
+          `*⚠️ ${toSmallCaps('echec de l\'invocation')}*\n\n` +
+          `*┃* 🔮 *${toSmallCaps('repondez a une image ou une video')}*\n` +
+          `*┃* *${toSmallCaps('pour lenfermer dans la vue unique')} !*\n\n` +
+          `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
         );
       }
 
@@ -69,13 +66,10 @@ module.exports = {
 
       if (!mtype || !actualMsg) {
         return await reply(
-          `╭╼━≪• *❌ sᴄᴇᴀᴜ ɪɴᴠᴀʟɪᴅᴇ* •≫━╾╮\n` +
-          `┃\n` +
-          `┃ 🥀 *${toSmallCaps('le message cite n est pas')}*\n` +
-          `┃ *${toSmallCaps('un media convertible')} (ɪᴍᴀɢᴇ/ᴠɪᴅᴇ́ᴏ).* \n` +
-          `┃\n` +
-          `╰━━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
-          `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`
+          `*❌ ${toSmallCaps('sceau invalide')}*\n\n` +
+          `*┃* 🥀 *${toSmallCaps('le message cite n est pas')}*\n` +
+          `*┃* *${toSmallCaps('un media convertible')} (ɪᴍᴀɢᴇ/ᴠɪᴅᴇ́ᴏ).* \n\n` +
+          `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
         );
       }
 
@@ -103,7 +97,7 @@ module.exports = {
       // 3. EFFACEMENT DU GRIMOIRE : Suppression du média d'origine
       try {
         const botId = sock.user.id.split(':')[0] + '@s.whatsapp.net';
-        
+
         let deleteObj = {
           remoteJid: chatId,
           fromMe: ctx.participant === botId, // Vrai uniquement si le message d'origine venait du bot
@@ -139,7 +133,7 @@ module.exports = {
 
     } catch (error) {
       console.error('Error in tovv command:', error);
-      await reply(`*❌ ${toSmallCaps('impossible d enfermer ce media')} : ${error.message}*\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ɢʜᴏsᴛɢ 𝐗*`);
+      await reply(`*❌ ${toSmallCaps('impossible d enfermer ce media')} : ${error.message}*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
     }
   }
 };
