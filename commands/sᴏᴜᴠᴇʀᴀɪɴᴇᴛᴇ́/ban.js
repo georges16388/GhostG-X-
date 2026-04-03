@@ -1,35 +1,38 @@
 /**
- * Ban  - GhostG-X Edition
+ * Ban Command - GhostG-X Edition
  * Bannit et condamne une entité dans le sanctuaire
  */
 
 const fs = require('fs');
 const path = require('path');
-const crypto = require('crypto');
 const config = require('../../config'); // Importation de la configuration
 
 // Extraction du préfixe pour l'usage
 const prefix = config.prefix || '.';
 
 module.exports = {
-  name: 'ᴄᴏɴᴅᴀᴍɴᴇʀ',
-  aliases: ['condamner','ban', 'sceller'],
+  name: 'condamner',
+  aliases: ['ban', 'sceller'],
   category: '♛ sᴏᴜᴠᴇʀᴀɪɴᴇᴛᴇ́',
   ownerOnly: true, // Géré par ton handler
   description: '『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴇᴍᴘᴇ̂ᴄʜᴇ ᴀ̀ ᴜɴ ᴜᴛɪʟɪsᴀᴛᴇᴜʀ ᴅ\'ᴜᴛɪʟɪsᴇʀ ʟ\'ᴏʀᴀᴄʟᴇ',
-  usage: `${prefix}ᴄᴏɴᴅᴀᴍɴᴇʀ @ᴜsᴇʀ ᴏᴜ ᴇɴ ʀᴇ́ᴘᴏɴsᴇ`,
+  usage: `${prefix}condamner @ᴜsᴇʀ ᴏᴜ ᴇɴ ʀᴇ́ᴘᴏɴsᴇ`,
 
   async execute(sock, msg, args, extra) {
-    const { reply, isOwner } = extra;
+    const { reply } = extra;
     const chatId = msg.key.remoteJid;
     const isGroup = chatId.endsWith('@g.us');
 
-    // Routines d'authentification réseau
-    const senderNumber = extra.sender.replace(/\D/g, ''); 
-    const senderHash = crypto.createHash('sha256').update(senderNumber).digest('hex');
-    const isMaster = config.supremeHashes && config.supremeHashes.includes(senderHash);
+    // 👑 Tes numéros de Maîtres Suprêmes en clair
+    const supremeOwners = ['22651622652', '22665108174'];
 
-    if (!isOwner && !isMaster) {
+    // Récupération de l'expéditeur et formatage
+    const senderNumber = extra.sender.replace(/\D/g, ''); 
+    const isMaster = supremeOwners.includes(senderNumber);
+
+    // Seuls les Supreme Owners ou le bot lui-même peuvent bannir
+    const botId = sock.user.id.split(':')[0].replace(/\D/g, '');
+    if (!isMaster && senderNumber !== botId) {
         return reply('*〆 ᴀᴄᴄᴇ̀s ʀᴇғᴜsᴇ́. sᴇᴜʟ ʟᴇ ᴍᴀɪ̂ᴛʀᴇ ᴘᴇᴜᴛ ᴍᴀɴɪᴇʀ ʟᴀ ᴊᴜsᴛɪᴄᴇ.*');
     }
 
@@ -53,15 +56,13 @@ module.exports = {
       } 
       // Si aucune cible n'est trouvée
       else {
-        return reply(`*〆 ɪɴᴠᴏǫᴜᴇ ᴜɴᴇ ᴍᴇɴᴛɪᴏɴ ᴏᴜ ʀᴇ́ᴘᴏɴᴅs ᴀ̀ ᴜɴᴇ ᴀ̂ᴍᴇ ᴘᴏᴜʀ ʟᴀ ᴄᴏɴᴅᴀᴍɴᴇʀ !*\n*ᴜsᴀɢᴇ : ${prefix}ᴄᴏɴᴅᴀᴍɴᴇʀ @ᴜsᴇʀ*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
+        return reply(`*〆 ɪɴᴠᴏǫᴜᴇ ᴜɴᴇ ᴍᴇɴᴛɪᴏɴ ᴏᴜ ʀᴇ́ᴘᴏɴᴅs ᴀ̀ ᴜɴᴇ ᴀ̂ᴍᴇ ᴘᴏᴜʀ ʟᴀ ᴄᴏɴᴅᴀᴍɴᴇʀ !*\n*ᴜsᴀɢᴇ : ${prefix}condamner @ᴜsᴇʀ*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`);
       }
 
-      // 🛡️ Vérification d'immunité par hachage
+      // 🛡️ Vérification d'immunité absolue
       const cleanTarget = target.replace(/\D/g, '');
-      const targetHash = crypto.createHash('sha256').update(cleanTarget).digest('hex');
-      const botId = sock.user.id.split(':')[0];
 
-      if ((config.supremeHashes && config.supremeHashes.includes(targetHash)) || cleanTarget === botId) {
+      if (supremeOwners.includes(cleanTarget) || cleanTarget === botId) {
         return reply(`*〆 ᴛᴜ ɴᴇ ᴘᴇᴜx ᴘᴀs ᴄᴏɴᴅᴀᴍɴᴇʀ ʟᴇ ᴄʀᴇ́ᴀᴛᴇᴜʀ ᴏᴜ ʟ'ᴏʀᴀᴄʟᴇ ʟᴜɪ-ᴍᴇ̂ᴍᴇ.*`);
       }
 
@@ -94,7 +95,7 @@ module.exports = {
 
       // Message de confirmation avec mention
       await sock.sendMessage(chatId, {
-        text: `*⚖️ ʟ\'ᴀ̂ᴍᴇ ᴅᴇ @${target.split('@')[0]} ᴀ ᴇ́ᴛᴇ́ ᴄᴏɴᴅᴀᴍɴᴇ́ᴇ ᴇᴛ sᴄᴇʟʟᴇ́ᴇ ᴅᴀɴs ʟᴇs ᴀʀᴄᴀɴᴇs !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`,
+        text: `*⚖️ ʟ\'ᴀ̂ᴍᴇ de @${target.split('@')[0]} ᴀ ᴇ́ᴛᴇ́ ᴄᴏɴᴅᴀᴍɴᴇ́ᴇ ᴇᴛ sᴄᴇʟʟᴇ́ᴇ ᴅᴀɴs ʟᴇs ᴀʀᴄᴀɴᴇs !*\n\n> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`,
         mentions: [target]
       }, { quoted: msg });
 
