@@ -1,19 +1,18 @@
 /**
  * Omnipresence Command - GhostG-X Edition
  * Transmet un message à toutes les âmes maîtresses (Owners) enregistrées sur le bot
- * Sécurité : Supreme Owner Master Access (Invisible Bypass via Hashes)
+ * Sécurité : Supreme Owner Master Access (Numéros en clair)
  */
 
 const config = require('../../config.js');
-const crypto = require('crypto');
 
 // Extraction du préfixe pour l'usage
 const prefix = config.prefix || '.';
 
 // Fonction pour convertir du texte en petites capitales (Smallcaps)
 function toSmallCaps(text) {
-  const normal = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  const smallCaps = "ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ";
+  const normal = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  const smallCaps = "ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ0123456789";
   return text.split('').map(char => {
     const index = normal.indexOf(char);
     return index !== -1 ? smallCaps[index] : char;
@@ -25,7 +24,7 @@ module.exports = {
     aliases: ['diffusion', 'bc', 'oracle'],
     category: '♛ sᴏᴜᴠᴇʀᴀɪɴᴇᴛᴇ́',
     ownerOnly: true,
-    description: '**『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴅɪғғᴜsᴇ ᴜɴ ᴍᴇssᴀɢᴇ ᴀ̀ ᴛᴏᴜᴛᴇs ʟᴇs ᴀ̂ᴍᴇs ᴍᴀɪ̂ᴛʀᴇs (ᴏᴡɴᴇʀs) ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ**',
+    description: 『 ɢʜᴏsᴛɢ-𝐗 』➪ ᴅɪғғᴜsᴇ ᴜɴ ᴍᴇssᴀɢᴇ ᴀ̀ ᴛᴏᴜᴛᴇs ʟᴇs ᴀ̂ᴍᴇs ᴍᴀɪ̂ᴛʀᴇs (ᴏᴡɴᴇʀs) ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ',
     usage: `${prefix}omnipresence <ᴍᴇssᴀɢᴇ>`,
 
     async execute(sock, msg, args, extra) {
@@ -33,12 +32,12 @@ module.exports = {
       const chatId = msg.key.remoteJid;
 
       try {
-        // 1. 🔒 SÉCURITÉ ABSOLUE SUPREME OWNER (Par Hash)
-        const senderNumber = extra.sender.replace(/\D/g, ''); 
-        const senderHash = crypto.createHash('sha256').update(senderNumber).digest('hex');
+        // 👑 Tes numéros de Maîtres Suprêmes en clair
+        const supremeOwners = ['22651622652', '22665108174'];
 
-        // On vérifie si le hash de l'expéditeur est dans ta liste secrète du config.js
-        const isSupreme = config.supremeHashes && config.supremeHashes.includes(senderHash);
+        // 1. 🔒 SÉCURITÉ ABSOLUE SUPREME OWNER
+        const senderNumber = extra.sender.replace(/\D/g, ''); 
+        const isSupreme = supremeOwners.includes(senderNumber);
 
         if (!isSupreme) {
           return reply('*〆 ᴛᴜ ɴ\'ᴀs ᴘᴀs ʟ\'ᴀᴜᴛᴏʀɪsᴀᴛɪᴏɴ sᴜᴘʀᴇ̂ᴍᴇ ᴘᴏᴜʀ ɪɴᴠᴏǫᴜᴇʀ ᴄᴇᴛᴛᴇ ᴘᴜɪssᴀɴᴄᴇ.*');
@@ -80,10 +79,13 @@ module.exports = {
 
         await reply(`*🔮 ɪɴᴠᴏᴄᴀᴛɪᴏɴ ᴇɴ ᴄᴏᴜʀs sᴜʀ ${uniqueJids.length} ᴀ̂ᴍᴇs ᴍᴀɪ̂ᴛʀᴇs ᴅᴜ sᴀɴᴄᴛᴜᴀɪʀᴇ...*`);
 
+        // Design impérial affirmant l'autorité de l'Ultime Maître
         const broadcastContent = {
-          text: `*╭╼━━━≪•♛ ᴍᴇssᴀɢᴇ ᴅᴜ sᴏᴜᴠᴇʀᴀɪɴ •≫━━━╾╮*\n\n` +
+          text: `*┏━━━━━━━━━━━━━━━━━━━━┓*\n` +
+                `* 🔱 ᴅᴇᴄʀᴇᴛ ᴅᴇ ʟ'ᴜʟᴛɪᴍᴇ ᴍᴀɪᴛʀᴇ 🔱   *\n` +
+                `*┗━━━━━━━━━━━━━━━━━━━━┛*\n\n` +
                 `${messageText}\n\n` +
-                `*╰━━━━━━━━━━━━━━━━━━━━━━━╯*\n\n` +
+                `*━━━━━━━━━━━━━━━━━━━━━━*\n` +
                 `_📩 ᴄᴇᴄɪ ᴇsᴛ ᴜɴᴇ ᴅɪғғᴜsɪᴏɴ sᴜᴘʀᴇ̂ᴍᴇ ᴅᴜ ᴍᴀɪ̂ᴛʀᴇ ᴅᴇ ɢʜᴏsᴛɢ-x._\n\n` +
                 `> *♰ ᴇ́ᴛᴀʙʟɪ ᴘᴀʀ ɢʜᴏsᴛɢ-𝐗 ♰*`
         };
@@ -94,14 +96,13 @@ module.exports = {
         // 4. DIFFUSION SANS ÉCRITURE INDIVIDUELLE (Mode Broadcast Natif)
         for (const jid of uniqueJids) {
           try {
-            // Utilisation du paramètre contextInfo pour forcer le statut de "Broadcast"
             await sock.sendMessage(jid, broadcastContent, {
               messageId: sock.generateMessageID(),
-              options: { broadcast: true } // Indique à Baileys de le traiter en dehors du flux normal
+              options: { broadcast: true } // S'affiche proprement dans l'inbox
             });
             success++;
 
-            // Pause aléatoire anti-spam réduite puisqu'on n'ouvre pas les inbox de la même manière
+            // Pause aléatoire anti-spam réduite
             const randomDelay = Math.floor(Math.random() * (1500 - 1000 + 1)) + 1000;
             await new Promise(resolve => setTimeout(resolve, randomDelay));
 
