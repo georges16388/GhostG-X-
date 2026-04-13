@@ -98,9 +98,9 @@ cd ../GhostG-X
 Ouvre le fichier `.env` et remplis les champs suivants :
 
 ```js
-ownerNumber: ['22600000000'],   // ✅ Ton numéro SANS + ni espaces (ex: 22665108174)
-ownerName:   ['𓆩✞𓆪'],          // ✅ Ton nom affiché entre les griffes
-prefix:      '.',               // ✅ Ton préfixe de commande (ex: . / ! / #)
+ownerNumber: "22600000000",   // ✅ Ton numéro SANS + ni espaces (ex: 22665108174)
+ownerName:   "𓆩✞𓆪",          // ✅ Ton nom affiché entre les griffes
+prefix:      "." ,               // ✅ Ton préfixe de commande (ex: . / ! / #)
 selfMode:    false,             // ✅ false = public  |  true = privé (owner seul)
 ```
 
